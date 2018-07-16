@@ -1,0 +1,7 @@
+*.class
+*.o
+*.swp
+bin/
+tmp/
+local/
+mil-tools.jar
