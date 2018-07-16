@@ -1,0 +1,503 @@
+/*
+    Copyright 2018 Mark P Jones, Portland State University
+
+    This file is part of mil-tools.
+
+    mil-tools is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    mil-tools is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with mil-tools.  If not, see <https://www.gnu.org/licenses/>.
+*/
+package mil;
+
+import compiler.*;
+import compiler.Failure;
+import compiler.Handler;
+import compiler.Position;
+import core.*;
+import java.io.PrintWriter;
+
+public abstract class Defn {
+
+  protected Position pos;
+
+  /** Default constructor. */
+  public Defn(Position pos) {
+    this.pos = pos;
+  }
+
+  public Position getPos() {
+    return pos;
+  }
+
+  public abstract String toString();
+
+  /** Records the successors/callees of this node. */
+  private Defns callees = null;
+
+  /** Records the predecessors/callers of this node. */
+  private Defns callers = null;
+
+  /** Update callees/callers information with dependencies. */
+  public void calls(Defns xs) {
+    for (callees = xs; xs != null; xs = xs.next) {
+      xs.head.callers = new Defns(this, xs.head.callers);
+    }
+  }
+
+  /**
+   * Flag to indicate that this node has been visited during the depth-first search of the forward
+   * dependency graph.
+   */
+  private boolean visited = false;
+
+  /** Visit this X during a depth-first search of the forward dependency graph. */
+  Defns forwardVisit(Defns result) {
+    if (!this.visited) {
+      this.visited = true;
+      return new Defns(this, Defns.searchForward(this.callees, result));
+    }
+    return result;
+  }
+
+  /**
+   * Records the binding scc in which this binding has been placed. This field is initialized to
+   * null but is set to the appropriate binding scc during dependency analysis.
+   */
+  private DefnSCC scc = null;
+
+  /** Return the binding scc that contains this binding. */
+  public DefnSCC getScc() {
+    return scc;
+  }
+
+  /**
+   * Visit this binding during a depth-first search of the reverse dependency graph. The scc
+   * parameter is the binding scc in which all unvisited bindings that we find should be placed.
+   */
+  void reverseVisit(DefnSCC scc) {
+    if (this.scc == null) {
+      // If we arrive at a binding that hasn't been allocated to any SCC,
+      // then we should put it in this SCC.
+      this.scc = scc;
+      scc.add(this);
+      for (Defns callers = this.callers; callers != null; callers = callers.next) {
+        callers.head.reverseVisit(scc);
+      }
+    } else if (this.scc == scc) {
+      // If we arrive at a binding that has the same binding scc
+      // as the one we're building, then we know that it is recursive.
+      scc.setRecursive();
+      return;
+    } else {
+      // The only remaining possibility is that we've strayed outside
+      // the binding scc we're building to a scc that *depends on*
+      // the one we're building.  In other words, we've found a binding
+      // scc dependency from this.scc to scc.
+      DefnSCC.addDependency(this.scc, scc);
+    }
+  }
+
+  private static int dfsNum = 0;
+
+  private int visitNum = 0;
+
+  public static void newDFS() { // Begin a new depth-first search
+    dfsNum++;
+  }
+
+  protected int occurs;
+
+  public int getOccurs() {
+    return occurs;
+  }
+
+  /**
+   * Visit this Defn as part of a depth first search, and build up a list of Defn nodes that can be
+   * used to compute strongly-connected components.
+   */
+  Defns visitDepends(Defns defns) {
+    if (visitNum == dfsNum) { // Repeat visit to this Defn?
+      occurs++;
+      // !System.out.println(getId() + " has now occurred " + occurs + " times");
+    } else { // First time at this Defn
+      // Mark this Defn as visited, and initialize fields
+      visitNum = dfsNum;
+      occurs = 1;
+      // !System.out.println("First occurrence of " + getId());
+      scc = null;
+      callers = null;
+      callees = null;
+
+      // Find immediate dependencies
+      Defns deps = dependencies();
+      // !System.out.println("------------");
+      // !displayDefn();
+      // !System.out.print("DEPENDS ON: ");
+      // !String msg = "";
+      // !for (Defns ds = deps; ds!=null; ds=ds.next) {
+      // !  System.out.print(msg); msg = ", ";
+      // !  System.out.print(ds.head.getId());
+      // !}
+      // !System.out.println();
+
+      // Visit all the immediate dependencies
+      for (; deps != null; deps = deps.next) {
+        // !System.out.println("Adjacency: " + getId() + " -> " + deps.head.getId());
+        defns = deps.head.visitDepends(defns);
+        if (!Defns.isIn(deps.head, callees)) {
+          callees = new Defns(deps.head, callees);
+        }
+      }
+
+      // Add the information about this node's callers/callees
+      this.calls(callees);
+      // And add it to the list of all definitions.
+      defns = new Defns(this, defns);
+    }
+    return defns;
+  }
+
+  /** Find the list of Defns that this Defn depends on. */
+  public abstract Defns dependencies();
+
+  /** Find the dependencies of this AST fragment. */
+  public Defns dependencies(Defns ds) {
+    return /* Defns.isIn(this, ds) ? ds : */ new Defns(this, ds);
+  }
+
+  String dotAttrs() {
+    return "style=filled, fillcolor=white";
+  }
+
+  boolean dotInclude() {
+    return true;
+  }
+
+  public Defns getCallers() {
+    return callers;
+  }
+
+  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
+  public void dump(PrintWriter out) {
+    // !   out.println("[occurs=" + occurs
+    // !             + ", indegree=" + Defns.length(callers)
+    // !             + ", outdegree=" + Defns.length(callees) + "]");
+    // !   out.print(this.getId() + " -> ");
+    // !   for (Defns ds=callees; ds!=null; ds=ds.next) {
+    // !     out.print(" " + ds.head.getId());
+    // !   }
+    // !   out.println(";");
+    // !   out.print(this.getId() + " -> ");
+    // !   for (Defns ds=callees; ds!=null; ds=ds.next) {
+    // !     out.print(" " + ds.head.getId());
+    // !   }
+    // !   out.println(";");
+    displayDefn(out);
+  }
+
+  public void displayDefn() {
+    PrintWriter out = new PrintWriter(System.out);
+    displayDefn(out);
+    out.flush();
+  }
+
+  abstract void displayDefn(PrintWriter out);
+
+  void limitRecursion() throws Failure {
+    /* do nothing */
+  }
+
+  /**
+   * Set the initial type for this definition by instantiating the declared type, if present, or
+   * using type variables to create a suitable skeleton. Also sets the types of bound variables.
+   */
+  abstract void setInitialType() throws Failure;
+
+  /** Type check the body of this definition. */
+  abstract void checkBody(Handler handler) throws Failure;
+
+  /**
+   * Calculate a generalized type for this binding, adding universal quantifiers for any unbound
+   * type variable in the inferred type. (There are no "fixed" type variables here because all mil
+   * definitions are at the top level.)
+   */
+  abstract void generalizeType(Handler handler) throws Failure;
+
+  abstract void findAmbigTVars(Handler handler, TVars gens);
+
+  void extendAddrMap(HashAddrMap addrMap, int addr) {
+    addrMap.addCodeLabel(addr, toString());
+  }
+
+  /** First pass code generation: produce code for top-level definitions. */
+  abstract void generateMain(Handler handler, MachineBuilder builder);
+
+  /** Second pass code generation: produce code for block and closure definitions. */
+  abstract void generateFunctions(MachineBuilder builder);
+
+  protected static Temp[] mergeParams(Temp[][] tss, Temp[] params) {
+    // Calculate total number of new parameters:
+    int len = 0;
+    for (int i = 0; i < tss.length; i++) {
+      len += (tss[i] == null ? 1 : tss[i].length);
+    }
+    // Collapse new parameters in to a single array:
+    Temp[] nps = new Temp[len];
+    int pos = 0;
+    for (int i = 0; i < tss.length; i++) {
+      if (tss[i] == null) { // no new params
+        nps[pos++] = params[i]; // save formal parameter
+      } else { // otherwise replace original formal
+        int l = tss[i].length; // parameter with the new list
+        for (int j = 0; j < l; j++) {
+          nps[pos++] = tss[i][j];
+        }
+      }
+    }
+    return nps;
+  }
+
+  protected static Code addInitializers(Call[] calls, Temp[] params, Temp[][] tss, Code code) {
+    for (int i = 0; i < calls.length; i++) {
+      if (calls[i] != null) {
+        Allocator alloc = calls[i].isAllocator();
+        if (alloc != null) {
+          // !System.out.print("Allocator: "); alloc.dump();
+          Cfun cf = alloc.cfunNoArgs();
+          if (cf != null) {
+            // !System.out.println(" cfun = " + cf.getId());
+            code = new Assert(params[i], cf, code);
+          } else {
+            TopLevel tl = alloc.getTopLevel();
+            // !System.out.println(" " +(tl!=null ? (tl.getId()) : "null"));
+            // We are only matching on the outermost constructor in each allocator, so we should
+            // only use the
+            // top-level version if there are no arguments.  This still works nicely for examples
+            // like True,
+            // False, Nil, Nothing, etc...
+            Tail t =
+                (tl != null && tss[i].length == 0)
+                    ? new Return(new TopDef(tl, 0))
+                    : alloc.callDup(tss[i]);
+            code = new Bind(params[i], t, code);
+          }
+        } else {
+          // Assumes that calls[i] is a return of a known value:
+          code = new Bind(params[i], calls[i], code);
+        }
+      }
+    }
+    return code;
+  }
+
+  /**
+   * Reset the doesntReturn flag, if there is one, for this definition ahead of a returnAnalysis().
+   * For this analysis, we use true as the initial value, reducing it to false if we find a path
+   * that allows a block's code to return.
+   */
+  void resetDoesntReturn() {
+    /* Nothing to do in this case */
+  }
+
+  /**
+   * Apply return analysis to this definition, returning true if this results in a change from the
+   * previously computed value.
+   */
+  boolean returnAnalysis() {
+    return false;
+  }
+
+  /** Perform pre-inlining cleanup on each Block in this SCC. */
+  void cleanup() {
+    /* Nothing to do here */
+  }
+
+  boolean detectLoops(Blocks visited) {
+    return false;
+  }
+
+  /** Apply inlining. */
+  public abstract void inlining();
+
+  void liftAllocators() {
+    /* Nothing to do */
+  }
+
+  /** Reset the bitmap and count for the used arguments of this definition, where relevant. */
+  void clearUsedArgsInfo() {
+    /* The default is to do nothing */
+  }
+
+  /**
+   * Count the number of unused arguments for this definition using the current unusedArgs
+   * information for any other items that it references.
+   */
+  abstract int countUnusedArgs();
+
+  /** Rewrite this program to remove unused arguments in block calls. */
+  abstract void removeUnusedArgs();
+
+  public abstract void flow();
+
+  Call[] collectCalls(Atom[] args, Facts facts) {
+    int l = args.length;
+    Call[] calls = null;
+    for (int i = 0; i < l; i++) {
+      Tail t = args[i].lookupFact(facts);
+      if (t != null) {
+        Allocator alloc = t.isAllocator(); // we're only going to keep info about Allocators
+        if (alloc != null) {
+          if (calls == null) {
+            calls = new Call[l];
+          }
+          calls[i] = alloc;
+        }
+      } else {
+        Atom a = args[i].isKnown(); // Look for a known argument ...
+        if (a != null) {
+          DefnSCC scc = getScc(); // ... in a call to a non-recursive Defn
+          if (scc != null && !scc.isRecursive()) {
+            // !System.out.println("Known argument " + a + " in call to: ");
+            // !this.displayDefn();
+            // !System.out.println();
+            if (calls == null) {
+              calls = new Call[l];
+            }
+            calls[i] = new Return(a);
+          }
+        }
+      }
+    }
+    return calls;
+  }
+
+  /**
+   * Compute a summary for this definition (if it is a block or top-level) and then look for a
+   * previously encountered item with the same code in the given table. Return true if a duplicate
+   * was found.
+   */
+  abstract boolean summarizeDefns(Blocks[] blocks, TopLevels[] topLevels);
+
+  abstract void eliminateDuplicates();
+
+  abstract void collect();
+
+  void clearArgVals() {
+    /* nothing to do */
+  }
+
+  void checkCollection() {
+    /* nothing to do */
+  }
+
+  abstract void collect(TypeSet set);
+
+  /** Update all declared types with canonical versions. */
+  abstract void canonDeclared(MILSpec spec);
+
+  /** Apply constructor function simplifications to this program. */
+  abstract void cfunSimplify();
+
+  abstract void printlnSig(PrintWriter out);
+
+  /** Test to determine if this is an appropriate definition to match the given type. */
+  Block isBlockOfType(BlockType inst) {
+    return null;
+  }
+
+  /** Test to determine if this is an appropriate definition to match the given type. */
+  ClosureDefn isClosureDefnOfType(AllocType inst) {
+    return null;
+  }
+
+  /** Test to determine if this is an appropriate definition to match the given type. */
+  TopLevel isTopLevelOfType(Scheme inst) {
+    return null;
+  }
+
+  /** Test to determine if this is an appropriate definition to match the given type. */
+  External isExternalOfType(Scheme inst) {
+    return null;
+  }
+
+  /**
+   * Generate a specialized version of an entry point. This requires a monomorphic definition (to
+   * ensure that the required specialization is uniquely determined, and to allow the specialized
+   * version to share the same name as the original.
+   */
+  abstract Defn specializeEntry(MILSpec spec) throws Failure;
+
+  void topLevelrepTransform(RepTypeSet set) {
+    /* do nothing */
+  }
+
+  abstract void repTransform(Handler handler, RepTypeSet set);
+
+  abstract void addExport(MILEnv exports);
+
+  /**
+   * Find the arguments that are needed to enter this definition. The arguments for each block or
+   * closure are computed the first time that we visit the definition, but are returned directly for
+   * each subsequent call.
+   */
+  abstract Temp[] addArgs() throws Failure;
+
+  public int getNumberCalls() {
+    return 0;
+  }
+
+  void resetCallCounts() {
+    /* do nothing */
+  }
+
+  abstract void countCalls();
+
+  void called() {
+    /* do nothing */
+  }
+
+  /**
+   * Identify the set of blocks that should be included in the function that is generated for this
+   * definition. A block call in the tail for a TopLevel is considered a regular call (it will
+   * likely be called from the initialization code), but a block call in the tail for a ClosureDefn
+   * is considered a genuine tail call. For a Block, we only search for the components of the
+   * corresponding function if the block is the target of a call.
+   */
+  Blocks identifyBlocks() {
+    return null;
+  }
+
+  CFG makeCFG() {
+    return null;
+  }
+
+  /** Calculate a staticValue (which could be null) for each top level definition. */
+  void calcStaticValues(TypeMap tm, llvm.Program prog) {
+    /* Nothing to do */
+  }
+
+  /**
+   * Reset the static value field and return true if this is a toplevel definition, or return false
+   * for any other form of definition.
+   */
+  boolean resetStaticValues() {
+    return false;
+  }
+
+  /**
+   * Generate code (in reverse) to initialize each TopLevel (unless all of the components are
+   * statically known). TODO: what if a TopLevel has an empty array of Lhs?
+   */
+  llvm.Code addRevInitCode(TypeMap tm, InitVarMap ivm, llvm.Code code) {
+    return code;
+  }
+}

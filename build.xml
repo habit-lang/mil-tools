@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<project name="mil-tools" default="all" basedir=".">
+
+  <target name="all" depends="jar" description="Default target"/>
+
+  <target name="prepare">
+    <mkdir dir="bin"/>
+  </target>
+
+  <target name="clean" description="remove generated files">
+    <delete dir="bin"/>
+  </target>
+
+  <target name="compile" depends="prepare" description="Compile mil-tools sources">
+    <javac srcdir="src" destdir="bin" includeantruntime="false"/>
+  </target>
+
+  <target name="jar" depends="compile" description="Build mil-tools jar file">
+    <jar jarfile="mil-tools.jar" update="false">
+      <fileset dir="bin" includes="**"/>
+      <manifest>
+        <attribute name="Main-Class" value="driver.Main"/>
+      </manifest>
+    </jar>
+  </target>
+
+</project>
