@@ -5,10 +5,12 @@
 
   <target name="prepare">
     <mkdir dir="bin"/>
+    <mkdir dir="tmp"/>
   </target>
 
   <target name="clean" description="remove generated files">
     <delete dir="bin"/>
+    <delete dir="tmp"/>
   </target>
 
   <target name="compile" depends="prepare" description="Compile mil-tools sources">
