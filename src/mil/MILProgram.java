@@ -542,7 +542,7 @@ public class MILProgram {
       }
     }
     prog.add(generateInitFunction(tm));
-    CFGs.toDot("cfgs.dot", cfgs); // TODO: should not generate this unless requested
+    //  CFGs.toDot("cfgs.dot", cfgs);       // TODO: should not generate this unless requested
     return prog;
   }
 
