@@ -1,0 +1,56 @@
+bitdata Bool = False [B0] | True [B1]
+export true, false :: Bool
+true  <- True()
+false <- False()
+
+export primRet :: a -> Proc a
+primRet   <- {x} c <- ret1{x}; Proc(c)
+ret1{x} [] = return x
+
+-- Arithmetic primitives:
+export add, sub, mul, div :: Word -> Word -> Word
+add <- {x,y} add((x,y))
+sub <- {x,y} sub((x,y))
+mul <- {x,y} mul((x,y))
+div <- {x,y} div((x,y))
+
+export neg :: Word -> Word
+neg <- {x} neg((x))
+
+-- Bitwise operators:
+export and, or, xor :: Word -> Word -> Word
+and <- {x,y} and((x,y))
+or  <- {x,y} or((x,y))
+xor <- {x,y} xor((x,y))
+
+export shl, lshr, ashr :: Word -> Word -> Word
+shl  <- {x,y} shl((x,y))
+lshr <- {x,y} lshr((x,y))
+ashr <- {x,y} ashr((x,y))
+
+export not :: Word -> Word
+not <- {x} not((x))
+
+-- "Convert" a MIL-level boolean result into an LC-level Bool value
+bconv   :: [Flag] >>= [Bool]
+bconv[t] = if t then btrue[] else bfalse[]
+btrue[]  = return true
+bfalse[] = return false
+
+export bnot :: Flag -> Flag
+bnot <- {x} bnot((x))
+
+-- Basic Comparisons:
+-- These cannot be expressed in LC because they require the
+-- MIL-level boolean type / if construct:
+
+export eq, neq :: Word -> Word -> Bool
+eq  <- {x,y} t <- primEq((x,y));  bconv[t]
+neq <- {x,y} t <- primNeq((x,y)); bconv[t]
+
+export gt, gte, lt, lte :: Word -> Word -> Bool
+gt  <- {x,y} t <- primGt((x,y));  bconv[t]
+gte <- {x,y} t <- primGte((x,y)); bconv[t]
+lt  <- {x,y} t <- primLt((x,y));  bconv[t]
+lte <- {x,y} t <- primLte((x,y)); bconv[t]
+
