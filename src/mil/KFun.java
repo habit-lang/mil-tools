@@ -58,7 +58,7 @@ public class KFun extends Kind {
     return false;
   }
 
-  /** Test for occurrences of a given variable within a kind. */
+  /** Test to see if this kind includes any occurrences of the given (unbound) kind variable. */
   boolean contains(KVar v) {
     return dom.contains(v) || rng.contains(v);
   }

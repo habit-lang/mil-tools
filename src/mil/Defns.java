@@ -129,7 +129,7 @@ public class Defns {
 
     // Step 2: run type inference on the body of each definition in this SCC.
     for (Defns ds = defns; ds != null; ds = ds.next) {
-      // !       ds.head.displayDefn();
+      // !   ds.head.displayDefn();
       ds.head.checkBody(handler);
     }
 

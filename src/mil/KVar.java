@@ -21,14 +21,16 @@ package mil;
 import compiler.*;
 import core.*;
 
-/** A representation for kind variables. */
+/** KVar is used to represent kind variables. */
 public class KVar extends Kind {
 
+  /** Records the value of this variable (initially null, indicating an unbound variable). */
   private Kind bound = null;
 
   /**
-   * Construct a printable representation of a kind, adding parentheses around a function kind if
-   * the boolean argument is true.
+   * Construct a printable representation of this kind variable. For simplicity, all unbound kind
+   * variables are displayed as an underscore, even if they are distinct. TODO: It would be less
+   * confusing to use different printed representations for distinct kind variables.
    */
   public String toString(boolean needParens) {
     return bound == null ? "_" : bound.toString(needParens);
@@ -45,7 +47,7 @@ public class KVar extends Kind {
     return true;
   }
 
-  /** Test for occurrences of a given variable within a kind. */
+  /** Test to see if this kind includes any occurrences of the given (unbound) kind variable. */
   boolean contains(KVar v) {
     return bound == null ? (this == v) : bound.contains(v);
   }

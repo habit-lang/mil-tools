@@ -191,9 +191,9 @@ public class TopLevel extends TopDefn {
       }
       TVars gens = defining.tvars();
       generics = TVar.generics(gens, null);
-      // !       debug.Log.println("generics: " + showGenerics());
+      // !   debug.Log.println("generics: " + showGenerics());
       declared = defining.generalize(generics);
-      // !       debug.Log.println("TopLevel group inferred " + toString() + " :: " + declared);
+      // !   debug.Log.println("TopLevel group inferred " + toString() + " :: " + declared);
       findAmbigTVars(handler, gens); // search for ambiguous type variables ...
     }
   }

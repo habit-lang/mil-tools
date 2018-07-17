@@ -56,9 +56,9 @@ public class MILProgram {
     for (Defns ds = entries; ds != null; ds = ds.next) {
       defns = ds.head.visitDepends(defns);
     }
-    // !   if (defns==null) {
-    // !       System.out.println("No definitions remain");
-    // !   }
+    // ! if (defns==null) {
+    // !   System.out.println("No definitions remain");
+    // ! }
     return defns;
   }
 
@@ -130,7 +130,7 @@ public class MILProgram {
 
   public void typeChecking(Handler handler) throws Failure {
     shake();
-    // !   dump();
+    // ! dump();
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       dsccs.head.inferTypes(handler);
     }

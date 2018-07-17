@@ -175,11 +175,11 @@ public class ClosureDefn extends Defn {
   }
 
   void generalizeType(Handler handler) throws Failure {
-    // !       debug.Log.println("Generalizing definition for: " + getId());
+    // !   debug.Log.println("Generalizing definition for: " + getId());
     if (defining != null) {
       TVars gens = defining.tvars();
       generics = TVar.generics(gens, null);
-      // !           debug.Log.println("generics: " + showGenerics());
+      // !     debug.Log.println("generics: " + showGenerics());
       AllocType inferred = defining.generalize(generics);
       debug.Log.println("Inferred " + id + " :: " + inferred);
       if (declared == null) {

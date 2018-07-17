@@ -66,7 +66,7 @@ public class KAtom extends Kind {
     return label;
   }
 
-  /** Test for occurrences of a given variable within a kind. */
+  /** Test to see if this kind includes any occurrences of the given (unbound) kind variable. */
   boolean contains(KVar v) {
     return false;
   }

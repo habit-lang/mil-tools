@@ -86,7 +86,7 @@ public abstract class Kind {
     return cache[n]; // Return result
   }
 
-  /** Test for occurrences of a given variable within a kind. */
+  /** Test to see if this kind includes any occurrences of the given (unbound) kind variable. */
   abstract boolean contains(KVar v);
 
   /** Copy a kind, replacing any unbound kind variables with star. */

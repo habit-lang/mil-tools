@@ -188,19 +188,19 @@ public abstract class Defn {
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
   public void dump(PrintWriter out) {
-    // !   out.println("[occurs=" + occurs
-    // !             + ", indegree=" + Defns.length(callers)
-    // !             + ", outdegree=" + Defns.length(callees) + "]");
-    // !   out.print(this.getId() + " -> ");
-    // !   for (Defns ds=callees; ds!=null; ds=ds.next) {
-    // !     out.print(" " + ds.head.getId());
-    // !   }
-    // !   out.println(";");
-    // !   out.print(this.getId() + " -> ");
-    // !   for (Defns ds=callees; ds!=null; ds=ds.next) {
-    // !     out.print(" " + ds.head.getId());
-    // !   }
-    // !   out.println(";");
+    // ! out.println("[occurs=" + occurs
+    // !           + ", indegree=" + Defns.length(callers)
+    // !           + ", outdegree=" + Defns.length(callees) + "]");
+    // ! out.print(this.getId() + " -> ");
+    // ! for (Defns ds=callees; ds!=null; ds=ds.next) {
+    // !   out.print(" " + ds.head.getId());
+    // ! }
+    // ! out.println(";");
+    // ! out.print(this.getId() + " -> ");
+    // ! for (Defns ds=callees; ds!=null; ds=ds.next) {
+    // !   out.print(" " + ds.head.getId());
+    // ! }
+    // ! out.println(";");
     displayDefn(out);
   }
 
