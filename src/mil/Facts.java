@@ -97,7 +97,7 @@ public class Facts {
 
   /**
    * Look for a previous computation of the specified tail in the current set of facts; note that
-   * the set of facts should only contain pure computations (allocators and pure primitive calls)..
+   * the set of facts should only contain pure computations (allocators and pure primitive calls).
    */
   public static Temp find(Tail t, Facts facts) {
     for (; facts != null; facts = facts.next) {
