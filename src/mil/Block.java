@@ -703,7 +703,7 @@ public class Block extends Defn {
    * destinations (specifically, the formal parameters of a Block or a ClosureDefn).
    */
   Temp[] removeUnusedTemps(Temp[] dsts) {
-    // !   System.out.println("In " + getId() + ": numUsedArgs=" + numUsedArgs + ", dsts.length=" +
+    // ! System.out.println("In " + getId() + ": numUsedArgs=" + numUsedArgs + ", dsts.length=" +
     // dsts.length);
     if (numUsedArgs < dsts.length) { // Found some new, unused args
       Temp[] newTemps = new Temp[numUsedArgs];
