@@ -75,9 +75,13 @@ public abstract class Scheme {
 
   public abstract Scheme generalize(TVar[] generics);
 
+  /**
+   * Find the canonical version of a type with respect to the given TypeSet; this should only be
+   * used with monomorphic types that do not contain any TGen values.
+   */
   abstract Type canonType(TypeSet set);
 
-  /** Calculate a new version of this scheme with canonical components. */
+  /** Calculate a new version of this type scheme with canonical components. */
   abstract Scheme canonScheme(TypeSet set);
 
   public abstract Type apply(TVarSubst s);

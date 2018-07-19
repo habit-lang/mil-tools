@@ -585,19 +585,27 @@ public abstract class Type extends Scheme {
   }
 
   /**
+   * Find the canonical version of this type skeleton for the given TypeSet using the specified
+   * environment to intepret TGens values.
+   */
+  Type canonType(Type[] env, TypeSet set) {
+    return canonType(env, set, 0);
+  }
+
+  /**
+   * Find the canonical version of a type with respect to the given TypeSet; this should only be
+   * used with monomorphic types that do not contain any TGen values.
+   */
+  Type canonType(TypeSet set) {
+    return canonType(null, set, 0);
+  }
+
+  /**
    * Find a canonical version of this type in the given set, using the specified environment to
    * interpret TGens, and assuming that we have already pushed a certain number of args for this
    * type on the stack.
    */
   abstract Type canonType(Type[] env, TypeSet set, int args);
-
-  Type canonType(Type[] env, TypeSet set) {
-    return canonType(env, set, 0);
-  }
-
-  Type canonType(TypeSet set) {
-    return canonType(null, set, 0);
-  }
 
   /**
    * Determine whether the arguments of this (canonical) type match the types on the top of the
@@ -607,7 +615,7 @@ public abstract class Type extends Scheme {
     return n == 0;
   }
 
-  /** Calculate a new version of this scheme with canonical components. */
+  /** Calculate a new version of this type scheme with canonical components. */
   Scheme canonScheme(TypeSet set) {
     return this.canonType(set);
   }

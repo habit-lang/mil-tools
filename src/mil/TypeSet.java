@@ -37,12 +37,14 @@ public class TypeSet {
    */
   private HashMap<Object, TLit> litsToTypes = new HashMap();
 
+  /** Write a description of this TypeSet on standard output (intended for debugging). */
   public void dump() {
     PrintWriter out = new PrintWriter(System.out);
     dump(out);
     out.flush();
   }
 
+  /** Write a description of this TypeSet to a named file. */
   public void dump(String name) {
     try {
       PrintWriter out = new PrintWriter(name);
@@ -53,7 +55,10 @@ public class TypeSet {
     }
   }
 
-  /** Print a listing of all the types that are stored in this TypeSet. (For debugging!) */
+  /**
+   * Worker function for preceding dump methods; writes a description of this TypeSet to a
+   * PrintWriter.
+   */
   public void dump(PrintWriter out) {
     out.println("Tycon uses: -----------------------------");
     for (Tycon tycon : tyconInstances.keySet()) {
@@ -229,7 +234,7 @@ public class TypeSet {
 
   /**
    * A worker function for canonAllocType: Returns a new array containing canonical versions of the
-   * types in ts, using the given set and tenv values.
+   * types in ts with respect to this TypeSet and using the given tenv to interpret TGen types.
    */
   Type[] canonTypes(Type[] ts, Type[] tenv) {
     Type[] us = new Type[ts.length];
