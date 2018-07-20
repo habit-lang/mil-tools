@@ -59,12 +59,14 @@ public class Program {
     }
   }
 
+  /** Write a description of this LLVM program to standard output. */
   public void dump() {
     PrintWriter out = new PrintWriter(System.out);
     dump(out);
     out.flush();
   }
 
+  /** Write a description of this LLVM program to a named file. */
   public void dump(String name) {
     try {
       PrintWriter out = new PrintWriter(name);
@@ -75,6 +77,7 @@ public class Program {
     }
   }
 
+  /** Write a description of this LLVM program to an arbitrary PrintWriter. */
   public void dump(PrintWriter out) {
     // TODO: write general headers here
     for (Defns ds = defns; ds != null; ds = ds.next) {

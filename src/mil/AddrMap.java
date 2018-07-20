@@ -22,6 +22,10 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/**
+ * An AddrMap provides a way to generate printable text for the global and code labels in a bytecode
+ * program. This base class provides a simple default implementation.
+ */
 public class AddrMap {
 
   String globalLabel(int addr) {

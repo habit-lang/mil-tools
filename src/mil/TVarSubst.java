@@ -33,6 +33,7 @@ public class TVarSubst {
     this.type = type;
   }
 
+  /** Find the type corresponding to a given (unbound) type variable in this substitution. */
   public Type find(TVar tv) {
     for (int i = 0; i < tvs.length; i++) {
       if (tvs[i] == tv) {
@@ -43,6 +44,7 @@ public class TVarSubst {
     return null;
   }
 
+  /** Generate a printable representation of this substitution. */
   public String toString() {
     StringBuilder buf = new StringBuilder("[");
     for (int i = 0; i < tvs.length; i++) {
