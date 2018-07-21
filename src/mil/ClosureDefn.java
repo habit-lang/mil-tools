@@ -512,11 +512,6 @@ public class ClosureDefn extends Defn {
     tail.collect(set);
   }
 
-  /** Update all declared types with canonical versions. */
-  void canonDeclared(MILSpec spec) {
-    declared = declared.canonAllocType(spec);
-  }
-
   /** Apply constructor function simplifications to this program. */
   void cfunSimplify() {
     tail = tail.removeNewtypeCfun();
@@ -571,6 +566,11 @@ public class ClosureDefn extends Defn {
     ClosureDefn k = spec.specializedClosureDefn(this, declared);
     k.id = this.id; // use the same name as in the original program
     return k;
+  }
+
+  /** Update all declared types with canonical versions. */
+  void canonDeclared(MILSpec spec) {
+    declared = declared.canonAllocType(spec);
   }
 
   void repTransform(Handler handler, RepTypeSet set) {

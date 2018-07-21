@@ -401,9 +401,6 @@ public abstract class Defn {
 
   abstract void collect(TypeSet set);
 
-  /** Update all declared types with canonical versions. */
-  abstract void canonDeclared(MILSpec spec);
-
   /** Apply constructor function simplifications to this program. */
   abstract void cfunSimplify();
 
@@ -435,6 +432,9 @@ public abstract class Defn {
    * version to share the same name as the original.
    */
   abstract Defn specializeEntry(MILSpec spec) throws Failure;
+
+  /** Update all declared types with canonical versions. */
+  abstract void canonDeclared(MILSpec spec);
 
   void topLevelrepTransform(RepTypeSet set) {
     /* do nothing */

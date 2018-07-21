@@ -347,13 +347,6 @@ public class TopLevel extends TopDefn {
     tail.collect(set);
   }
 
-  /** Update all declared types with canonical versions. */
-  void canonDeclared(MILSpec spec) {
-    for (int i = 0; i < lhs.length; i++) {
-      lhs[i].canonDeclared(spec);
-    }
-  }
-
   /** Apply constructor function simplifications to this program. */
   void cfunSimplify() {
     tail = tail.removeNewtypeCfun();
@@ -425,6 +418,13 @@ public class TopLevel extends TopDefn {
     TopLevel tl = spec.specializedTopLevel(this, declared);
     TopLhs.copyIds(tl.lhs, this.lhs); // use the same names as in the original program
     return tl;
+  }
+
+  /** Update all declared types with canonical versions. */
+  void canonDeclared(MILSpec spec) {
+    for (int i = 0; i < lhs.length; i++) {
+      lhs[i].canonDeclared(spec);
+    }
   }
 
   void topLevelrepTransform(RepTypeSet set) {

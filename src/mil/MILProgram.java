@@ -362,15 +362,6 @@ public class MILProgram {
     }
   }
 
-  /** Update all declared types with canonical versions. */
-  void canonDeclared(MILSpec spec) {
-    for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
-      for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
-        ds.head.canonDeclared(spec);
-      }
-    }
-  }
-
   public void cfunRewrite() {
     TypeSet set = new NewtypeTypeSet();
     collect(set);
@@ -393,6 +384,8 @@ public class MILProgram {
   public MILSpec specialize(Handler handler) throws Failure {
     MILSpec spec =
         new MILSpec(); // Used to record information about generated/requested specializations
+
+    // Step 1: Generate specialized versions of each entry point:
     for (Defns es = entries; es != null; es = es.next) {
       try {
         spec.addEntry(es.head);
@@ -401,8 +394,19 @@ public class MILProgram {
       }
     }
     handler.abortOnFailures();
-    spec.generate(); // Generate specialized versions of all reachable definitions
+
+    // Step 2: Generate specialized versions of all reachable definitions:
+    spec.generate();
     return spec;
+  }
+
+  /** Update all declared types with canonical versions. */
+  void canonDeclared(MILSpec spec) {
+    for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
+      for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
+        ds.head.canonDeclared(spec);
+      }
+    }
   }
 
   public RepTypeSet repTransform(Handler handler) throws Failure {

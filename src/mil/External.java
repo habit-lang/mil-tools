@@ -177,11 +177,6 @@ public class External extends TopDefn {
     }
   }
 
-  /** Update all declared types with canonical versions. */
-  void canonDeclared(MILSpec spec) {
-    declared = declared.canonScheme(spec);
-  }
-
   /** Apply constructor function simplifications to this program. */
   void cfunSimplify() {
     /* Nothing to do here */
@@ -220,6 +215,11 @@ public class External extends TopDefn {
    */
   Defn specializeEntry(MILSpec spec) throws Failure {
     throw new ExternalAsEntrypoint(this);
+  }
+
+  /** Update all declared types with canonical versions. */
+  void canonDeclared(MILSpec spec) {
+    declared = declared.canonScheme(spec);
   }
 
   private TopLevel impl = null;

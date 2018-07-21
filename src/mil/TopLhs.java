@@ -117,11 +117,6 @@ class TopLhs {
     defining = defining.canonType(set);
   }
 
-  /** Update all declared types with canonical versions. */
-  void canonDeclared(MILSpec spec) {
-    declared = declared.canonScheme(spec);
-  }
-
   void printlnSig(PrintWriter out) {
     out.println(id + " :: " + declared);
   }
@@ -140,6 +135,11 @@ class TopLhs {
     for (int i = 0; i < oldLhs.length; i++) {
       newLhs[i].id = oldLhs[i].id;
     }
+  }
+
+  /** Update all declared types with canonical versions. */
+  void canonDeclared(MILSpec spec) {
+    declared = declared.canonScheme(spec);
   }
 
   static Type[][] reps(TopLhs[] lhs) {
