@@ -367,7 +367,6 @@ public class MILProgram {
     collect(set);
     // ! System.out.println("TypeSet after Newtype Removal: ==========");
     // ! set.dump();
-    shake();
     cfunSimplify();
   }
 
