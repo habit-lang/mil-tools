@@ -240,6 +240,7 @@ public class TAp extends Type {
     return new TAp(fun.apply(thisenv, s), arg.apply(thisenv, s));
   }
 
+  /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     // Look for patterns:  Bit n,  Ix n,  ARef n a,  APtr n a, ...
     return fun.bitdataTyconRep(arg);

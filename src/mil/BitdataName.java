@@ -124,6 +124,7 @@ public class BitdataName extends DataName {
     return this;
   }
 
+  /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     return Type.repBits(pat.getWidth());
   }

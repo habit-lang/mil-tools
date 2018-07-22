@@ -261,6 +261,7 @@ public class Temp extends Atom {
     return nds;
   }
 
+  /** Return the representation vector for this Atom. */
   Type[] repCalc() {
     return type.repCalc();
   }

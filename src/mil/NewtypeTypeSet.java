@@ -26,7 +26,7 @@ public class NewtypeTypeSet extends TypeSet {
   /**
    * Override the TypeSet method for calculating canonical versions of a type with a Tycon at its
    * head. By overriding this method, we are able to check for situations where the head is a
-   * newtype constructor and, if so, replace the type with its expansion instead.
+   * newtype constructor and, in those cases, replace the type with its expansion instead.
    */
   protected Type canon(Tycon h, int args) {
     Type t = h.translate(this, args); // Look for a translation of this type

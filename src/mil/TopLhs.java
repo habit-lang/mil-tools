@@ -142,6 +142,12 @@ class TopLhs {
     declared = declared.canonScheme(spec);
   }
 
+  /**
+   * Calculate an array of representation vectors for the variables introduced in a top-level
+   * definition. Individual entries may be set to null to indicate that there is no change of
+   * representation for that component. A single null result, rather than an array, indicates that
+   * there are no changes of representation for any components.
+   */
   static Type[][] reps(TopLhs[] lhs) {
     Type[][] reps = null;
     for (int i = 0; i < lhs.length; i++) {
@@ -156,6 +162,7 @@ class TopLhs {
     return reps;
   }
 
+  /** Calculate the representation vector for this TopLhs using the declared/inferred type. */
   Type[] repCalc() {
     return declared.repCalc();
   }

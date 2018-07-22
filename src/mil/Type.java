@@ -664,11 +664,15 @@ public abstract class Type extends Scheme {
     return ws;
   }
 
-  /** Return the representation vector for a bitdata value of width w. */
+  /**
+   * Return the representation vector for a bitdata value of width w using an appropriate sequence
+   * of Word values or, for values of width 1, a single MIL Flag value.
+   */
   public static Type[] repBits(int w) {
     return (w == 1) ? DataName.flagRep : Type.words(Type.numWords(w));
   }
 
+  /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     return null;
   }

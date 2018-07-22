@@ -142,6 +142,7 @@ public class Synonym extends Tycon {
     return expansion.byteSizeStoredRef(tenv, a, b);
   }
 
+  /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     return expansion.repCalc();
   }

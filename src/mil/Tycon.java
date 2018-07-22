@@ -280,6 +280,7 @@ public abstract class Tycon extends TypeName {
     return inst;
   }
 
+  /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     return null;
   }
@@ -301,6 +302,11 @@ public abstract class Tycon extends TypeName {
     return null;
   }
 
+  /**
+   * Rewrite the argument stack in the given RepTypeSet to account for a change of representation if
+   * this is a tuple type with any arguments whose representation is changed. Returns the number of
+   * arguments in the rewritten list, or (-1) if no change of representation is required.
+   */
   int repTransform(RepTypeSet set, int args) {
     return (-1);
   }

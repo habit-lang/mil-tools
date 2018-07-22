@@ -92,5 +92,6 @@ public abstract class Scheme {
    */
   public abstract TVarSubst specializingSubst(TVar[] generics, Type inst);
 
+  /** Return the representation vector for values of this type. */
   abstract Type[] repCalc();
 }

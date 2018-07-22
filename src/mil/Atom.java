@@ -369,6 +369,7 @@ public abstract class Atom {
     return nss;
   }
 
+  /** Return the representation vector for this Atom. */
   abstract Type[] repCalc();
 
   static Atom[] repArgs(RepTypeSet set, RepEnv env, Atom[] args) {

@@ -210,6 +210,7 @@ public class DataName extends Tycon {
 
   public static final Type[] flagRep = new Type[] {flag.asType()};
 
+  /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     if (isSingleton()) { // No runtime representation needed for singleton types
       return Type.noTypes;

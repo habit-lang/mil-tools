@@ -65,6 +65,7 @@ public abstract class Top extends Atom {
     type = type.canonType(set);
   }
 
+  /** Return the representation vector for this Atom. */
   Type[] repCalc() {
     return type.repCalc();
   }

@@ -62,6 +62,11 @@ public class TupleCon extends PrimTycon {
     }
   }
 
+  /**
+   * Rewrite the argument stack in the given RepTypeSet to account for a change of representation if
+   * this is a tuple type with any arguments whose representation is changed. Returns the number of
+   * arguments in the rewritten list, or (-1) if no change of representation is required.
+   */
   int repTransform(RepTypeSet set, int args) {
     if (arity != args) { // Sanity check
       debug.Internal.error("repTransform on type, arity=" + arity + ", args=" + args);

@@ -95,6 +95,7 @@ public class BitConst extends Const {
     return val.intValue();
   }
 
+  /** Return the representation vector for this Atom. */
   Type[] repCalc() {
     return Type.words(Type.numWords(width));
   }

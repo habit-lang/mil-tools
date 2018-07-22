@@ -63,6 +63,7 @@ public abstract class Const extends Atom {
     return this;
   }
 
+  /** Return the representation vector for this Atom. */
   Type[] repCalc() {
     return null;
   }

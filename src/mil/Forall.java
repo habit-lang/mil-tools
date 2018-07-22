@@ -124,6 +124,7 @@ public class Forall extends Scheme {
     return TVarSubst.make(generics, tenv);
   }
 
+  /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     if (!prefix.isEmpty()) {
       debug.Internal.error("repCalc on quantified type scheme");

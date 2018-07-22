@@ -33,6 +33,11 @@ public class RepTypeSet extends TypeSet {
     return (len < 0) ? super.canon(h, args) : super.canonOther(TupleCon.tuple(len).asType(), len);
   }
 
+  /**
+   * Return the array of types that can be used to represent a tuple of values specified by the
+   * array ts, each element of which uses the given tenv parameter to provide an interpretation for
+   * TGen values. A null result indicates that no change of representation is required.
+   */
   Type[] canonTypes(Type[] ts, Type[] tenv) {
     if (tenv != null) {
       debug.Internal.error("canon for RepTypeSet with tenv!=null");
@@ -72,8 +77,13 @@ public class RepTypeSet extends TypeSet {
     return us;
   }
 
+  /**
+   * Stores a mapping from top-level definitions to the arrays of representation vectors produced by
+   * the reps() method.
+   */
   private HashMap<TopLevel, Type[][]> topLevelRepMap = new HashMap();
 
+  /** Add an entry to the topLevelRepMap. */
   void putTopLevelReps(TopLevel tl, Type[][] reps) {
     topLevelRepMap.put(tl, reps);
   }

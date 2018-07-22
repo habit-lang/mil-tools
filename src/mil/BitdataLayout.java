@@ -156,6 +156,7 @@ public class BitdataLayout extends DataName {
     return this;
   }
 
+  /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     return bn.repCalc();
   }

@@ -330,6 +330,7 @@ public class TTycon extends TConst {
     return (s != null) ? s.getExpansion().canonType(null, set, args) : set.canon(name, args);
   }
 
+  /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     return name.repCalc();
   }
