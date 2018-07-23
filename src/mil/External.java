@@ -222,20 +222,6 @@ public class External extends TopDefn {
     declared = declared.canonScheme(spec);
   }
 
-  private TopLevel impl = null;
-
-  Atom[] repExt() {
-    if (impl != null || (impl = generateTopLevel()) != null) {
-      // TODO: should we check that declared.repCalc()!=null and has same length as tops?
-      return impl.tops();
-    }
-    Type[] r = declared.repCalc();
-    if (r != null && r.length != 1) {
-      debug.Internal.error("Representation for external " + id + " does not use single word");
-    }
-    return null;
-  }
-
   void repTransform(Handler handler, RepTypeSet set) {
     System.out.println("Looking at external " + getId() + " :: " + declared);
     declared = declared.canonType(set);
@@ -258,6 +244,20 @@ public class External extends TopDefn {
     // System.out.println("tail generated!");
     //    super.repTransform(handler, set);
     //  }
+  }
+
+  private TopLevel impl = null;
+
+  Atom[] repExt() {
+    if (impl != null || (impl = generateTopLevel()) != null) {
+      // TODO: should we check that declared.repCalc()!=null and has same length as tops?
+      return impl.tops();
+    }
+    Type[] r = declared.repCalc();
+    if (r != null && r.length != 1) {
+      debug.Internal.error("Representation for external " + id + " does not use single word");
+    }
+    return null;
   }
 
   TopLevel generateTopLevel() {
