@@ -34,3 +34,14 @@ of the Fibonnacci function:
     144
     17
 
+Alternatively, you can use the following command line to run
+the program directly through the bytecode interpreter:
+
+    java -jar mil-tools.jar -x demo/fib.lc
+
+Replace `-x` with `-m` to see the generated MIL code, or
+with `-l` to see the generated LLVM code, etc.  (Or just
+run `java -jar mil-tools.jar` for a summary of additional
+command line options.)
+
+
