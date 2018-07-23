@@ -257,7 +257,7 @@ public class TAp extends Type {
 
   /**
    * Returns true if bitdata values of this type use the lo bits representation, or false for hi
-   * bits. The result is meaningless if there is no bit size for values of this type.
+   * bits. This method should only be used for types that have an associated bit size.
    */
   boolean useBitdataLo() {
     return fun.useBitdataLo(arg);

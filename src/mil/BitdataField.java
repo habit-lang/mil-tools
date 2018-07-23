@@ -109,8 +109,8 @@ public class BitdataField extends Name {
   }
 
   /**
-   * Generate code for a selector that will extract the value of a bitdata field that contains only
-   * one bit; result should be of type Flag.
+   * Generate selector code for a bitdata field that contains only one bit; result should be of type
+   * Flag.
    */
   private Code selectorBit(int total, Temp[] params, Temp[] ws, Code code) {
     if (total == 1) { // special case if whole object is just a single bit
@@ -126,10 +126,7 @@ public class BitdataField extends Name {
     }
   }
 
-  /**
-   * Generate code for a selector that will extract the value of a bitdata field for a type using
-   * the lo bits representation.
-   */
+  /** Generate selector code for a bitdata field whose type uses the lo bits representation. */
   private Code selectorLo(int total, Temp[] params, Temp[] ws, Code code) {
     int wordsize = Type.WORDSIZE;
     int n = ws.length; // number of words in output
@@ -165,10 +162,7 @@ public class BitdataField extends Name {
     return code;
   }
 
-  /**
-   * Generate code for a selector that will extract the value of a bitdata field for a type using
-   * the hi bits representation.
-   */
+  /** Generate selector code for a bitdata field whose type uses the hi bits representation. */
   private Code selectorHi(int total, Temp[] params, Temp[] ws, Code code) {
     int wordsize = Type.WORDSIZE;
     int n = ws.length; // number of words in output

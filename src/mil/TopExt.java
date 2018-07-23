@@ -77,8 +77,7 @@ public class TopExt extends Top {
   }
 
   Atom[] repArg(RepTypeSet set, RepEnv env) {
-    Atom[] as = external.repExt();
-    return (as != null) ? as : null;
+    return external.repExt();
   }
 
   Defn getDefn() {

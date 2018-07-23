@@ -257,7 +257,7 @@ public class Alt {
     return new Alt(cf.specializeCfun(spec, type, s), bc.specializeBlockCall(spec, s, env));
   }
 
-  Alt repTransform(RepTypeSet set, RepEnv env) {
+  Alt repTransformAlt(RepTypeSet set, RepEnv env) {
     return new Alt(cf.canonCfun(set), bc.repTransformBlockCall(set, env));
   }
 

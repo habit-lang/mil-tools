@@ -26,7 +26,8 @@ public class RepTypeSet extends TypeSet {
 
   /**
    * Return a canonical version of a type with a given head, h, and the specified number of
-   * (canonical) arguments on the TypeSet stack.
+   * (canonical) arguments on the TypeSet stack. Overrides implementation in TypeSet, but defaults
+   * back to that implementation (via super) if no change of representation is needed.
    */
   protected Type canon(Tycon h, int args) {
     int len = h.repTransform(this, args); // Rewrite a tuple type?

@@ -21,6 +21,13 @@ package mil;
 import compiler.*;
 import core.*;
 
+/**
+ * A RepEnv records mappings from variables, v, in the source programs to the corresponding list,
+ * vs, of zero or more variables that will be used to hold the representation of v. If a given
+ * variable v does not require a change in representation, then we do not include an entry for it in
+ * the representation environment: we can use the same variable name in both the input and output
+ * versions of the program.
+ */
 class RepEnv {
 
   private Temp v;

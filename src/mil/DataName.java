@@ -208,6 +208,7 @@ public class DataName extends Tycon {
 
   private static int count = 0;
 
+  /** Representation vector for bitdata types of width one. */
   public static final Type[] flagRep = new Type[] {flag.asType()};
 
   /** Return the representation vector for values of this type. */

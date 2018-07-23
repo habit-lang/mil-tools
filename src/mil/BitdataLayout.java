@@ -375,32 +375,4 @@ public class BitdataLayout extends DataName {
       fields[i].addToProg(prog);
     }
   }
-
-  public static void main(String[] args) {
-    if (args.length == 2) {
-      try {
-        int u = Integer.parseInt(args[0]);
-        int v = Integer.parseInt(args[1]);
-
-        MILProgram prog = new MILProgram();
-        prog.addEntry(BitdataLayout.generateBitConcat(u, v));
-
-        prog.shake();
-        prog.dump();
-        System.out.println("Running type checker:");
-        prog.typeChecking(new SimpleHandler());
-        prog.dump();
-        System.out.println("Running optimizer:");
-        prog.optimize();
-        prog.typeChecking(new SimpleHandler());
-        prog.dump();
-        System.out.println("done --------------------------");
-        return;
-      } catch (Exception e) {
-        System.out.println("Exception occurred: " + e);
-        e.printStackTrace();
-      }
-    }
-    System.out.println("usage: java -cp bin mil.BitdataLayout u v");
-  }
 }

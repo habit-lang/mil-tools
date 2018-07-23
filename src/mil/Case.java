@@ -475,7 +475,7 @@ public class Case extends Code {
       // deal with single constructor datatypes here.
       Alt[] nalts = new Alt[alts.length];
       for (int i = 0; i < alts.length; i++) {
-        nalts[i] = alts[i].repTransform(set, env);
+        nalts[i] = alts[i].repTransformAlt(set, env);
       }
       BlockCall ndef = (def == null) ? null : def.repTransformBlockCall(set, env);
       return new Case(a, nalts, ndef);

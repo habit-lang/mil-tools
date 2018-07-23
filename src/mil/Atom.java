@@ -416,18 +416,22 @@ public abstract class Atom {
   abstract Atom[] repArg(RepTypeSet set, RepEnv env);
 
   /**
-   * Construct an array of Atoms that represents the least significant n words, running from least
-   * to highest, of the specified BigInteger value.
+   * Construct an array of IntConsts that represents the least significant n words, from least to
+   * highest, of the specified BigInteger.
    */
-  public static Atom[] asWords(BigInteger v, int n) {
-    Atom[] as = new Atom[n];
+  public static IntConst[] asWords(BigInteger v, int n) {
+    IntConst[] as = new IntConst[n];
     for (int i = 0; i < n; v = v.shiftRight(Type.WORDSIZE)) {
       as[i++] = new IntConst(v.intValue());
     }
     return as;
   }
 
-  public static Atom asFlag(BigInteger v) {
+  /**
+   * Return the FlagConst corresponding to the boolean in the least significant bit of a BigInteger
+   * v.
+   */
+  public static FlagConst asFlag(BigInteger v) {
     return FlagConst.fromBool(v.testBit(0));
   }
 

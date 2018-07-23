@@ -120,8 +120,7 @@ public class TopDef extends Top {
   }
 
   Atom[] repArg(RepTypeSet set, RepEnv env) {
-    Atom[] as = set.topDef(topLevel, i);
-    return (as != null) ? as : null;
+    return set.topDef(topLevel, i);
   }
 
   Defn getDefn() {

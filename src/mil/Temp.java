@@ -266,13 +266,28 @@ public class Temp extends Atom {
     return type.repCalc();
   }
 
+  /**
+   * Extend the given environment to reflect the replacement of certain parameters in vs with the
+   * list of variables s specified in the result of a previous call to reps() on vs.
+   */
+  static RepEnv extend(Temp[] vs, Temp[][] reps, RepEnv env) {
+    if (reps != null) {
+      for (int i = 0; i < vs.length; i++) {
+        if (reps[i] != null) {
+          env = new RepEnv(vs[i], reps[i], env);
+        }
+      }
+    }
+    return env;
+  }
+
   Atom[] repArg(RepTypeSet set, RepEnv env) {
     return (type.repCalc() == null) ? null : RepEnv.find(this, env);
   }
 
   /**
    * Analyze the given list of variables to determine if a change in representation is required. The
-   * return result is either null if no change is needed, or else an array deps such that, for each
+   * return result is either null if no change is needed, or else an array reps such that, for each
    * i, either reps[i]==null, meaning that no change is needed in the representation of parameter i,
    * or else reps[i] is an array of zero or more new variables that should be used instead of vs[i]
    * in the transformed program.
@@ -323,21 +338,6 @@ public class Temp extends Atom {
       }
     }
     return nvs;
-  }
-
-  /**
-   * Extend the given environment to reflect the replacement of certain parameters in vs with the
-   * list of variables s specified in the result of a previous call to reps() on vs.
-   */
-  static RepEnv extend(Temp[] vs, Temp[][] reps, RepEnv env) {
-    if (reps != null) {
-      for (int i = 0; i < vs.length; i++) {
-        if (reps[i] != null) {
-          env = new RepEnv(vs[i], reps[i], env);
-        }
-      }
-    }
-    return env;
   }
 
   /**
