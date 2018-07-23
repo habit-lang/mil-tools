@@ -24,3 +24,13 @@ source files!)
     # Run the generated executable:
     tmp/fib
 
+The result should look something like the following, with a
+pair of randomly chosen numbers bracketing two 144s, which
+have been calculated using two slightly different definitions
+of the Fibonnacci function:
+
+    91
+    144
+    144
+    17
+

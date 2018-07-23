@@ -1,0 +1,18 @@
+require "lib/basic.mil"
+  
+-- An impure primitive that returns its input as a result, but also
+-- prints that value on the console:
+export traceWord :: Word -> Word
+traceWord       <- {w} [] <- printWord((w)); return w
+
+-- Packages the printWord MIL primitive as a monadic operation that
+-- can be accessed from LC:
+export printWord :: Word -> Proc Unit
+printWord <- {w} c <- printWord1{w}; Proc(c)
+printWord1{w} [] = [] <- printWord((w)); Unit()
+
+-- A simple interface for running monadic programs.  This operation
+-- is unsafe in general, but valid if it is used exclusively to run
+-- a single, monadic procedure as the body of a program.
+export unsafeRunProc :: Proc a -> Unit
+unsafeRunProc <- {p} f <- Proc 0 p; r <- f @ []; Unit()

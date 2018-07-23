@@ -1,14 +1,26 @@
 require "lib/prelude.lc"
+require "lib/io.mil"
 
+------
+
+fib1  :: Word -> Word
 fib1 n = case eq n 0 of
           True  -> 0
           False -> case eq n 1 of
                      True  -> 1
                      False -> add (fib (sub n 1)) (fib (sub n 2))
 
+fib  :: Word -> Word
 fib n = if eq n 0 then 0
         else if eq n 1 then 1
         else add (fib (sub n 1)) (fib (sub n 2))
 
-entrypoint fib12
-fib12 = fib 12
+main :: Proc Unit
+main  = do printWord 91
+           printWord (fib  12)
+           printWord (fib1 12)
+           printWord 17
+
+------
+entrypoint begin
+begin = unsafeRunProc main

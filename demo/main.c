@@ -1,10 +1,17 @@
 #include <stdio.h>
 
 extern void init(void);
-extern int fib12;
 
+/* For our program entry, we just call the init() function for the
+ * generated code.
+ */
 int main(int argc, char** argv) {
   init();
-  printf("fib(12) = %d\n", fib12);
+}
+
+/* Provide an implementation for the printWord primitive.
+ */
+void printWord(int x) {
+  printf("%d\n", x);
 }
 
