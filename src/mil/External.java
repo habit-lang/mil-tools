@@ -104,11 +104,15 @@ public class External extends TopDefn {
     /* Nothing to do here */
   }
 
-  /** Type check the body of this definition. */
+  /**
+   * Type check the body of this definition, but reporting rather than throwing' an exception error
+   * if the given handler is not null.
+   */
   void checkBody(Handler handler) throws Failure {
     /* Nothing to do here */
   }
 
+  /** Type check the body of this definition, throwing an exception if there is an error. */
   void checkBody(Position pos) throws Failure {
     /* Nothing to do here */
   }
@@ -284,6 +288,7 @@ public class External extends TopDefn {
     return null;
   }
 
+  /** Add this exported definition to the specified MIL environment. */
   void addExport(MILEnv exports) {
     exports.addTop(id, new TopExt(this));
   }

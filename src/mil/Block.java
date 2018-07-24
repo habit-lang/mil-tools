@@ -123,7 +123,10 @@ public class Block extends Defn {
     }
   }
 
-  /** Type check the body of this definition. */
+  /**
+   * Type check the body of this definition, but reporting rather than throwing' an exception error
+   * if the given handler is not null.
+   */
   void checkBody(Handler handler) throws Failure {
     try {
       checkBody(pos);
@@ -139,10 +142,12 @@ public class Block extends Defn {
     }
   }
 
+  /** Type check the body of this definition, throwing an exception if there is an error. */
   void checkBody(Position pos) throws Failure {
     code.inferType(pos).unify(pos, defining.rngType());
   }
 
+  /** Check that there are declared types for all of the items defined here. */
   boolean allTypesDeclared() {
     return declared != null;
   }
@@ -984,6 +989,7 @@ public class Block extends Defn {
     this.code = cexp.inScopeOf(handler, milenv, new TempEnv(ids, ps, null));
   }
 
+  /** Add this exported definition to the specified MIL environment. */
   void addExport(MILEnv exports) {
     exports.addBlock(id, this);
   }

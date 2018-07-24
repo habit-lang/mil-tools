@@ -142,7 +142,10 @@ public class ClosureDefn extends Defn {
    */
   private Type rng;
 
-  /** Type check the body of this definition. */
+  /**
+   * Type check the body of this definition, but reporting rather than throwing' an exception error
+   * if the given handler is not null.
+   */
   void checkBody(Handler handler) throws Failure {
     try {
       checkBody(pos);
@@ -158,10 +161,12 @@ public class ClosureDefn extends Defn {
     }
   }
 
+  /** Type check the body of this definition, throwing an exception if there is an error. */
   void checkBody(Position pos) throws Failure {
     tail.inferType(pos).unify(pos, rng);
   }
 
+  /** Check that there are declared types for all of the items defined here. */
   boolean allTypesDeclared() {
     return declared != null;
   }
@@ -596,6 +601,7 @@ public class ClosureDefn extends Defn {
     this.tail = cexp.toTail(handler, milenv, ids, this.params, args, this.args);
   }
 
+  /** Add this exported definition to the specified MIL environment. */
   void addExport(MILEnv exports) {
     exports.addClosureDefn(id, this);
   }

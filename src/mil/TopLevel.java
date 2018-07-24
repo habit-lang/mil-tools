@@ -141,7 +141,10 @@ public class TopLevel extends TopDefn {
     defining = Type.tuple(types);
   }
 
-  /** Type check the body of this definition. */
+  /**
+   * Type check the body of this definition, but reporting rather than throwing' an exception error
+   * if the given handler is not null.
+   */
   void checkBody(Handler handler) throws Failure {
     try {
       checkBody(pos);
@@ -157,12 +160,13 @@ public class TopLevel extends TopDefn {
     }
   }
 
+  /** Type check the body of this definition, throwing an exception if there is an error. */
   void checkBody(Position pos) throws Failure {
     tail.inferType(pos).unify(pos, defining);
   }
 
+  /** Check that there are declared types for all of the items defined here. */
   boolean allTypesDeclared() {
-    // Check that there are declared types for all of the items defined here:
     for (int i = 0; i < lhs.length; i++) {
       if (!lhs[i].allTypesDeclared()) {
         return false;
@@ -477,6 +481,7 @@ public class TopLevel extends TopDefn {
     this.tail = cexp.toTail(handler, milenv, args);
   }
 
+  /** Add this exported definition to the specified MIL environment. */
   void addExport(MILEnv exports) {
     for (int i = 0; i < lhs.length; i++) {
       lhs[i].addExport(exports, new TopDef(this, i));

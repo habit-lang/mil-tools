@@ -222,7 +222,10 @@ public abstract class Defn {
    */
   abstract void setInitialType() throws Failure;
 
-  /** Type check the body of this definition. */
+  /**
+   * Type check the body of this definition, but reporting rather than throwing' an exception error
+   * if the given handler is not null.
+   */
   abstract void checkBody(Handler handler) throws Failure;
 
   /**
@@ -442,6 +445,7 @@ public abstract class Defn {
 
   abstract void repTransform(Handler handler, RepTypeSet set);
 
+  /** Add this exported definition to the specified MIL environment. */
   abstract void addExport(MILEnv exports);
 
   /**

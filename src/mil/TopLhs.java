@@ -74,6 +74,7 @@ class TopLhs {
     return defining = (declared != null) ? declared.instantiate() : new TVar(Tyvar.star);
   }
 
+  /** Check that there are declared types for all of the items defined here. */
   boolean allTypesDeclared() {
     return declared != null;
   }
