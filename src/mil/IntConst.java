@@ -20,6 +20,7 @@ package mil;
 
 import compiler.*;
 import core.*;
+import java.math.BigInteger;
 
 public class IntConst extends Const {
 
@@ -96,6 +97,18 @@ public class IntConst extends Const {
    */
   int summary() {
     return val;
+  }
+
+  /**
+   * Construct an array of IntConsts that represents the least significant n words, from least to
+   * highest, of the specified BigInteger.
+   */
+  public static IntConst[] words(BigInteger v, int n) {
+    IntConst[] as = new IntConst[n];
+    for (int i = 0; i < n; v = v.shiftRight(Type.WORDSIZE)) {
+      as[i++] = new IntConst(v.intValue());
+    }
+    return as;
   }
 
   /**

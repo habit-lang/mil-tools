@@ -213,7 +213,10 @@ public class BitdataLayout extends DataName {
   static Code initialize(int total, Temp[] ws, BigInteger bits, Code code) {
     return new Bind(
         ws,
-        new Return((total == 1) ? new Atom[] {Atom.asFlag(bits)} : Atom.asWords(bits, ws.length)),
+        new Return(
+            (total == 1)
+                ? new Atom[] {FlagConst.fromBool(bits.testBit(0))}
+                : IntConst.words(bits, ws.length)),
         code);
   }
 
@@ -270,8 +273,8 @@ public class BitdataLayout extends DataName {
       maskTestBlock = new Block(cf.getPos(), "masktest_" + cf, vs, new Done(t));
     } else {
       int n = Type.numWords(total); // number of words in output
-      Atom[] mask = Atom.asWords(maskNat, n);
-      Atom[] bits = Atom.asWords(bitsNat, n);
+      Atom[] mask = IntConst.words(maskNat, n);
+      Atom[] bits = IntConst.words(bitsNat, n);
       maskTestBlock = eq ? bfalse : btrue; // base case, if no data to compare
 
       for (int i = 1; i <= n; i++) {

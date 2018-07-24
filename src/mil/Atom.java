@@ -21,7 +21,6 @@ package mil;
 import compiler.*;
 import core.*;
 import java.io.PrintWriter;
-import java.math.BigInteger;
 
 /**
  * Represents basic atoms in a MIL program, each of which is either a variable or an integer
@@ -414,26 +413,6 @@ public abstract class Atom {
   }
 
   abstract Atom[] repArg(RepTypeSet set, RepEnv env);
-
-  /**
-   * Construct an array of IntConsts that represents the least significant n words, from least to
-   * highest, of the specified BigInteger.
-   */
-  public static IntConst[] asWords(BigInteger v, int n) {
-    IntConst[] as = new IntConst[n];
-    for (int i = 0; i < n; v = v.shiftRight(Type.WORDSIZE)) {
-      as[i++] = new IntConst(v.intValue());
-    }
-    return as;
-  }
-
-  /**
-   * Return the FlagConst corresponding to the boolean in the least significant bit of a BigInteger
-   * v.
-   */
-  public static FlagConst asFlag(BigInteger v) {
-    return FlagConst.fromBool(v.testBit(0));
-  }
 
   /**
    * Calculate a static value for this atom, or else return null if the result must be calculated at
