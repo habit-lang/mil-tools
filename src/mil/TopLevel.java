@@ -63,7 +63,7 @@ public class TopLevel extends TopDefn {
    * atoms/arguments.
    */
   Atom[] tops() {
-    Atom[] as = new Atom[lhs.length];
+    TopDef[] as = new TopDef[lhs.length];
     for (int i = 0; i < lhs.length; i++) {
       as[i] = new TopDef(this, i);
     }
@@ -445,25 +445,26 @@ public class TopLevel extends TopDefn {
       }
 
       // Make the new lhs:
-      TopLhs[] lhs = new TopLhs[len];
+      TopLhs[] nlhs = new TopLhs[len];
       int j = 0;
       for (int i = 0; i < reps.length; i++) {
         if (reps[i] == null) {
-          lhs[j++] = this.lhs[i];
+          nlhs[j++] = this.lhs[i];
         } else {
           if (reps[i].length > 0) {
             Type[] ts = reps[i];
             for (int k = 0; k < ts.length; k++) {
-              lhs[j] = new TopLhs();
-              lhs[j++].setDeclared(ts[k]);
+              nlhs[j] = new TopLhs();
+              nlhs[j++].setDeclared(ts[k]);
             }
           }
         }
       }
-      this.lhs = lhs;
+      this.lhs = nlhs;
     }
   }
 
+  /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {
     tail = tail.repTransform(set, null);
     for (int i = 0; i < lhs.length; i++) {

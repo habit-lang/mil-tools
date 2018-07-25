@@ -443,6 +443,7 @@ public abstract class Defn {
     /* do nothing */
   }
 
+  /** Rewrite the components of this definition to account for changes in representation. */
   abstract void repTransform(Handler handler, RepTypeSet set);
 
   /** Add this exported definition to the specified MIL environment. */

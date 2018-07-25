@@ -152,7 +152,7 @@ class TopLhs {
   static Type[][] reps(TopLhs[] lhs) {
     Type[][] reps = null;
     for (int i = 0; i < lhs.length; i++) {
-      Type[] r = lhs[i].repCalc();
+      Type[] r = lhs[i].declared.repCalc();
       if (r != null) {
         if (reps == null) {
           reps = new Type[lhs.length][];
@@ -163,14 +163,8 @@ class TopLhs {
     return reps;
   }
 
-  /** Calculate the representation vector for this TopLhs using the declared/inferred type. */
-  Type[] repCalc() {
-    return declared.repCalc();
-  }
-
+  /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {
-    // TODO: not clear that this will work if there is a change of representation; see External
-    // case.
     declared = declared.canonScheme(set);
   }
 

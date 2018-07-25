@@ -22,21 +22,19 @@ import compiler.*;
 import compiler.Position;
 import core.*;
 
-public abstract class TopDefn extends Defn {
+abstract class ExternalGenerator {
+
+  /** Minimum number of type arguments needed to use this generator. */
+  int needs;
 
   /** Default constructor. */
-  public TopDefn(Position pos) {
-    super(pos);
+  ExternalGenerator(int needs) {
+    this.needs = needs;
   }
 
   /**
-   * Return references to all components of this top level definition in an array of
-   * atoms/arguments.
+   * Generate a tail as the implementation of an external described by a reference and list of
+   * types.
    */
-  abstract Atom[] tops();
-
-  /** Second pass code generation: produce code for block and closure definitions. */
-  void generateFunctions(MachineBuilder builder) {
-    /* Ignore these on the second pass */
-  }
+  abstract Tail generate(Position pos, String ref, Type[] ts);
 }

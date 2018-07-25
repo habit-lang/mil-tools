@@ -24,6 +24,8 @@ import compiler.Handler;
 import compiler.Position;
 import core.*;
 import java.io.PrintWriter;
+import java.math.BigInteger;
+import java.util.HashMap;
 
 public class External extends TopDefn {
 
@@ -48,6 +50,14 @@ public class External extends TopDefn {
 
   public External(Position pos, Scheme declared, String ref, Type[] ts) {
     this(pos, "e" + count++, declared, ref, ts);
+  }
+
+  /**
+   * Return references to all components of this top level definition in an array of
+   * atoms/arguments.
+   */
+  Atom[] tops() {
+    return new TopExt[] {new TopExt(this)};
   }
 
   /** Get the declared type, or null if no type has been set. */
@@ -226,66 +236,128 @@ public class External extends TopDefn {
     declared = declared.canonScheme(spec);
   }
 
-  void repTransform(Handler handler, RepTypeSet set) {
-    System.out.println("Looking at external " + getId() + " :: " + declared);
+  void topLevelrepTransform(RepTypeSet set) {
     declared = declared.canonType(set);
-    System.out.println("Canon type is: " + declared);
-    Type[] r = declared.repCalc(); // TODO: is this enough?  Do we need to use canonType()?
-    if (r != null) { // Change of representation
-      if (r.length == 1) {
-        declared = r[0];
-        System.out.println("Changed representation " + getId() + " :: " + declared);
-      } else {
-        debug.Internal.error(
-            "cannot handle representation change for " + getId() + " :: " + declared);
+    debug.Log.println("Determining representation for external " + id + " :: " + declared);
+    Type[] r = declared.repCalc();
+    Tail t = generateTail();
+    if (t == null) { // Program will continue to use an external definition
+      if (r != null) { // Check for a change in representation
+        if (r.length != 1) {
+          // TODO: do something to avoid the following error
+          debug.Internal.error(
+              "Cannot handle change of representation for external " + id + " :: " + declared);
+        }
+        impl = new External(pos, id, r[0], null, null); // do not copy ref or ts
+        debug.Log.println("Replaced external definition with " + id + " :: " + r[0]);
       }
+    } else { // Generator has produced an implementation for this external
+      TopLhs[] lhs; // Create a left hand side for the new top level definition
+      if (r == null) { // no change in type representation:
+        lhs = new TopLhs[] {new TopLhs()};
+        lhs[0].setDeclared(declared);
+      } else {
+        lhs = new TopLhs[r.length];
+        for (int i = 0; i < r.length; i++) {
+          lhs[i] = new TopLhs();
+          lhs[i].setDeclared(r[i]);
+        }
+      }
+      // TODO: it seems inconsistent to use a HashMap for topLevelRepMap, while using a field here
+      // ...
+      impl =
+          new TopLevel(
+              pos, lhs, t); // Make new top level to use as the replacement for this External
+      debug.Log.println("Generated new top level definition for " + impl);
     }
-    //  if (tail==null && (tail=generateTail(handler))==null) {
-    // System.out.println("not code generated");
-    //    declared = declared.canonScheme(set);
-    System.out.println("representation " + getId() + " :: " + declared);
-    //  } else {
-    // System.out.println("tail generated!");
-    //    super.repTransform(handler, set);
-    //  }
   }
 
-  private TopLevel impl = null;
+  private TopDefn impl = null;
 
   Atom[] repExt() {
-    if (impl != null || (impl = generateTopLevel()) != null) {
-      // TODO: should we check that declared.repCalc()!=null and has same length as tops?
-      return impl.tops();
-    }
-    Type[] r = declared.repCalc();
-    if (r != null && r.length != 1) {
-      debug.Internal.error("Representation for external " + id + " does not use single word");
-    }
-    return null;
+    return (impl == null) ? null : impl.tops();
   }
 
-  TopLevel generateTopLevel() {
-    if (ref == null || ts == null) { // Do not generate code if ref or ts is missing
-      return null;
+  /**
+   * Stores a mapping from String references to generators for external function implementations.
+   */
+  private static HashMap<String, ExternalGenerator> generators = new HashMap();
+
+  /**
+   * Use the ref and ts fields to determine if we can generate an implementation, post
+   * representation transformation, for an external primitive.
+   */
+  Tail generateTail() {
+    if (ref != null && ts != null) { // Do not generate code if ref or ts is missing
+      ExternalGenerator gen = generators.get(ref);
+      if (gen != null && ts.length >= gen.needs) {
+        return gen.generate(pos, ref, ts);
+      }
     }
+    return null; // TODO: fix this!
+  }
 
-    // Use ref and ts to determine how we should generate a TopLevel for an external primitive
+  static {
 
-    //  if ("primBitFromLiteral".equals(ref) && ts.length>=2) {
-    //    // expects: [literal value, wordsize, ...] in ts
-    //    BigInteger lvalue = ts[0].getNat();
-    //    BigInteger wordsz = ts[1].getNat();
-    // System.out.println("generate succeed for " + ref);
-    //    if (lvalue!=null && wordsz!=null && wordsz.intValue()==32) {
-    //      Tail        t = new Return(new IntConst(lvalue.intValue()));
-    //      ClosureDefn k = new ClosureDefn(null/*pos*/, Temp.noTemps, Temp.noTemps, t);
-    // k.displayDefn();
-    //      return new ClosAlloc(k).withArgs(Atom.noAtoms);
-    //    }
-    //  } else {
-    //  }
-    // TODO: should we report an error if there is no matching case?
-    return null;
+    // primBitFromLiteral v w ... :: Proxy -> Bit w
+    generators.put(
+        "primBitFromLiteral",
+        new ExternalGenerator(2) {
+          Tail generate(Position pos, String ref, Type[] ts) {
+            BigInteger v = ts[0].getNat(); // Value of literal
+            BigInteger w = ts[1].getNat(); // Width of bit vector
+            if (v != null && w != null) {
+              Tail t = new Return(IntConst.words(v, w.intValue()));
+              ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.noTemps, t);
+              return new ClosAlloc(k).withArgs(Atom.noAtoms);
+            }
+            return null; // TODO: generate error message?  throw exception?
+          }
+        });
+
+    // primBitNegate w :: Bit w -> Bit w
+    generators.put(
+        "primBitNegate",
+        new ExternalGenerator(1) {
+          Tail generate(Position pos, String ref, Type[] ts) {
+            BigInteger w = ts[0].getNat(); // Width of bit vector
+            if (w != null) {
+              int width = w.intValue();
+              int n = Type.numWords(width);
+              Temp[] vs = Temp.makeTemps(n); // variables returned from block
+              Temp[] ws = Temp.makeTemps(n); // arguments to closure
+              Code code = new Done(new Return(Temp.clone(vs)));
+              int rem = width % Type.WORDSIZE; // nonzero => unused bits in most sig word
+
+              // Use Prim.xor on the most significant word if not all bits are used:
+              if (rem != 0) {
+                Temp v = vs[--n];
+                code = new Bind(v, Prim.xor.withArgs(vs[n] = new Temp(), (1 << rem) - 1), code);
+              }
+
+              // Use Prim.neg on any remaining words:
+              while (n > 0) {
+                Temp v = vs[--n];
+                code = new Bind(v, Prim.neg.withArgs(vs[n] = new Temp()), code);
+              }
+
+              // Package up code in a block:
+              Block b = new Block(pos, vs, code);
+
+              // Define a closure for the function:
+              ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, ws, new BlockCall(b).withArgs(ws));
+              return new ClosAlloc(k).withArgs(Atom.noAtoms);
+            }
+            return null; // TODO: generate error message?  throw exception?
+          }
+        });
+
+    // ...
+  }
+
+  /** Rewrite the components of this definition to account for changes in representation. */
+  void repTransform(Handler handler, RepTypeSet set) {
+    /* Processing of External definitions was completed during the first pass. */
   }
 
   /** Add this exported definition to the specified MIL environment. */

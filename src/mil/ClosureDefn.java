@@ -578,6 +578,7 @@ public class ClosureDefn extends Defn {
     declared = declared.canonAllocType(spec);
   }
 
+  /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {
     Temp[][] npss = Temp.reps(params); // analyze params
     RepEnv env = Temp.extend(params, npss, null); // environment for params

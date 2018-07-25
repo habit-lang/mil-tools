@@ -235,6 +235,18 @@ public class Enter extends Call {
     return new Enter(f.specializeAtom(spec, s, env));
   }
 
+  Tail repTransform(RepTypeSet set, RepEnv env) {
+    Atom[] fs = f.repArg(set, env);
+    Atom[] nargs = Atom.repArgs(set, env, args);
+    if (fs != null) {
+      if (fs.length != 1) {
+        debug.Internal.error("invalid multiple word function representation");
+      }
+      return new Enter(fs[0]).withArgs(nargs);
+    }
+    return new Enter(f).withArgs(nargs);
+  }
+
   /** Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. */
   llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, llvm.Code c) {
     llvm.Value[] acts = closureActuals(tm, vm, s); // actual parameters
