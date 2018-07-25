@@ -517,11 +517,11 @@ public class Prim {
     }
   }
 
-  public static final PrimRelOp lt = new lt();
+  public static final PrimRelOp slt = new slt();
 
-  private static class lt extends PrimRelOp {
+  private static class slt extends PrimRelOp {
 
-    private lt() {
+    private slt() {
       super("primLt", 2, 1, PURE, relopType);
     }
 
@@ -538,11 +538,11 @@ public class Prim {
     }
   }
 
-  public static final PrimRelOp lte = new lte();
+  public static final PrimRelOp sle = new sle();
 
-  private static class lte extends PrimRelOp {
+  private static class sle extends PrimRelOp {
 
-    private lte() {
+    private sle() {
       super("primLte", 2, 1, PURE, relopType);
     }
 
@@ -559,11 +559,11 @@ public class Prim {
     }
   }
 
-  public static final PrimRelOp gt = new gt();
+  public static final PrimRelOp sgt = new sgt();
 
-  private static class gt extends PrimRelOp {
+  private static class sgt extends PrimRelOp {
 
-    private gt() {
+    private sgt() {
       super("primGt", 2, 1, PURE, relopType);
     }
 
@@ -580,11 +580,11 @@ public class Prim {
     }
   }
 
-  public static final PrimRelOp gte = new gte();
+  public static final PrimRelOp sge = new sge();
 
-  private static class gte extends PrimRelOp {
+  private static class sge extends PrimRelOp {
 
-    private gte() {
+    private sge() {
       super("primGte", 2, 1, PURE, relopType);
     }
 
@@ -598,6 +598,90 @@ public class Prim {
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
       return new llvm.ICmp(ty, l, r, "sge");
+    }
+  }
+
+  public static final PrimRelOp ult = new ult();
+
+  private static class ult extends PrimRelOp {
+
+    private ult() {
+      super("primUlt", 2, 1, PURE, relopType);
+    }
+
+    public boolean op(int n, int m) {
+      return (n < m) ^ (n < 0) ^ (m < 0);
+    }
+
+    /**
+     * Generate an LLVM right hand side for this binary MIL primitive with the given values as
+     * input.
+     */
+    llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
+      return new llvm.ICmp(ty, l, r, "ult");
+    }
+  }
+
+  public static final PrimRelOp ule = new ule();
+
+  private static class ule extends PrimRelOp {
+
+    private ule() {
+      super("primUle", 2, 1, PURE, relopType);
+    }
+
+    public boolean op(int n, int m) {
+      return (n <= m) ^ (n < 0) ^ (m < 0);
+    }
+
+    /**
+     * Generate an LLVM right hand side for this binary MIL primitive with the given values as
+     * input.
+     */
+    llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
+      return new llvm.ICmp(ty, l, r, "ule");
+    }
+  }
+
+  public static final PrimRelOp ugt = new ugt();
+
+  private static class ugt extends PrimRelOp {
+
+    private ugt() {
+      super("primUgt", 2, 1, PURE, relopType);
+    }
+
+    public boolean op(int n, int m) {
+      return (n > m) ^ (n < 0) ^ (m < 0);
+    }
+
+    /**
+     * Generate an LLVM right hand side for this binary MIL primitive with the given values as
+     * input.
+     */
+    llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
+      return new llvm.ICmp(ty, l, r, "ugt");
+    }
+  }
+
+  public static final PrimRelOp uge = new uge();
+
+  private static class uge extends PrimRelOp {
+
+    private uge() {
+      super("primUge", 2, 1, PURE, relopType);
+    }
+
+    public boolean op(int n, int m) {
+      return (n >= m) ^ (n < 0) ^ (m < 0);
+    }
+
+    /**
+     * Generate an LLVM right hand side for this binary MIL primitive with the given values as
+     * input.
+     */
+    llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
+      return new llvm.ICmp(ty, l, r, "uge");
     }
   }
 

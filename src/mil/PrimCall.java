@@ -311,53 +311,105 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.lt) {
+    if (p == Prim.slt) {
       Atom x = args[0];
       Atom y = args[1];
       IntConst a = x.isIntConst();
       if (a != null) {
         IntConst b = y.isIntConst();
         if (b != null) {
-          return Prim.lt.foldRel(a.getVal(), b.getVal());
+          return Prim.slt.foldRel(a.getVal(), b.getVal());
         }
       }
       return null;
     }
 
-    if (p == Prim.gt) {
+    if (p == Prim.sgt) {
       Atom x = args[0];
       Atom y = args[1];
       IntConst a = x.isIntConst();
       if (a != null) {
         IntConst b = y.isIntConst();
         if (b != null) {
-          return Prim.gt.foldRel(a.getVal(), b.getVal());
+          return Prim.sgt.foldRel(a.getVal(), b.getVal());
         }
       }
       return null;
     }
 
-    if (p == Prim.lte) {
+    if (p == Prim.sle) {
       Atom x = args[0];
       Atom y = args[1];
       IntConst a = x.isIntConst();
       if (a != null) {
         IntConst b = y.isIntConst();
         if (b != null) {
-          return Prim.lte.foldRel(a.getVal(), b.getVal());
+          return Prim.sle.foldRel(a.getVal(), b.getVal());
         }
       }
       return null;
     }
 
-    if (p == Prim.gte) {
+    if (p == Prim.sge) {
       Atom x = args[0];
       Atom y = args[1];
       IntConst a = x.isIntConst();
       if (a != null) {
         IntConst b = y.isIntConst();
         if (b != null) {
-          return Prim.gte.foldRel(a.getVal(), b.getVal());
+          return Prim.sge.foldRel(a.getVal(), b.getVal());
+        }
+      }
+      return null;
+    }
+
+    if (p == Prim.ult) {
+      Atom x = args[0];
+      Atom y = args[1];
+      IntConst a = x.isIntConst();
+      if (a != null) {
+        IntConst b = y.isIntConst();
+        if (b != null) {
+          return Prim.ult.foldRel(a.getVal(), b.getVal());
+        }
+      }
+      return null;
+    }
+
+    if (p == Prim.ugt) {
+      Atom x = args[0];
+      Atom y = args[1];
+      IntConst a = x.isIntConst();
+      if (a != null) {
+        IntConst b = y.isIntConst();
+        if (b != null) {
+          return Prim.ugt.foldRel(a.getVal(), b.getVal());
+        }
+      }
+      return null;
+    }
+
+    if (p == Prim.ule) {
+      Atom x = args[0];
+      Atom y = args[1];
+      IntConst a = x.isIntConst();
+      if (a != null) {
+        IntConst b = y.isIntConst();
+        if (b != null) {
+          return Prim.ule.foldRel(a.getVal(), b.getVal());
+        }
+      }
+      return null;
+    }
+
+    if (p == Prim.uge) {
+      Atom x = args[0];
+      Atom y = args[1];
+      IntConst a = x.isIntConst();
+      if (a != null) {
+        IntConst b = y.isIntConst();
+        if (b != null) {
+          return Prim.uge.foldRel(a.getVal(), b.getVal());
         }
       }
       return null;
@@ -435,21 +487,37 @@ public class PrimCall extends Call {
         MILProgram.report("replaced bnot(neq(x,y)) with eq(x,y)");
         return done(Prim.eq, ap);
       }
-      if ((ap = a.isPrim(Prim.lt)) != null) { //  lt --> gte
-        MILProgram.report("replaced bnot(lt(x,y)) with gte(x,y)");
-        return done(Prim.gte, ap);
+      if ((ap = a.isPrim(Prim.slt)) != null) { //  slt --> sge
+        MILProgram.report("replaced bnot(slt(x,y)) with sge(x,y)");
+        return done(Prim.sge, ap);
       }
-      if ((ap = a.isPrim(Prim.lte)) != null) { //  lte --> gt
-        MILProgram.report("replaced bnot(lte(x,y)) with gt(x,y)");
-        return done(Prim.gt, ap);
+      if ((ap = a.isPrim(Prim.sge)) != null) { //  sge --> slt
+        MILProgram.report("replaced bnot(sge(x,y)) with slt(x,y)");
+        return done(Prim.slt, ap);
       }
-      if ((ap = a.isPrim(Prim.gt)) != null) { //  gt --> lte
-        MILProgram.report("replaced bnot(gt(x,y)) with lte(x,y)");
-        return done(Prim.lte, ap);
+      if ((ap = a.isPrim(Prim.sle)) != null) { //  sle --> sgt
+        MILProgram.report("replaced bnot(sle(x,y)) with sgt(x,y)");
+        return done(Prim.sgt, ap);
       }
-      if ((ap = a.isPrim(Prim.gte)) != null) { //  gte --> lt
-        MILProgram.report("replaced bnot(gte(x,y)) with lt(x,y)");
-        return done(Prim.lt, ap);
+      if ((ap = a.isPrim(Prim.sgt)) != null) { //  sgt --> sle
+        MILProgram.report("replaced bnot(sgt(x,y)) with sle(x,y)");
+        return done(Prim.sle, ap);
+      }
+      if ((ap = a.isPrim(Prim.ult)) != null) { //  ult --> uge
+        MILProgram.report("replaced bnot(ult(x,y)) with uge(x,y)");
+        return done(Prim.uge, ap);
+      }
+      if ((ap = a.isPrim(Prim.uge)) != null) { //  uge --> ult
+        MILProgram.report("replaced bnot(uge(x,y)) with ult(x,y)");
+        return done(Prim.ult, ap);
+      }
+      if ((ap = a.isPrim(Prim.ule)) != null) { //  ule --> ugt
+        MILProgram.report("replaced bnot(ule(x,y)) with ugt(x,y)");
+        return done(Prim.ugt, ap);
+      }
+      if ((ap = a.isPrim(Prim.ugt)) != null) { //  ugt --> ule
+        MILProgram.report("replaced bnot(ugt(x,y)) with ule(x,y)");
+        return done(Prim.ule, ap);
       }
     }
     return null;
