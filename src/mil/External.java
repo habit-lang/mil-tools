@@ -341,18 +341,96 @@ public class External extends TopDefn {
                 code = new Bind(v, Prim.neg.withArgs(vs[n] = new Temp()), code);
               }
 
-              // Package up code in a block:
-              Block b = new Block(pos, vs, code);
-
-              // Define a closure for the function:
-              ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, ws, new BlockCall(b).withArgs(ws));
-              return new ClosAlloc(k).withArgs(Atom.noAtoms);
+              return new BlockCall(new Block(pos, vs, code)) // b[v0,...] = ...
+                  .makeClosure(pos, 0, vs.length) // k{} [v0,...] = b[v0,...]
+                  .withArgs(Atom.noAtoms); // return k{}
             }
             return null; // TODO: generate error message?  throw exception?
           }
         });
+  }
 
-    // ...
+  /**
+   * A general method for generating implementations for BITWISE binary operations (and, or, xor)
+   * where no special masking is required on the most significant word.
+   */
+  static void genBitwiseBinOp(final String ref, final PrimBinOp p) {
+    // primBitRef w :: Bit w -> Bit w -> Bit w
+    generators.put(
+        ref,
+        new ExternalGenerator(1) {
+          Tail generate(Position pos, String ref, Type[] ts) {
+            BigInteger w = ts[0].getNat(); // Width of bit vector
+            if (w != null) {
+              int width = w.intValue();
+              int n = Type.numWords(width);
+
+              // Block: b[a0,...b0,...] = c0 <- p((a0,b0)); ...; return [c0,...]
+              Temp[] as = Temp.makeTemps(n); // inputs
+              Temp[] bs = Temp.makeTemps(n);
+              Temp[] cs = Temp.makeTemps(n); // output
+              Code code = new Done(new Return(cs));
+              for (int i = n; 0 < i--; ) {
+                code = new Bind(cs[i], p.withArgs(as[i], bs[i]), code);
+              }
+              return new BlockCall(new Block(pos, Temp.append(as, bs), code))
+                  .makeClosure(pos, n, n) // Closure: k0{a0,...} [b0,...] = b[a0,...,b0,...]
+                  .makeClosure(pos, 0, n) // Closure: k1{} [a0,...] = k0{a0,...}
+                  .withArgs(Atom.noAtoms);
+            }
+            return null; // TODO: generate error message?  throw exception?
+          }
+        });
+  }
+
+  static {
+    genBitwiseBinOp("primBitAnd", Prim.and);
+    genBitwiseBinOp("primBitOr", Prim.or);
+    genBitwiseBinOp("primBitXor", Prim.xor);
+  }
+
+  /**
+   * A general method for generating implementations for ARITHMETIC binary operations (add, sub,
+   * mul), where masking of the most significant word may be required to match the requested length.
+   * TODO: For the time being, these implementations only work for widths <= Type.WORDSIZE. We will
+   * not be able to handle cases that require multiple words using a single function like this.
+   */
+  static void genArithBinOp(final String ref, final PrimBinOp p) {
+    // primBitRef w :: Bit w -> Bit w -> Bit w
+    generators.put(
+        ref,
+        new ExternalGenerator(1) {
+          Tail generate(Position pos, String ref, Type[] ts) {
+            BigInteger w = ts[0].getNat(); // Width of bit vector
+            if (w != null) {
+              int width = w.intValue();
+              int n = Type.numWords(width);
+              if (n == 1) {
+                Temp[] args = Temp.makeTemps(2);
+                Tail op = p.withArgs(args);
+                int rem = width % Type.WORDSIZE; // Determine whether masking is required
+                Code code;
+                if (rem == 0) {
+                  code = new Done(op);
+                } else {
+                  Temp c = new Temp();
+                  code = new Bind(c, op, new Done(Prim.and.withArgs(c, (1 << rem) - 1)));
+                }
+                return new BlockCall(new Block(pos, args, code))
+                    .makeClosure(pos, 1, 1) // Closure: k0{a} [b] = b[a,b]
+                    .makeClosure(pos, 0, 1) // Closure: k1{} [a] = k0{a}
+                    .withArgs(Atom.noAtoms);
+              }
+            }
+            return null; // TODO: generate error message?  throw exception?
+          }
+        });
+  }
+
+  static {
+    genArithBinOp("primBitPlus", Prim.add);
+    genArithBinOp("primBitMinus", Prim.sub);
+    genArithBinOp("primBitTimes", Prim.mul);
   }
 
   /** Rewrite the components of this definition to account for changes in representation. */

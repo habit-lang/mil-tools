@@ -503,6 +503,18 @@ public abstract class Call extends Tail {
   /** Generate a specialized version of this Call. */
   abstract Call specializeCall(MILSpec spec, TVarSubst s, SpecEnv env);
 
+  /**
+   * Wrap this Call in a closure definition that assumes m stored arguments and n new arguments
+   * (with the assumption that this call requires (m+n) arguments), returning a new Call for the
+   * ClosureDefn (without a specified list of arguments) as the result.
+   */
+  Call makeClosure(Position pos, int m, int n) {
+    Temp[] stored = Temp.makeTemps(m);
+    Temp[] args = Temp.makeTemps(n);
+    return new ClosAlloc(
+        new ClosureDefn(pos, stored, args, this.withArgs(Temp.append(stored, args))));
+  }
+
   Tail repTransform(RepTypeSet set, RepEnv env) {
     return callDup(Atom.repArgs(set, env, args));
   }
