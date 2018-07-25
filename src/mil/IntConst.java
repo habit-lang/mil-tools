@@ -103,10 +103,16 @@ public class IntConst extends Const {
    * Construct an array of IntConsts that represents the least significant n words, from least to
    * highest, of the specified BigInteger.
    */
-  public static IntConst[] words(BigInteger v, int n) {
-    IntConst[] as = new IntConst[n];
-    for (int i = 0; i < n; v = v.shiftRight(Type.WORDSIZE)) {
-      as[i++] = new IntConst(v.intValue());
+  public static IntConst[] words(BigInteger v, int w) {
+    IntConst[] as = new IntConst[Type.numWords(w)];
+    int i = 0; // index into array as (least significant word first)
+    while (w > 0) { // while there are still bits to write
+      int bits = v.intValue(); // get least significant bits
+      if ((w -= Type.WORDSIZE) < 0) { // truncate if necessary
+        bits &= (1 << (Type.WORDSIZE + w)) - 1;
+      }
+      as[i++] = new IntConst(bits); // save word value
+      v = v.shiftRight(Type.WORDSIZE); // discard least significant bits
     }
     return as;
   }

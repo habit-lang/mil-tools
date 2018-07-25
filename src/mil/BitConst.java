@@ -101,7 +101,7 @@ public class BitConst extends Const {
   }
 
   Atom[] repArg(RepTypeSet set, RepEnv env) {
-    return IntConst.words(val, Type.numWords(width));
+    return IntConst.words(val, width);
   }
 
   /** Calculate an LLVM Value corresponding to a given MIL argument. */
