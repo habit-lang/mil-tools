@@ -392,8 +392,9 @@ public class External extends TopDefn {
   /**
    * A general method for generating implementations for ARITHMETIC binary operations (add, sub,
    * mul), where masking of the most significant word may be required to match the requested length.
-   * TODO: For the time being, these implementations only work for widths <= Type.WORDSIZE. We will
-   * not be able to handle cases that require multiple words using a single function like this.
+   * TODO: For the time being, these implementations only work for 0 < width <= Type.WORDSIZE. The
+   * algorithms for these operations on multi-word values are more complex and more varied, so they
+   * will require a more sophisticated approach.
    */
   static void genArithBinOp(final String ref, final PrimBinOp p) {
     // primBitRef w :: Bit w -> Bit w -> Bit w
@@ -431,6 +432,42 @@ public class External extends TopDefn {
     genArithBinOp("primBitPlus", Prim.add);
     genArithBinOp("primBitMinus", Prim.sub);
     genArithBinOp("primBitTimes", Prim.mul);
+  }
+
+  /**
+   * A general method for generating implementations for RELATIONAL comparisons on Bit vector
+   * values. TODO: This generator only produces code for bit vectors that require a single word
+   * representation (so no support for Bit 0 or for Bit w if w > WORDSIZE).
+   */
+  static void genRelBinOp(final String ref, final PrimRelOp p) {
+    // primBitRef w :: Bit w -> Bit w -> Flag
+    generators.put(
+        ref,
+        new ExternalGenerator(1) {
+          Tail generate(Position pos, String ref, Type[] ts) {
+            BigInteger w = ts[0].getNat(); // Width of bit vector
+            if (w != null) {
+              int width = w.intValue();
+              int n = Type.numWords(width);
+              if (n == 1) {
+                return new PrimCall(p)
+                    .makeClosure(pos, 1, 1) // Closure: k0{a} [b] = p((a,b))
+                    .makeClosure(pos, 0, 1) // Closure: k1{} [a] = k0{a}
+                    .withArgs(Atom.noAtoms);
+              }
+            }
+            return null; // TODO: generate error message?  throw exception?
+          }
+        });
+  }
+
+  static {
+    genRelBinOp("primBitEq", Prim.eq);
+    genRelBinOp("primBitNe", Prim.neq);
+    genRelBinOp("primBitGt", Prim.ugt);
+    genRelBinOp("primBitGe", Prim.uge);
+    genRelBinOp("primBitLt", Prim.ult);
+    genRelBinOp("primBitLe", Prim.ule);
   }
 
   /** Rewrite the components of this definition to account for changes in representation. */
