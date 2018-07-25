@@ -522,7 +522,7 @@ public class Prim {
   private static class slt extends PrimRelOp {
 
     private slt() {
-      super("primLt", 2, 1, PURE, relopType);
+      super("primSlt", 2, 1, PURE, relopType);
     }
 
     public boolean op(int n, int m) {
@@ -543,7 +543,7 @@ public class Prim {
   private static class sle extends PrimRelOp {
 
     private sle() {
-      super("primLte", 2, 1, PURE, relopType);
+      super("primSle", 2, 1, PURE, relopType);
     }
 
     public boolean op(int n, int m) {
@@ -564,7 +564,7 @@ public class Prim {
   private static class sgt extends PrimRelOp {
 
     private sgt() {
-      super("primGt", 2, 1, PURE, relopType);
+      super("primSgt", 2, 1, PURE, relopType);
     }
 
     public boolean op(int n, int m) {
@@ -585,7 +585,7 @@ public class Prim {
   private static class sge extends PrimRelOp {
 
     private sge() {
-      super("primGte", 2, 1, PURE, relopType);
+      super("primSge", 2, 1, PURE, relopType);
     }
 
     public boolean op(int n, int m) {
