@@ -19,16 +19,19 @@
 package llvm;
 
 
-/** Integer greater than or equal test. */
-public class Gte extends CmpOp {
+/** Integer comparison. */
+public class ICmp extends CmpOp {
+
+  private String cond;
 
   /** Default constructor. */
-  public Gte(Type ty, Value l, Value r) {
+  public ICmp(Type ty, Value l, Value r, String cond) {
     super(ty, l, r);
+    this.cond = cond;
   }
 
   /** Append a printable string for this instruction to the specified buffer. */
   public void append(StringBuilder buf) {
-    append(buf, "icmp sge");
+    append(buf, "icmp " + cond);
   }
 }

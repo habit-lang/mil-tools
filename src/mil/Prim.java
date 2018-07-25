@@ -492,7 +492,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.Eql(ty, l, r);
+      return new llvm.ICmp(ty, l, r, "eq");
     }
   }
 
@@ -513,7 +513,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.Neq(ty, l, r);
+      return new llvm.ICmp(ty, l, r, "ne");
     }
   }
 
@@ -534,7 +534,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.Lt(ty, l, r);
+      return new llvm.ICmp(ty, l, r, "slt");
     }
   }
 
@@ -555,7 +555,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.Lte(ty, l, r);
+      return new llvm.ICmp(ty, l, r, "sle");
     }
   }
 
@@ -576,7 +576,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.Gt(ty, l, r);
+      return new llvm.ICmp(ty, l, r, "sgt");
     }
   }
 
@@ -597,7 +597,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.Gte(ty, l, r);
+      return new llvm.ICmp(ty, l, r, "sge");
     }
   }
 
