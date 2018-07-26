@@ -521,6 +521,125 @@ public class External extends TopDefn {
     genRelBinOp("primBitLe", Prim.ule);
   }
 
+  static {
+
+    // primBitShiftRu w :: Bit w -> Ix w -> Bit w
+    generators.put(
+        "primBitShiftRu",
+        new ExternalGenerator(1) {
+          Tail generate(Position pos, String ref, Type[] ts) {
+            BigInteger w = ts[0].getNat(); // Width of bit vector
+            if (w != null) {
+              int width = w.intValue(); // TODO: what if w is too big for an int?
+              int n = Type.numWords(width);
+              if (n > 0) { // Do not handle Bit 0 (or invalid negative widths)
+                return new BlockCall(shiftRightBlock(pos, n, 0, n - 1))
+                    .makeClosure(pos, n, 1) // Closure: k0{v0,...} s = b[v0,...,s]
+                    .makeClosure(pos, 0, n) // Closure: k1{} [v0,...] = k0{v0,...}
+                    .withArgs(Atom.noAtoms);
+              }
+            }
+            return null; // TODO: generate error message?  throw exception?
+          }
+        });
+  }
+
+  private static Block shiftRightBlock(Position pos, int n, int lo, int hi) {
+    // invariant:  0 <= lo <= hi < n
+    if (hi > lo) {
+      int mid = 1 + ((lo + hi) / 2);
+      Temp[] vs = Temp.makeTemps(n + 1); // [v0,...,shift]
+      Temp v = new Temp();
+      return new Block(
+          pos,
+          vs,
+          new Bind(
+              v,
+              Prim.ult.withArgs(vs[n], mid * Type.WORDSIZE),
+              new If(
+                  v,
+                  new BlockCall(shiftRightBlock(pos, n, lo, mid - 1), vs),
+                  new BlockCall(shiftRightBlock(pos, n, mid, hi), vs))));
+    } else if (lo + 1 == n) {
+      return shiftRightOffsetBlock(pos, n, lo);
+    } else {
+      Temp[] vs = Temp.makeTemps(n + 1);
+      Temp v = new Temp();
+      return new Block(
+          pos,
+          vs,
+          new Bind(
+              v,
+              Prim.eq.withArgs(vs[n], lo * Type.WORDSIZE),
+              new If(
+                  v,
+                  new BlockCall(shiftRightMultipleBlock(pos, n, lo), vs),
+                  new BlockCall(shiftRightOffsetBlock(pos, n, lo), vs))));
+    }
+  }
+
+  /**
+   * Build a block to handle the case in a shift right where the shift is a multiple of the
+   * WORDSIZE.
+   */
+  private static Block shiftRightMultipleBlock(Position pos, int n, int lo) {
+    Temp[] vs = Temp.makeTemps(n + 1); // args
+    Atom[] as = new Atom[n];
+    int i = 0;
+    for (; i + lo < n; i++) {
+      as[i] = vs[i + lo];
+    }
+    for (; i < n; i++) {
+      as[i] = IntConst.Zero;
+    }
+    return new Block(pos, vs, new Done(new Return(as)));
+  }
+
+  /**
+   * Build a block to handle the case in a shift right where the shift is offset, NOT a multiple of
+   * the WORDSIZE. Also provides code for the case of a large shift that reaches in to the most
+   * significant word.
+   */
+  private static Block shiftRightOffsetBlock(Position pos, int n, int lo) {
+    Temp[] vs = Temp.makeTemps(n + 1); // args
+    Atom[] as = new Atom[n];
+    Temp offs = new Temp(); // holds offset within word
+    Temp comp = new Temp(); // holds complement of offset (comp + offs == WORDSIZE)
+    Code code = new Done(new Return(as));
+    int i = 0;
+    // Set words that blend data from two sources:
+    for (; i + lo < n - 1; i++) {
+      Temp p = new Temp();
+      Temp q = new Temp();
+      Temp r = new Temp();
+      code =
+          new Bind(
+              p,
+              Prim.shl.withArgs(vs[i + lo + 1], comp),
+              new Bind(
+                  q,
+                  Prim.lshr.withArgs(vs[i + lo], offs),
+                  new Bind(r, Prim.or.withArgs(p, q), code)));
+      as[i] = r;
+    }
+    // Set most significant non-zero word:
+    Temp r = new Temp();
+    code = new Bind(r, Prim.lshr.withArgs(vs[n - 1], offs), code);
+    as[i++] = r;
+
+    // Zero any remaining parts of result:
+    for (; i < n; i++) {
+      as[i] = IntConst.Zero;
+    }
+    return new Block(
+        pos,
+        vs,
+        new Bind(
+            offs,
+            Prim.sub.withArgs(vs[n], lo * Type.WORDSIZE),
+            new Bind(comp, Prim.sub.withArgs(Type.WORDSIZE, offs), code)));
+  }
+
   /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {
     /* Processing of External definitions was completed during the first pass. */
