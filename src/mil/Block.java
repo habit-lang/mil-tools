@@ -19,6 +19,7 @@
 package mil;
 
 import compiler.*;
+import compiler.BuiltinPosition;
 import compiler.Failure;
 import compiler.Handler;
 import compiler.Position;
@@ -977,6 +978,19 @@ public class Block extends Defn {
     params = Temp.repParams(params, npss);
     code = code.repTransform(set, env);
     declared = declared.canonBlockType(set);
+  }
+
+  public static Block returnTrue = atomBlock("returnTrue", FlagConst.True);
+
+  public static Block returnFalse = atomBlock("returnFalse", FlagConst.False);
+
+  /**
+   * Make a block of the following form that immediately returns the atom a, which could be an
+   * IntConst or a Top, but not a Temp (because that would be out of scope). b :: [] >>= [t] b[] =
+   * return a
+   */
+  public static Block atomBlock(String name, Atom a) {
+    return new Block(BuiltinPosition.position, name, Temp.noTemps, new Done(new Return(a)));
   }
 
   /**

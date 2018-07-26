@@ -275,7 +275,7 @@ public class BitdataLayout extends DataName {
       int n = Type.numWords(total); // number of words in output
       Atom[] mask = IntConst.words(maskNat, total);
       Atom[] bits = IntConst.words(bitsNat, total);
-      maskTestBlock = eq ? bfalse : btrue; // base case, if no data to compare
+      maskTestBlock = eq ? Block.returnFalse : Block.returnTrue; // base case, if no data to compare
 
       for (int i = 1; i <= n; i++) {
         Temp[] vs = Temp.makeTemps(i); // i parameters
@@ -302,29 +302,16 @@ public class BitdataLayout extends DataName {
                   new If(
                       t,
                       new BlockCall(maskTestBlock, Temp.tail(vs)),
-                      new BlockCall(eq ? btrue : bfalse, Atom.noAtoms)));
+                      new BlockCall(eq ? Block.returnTrue : Block.returnFalse, Atom.noAtoms)));
         }
         maskTestBlock = new Block(cf.getPos(), vs, c);
       }
     }
   }
 
-  public static Block btrue = atomBlock("btrue", FlagConst.True);
-
-  public static Block bfalse = atomBlock("bfalse", FlagConst.False);
-
   public static Block bmaskeq = masktestBlock("bmaskeq", Prim.eq);
 
   public static Block bmaskneq = masktestBlock("bmaskneq", Prim.neq);
-
-  /**
-   * Make a block of the following form that immediately returns the atom a, which could be an
-   * IntConst or a Top, but not a Temp (because that would be out of scope). b :: [] >>= [t] b[] =
-   * return a
-   */
-  static Block atomBlock(String name, Atom a) {
-    return new Block(BuiltinPosition.position, name, Temp.noTemps, new Done(new Return(a)));
-  }
 
   /**
    * Make a block of the following form for implementing a single word masktest predicate with mask
