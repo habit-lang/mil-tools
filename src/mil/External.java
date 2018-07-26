@@ -366,6 +366,37 @@ public class External extends TopDefn {
           }
         });
 
+    // primModIx m w :: Bit w -> Ix m
+    generators.put(
+        "primIxToBits",
+        new ExternalGenerator(2) {
+          Tail generate(Position pos, String ref, Type[] ts) {
+            BigInteger m = ts[0].getNat(); // Modulus for index type
+            BigInteger w = ts[1].getNat(); // Width of bitdata type
+            if (m != null && w != null) {
+              int mod = m.intValue();
+              int width = w.intValue();
+              int n = Type.numWords(width);
+              // TODO: try to relax following restrictions on mod and width / n:
+              if (n > 0 && mod > 0) {
+                if ((mod & (mod - 1)) == 0) { // Test for power of two
+                  Temp[] args = Temp.makeTemps(n);
+                  Tail t = Prim.and.withArgs(args[0], mod - 1);
+                  return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t))
+                      .withArgs(Atom.noAtoms);
+                }
+                if (n == 1) {
+                  Temp[] args = Temp.makeTemps(n);
+                  Tail t = Prim.rem.withArgs(args[0], mod);
+                  return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t))
+                      .withArgs(Atom.noAtoms);
+                }
+              }
+            }
+            return null; // TODO: generate error message?  throw exception?
+          }
+        });
+
     // primBitNot w :: Bit w -> Bit w
     generators.put(
         "primBitNot",
