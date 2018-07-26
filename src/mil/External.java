@@ -382,15 +382,7 @@ public class External extends TopDefn {
               int n = Type.numWords(width);
               if (n == 1) {
                 Temp[] args = Temp.makeTemps(1);
-                Tail op = Prim.neg.withArgs(args);
-                int rem = width % Type.WORDSIZE; // Determine whether masking is required
-                Code code;
-                if (rem == 0) {
-                  code = new Done(op);
-                } else {
-                  Temp c = new Temp();
-                  code = new Bind(c, op, new Done(Prim.and.withArgs(c, (1 << rem) - 1)));
-                }
+                Code code = maskTail(Prim.neg.withArgs(args), width);
                 return new BlockCall(new Block(pos, args, code))
                     .makeClosure(pos, 0, 1) // Closure: k1{} [a] = b[a]
                     .withArgs(Atom.noAtoms);
@@ -399,6 +391,16 @@ public class External extends TopDefn {
             return null; // TODO: generate error message?  throw exception?
           }
         });
+  }
+
+  private static Code maskTail(Tail t, int width) {
+    int rem = width % Type.WORDSIZE; // Determine whether masking is required
+    if (rem == 0) {
+      return new Done(t);
+    } else {
+      Temp c = new Temp();
+      return new Bind(c, t, new Done(Prim.and.withArgs(c, (1 << rem) - 1)));
+    }
   }
 
   /**
@@ -459,15 +461,7 @@ public class External extends TopDefn {
               int n = Type.numWords(width);
               if (n == 1) {
                 Temp[] args = Temp.makeTemps(2);
-                Tail op = p.withArgs(args);
-                int rem = width % Type.WORDSIZE; // Determine whether masking is required
-                Code code;
-                if (rem == 0) {
-                  code = new Done(op);
-                } else {
-                  Temp c = new Temp();
-                  code = new Bind(c, op, new Done(Prim.and.withArgs(c, (1 << rem) - 1)));
-                }
+                Code code = maskTail(p.withArgs(args), width);
                 return new BlockCall(new Block(pos, args, code))
                     .makeClosure(pos, 1, 1) // Closure: k0{a} [b] = b[a,b]
                     .makeClosure(pos, 0, 1) // Closure: k1{} [a] = k0{a}
@@ -522,6 +516,28 @@ public class External extends TopDefn {
   }
 
   static {
+
+    // primBitShiftL w :: Bit w -> Ix w -> Bit w
+    generators.put(
+        "primBitShiftL",
+        new ExternalGenerator(1) {
+          Tail generate(Position pos, String ref, Type[] ts) {
+            BigInteger w = ts[0].getNat(); // Width of bit vector
+            if (w != null) {
+              int width = w.intValue(); // TODO: what if w is too big for an int?
+              int n = Type.numWords(width);
+              if (n == 1) { // Do not handle Bit 0 (or invalid negative widths)
+                Temp[] args = Temp.makeTemps(2);
+                Code code = maskTail(Prim.shl.withArgs(args), width);
+                return new BlockCall(new Block(pos, args, code))
+                    .makeClosure(pos, 1, 1) // Closure: k0{a} [b] = b[a,b]
+                    .makeClosure(pos, 0, 1) // Closure: k1{} [a] = k0{a}
+                    .withArgs(Atom.noAtoms);
+              }
+            }
+            return null; // TODO: generate error message?  throw exception?
+          }
+        });
 
     // primBitShiftRu w :: Bit w -> Ix w -> Bit w
     generators.put(
