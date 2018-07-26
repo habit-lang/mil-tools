@@ -304,12 +304,34 @@ public class External extends TopDefn {
         "primBitFromLiteral",
         new ExternalGenerator(2) {
           Tail generate(Position pos, String ref, Type[] ts) {
+            //  TODO: values returned by these getNat() calls should be representable with a single
+            // int (no overflow)
             BigInteger v = ts[0].getNat(); // Value of literal
             BigInteger w = ts[1].getNat(); // Width of bit vector
             if (v != null && w != null) {
               Tail t = new Return(IntConst.words(v, w.intValue()));
               ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.noTemps, t);
               return new ClosAlloc(k).withArgs(Atom.noAtoms);
+            }
+            return null; // TODO: generate error message?  throw exception?
+          }
+        });
+
+    // primIxFromLiteral v m :: Proxy -> Ix m
+    generators.put(
+        "primIxFromLiteral",
+        new ExternalGenerator(2) {
+          Tail generate(Position pos, String ref, Type[] ts) {
+            BigInteger v = ts[0].getNat(); // Value of literal
+            BigInteger m = ts[1].getNat(); // Modulus for index type
+            if (v != null && m != null) {
+              int iv = v.intValue(); // TODO: what if v or m are too big for an int?
+              int im = m.intValue();
+              if (im > 0 && iv < im) { // attempt to validate arguments
+                Tail t = new Return(new IntConst(iv));
+                ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.noTemps, t);
+                return new ClosAlloc(k).withArgs(Atom.noAtoms);
+              }
             }
             return null; // TODO: generate error message?  throw exception?
           }
