@@ -434,7 +434,7 @@ public class Prim {
   private static class div extends Prim {
 
     private div() {
-      super("div", 2, 1, PURE, binaryWordType);
+      super("div", 2, 1, IMPURE, binaryWordType);
     }
 
     void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
@@ -471,7 +471,53 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.UDiv(ty, l, r);
+      return new llvm.SDiv(ty, l, r);
+    }
+  }
+
+  public static final Prim rem = new rem();
+
+  private static class rem extends Prim {
+
+    private rem() {
+      super("rem", 2, 1, IMPURE, binaryWordType);
+    }
+
+    void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
+      int n = stack[fp].getInt();
+      int d = stack[fp + 1].getInt();
+      if (d == 0) {
+        throw new Failure("divide by zero error (for mod)");
+      }
+      stack[fp] = new IntValue(n % d);
+    }
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is not expected to produce any results, but execution is expected to continue with
+     * the given code.
+     */
+    llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
+      debug.Internal.error(id + " is not a void primitive");
+      return c;
+    }
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is expected to return a result (that should be captured in the specified lhs), and
+     * then execution is expected to continue on to the specified code, c.
+     */
+    llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
+      return new llvm.Op(
+          lhs, this.op(llvm.Type.i32, args[0].toLLVM(tm, vm, s), args[1].toLLVM(tm, vm, s)), c);
+    }
+
+    /**
+     * Generate an LLVM right hand side for this binary MIL primitive with the given values as
+     * input.
+     */
+    llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
+      return new llvm.SRem(ty, l, r);
     }
   }
 
