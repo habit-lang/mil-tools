@@ -315,9 +315,9 @@ public class External extends TopDefn {
           }
         });
 
-    // primBitNegate w :: Bit w -> Bit w
+    // primBitNot w :: Bit w -> Bit w
     generators.put(
-        "primBitNegate",
+        "primBitNot",
         new ExternalGenerator(1) {
           Tail generate(Position pos, String ref, Type[] ts) {
             BigInteger w = ts[0].getNat(); // Width of bit vector
@@ -335,15 +335,44 @@ public class External extends TopDefn {
                 code = new Bind(v, Prim.xor.withArgs(vs[n] = new Temp(), (1 << rem) - 1), code);
               }
 
-              // Use Prim.neg on any remaining words:
+              // Use Prim.not on any remaining words:
               while (n > 0) {
                 Temp v = vs[--n];
-                code = new Bind(v, Prim.neg.withArgs(vs[n] = new Temp()), code);
+                code = new Bind(v, Prim.not.withArgs(vs[n] = new Temp()), code);
               }
 
               return new BlockCall(new Block(pos, vs, code)) // b[v0,...] = ...
                   .makeClosure(pos, 0, vs.length) // k{} [v0,...] = b[v0,...]
                   .withArgs(Atom.noAtoms); // return k{}
+            }
+            return null; // TODO: generate error message?  throw exception?
+          }
+        });
+
+    // primBitNegate w :: Bit w -> Bit w
+    generators.put(
+        "primBitNegate",
+        new ExternalGenerator(1) {
+          Tail generate(Position pos, String ref, Type[] ts) {
+            BigInteger w = ts[0].getNat(); // Width of bit vector
+            if (w != null) {
+              int width = w.intValue();
+              int n = Type.numWords(width);
+              if (n == 1) {
+                Temp[] args = Temp.makeTemps(1);
+                Tail op = Prim.neg.withArgs(args);
+                int rem = width % Type.WORDSIZE; // Determine whether masking is required
+                Code code;
+                if (rem == 0) {
+                  code = new Done(op);
+                } else {
+                  Temp c = new Temp();
+                  code = new Bind(c, op, new Done(Prim.and.withArgs(c, (1 << rem) - 1)));
+                }
+                return new BlockCall(new Block(pos, args, code))
+                    .makeClosure(pos, 0, 1) // Closure: k1{} [a] = b[a]
+                    .withArgs(Atom.noAtoms);
+              }
             }
             return null; // TODO: generate error message?  throw exception?
           }
