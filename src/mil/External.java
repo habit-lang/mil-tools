@@ -299,6 +299,22 @@ public class External extends TopDefn {
 
   static {
 
+    // TODO: this is a temporary placeholder that should be removed ...
+    // putchar :: Word -> Proc Word
+    generators.put(
+        "putchar",
+        new ExternalGenerator(0) {
+          Tail generate(Position pos, Type[] ts) {
+            // Declare a new primitive
+            Type wordTuple = Type.tuple(DataName.word.asType());
+            Prim p = new Prim("putchar", 1, 1, Prim.IMPURE, new BlockType(wordTuple, wordTuple));
+            return new PrimCall(p)
+                .makeClosure(pos, 1, 0) // k0{w} [] = putchar((w))
+                .makeClosure(pos, 0, 1) // k1{} [w] = k0{w}
+                .withArgs(Atom.noAtoms);
+          }
+        });
+
     // primBitFromLiteral v w ... :: Proxy -> Bit w
     generators.put(
         "primBitFromLiteral",
