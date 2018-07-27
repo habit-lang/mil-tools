@@ -93,7 +93,7 @@ class BitdataConDefn extends Name {
       next = regexps[i].collectFields(fields, next);
     }
 
-    layout = new BitdataLayout(pos, bn + "." + id, bn, tagbits, fields, pat);
+    layout = new BitdataLayout(pos, id, bn, tagbits, fields, pat);
     return pat;
   }
 

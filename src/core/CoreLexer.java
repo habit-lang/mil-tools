@@ -35,6 +35,7 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
     reserved.put("=", new Integer(EQ));
     reserved.put("::", new Integer(COCO));
     reserved.put("|", new Integer(BAR));
+    reserved.put(".", new Integer(DOT));
     reserved.put("<-", new Integer(FROM));
     reserved.put("->", new Integer(TO));
     reserved.put("require", new Integer(REQUIRE));
@@ -99,6 +100,8 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
         return "\"::\"";
       case BAR:
         return "\"|\" symbol";
+      case DOT:
+        return ". (dot operator)";
       case FROM:
         return "\"<-\" symbol";
       case TO:

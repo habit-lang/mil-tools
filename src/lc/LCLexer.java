@@ -27,7 +27,6 @@ public class LCLexer extends LayoutLexer implements LCTokens {
 
   public LCLexer(Handler handler, boolean optional, Source source) {
     super(handler, optional, source);
-    reserved.put(".", new Integer(DOT));
     reserved.put("do", new Integer(DO));
     reserved.put("\\", new Integer(LAMBDA));
     nextToken(); // Start the token stream
@@ -36,8 +35,6 @@ public class LCLexer extends LayoutLexer implements LCTokens {
   /** Return a printable representation of a token. */
   public String describeToken(int token, String lexeme) {
     switch (token) {
-      case DOT:
-        return ". (dot operator)";
       case DO:
         return "\"do\" keyword";
       case LAMBDA:

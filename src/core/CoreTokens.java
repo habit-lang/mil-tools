@@ -61,39 +61,41 @@ public interface CoreTokens {
 
   int BAR = 26;
 
-  int FROM = 27;
+  int DOT = 27;
 
-  int TO = 28;
+  int FROM = 28;
 
-  int REQUIRE = 29;
+  int TO = 29;
 
-  int EXPORT = 30;
+  int REQUIRE = 30;
 
-  int ENTRYPOINT = 31;
+  int EXPORT = 31;
 
-  int EXTERNAL = 32;
+  int ENTRYPOINT = 32;
 
-  int DATA = 33;
+  int EXTERNAL = 33;
 
-  int TYPE = 34;
+  int DATA = 34;
 
-  int AREA = 35;
+  int TYPE = 35;
 
-  int STRUCT = 36;
+  int AREA = 36;
 
-  int BITDATA = 37;
+  int STRUCT = 37;
 
-  int CASE = 38;
+  int BITDATA = 38;
 
-  int OF = 39;
+  int CASE = 39;
 
-  int IF = 40;
+  int OF = 40;
 
-  int THEN = 41;
+  int IF = 41;
 
-  int ELSE = 42;
+  int THEN = 42;
 
-  int LET = 43;
+  int ELSE = 43;
 
-  int IN = 44;
+  int LET = 44;
+
+  int IN = 45;
 }

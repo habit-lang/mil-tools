@@ -73,6 +73,16 @@ public class BitdataLayout extends DataName {
     this(pos, id, KAtom.STAR, 0, bn, tagbits, fields, pat);
   }
 
+  void write(TypeWriter tw, int prec, int args) {
+    if (args == 0) {
+      bn.write(tw, prec, 0);
+      tw.write(".");
+      tw.write(id);
+    } else {
+      applic(tw, prec, args, 0);
+    }
+  }
+
   public int getWidth() {
     return pat.getWidth();
   }

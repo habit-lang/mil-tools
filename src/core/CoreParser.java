@@ -218,11 +218,26 @@ public class CoreParser extends Phase implements CoreTokens {
    * returning null if no type atom can be found.
    */
   private TypeExp maybeTypeApExp() {
-    TypeExp t = maybeTypeAtomExp();
+    TypeExp t = maybeTypeSelExp();
     if (t != null) {
-      for (TypeExp a; (a = maybeTypeAtomExp()) != null; ) {
+      for (TypeExp a; (a = maybeTypeSelExp()) != null; ) {
         t = new ApTypeExp(t, a);
       }
+    }
+    return t;
+  }
+
+  /** Try to parse a type atom expression, optionally followed by selectors. */
+  private TypeExp maybeTypeSelExp() {
+    TypeExp t = maybeTypeAtomExp();
+    if (t != null && lexer.getToken() == DOT) {
+      do {
+        if (lexer.nextToken(/* DOT */ ) != CONID) {
+          report(new Failure(lexer.getPos(), "Missing selector name"));
+          break;
+        }
+        t = new SelTypeExp(lexer.getPos(), t, lexer.getLexeme());
+      } while (lexer.nextToken(/* CONID */ ) == DOT);
     }
     return t;
   }
