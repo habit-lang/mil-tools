@@ -19,7 +19,7 @@ source files!)
     llc -O2 -filetype=asm -march=x86 tmp/fib.ll
 
     # Build an executable that includes the generated code:
-    gcc -m32 -o tmp/fib -Wl,-no_pie demo/main.c tmp/fib.s
+    gcc -m32 -o tmp/fib -Wl,-no_pie demo/runtime.c tmp/fib.s
 
     # Run the generated executable:
     tmp/fib
