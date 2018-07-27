@@ -36,6 +36,6 @@ public class Alias extends Defn {
   }
 
   void print(PrintWriter out) {
-    out.println("@" + name + " = alias " + val);
+    out.println("@" + name + " = alias " + val.getType().ptsTo() + ", " + val);
   }
 }
