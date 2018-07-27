@@ -143,7 +143,7 @@ public class BitdataName extends DataName {
   }
 
   Tail repTransformSel(RepTypeSet set, RepEnv env, Cfun cf, int n, Atom a) {
-    return new Return(a.repArg(set, env));
+    return new Return(a.repAtom(set, env));
   }
 
   Code repTransformSel(RepTypeSet set, RepEnv env, Temp[] vs, Cfun cf, int n, Atom a, Code c) {

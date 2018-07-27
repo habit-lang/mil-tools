@@ -283,7 +283,7 @@ public class Alt {
     if (last <= 0) { // Didn't pass first alternative?
       return new Done(eb); // ... then just execute a direct jump
     } else {
-      Atom[] as = a.repArg(set, env); // Atoms corresponding to discriminant
+      Atom[] as = a.repAtom(set, env); // Atoms corresponding to discriminant
       Temps ts = eb.add(null); // Free Temps in eb
       for (; ; ) {
         Temp t = new Temp(); // flag to hold result of mask test call

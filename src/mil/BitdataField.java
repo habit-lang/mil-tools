@@ -72,7 +72,7 @@ public class BitdataField extends Name {
   }
 
   Tail repTransformSel(RepTypeSet set, RepEnv env, Atom a) {
-    return new BlockCall(selectorBlock, a.repArg(set, env));
+    return new BlockCall(selectorBlock, a.repAtom(set, env));
   }
 
   private static Code prim(Temp[] ws, int n, Prim p, Atom a, Code c) {

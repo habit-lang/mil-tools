@@ -415,6 +415,16 @@ public abstract class Atom {
   abstract Atom[] repArg(RepTypeSet set, RepEnv env);
 
   /**
+   * Representation transformation on a single Atom, always returns a non-null array as its result,
+   * even if there is no change of representation (in which case the result is just a singleton
+   * array that packages up the original Atom).
+   */
+  Atom[] repAtom(RepTypeSet set, RepEnv env) {
+    Atom[] as = repArg(set, env);
+    return (as == null) ? new Atom[] {this} : as;
+  }
+
+  /**
    * Calculate a static value for this atom, or else return null if the result must be calculated at
    * runtime.
    */
