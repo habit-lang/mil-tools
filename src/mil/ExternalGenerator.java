@@ -36,5 +36,5 @@ abstract class ExternalGenerator {
    * Generate a tail as the implementation of an external described by a reference and list of
    * types.
    */
-  abstract Tail generate(Position pos, String ref, Type[] ts);
+  abstract Tail generate(Position pos, Type[] ts);
 }

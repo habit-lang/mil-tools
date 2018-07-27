@@ -291,7 +291,7 @@ public class External extends TopDefn {
     if (ref != null && ts != null) { // Do not generate code if ref or ts is missing
       ExternalGenerator gen = generators.get(ref);
       if (gen != null && ts.length >= gen.needs) {
-        return gen.generate(pos, ref, ts);
+        return gen.generate(pos, ts);
       }
     }
     return null; // TODO: fix this!
@@ -303,7 +303,7 @@ public class External extends TopDefn {
     generators.put(
         "primBitFromLiteral",
         new ExternalGenerator(2) {
-          Tail generate(Position pos, String ref, Type[] ts) {
+          Tail generate(Position pos, Type[] ts) {
             //  TODO: values returned by these getNat() calls should be representable with a single
             // int (no overflow)
             BigInteger v = ts[0].getNat(); // Value of literal
@@ -313,7 +313,7 @@ public class External extends TopDefn {
               ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.noTemps, t);
               return new ClosAlloc(k).withArgs(Atom.noAtoms);
             }
-            return null; // TODO: generate error message?  throw exception?
+            return null;
           }
         });
 
@@ -321,7 +321,7 @@ public class External extends TopDefn {
     generators.put(
         "primIxFromLiteral",
         new ExternalGenerator(2) {
-          Tail generate(Position pos, String ref, Type[] ts) {
+          Tail generate(Position pos, Type[] ts) {
             BigInteger v = ts[0].getNat(); // Value of literal
             BigInteger m = ts[1].getNat(); // Modulus for index type
             if (v != null && m != null) {
@@ -333,7 +333,7 @@ public class External extends TopDefn {
                 return new ClosAlloc(k).withArgs(Atom.noAtoms);
               }
             }
-            return null; // TODO: generate error message?  throw exception?
+            return null;
           }
         });
 
@@ -341,7 +341,7 @@ public class External extends TopDefn {
     generators.put(
         "primIxToBits",
         new ExternalGenerator(2) {
-          Tail generate(Position pos, String ref, Type[] ts) {
+          Tail generate(Position pos, Type[] ts) {
             BigInteger m = ts[0].getNat(); // Modulus for index type
             BigInteger w = ts[1].getNat(); // Width of bitdata type
             if (m != null && w != null) {
@@ -362,7 +362,7 @@ public class External extends TopDefn {
                 return new ClosAlloc(k).withArgs(Atom.noAtoms);
               }
             }
-            return null; // TODO: generate error message?  throw exception?
+            return null;
           }
         });
 
@@ -370,7 +370,7 @@ public class External extends TopDefn {
     generators.put(
         "primIxToBits",
         new ExternalGenerator(2) {
-          Tail generate(Position pos, String ref, Type[] ts) {
+          Tail generate(Position pos, Type[] ts) {
             BigInteger m = ts[0].getNat(); // Modulus for index type
             BigInteger w = ts[1].getNat(); // Width of bitdata type
             if (m != null && w != null) {
@@ -393,7 +393,7 @@ public class External extends TopDefn {
                 }
               }
             }
-            return null; // TODO: generate error message?  throw exception?
+            return null;
           }
         });
 
@@ -401,7 +401,7 @@ public class External extends TopDefn {
     generators.put(
         "primBitNot",
         new ExternalGenerator(1) {
-          Tail generate(Position pos, String ref, Type[] ts) {
+          Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getNat(); // Width of bit vector
             if (w != null) {
               int width = w.intValue();
@@ -427,7 +427,7 @@ public class External extends TopDefn {
                   .makeClosure(pos, 0, vs.length) // k{} [v0,...] = b[v0,...]
                   .withArgs(Atom.noAtoms); // return k{}
             }
-            return null; // TODO: generate error message?  throw exception?
+            return null;
           }
         });
 
@@ -435,7 +435,7 @@ public class External extends TopDefn {
     generators.put(
         "primBitNegate",
         new ExternalGenerator(1) {
-          Tail generate(Position pos, String ref, Type[] ts) {
+          Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getNat(); // Width of bit vector
             if (w != null) {
               int width = w.intValue();
@@ -448,7 +448,7 @@ public class External extends TopDefn {
                     .withArgs(Atom.noAtoms);
               }
             }
-            return null; // TODO: generate error message?  throw exception?
+            return null;
           }
         });
   }
@@ -467,12 +467,12 @@ public class External extends TopDefn {
    * A general method for generating implementations for BITWISE binary operations (and, or, xor)
    * where no special masking is required on the most significant word.
    */
-  static void genBitwiseBinOp(final String ref, final PrimBinOp p) {
+  static void genBitwiseBinOp(String ref, final PrimBinOp p) {
     // primBitRef w :: Bit w -> Bit w -> Bit w
     generators.put(
         ref,
         new ExternalGenerator(1) {
-          Tail generate(Position pos, String ref, Type[] ts) {
+          Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getNat(); // Width of bit vector
             if (w != null) {
               int width = w.intValue();
@@ -491,7 +491,7 @@ public class External extends TopDefn {
                   .makeClosure(pos, 0, n) // Closure: k1{} [a0,...] = k0{a0,...}
                   .withArgs(Atom.noAtoms);
             }
-            return null; // TODO: generate error message?  throw exception?
+            return null;
           }
         });
   }
@@ -509,12 +509,12 @@ public class External extends TopDefn {
    * algorithms for these operations on multi-word values are more complex and more varied, so they
    * will require a more sophisticated approach.
    */
-  static void genArithBinOp(final String ref, final PrimBinOp p) {
+  static void genArithBinOp(String ref, final PrimBinOp p) {
     // primBitRef w :: Bit w -> Bit w -> Bit w
     generators.put(
         ref,
         new ExternalGenerator(1) {
-          Tail generate(Position pos, String ref, Type[] ts) {
+          Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getNat(); // Width of bit vector
             if (w != null) {
               int width = w.intValue();
@@ -528,7 +528,7 @@ public class External extends TopDefn {
                     .withArgs(Atom.noAtoms);
               }
             }
-            return null; // TODO: generate error message?  throw exception?
+            return null;
           }
         });
   }
@@ -547,12 +547,12 @@ public class External extends TopDefn {
    * word, and the result of the whole computation if all other parts were equal, is determined
    * using the specified test (Prim.eq for == or Prim.neq for /=).
    */
-  static void genEqBinOp(final String ref, final PrimRelOp test, final Block bearly) {
+  static void genEqBinOp(String ref, final PrimRelOp test, final Block bearly) {
     // primBitRef w :: Bit w -> Bit w -> Flag
     generators.put(
         ref,
         new ExternalGenerator(1) {
-          Tail generate(Position pos, String ref, Type[] ts) {
+          Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getNat(); // Width of bit vector
             if (w != null) {
               int width = w.intValue();
@@ -564,7 +564,7 @@ public class External extends TopDefn {
                     .withArgs(Atom.noAtoms);
               }
             }
-            return null; // TODO: generate error message?  throw exception?
+            return null;
           }
         });
   }
@@ -614,12 +614,12 @@ public class External extends TopDefn {
    * A general method for generating implementations for lexicographic orderings on Bit vector
    * values. TODO: Should we add support for Bit 0?
    */
-  static void genRelBinOp(final String ref, final PrimRelOp lsw, final PrimRelOp slsw) {
+  static void genRelBinOp(String ref, final PrimRelOp lsw, final PrimRelOp slsw) {
     // primBit... w ... :: Bit w -> Bit w -> Flag
     generators.put(
         ref,
         new ExternalGenerator(1) {
-          Tail generate(Position pos, String ref, Type[] ts) {
+          Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getNat(); // Width of bit vector
             if (w != null) {
               int width = w.intValue();
@@ -631,7 +631,7 @@ public class External extends TopDefn {
                     .withArgs(Atom.noAtoms);
               }
             }
-            return null; // TODO: generate error message?  throw exception?
+            return null;
           }
         });
   }
@@ -694,7 +694,7 @@ public class External extends TopDefn {
     generators.put(
         "primBitShiftL",
         new ExternalGenerator(1) {
-          Tail generate(Position pos, String ref, Type[] ts) {
+          Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getNat(); // Width of bit vector
             if (w != null) {
               int width = w.intValue(); // TODO: what if w is too big for an int?
@@ -708,7 +708,7 @@ public class External extends TopDefn {
                     .withArgs(Atom.noAtoms);
               }
             }
-            return null; // TODO: generate error message?  throw exception?
+            return null;
           }
         });
 
@@ -716,7 +716,7 @@ public class External extends TopDefn {
     generators.put(
         "primBitShiftRu",
         new ExternalGenerator(1) {
-          Tail generate(Position pos, String ref, Type[] ts) {
+          Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getNat(); // Width of bit vector
             if (w != null) {
               int width = w.intValue(); // TODO: what if w is too big for an int?
@@ -728,7 +728,7 @@ public class External extends TopDefn {
                     .withArgs(Atom.noAtoms);
               }
             }
-            return null; // TODO: generate error message?  throw exception?
+            return null;
           }
         });
   }
