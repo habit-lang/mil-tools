@@ -540,11 +540,14 @@ public class External extends TopDefn {
   }
 
   /**
-   * A general method for generating implementations for RELATIONAL comparisons on Bit vector
-   * values. TODO: This generator only produces code for bit vectors that require a single word
-   * representation (so no support for Bit 0 or for Bit w if w > WORDSIZE).
+   * A general method for generating implementations for EQUALITY comparisons on Bit vector values
+   * (with at least one word representations ... no support for Bit 0). All but the least
+   * significant words are compared using Prim.eq, branching to Block bearly if the equality test
+   * fails (so bearly should be returnFalse for ==, or returnTrue for /=). The least significant
+   * word, and the result of the whole computation if all other parts were equal, is determined
+   * using the specified test (Prim.eq for == or Prim.neq for /=).
    */
-  static void genRelBinOp(final String ref, final PrimRelOp p) {
+  static void genEqBinOp(final String ref, final PrimRelOp test, final Block bearly) {
     // primBitRef w :: Bit w -> Bit w -> Flag
     generators.put(
         ref,
@@ -554,10 +557,10 @@ public class External extends TopDefn {
             if (w != null) {
               int width = w.intValue();
               int n = Type.numWords(width);
-              if (n == 1) {
-                return new PrimCall(p)
-                    .makeClosure(pos, 1, 1) // Closure: k0{a} [b] = p((a,b))
-                    .makeClosure(pos, 0, 1) // Closure: k1{} [a] = k0{a}
+              if (n > 0) {
+                return new BlockCall(bitEqBlock(pos, n, test, bearly))
+                    .makeClosure(pos, n, n) // Closure: k0{a0,...} [b0,...] = b[a0,...,b0,...]
+                    .makeClosure(pos, 0, n) // Closure: k1{} [a0,...] = k0{a0,...}
                     .withArgs(Atom.noAtoms);
               }
             }
@@ -566,13 +569,123 @@ public class External extends TopDefn {
         });
   }
 
+  /**
+   * Generate code for an equality test on two bit vectors, each represented by n words. Assumes
+   * n>=1. See genEqBinOp for description of test and bearly primitives.
+   */
+  private static Block bitEqBlock(Position pos, int n, PrimRelOp test, Block bearly) {
+    Temp[] args = Temp.makeTemps(2 * n); // Arguments for this block (two bit vectors of length n)
+    Code code;
+    if (n == 1) {
+      code = new Done(test.withArgs(args));
+    } else {
+      Temp v = new Temp();
+      code =
+          new Bind(
+              v,
+              Prim.eq.withArgs(args[n - 1], args[2 * n - 1]),
+              new If(
+                  v,
+                  new BlockCall(bitEqBlock(pos, n - 1, test, bearly), dropMSWords(n, args)),
+                  new BlockCall(bearly, Atom.noAtoms)));
+    }
+    return new Block(pos, args, code);
+  }
+
+  /**
+   * Given the arguments for a function with two n-word bit vector inputs, return a new list of
+   * arguments that omits the most significant word from each of the two inputs.
+   */
+  private static Temp[] dropMSWords(int n, Temp[] args) {
+    Temp[] rargs = new Temp[2 * (n - 1)]; // Arguments for recursive call: least significant words
+    for (int i = 0; i < n - 1; i++) { // from each of the two inputs
+      rargs[i] = args[i];
+      rargs[i + n - 1] = args[i + n];
+    }
+    return rargs;
+  }
+
   static {
-    genRelBinOp("primBitEq", Prim.eq);
-    genRelBinOp("primBitNe", Prim.neq);
-    genRelBinOp("primBitGt", Prim.ugt);
-    genRelBinOp("primBitGe", Prim.uge);
-    genRelBinOp("primBitLt", Prim.ult);
-    genRelBinOp("primBitLe", Prim.ule);
+    genEqBinOp("primBitEq", Prim.eq, Block.returnFalse);
+    genEqBinOp("primBitNe", Prim.neq, Block.returnTrue);
+  }
+
+  /**
+   * A general method for generating implementations for lexicographic orderings on Bit vector
+   * values. TODO: Should we add support for Bit 0?
+   */
+  static void genRelBinOp(final String ref, final PrimRelOp lsw, final PrimRelOp slsw) {
+    // primBit... w ... :: Bit w -> Bit w -> Flag
+    generators.put(
+        ref,
+        new ExternalGenerator(1) {
+          Tail generate(Position pos, String ref, Type[] ts) {
+            BigInteger w = ts[0].getNat(); // Width of bit vector
+            if (w != null) {
+              int width = w.intValue();
+              int n = Type.numWords(width);
+              if (n > 0) {
+                return new BlockCall(bitLexCompBlock(pos, n, lsw, slsw))
+                    .makeClosure(pos, n, n) // Closure: k0{a0,...} [b0,...] = b[a0,...,b0,...]
+                    .makeClosure(pos, 0, n) // Closure: k1{} [a0,...] = k0{a0,...}
+                    .withArgs(Atom.noAtoms);
+              }
+            }
+            return null; // TODO: generate error message?  throw exception?
+          }
+        });
+  }
+
+  /**
+   * Generate code for a lexicographic comparison on two bit vectors, each represented by n words.
+   * Assumes n>=1. The lsw comparison (which may or may not be strict; i.e., including equality) is
+   * used on the least significant word, while the slsw comparison (which should be the strict
+   * version of lsw, not including equality) is used on all other words.
+   */
+  private static Block bitLexCompBlock(Position pos, int n, PrimRelOp lsw, PrimRelOp slsw) {
+    Temp[] args = Temp.makeTemps(2 * n);
+    Code code;
+    if (n == 1) { // For least significant word:
+      code = new Done(lsw.withArgs(args));
+    } else {
+      Temp v = new Temp(); // For multiple words, values, start by comparing most significant words:
+      code =
+          new Bind(
+              v,
+              slsw.withArgs(args[n - 1], args[2 * n - 1]),
+              new If(
+                  v,
+                  new BlockCall(Block.returnTrue, Atom.noAtoms),
+                  new BlockCall(bitLexCompBlock1(pos, n, lsw, slsw), args)));
+    }
+    return new Block(pos, args, code);
+  }
+
+  /**
+   * Worker function for bitLexCompBlock: builds a block to be executed when the slsw test for the
+   * most significant words has failed. In this case, we may still continue to less significant
+   * words if the most significant words are equal.
+   */
+  private static Block bitLexCompBlock1(Position pos, int n, PrimRelOp lsw, PrimRelOp slsw) {
+    Temp[] args = Temp.makeTemps(2 * n);
+    Temp v = new Temp();
+    return new Block(
+        pos,
+        args,
+        new Bind(
+            v,
+            Prim.eq.withArgs(args[n - 1], args[2 * n - 1]),
+            new If(
+                v,
+                new BlockCall(bitLexCompBlock(pos, n - 1, lsw, slsw), dropMSWords(n, args)),
+                new BlockCall(Block.returnFalse, Atom.noAtoms))));
+  }
+
+  static {
+    genRelBinOp("primBitGt", Prim.ugt, Prim.ugt);
+    genRelBinOp("primBitGe", Prim.uge, Prim.ugt);
+    genRelBinOp("primBitLt", Prim.ult, Prim.ult);
+    genRelBinOp("primBitLe", Prim.ule, Prim.ult);
   }
 
   static {
