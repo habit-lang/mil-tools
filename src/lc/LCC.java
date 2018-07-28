@@ -60,7 +60,7 @@ class LCC {
           mil.toDot("initial.dot");
         }
         if (fileInitial) {
-          mil.writeToFile("initial.mil");
+          mil.dump("initial.mil");
         }
         if (specialize) {
           MILSpec spec = mil.specialize(handler);
@@ -91,7 +91,7 @@ class LCC {
             mil.toDot("final.dot");
           }
           if (fileFinal) {
-            mil.writeToFile("final.mil");
+            mil.dump("final.mil");
           }
         }
 

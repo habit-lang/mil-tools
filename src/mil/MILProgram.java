@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 /** Provides a representation for MIL programs. */
-/** Write text for this MIL construct in a file with the specified name. */
 public class MILProgram {
 
   /** Stores a list of the entry points for this program. */
@@ -108,7 +107,8 @@ public class MILProgram {
     out.flush();
   }
 
-  public void writeToFile(String name) {
+  /** Write text for this MIL construct in a file with the specified name. */
+  public void dump(String name) {
     try {
       PrintWriter out = new PrintWriter(name);
       dump(out);
