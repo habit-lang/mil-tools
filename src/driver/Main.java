@@ -163,6 +163,7 @@ class Main {
   private void process(Handler handler, MILProgram mil) throws Failure {
     MILSpec spec = null;
     RepTypeSet rep = null;
+    boolean optimized = false; // Keep track whether the optimizer has been run
 
     if (passes == null) {
       // If no passes are specified, try to set some sensible defaults to satisfy
@@ -187,12 +188,14 @@ class Main {
         case 'o': // MIL optimizer
           message("Running MIL optimizer ...");
           mil.optimize();
+          optimized = true;
           break;
 
         case 's': // Specialization
           message("Running specializer ...");
           spec = mil.specialize(handler);
           mil = spec.getProg();
+          optimized = false;
           break;
 
         case 'r': // Representation transformation
@@ -202,6 +205,7 @@ class Main {
           }
           rep = mil.repTransform(handler);
           mil.shake();
+          optimized = false;
           break;
 
         default:
@@ -211,7 +215,7 @@ class Main {
       mil.typeChecking(handler);
       handler.abortOnFailures();
     }
-    output(handler, mil, spec, rep);
+    output(handler, mil, spec, rep, optimized);
   }
 
   /**
@@ -219,7 +223,11 @@ class Main {
    * the compilation passes as arguments.
    */
   private void output(
-      final Handler handler, final MILProgram mil, final MILSpec spec, final RepTypeSet rep)
+      final Handler handler,
+      final MILProgram mil,
+      final MILSpec spec,
+      final RepTypeSet rep,
+      final boolean optimized)
       throws Failure {
 
     milOutput.run(
@@ -272,7 +280,9 @@ class Main {
     llvmOutput.run(
         new Action() {
           void run(PrintWriter out) throws Failure {
-            if (spec == null) {
+            if (!optimized) {
+              throw new Failure("An optimization pass is required for LLVM output");
+            } else if (spec == null) {
               throw new Failure("A specialization pass is required for LLVM output");
             } else {
               mil.toLLVM().dump(out);
