@@ -180,22 +180,28 @@ public class LCParser extends CoreParser implements LCTokens {
     return new TypeAnn(pos, ids, typeExp());
   }
 
-  /** Parse an expression. Expr ::= CExpr1 | ... | CExprN [ :: Type ] n>=1 */
+  /** Parse an expression. Expr ::= TExpr1 | ... | TExprN n>=1 */
   private Expr parseExpr() throws Failure {
-    Expr e = parseCExpr();
+    Expr e = parseTExpr();
     // !System.out.println("parseExpr looking for BARs: " + my + ", token=" + lexer.getToken());
     while (lexer.getToken() == BAR) {
       Position pos = lexer.getPos();
       lexer.nextToken(/* | */ );
-      e = new EFatbar(pos, e, parseCExpr());
+      e = new EFatbar(pos, e, parseTExpr());
     }
-    // !System.out.println("parseExpr looking for COCOs: " + my + ", token=" + lexer.getToken());
+    // !System.out.println("parseExpr done: " + my + ", token=" + lexer.getToken());
+    return e;
+  }
+
+  /** Parse an expression with a possible type annotation. TExpr ::= CExpr [ :: Type ] n>=1 */
+  private Expr parseTExpr() throws Failure {
+    Expr e = parseCExpr();
+    // !System.out.println("parseTExpr looking for COCOs: " + my + ", token=" + lexer.getToken());
     if (lexer.getToken() == COCO) {
       Position pos = lexer.getPos();
       lexer.nextToken(/* :: */ );
       e = new EType(pos, e, typeExp());
     }
-    // !System.out.println("parseExpr done: " + my + ", token=" + lexer.getToken());
     return e;
   }
 
@@ -281,11 +287,11 @@ public class LCParser extends CoreParser implements LCTokens {
 
       default:
         {
-          Expr e = parseExpr();
+          Expr e = parseTExpr();
           if (lexer.match(FROM)) {
             LamVar v = e.asLamVar(null);
             Position pos = e.getPosition();
-            e = parseExpr();
+            e = parseTExpr();
             // stmts -> id <- e _ ; stmts
             lexer.itemEnd("generator");
             if (lexer.match(SEMI)) {
@@ -327,12 +333,12 @@ public class LCParser extends CoreParser implements LCTokens {
     if (!lexer.match(THEN)) {
       throw new ParseFailure(lexer.getPos(), "missing \"then\" branch");
     }
-    Expr ifTrue = isMonadic ? parseBlock() : parseExpr();
+    Expr ifTrue = isMonadic ? parseBlock() : parseTExpr();
 
     Expr ifFalse;
     Position posf = lexer.getPos();
     if (lexer.match(ELSE)) {
-      ifFalse = isMonadic ? parseBlock() : parseExpr();
+      ifFalse = isMonadic ? parseBlock() : parseTExpr();
     } else if (isMonadic) {
       // TODO: avoid hardwired reference to "return"
       ifFalse = new EAp(new EId(pos, "return"), new EId(pos, Cfun.Unit.getId()));
@@ -395,7 +401,7 @@ public class LCParser extends CoreParser implements LCTokens {
       lexer.nextToken(/* CONID */ );
       LamVar[] vs = parseVars(0);
       require(TO);
-      return new EAlt(pos, c, vs, isMonadic ? parseBlock() : parseExpr());
+      return new EAlt(pos, c, vs, isMonadic ? parseBlock() : parseTExpr());
     } else {
       throw new ParseFailure(lexer.getPos(), "Missing CONID for alternative");
     }
