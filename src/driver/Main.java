@@ -59,7 +59,7 @@ class Main {
 
   private void message(String msg) {
     if (trace) {
-      System.err.println(msg);
+      System.out.println(msg);
     }
   }
 
@@ -97,7 +97,7 @@ class Main {
         case 'd':
           debug.Log.on();
           break;
-        case 't':
+        case 'v':
           trace = true;
           break;
         case 'p':
