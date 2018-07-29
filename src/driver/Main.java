@@ -52,6 +52,7 @@ class Main {
     System.err.println("         -l[filename]   LLVM code (requires s)");
     System.err.println("         -b[filename]   bytecode text");
     System.err.println("         -x[filename]   execute bytecode");
+    System.err.println("         --llvm-main=N  Set name of main function in LLVM output");
   }
 
   private boolean trace = false;
@@ -86,6 +87,11 @@ class Main {
 
   /** Simple command line option processing. */
   private void options(String str) throws Failure {
+    String special;
+    if ((special = nonemptyOptString("--llvm-main=", str)) != null) {
+      llvm.FuncDefn.mainFunctionName = special;
+      return;
+    }
     for (int i = 1; i < str.length(); i++) {
       switch (str.charAt(i)) {
         case 'd':
@@ -125,6 +131,18 @@ class Main {
           throw new Failure("Unrecognized option character '" + str.charAt(i) + "'");
       }
     }
+  }
+
+  private static String optString(String prefix, String str) {
+    return (str.startsWith(prefix)) ? str.substring(prefix.length()) : null;
+  }
+
+  private static String nonemptyOptString(String prefix, String str) throws Failure {
+    String s = optString(prefix, str);
+    if (s != null && s.length() == 0) {
+      throw new Failure("Missing value for option " + prefix);
+    }
+    return s;
   }
 
   public void run(String[] args) {

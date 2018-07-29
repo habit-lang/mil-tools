@@ -31,6 +31,8 @@ class LCC {
     } else {
       Handler handler = new SimpleHandler();
 
+      llvm.FuncDefn.mainFunctionName = "init";
+
       // Load primitive definitions:
       // TODO: find a better time/place to do this
       //    MILProgram.loadPrims(handler, "prims.mil");  // TODO: avoid hardwiring name

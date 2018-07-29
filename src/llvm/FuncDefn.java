@@ -47,6 +47,12 @@ public class FuncDefn extends Defn {
     this.bodies = bodies;
   }
 
+  /**
+   * Default name for the main function. Made public so that it can be changed by a command line
+   * option.
+   */
+  public static String mainFunctionName = "main";
+
   void print(PrintWriter out) {
     out.print("define ");
     out.print(retType.toString());

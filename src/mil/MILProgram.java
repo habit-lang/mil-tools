@@ -563,7 +563,7 @@ public class MILProgram {
     }
     return new llvm.FuncDefn(
         llvm.Type.vd,
-        "main",
+        llvm.FuncDefn.mainFunctionName,
         new llvm.Local[0],
         new String[] {"entry"},
         new llvm.Code[] {llvm.Code.reverseOnto(code, new llvm.RetVoid())});
