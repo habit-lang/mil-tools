@@ -151,6 +151,7 @@ class Main {
       process(handler, load(handler, args));
     } catch (Failure f) {
       handler.report(f);
+      System.exit(-1);
     }
   }
 
