@@ -262,7 +262,7 @@ public abstract class Tycon extends TypeName {
         : null;
   }
 
-  Tycon remap(TypeSet set) {
+  Tycon canonTycon(TypeSet set) {
     return this;
   }
 

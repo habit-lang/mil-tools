@@ -161,17 +161,21 @@ public class TypeSet {
     Types ts = tyconInstances.get(h); // Find previous uses of this item
     Type t = findMatch(args, ts); // And search for a match
     if (t == null) {
-      t = rebuild(h.asType(), args); // If none found, build a canonical representative
+      t = buildCanon(h, args); // If none found, build a canonical representative
       tyconInstances.put(h, new Types(t, ts)); // Add it to the list
     }
     return t; // Return the (old or new) canonical representative
+  }
+
+  protected Type buildCanon(Tycon h, int args) {
+    return rebuild(h.asType(), args);
   }
 
   /**
    * Build a canonical type (for the first time that this particular type was found) by combining
    * the specified head type with a number of arguments from the stack.
    */
-  private Type rebuild(Type t, int args) {
+  protected Type rebuild(Type t, int args) {
     for (; args > 0; args--) {
       t = new TAp(t, stack[--sp]);
     }

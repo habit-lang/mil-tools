@@ -34,6 +34,10 @@ public class RepTypeSet extends TypeSet {
     return (len < 0) ? super.canon(h, args) : super.canonOther(TupleCon.tuple(len).asType(), len);
   }
 
+  protected Type buildCanon(Tycon h, int args) {
+    return rebuild(h.canonTycon(this).asType(), args);
+  }
+
   /**
    * Return the array of types that can be used to represent a tuple of values specified by the
    * array ts, each element of which uses the given tenv parameter to provide an interpretation for

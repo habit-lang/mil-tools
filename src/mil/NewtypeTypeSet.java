@@ -30,8 +30,6 @@ public class NewtypeTypeSet extends TypeSet {
    */
   protected Type canon(Tycon h, int args) {
     Type t = h.translate(this, args); // Look for a translation of this type
-    return (t == null)
-        ? super.canon(h.remap(this), args)
-        : t; // Or fall back to the canonical representation
+    return (t == null) ? super.canon(h, args) : t; // Or fall back to the canonical representation
   }
 }

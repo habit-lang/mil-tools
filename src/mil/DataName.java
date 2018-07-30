@@ -124,6 +124,10 @@ public class DataName extends Tycon {
     return null;
   }
 
+  Tycon canonTycon(TypeSet set) {
+    return canonDataName(set);
+  }
+
   DataName canonDataName(TypeSet set) {
     if (cfuns == null) {
       return this;
@@ -150,10 +154,6 @@ public class DataName extends Tycon {
       }
       return newDn;
     }
-  }
-
-  Tycon remap(TypeSet set) {
-    return canonDataName(set);
   }
 
   /**
