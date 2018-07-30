@@ -326,7 +326,9 @@ public class External extends TopDefn {
             BigInteger w = ts[1].getNat(); // Width of bit vector
             if (v != null && w != null) {
               Tail t = new Return(IntConst.words(v, w.intValue()));
-              ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.noTemps, t);
+              // TODO: Temp.makeTemps(1) in the next line is used for the proxy argument; can we
+              // eliminate this?
+              ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(1), t);
               return new ClosAlloc(k).withArgs(Atom.noAtoms);
             }
             return null;
@@ -345,7 +347,9 @@ public class External extends TopDefn {
               int im = m.intValue();
               if (im > 0 && iv < im) { // attempt to validate arguments
                 Tail t = new Return(new IntConst(iv));
-                ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.noTemps, t);
+                // TODO: Temp.makeTemps(1) in the next line is used for the proxy argument; can we
+                // eliminate this?
+                ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(1), t);
                 return new ClosAlloc(k).withArgs(Atom.noAtoms);
               }
             }

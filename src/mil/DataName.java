@@ -213,11 +213,12 @@ public class DataName extends Tycon {
 
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
-    if (isSingleton()) { // No runtime representation needed for singleton types
-      return Type.noTypes;
-    } else {
-      return null; // Default behavior: no change in representation
-    }
+    return null;
+    // TODO: The current method of eliminating the runtime representation for singleton types does
+    // not work
+    // as intended, so the test below is disabled until we figure out a better option ...
+    // No runtime representation needed for singleton types, otherwise no change in representation.
+    // return isSingleton() ? Type.noTypes : null;
   }
 
   /**
