@@ -525,12 +525,12 @@ public class MILProgram {
         CFG cfg = ds.head.makeCFG();
         if (cfg != null) {
           // !        cfg.display();
-          DefnVarMap vm = new DefnVarMap();
-          /* TempSubst s = */ cfg.paramElim(tm, vm);
-
-          prog.add(cfg.toLLVMFuncDefn(tm, vm));
-
+          TempSubst s = cfg.paramElim();
           // System.out.println(TempSubst.toString(s));
+
+          DefnVarMap dvm = new DefnVarMap();
+          prog.add(cfg.toLLVMFuncDefn(tm, dvm, s));
+
           // TODO: revert to adding each new CFG to the front of the list
           // cfgs = new CFGs(cfg, cfgs);
           if (cfgs == null) {

@@ -61,15 +61,22 @@ abstract class Label extends Node {
   /** Find the CFG successors for this Label. */
   abstract void findSuccs(CFG cfg);
 
-  protected llvm.Code code = null;
+  protected boolean visited = false;
 
-  public llvm.Code getCode() {
-    return code;
+  TempSubst paramElim(TempSubst s) {
+    if (!visited) {
+      visited = true;
+      s = visit(s);
+      for (int i = 0; i < succs.length; i++) {
+        s = succs[i].paramElim(s);
+      }
+    }
+    return s;
   }
 
-  TempSubst paramElim(TypeMap tm, VarMap vm, TempSubst s) {
-    return (code == null) ? toLLVM(tm, vm, s) : s;
+  TempSubst visit(TempSubst s) {
+    return s;
   }
 
-  abstract TempSubst toLLVM(TypeMap tm, VarMap vm, TempSubst s);
+  abstract llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s);
 }

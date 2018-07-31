@@ -45,8 +45,7 @@ class GotoLabel extends Label {
     succs = new Label[] {lab};
   }
 
-  TempSubst toLLVM(TypeMap tm, VarMap vm, TempSubst s) {
-    code = new llvm.Goto(lab.label());
-    return s;
+  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s) {
+    return new llvm.Goto(lab.label());
   }
 }

@@ -49,11 +49,12 @@ class BlockCFG extends CFG {
     findSuccs();
   }
 
-  llvm.FuncDefn toLLVMFuncDefn(TypeMap tm, DefnVarMap dvm) {
+  llvm.FuncDefn toLLVMFuncDefn(TypeMap tm, DefnVarMap dvm, TempSubst s) {
     llvm.Local[] formals = new llvm.Local[params.length];
     for (int i = 0; i < params.length; i++) {
       formals[i] = dvm.lookup(tm, params[i]);
     }
-    return toLLVM(b.retType(tm), formals, dvm.loadGlobals(new llvm.Goto(succs[0].label())));
+    return toLLVM(
+        tm, dvm, s, b.retType(tm), formals, dvm.loadGlobals(new llvm.Goto(succs[0].label())));
   }
 }

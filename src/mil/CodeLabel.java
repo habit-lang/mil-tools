@@ -50,16 +50,15 @@ class CodeLabel extends Label {
     succs = b.findSuccs(cfg, this);
   }
 
-  TempSubst toLLVM(TypeMap tm, VarMap vm, TempSubst s) {
-    if (preds.next == null) { // single predecessor: renaming is needed
-      s = b.mapParams(preds.args, s);
-      code = b.toLLVM(tm, vm, s, succs);
-      for (int i = 0; i < succs.length; i++) {
-        s = succs[i].paramElim(tm, vm, s);
-      }
-    } else { // multiple predecessors: merge parameters using phi functions
+  TempSubst visit(TempSubst s) {
+    // Add renamings if this block only has a single predecessor:
+    return (preds.next == null) ? b.mapParams(preds.args, s) : s;
+  }
+
+  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s) {
+    llvm.Code code = b.toLLVM(tm, vm, s, succs);
+    if (preds.next != null) { // multiple predecessors: merge parameters using phi functions
       Temp[] params = b.getParams();
-      code = b.toLLVM(tm, vm, s, succs);
       if (params.length > 0) {
         int numpreds = 2; // count the number of predecessor nodes
         for (PredNodes pns = preds.next.next; pns != null; pns = pns.next) {
@@ -77,6 +76,6 @@ class CodeLabel extends Label {
         }
       }
     }
-    return s;
+    return code;
   }
 }

@@ -113,17 +113,23 @@ abstract class CFG extends Node {
     }
   }
 
-  TempSubst paramElim(TypeMap tm, VarMap vm) {
+  TempSubst paramElim() {
     TempSubst s = null;
     for (Labels ls = labels; ls != null; ls = ls.next) {
-      s = ls.head.paramElim(tm, vm, s);
+      s = ls.head.paramElim(s);
     }
     return s;
   }
 
-  abstract llvm.FuncDefn toLLVMFuncDefn(TypeMap tm, DefnVarMap dvm);
+  abstract llvm.FuncDefn toLLVMFuncDefn(TypeMap tm, DefnVarMap dvm, TempSubst s);
 
-  llvm.FuncDefn toLLVM(llvm.Type retType, llvm.Local[] formals, llvm.Code entryCode) {
+  llvm.FuncDefn toLLVM(
+      TypeMap tm,
+      VarMap vm,
+      TempSubst s,
+      llvm.Type retType,
+      llvm.Local[] formals,
+      llvm.Code entryCode) {
     int n = Labels.length(labels);
     String[] ss = new String[1 + n];
     ss[0] = "entry";
@@ -134,7 +140,7 @@ abstract class CFG extends Node {
     int i = 1;
     for (Labels ls = labels; ls != null; ls = ls.next) {
       ss[i] = ls.head.label();
-      cs[i++] = ls.head.getCode();
+      cs[i++] = ls.head.toLLVM(tm, vm, s);
     }
     return new llvm.FuncDefn(retType, label(), formals, ss, cs);
   }
