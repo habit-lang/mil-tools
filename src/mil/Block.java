@@ -1033,16 +1033,24 @@ public class Block extends Defn {
     return numberCalls;
   }
 
+  /**
+   * Reset the counter for the number of non-tail calls to this definition. This is only useful for
+   * Blocks: we have to generate an LLVM function for every reachable closure definition anyway, but
+   * we only need to do this for Blocks that are either listed as entrypoints or that are accessed
+   * via a non-tail call somewhere in the reachable program.
+   */
   void resetCallCounts() {
     numberCalls = 0;
   }
 
-  void countCalls() {
-    code.countCalls();
-  }
-
+  /** Mark this definition as having been called. */
   void called() {
     numberCalls++;
+  }
+
+  /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
+  void countCalls() {
+    code.countCalls();
   }
 
   /**

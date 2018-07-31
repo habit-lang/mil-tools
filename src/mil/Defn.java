@@ -460,15 +460,23 @@ public abstract class Defn {
     return 0;
   }
 
+  /**
+   * Reset the counter for the number of non-tail calls to this definition. This is only useful for
+   * Blocks: we have to generate an LLVM function for every reachable closure definition anyway, but
+   * we only need to do this for Blocks that are either listed as entrypoints or that are accessed
+   * via a non-tail call somewhere in the reachable program.
+   */
   void resetCallCounts() {
     /* do nothing */
   }
 
-  abstract void countCalls();
-
+  /** Mark this definition as having been called. */
   void called() {
     /* do nothing */
   }
+
+  /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
+  abstract void countCalls();
 
   /**
    * Identify the set of blocks that should be included in the function that is generated for this

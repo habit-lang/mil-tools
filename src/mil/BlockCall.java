@@ -415,6 +415,7 @@ public class BlockCall extends Call {
     return (args == null) ? Temps.add(args = b.addArgs(), vs) : vs;
   }
 
+  /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
   void countCalls() {
     b.called();
   }

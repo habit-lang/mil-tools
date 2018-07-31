@@ -300,7 +300,7 @@ public class DataName extends Tycon {
    */
   llvm.Type toLLVMCalc(Type c, TypeMap tm, int args) {
     if (args != 0 || arity != 0) {
-      //        debug.Internal.error("DataName toLLVM arity mismatch");
+      //    debug.Internal.error("DataName toLLVM arity mismatch");
       return llvm.Type.vd;
     }
     return tm.dataPtrTypeCalc(c);

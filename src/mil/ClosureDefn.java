@@ -644,6 +644,7 @@ public class ClosureDefn extends Defn {
     return declared.closureLayoutTypeCalc(tm);
   }
 
+  /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
   void countCalls() {
     /* no non-tail calls here */
   }

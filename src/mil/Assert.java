@@ -276,6 +276,7 @@ public class Assert extends Code {
     return a.add(c.addArgs());
   }
 
+  /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
   void countCalls() {
     c.countCalls();
   }

@@ -310,6 +310,7 @@ public class Done extends Code {
     return t.addArgs(null);
   }
 
+  /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
   void countCalls() {
     /* no non-tail calls here */
   }

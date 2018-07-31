@@ -411,6 +411,7 @@ public abstract class Tail {
     return this.add(vs);
   }
 
+  /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
   void countCalls() {
     /* no non-tail calls here */
   }

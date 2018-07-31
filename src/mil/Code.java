@@ -351,6 +351,7 @@ public abstract class Code {
   /** Find the argument variables that are used in this Code sequence. */
   abstract Temps addArgs() throws Failure;
 
+  /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
   abstract void countCalls();
 
   /**

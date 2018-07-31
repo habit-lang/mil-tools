@@ -316,7 +316,7 @@ public abstract class Tycon extends TypeName {
    * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.
    */
   llvm.Type toLLVMCalc(Type c, TypeMap tm, int args) {
-    //    debug.Internal.error("toLLVM not defined for tycon " + this.asType());
+    //  debug.Internal.error("toLLVM not defined for tycon " + this.asType());
     return llvm.Type.vd; // not reached
   }
 }

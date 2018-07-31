@@ -461,6 +461,7 @@ public class Bind extends Code {
     return t.addArgs(Temps.remove(vs, c.addArgs()));
   }
 
+  /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
   void countCalls() {
     t.countCalls();
     c.countCalls();

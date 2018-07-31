@@ -506,6 +506,7 @@ public class TopLevel extends TopDefn {
     return null;
   }
 
+  /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
   void countCalls() {
     tail.countCalls();
   }
