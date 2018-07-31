@@ -33,6 +33,8 @@ public class Load extends Rhs {
   /** Append a printable string for this instruction to the specified buffer. */
   public void append(StringBuilder buf) {
     buf.append("load ");
+    v.getType().ptsTo().append(buf);
+    buf.append(", ");
     v.append(buf);
   }
 }

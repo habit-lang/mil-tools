@@ -388,7 +388,7 @@ public class External extends TopDefn {
 
     // primModIx m w :: Bit w -> Ix m
     generators.put(
-        "primIxToBits",
+        "primModIx",
         new ExternalGenerator(2) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger m = ts[0].getNat(); // Modulus for index type

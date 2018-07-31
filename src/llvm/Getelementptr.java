@@ -49,6 +49,8 @@ public class Getelementptr extends Rhs {
   /** Append a printable string for this instruction to the specified buffer. */
   public void append(StringBuilder buf) {
     buf.append("getelementptr inbounds ");
+    ptr.getType().ptsTo().append(buf);
+    buf.append(", ");
     ptr.append(buf);
     for (int i = 0; i < offsets.length; i++) {
       buf.append(", ");
