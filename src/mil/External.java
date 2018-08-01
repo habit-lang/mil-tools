@@ -964,6 +964,30 @@ public class External extends TopDefn {
                 w, Prim.and.withArgs(mask, vs[lo]), new Done(Prim.neq.withArgs(w, IntConst.Zero)));
           }
         });
+
+    generators.put(
+        "primBitBitSize",
+        new Generator(1) { // :: Bit w -> Ix w
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger w = ts[0].getBitArg(); // Bit vector width
+            if (w != null && w.compareTo(BigInteger.ZERO) > 0) {
+              int width = w.intValue();
+              int n = Type.numWords(width);
+              Tail t = new Return(new IntConst(width - 1));
+              // TODO: The Temp.makeTemps(n) call in the following creates the proxy argument of
+              // type Bit w that is required as an input
+              // for this function (to avoid ambiguity).  Because it is not actually used, however,
+              // it will result in a polymorphic
+              // definition in post-specialization code, which may break subsequent attempts to
+              // generate code from monomorphic MIL code
+              // ... unless this definition is optimized away (which, it should be ... assuming that
+              // the optimizer is invoked ...)
+              ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(n), t);
+              return new ClosAlloc(k).withArgs(Atom.noAtoms);
+            }
+            return null;
+          }
+        });
   }
 
   static {
