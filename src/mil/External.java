@@ -356,6 +356,19 @@ public class External extends TopDefn {
           }
         });
 
+    // primIxMaxBound w :: Ix w
+    generators.put(
+        "primIxMaxBound",
+        new ExternalGenerator(1) {
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger w = ts[0].getIxArg(); // Modulus for index type
+            if (w != null) {
+              return new Return(new IntConst(w.subtract(BigInteger.ONE).intValue()));
+            }
+            return null;
+          }
+        });
+
     // primIxToBits m w :: Ix m -> Bit w
     generators.put(
         "primIxToBits",
