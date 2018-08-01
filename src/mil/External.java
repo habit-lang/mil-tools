@@ -417,6 +417,35 @@ public class External extends TopDefn {
           }
         });
 
+    // primRelaxIx n m :: Ix n -> Ix m
+    generators.put(
+        "primRelaxIx",
+        new ExternalGenerator(2) {
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger n = ts[0].getNat(); // Smaller index modulus
+            BigInteger m = ts[1].getNat(); // Larger index modulus
+            if (n != null && m != null) {
+              int in = n.intValue();
+              int im = m.intValue();
+              // TODO: We require im>0 to guard against large values of m that produce negative
+              // intValues ... but this will
+              // likely cause the generator to fail for important cases.  (e.g., Ix 4G on a 32 bit
+              // machine).
+              if (im > 0 && in <= im) {
+                // We implement relaxIx as the identity function (Ix n and Ix m values are both
+                // represented as Word values).
+                // TODO: the type checker will infer a *polymorphic* type for this definition, which
+                // will trip up the LLVM
+                // code generator (although that will likely not happen in practice because this
+                // definition should be inlined
+                // by the optimizer).
+                return new Return().makeClosure(pos, 0, 1).withArgs(Atom.noAtoms);
+              }
+            }
+            return null;
+          }
+        });
+
     // primBitNot w :: Bit w -> Bit w
     generators.put(
         "primBitNot",
