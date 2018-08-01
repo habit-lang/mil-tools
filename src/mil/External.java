@@ -445,6 +445,45 @@ public class External extends TopDefn {
             return null;
           }
         });
+  }
+
+  /**
+   * A general method for generating comparisons on Ix values. Because Ix values are represented by
+   * a single Word, we can implement each of these using the corresponding (unsigned) comparison on
+   * Word.
+   */
+  static void genIxCompare(String ref, final PrimRelOp cmp) {
+    // primIxRef w :: Bit w -> Bit w -> Bool
+    generators.put(
+        ref,
+        new ExternalGenerator(1) {
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger w = ts[0].getNat(); // Width of bit vector
+            // TODO: what if w is bigger than a word?
+            if (w != null) {
+              int width = w.intValue();
+              if (width > 1) { // TODO: can we do something useful for w==0 and w==1?
+                return new PrimCall(cmp)
+                    .makeClosure(pos, 1, 1)
+                    .makeClosure(pos, 0, 1)
+                    .withArgs(Atom.noAtoms);
+              }
+            }
+            return null;
+          }
+        });
+  }
+
+  static {
+    genIxCompare("primIxEq", Prim.eq);
+    genIxCompare("primIxNe", Prim.neq);
+    genIxCompare("primIxLt", Prim.ult);
+    genIxCompare("primIxLe", Prim.ule);
+    genIxCompare("primIxGt", Prim.ugt);
+    genIxCompare("primIxGe", Prim.uge);
+  }
+
+  static {
 
     // primBitNot w :: Bit w -> Bit w
     generators.put(
