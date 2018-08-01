@@ -331,6 +331,9 @@ public class External extends TopDefn {
                 .withArgs(Atom.noAtoms);
           }
         });
+  }
+
+  static {
 
     // primBitFromLiteral v w ... :: Proxy -> Bit w
     generators.put(
@@ -354,6 +357,9 @@ public class External extends TopDefn {
             return null;
           }
         });
+  }
+
+  static {
 
     // primIxFromLiteral v m :: Proxy -> Ix m
     generators.put(
@@ -528,37 +534,6 @@ public class External extends TopDefn {
             return null;
           }
         });
-
-    // primBitNegate w :: Bit w -> Bit w
-    generators.put(
-        "primBitNegate",
-        new Generator(1) {
-          Tail generate(Position pos, Type[] ts) {
-            BigInteger w = ts[0].getBitArg(); // Width of bit vector
-            if (w != null) {
-              int width = w.intValue();
-              int n = Type.numWords(width);
-              if (n == 1) {
-                Temp[] args = Temp.makeTemps(1);
-                Code code = maskTail(Prim.neg.withArgs(args), width);
-                return new BlockCall(new Block(pos, args, code))
-                    .makeClosure(pos, 0, 1) // Closure: k1{} [a] = b[a]
-                    .withArgs(Atom.noAtoms);
-              }
-            }
-            return null;
-          }
-        });
-  }
-
-  private static Code maskTail(Tail t, int width) {
-    int rem = width % Type.WORDSIZE; // Determine whether masking is required
-    if (rem == 0) {
-      return new Done(t);
-    } else {
-      Temp c = new Temp();
-      return new Bind(c, t, new Done(Prim.and.withArgs(c, (1 << rem) - 1)));
-    }
   }
 
   /**
@@ -598,6 +573,40 @@ public class External extends TopDefn {
     genBitwiseBinOp("primBitAnd", Prim.and);
     genBitwiseBinOp("primBitOr", Prim.or);
     genBitwiseBinOp("primBitXor", Prim.xor);
+  }
+
+  static {
+
+    // primBitNegate w :: Bit w -> Bit w
+    generators.put(
+        "primBitNegate",
+        new Generator(1) {
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger w = ts[0].getBitArg(); // Width of bit vector
+            if (w != null) {
+              int width = w.intValue();
+              int n = Type.numWords(width);
+              if (n == 1) {
+                Temp[] args = Temp.makeTemps(1);
+                Code code = maskTail(Prim.neg.withArgs(args), width);
+                return new BlockCall(new Block(pos, args, code))
+                    .makeClosure(pos, 0, 1) // Closure: k1{} [a] = b[a]
+                    .withArgs(Atom.noAtoms);
+              }
+            }
+            return null;
+          }
+        });
+  }
+
+  private static Code maskTail(Tail t, int width) {
+    int rem = width % Type.WORDSIZE; // Determine whether masking is required
+    if (rem == 0) {
+      return new Done(t);
+    } else {
+      Temp c = new Temp();
+      return new Bind(c, t, new Done(Prim.and.withArgs(c, (1 << rem) - 1)));
+    }
   }
 
   /**
