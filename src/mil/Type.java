@@ -400,13 +400,37 @@ public abstract class Type extends Scheme {
 
   public static final Type TypeWORDSIZE = new TNat(BigWORDSIZE);
 
-  public static final int MAXWIDTH = 3 * WORDSIZE;
+  public static final int MAXWIDTH = 4 * WORDSIZE;
 
   public static final BigInteger BigMAXWIDTH = BigInteger.valueOf(MAXWIDTH);
+
+  public static final BigInteger BigMINIX = BigInteger.valueOf(2);
+
+  public static final BigInteger BigMAXIX = BigInteger.ONE.shiftLeft(WORDSIZE);
 
   /** Return the number of words that are needed to hold a value with the specified bitsize. */
   public static int numWords(int numBits) {
     return (numBits + WORDSIZE - 1) / WORDSIZE;
+  }
+
+  /**
+   * Determine whether this type is a valid argument for a Bit type (i.e., a TNat in the range 1 to
+   * BigMAXWIDTH inclusive).
+   */
+  BigInteger getBitArg() {
+    BigInteger n = getNat();
+    return (n != null && (n.compareTo(BigInteger.ONE) >= 0) && (n.compareTo(BigMAXWIDTH) <= 0))
+        ? n
+        : null;
+  }
+
+  /**
+   * Determine whether this type is a valid argument for an Ix type (i.e., a TNat in the range
+   * BigMINIX to BigMAXIX inclusive).
+   */
+  BigInteger getIxArg() {
+    BigInteger n = getNat();
+    return (n != null && (n.compareTo(BigMINIX) >= 0) && (n.compareTo(BigMAXIX) <= 0)) ? n : null;
   }
 
   /** Find the name of the associated bitdata type, if any. */
