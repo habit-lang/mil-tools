@@ -769,6 +769,62 @@ public class External extends TopDefn {
     genRelBinOp("primBitLe", Prim.ule, Prim.ult);
   }
 
+  private static Block bitBitBlock(Position pos, int n, int lo, int hi) {
+    // invariant:  0 <= lo <= hi < n
+    Temp[] vs = Temp.makeTemps(1); // [i] -- index of bit to set
+    if (hi > lo) {
+      int mid = 1 + ((lo + hi) / 2);
+      Temp v = new Temp();
+      return new Block(
+          pos,
+          vs,
+          new Bind(
+              v,
+              Prim.ult.withArgs(vs[0], mid * Type.WORDSIZE),
+              new If(
+                  v,
+                  new BlockCall(bitBitBlock(pos, n, lo, mid - 1), vs),
+                  new BlockCall(bitBitBlock(pos, n, mid, hi), vs))));
+    } else {
+      Temp p = new Temp();
+      Temp m = new Temp();
+      Atom[] as = new Atom[n];
+      for (int i = 0; i < n; i++) {
+        as[i] = (i == lo) ? m : IntConst.Zero;
+      }
+      return new Block(
+          pos,
+          vs, // b[i]
+          new Bind(
+              p,
+              Prim.sub.withArgs(vs[0], lo * Type.WORDSIZE), //  = p <- sub((i, offset))
+              new Bind(
+                  m,
+                  Prim.shl.withArgs(1, p), //    m <- shl((1, p))
+                  new Done(new Return(as))))); //    return [0..., m, ...0]
+    }
+  }
+
+  static {
+
+    // primBitBit w :: Ix w -> Bit w
+    generators.put(
+        "primBitBit",
+        new ExternalGenerator(1) {
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger w = ts[0].getBitArg(); // Width of bit vector
+            if (w != null) {
+              int width = w.intValue();
+              int n = Type.numWords(width);
+              return new BlockCall(bitBitBlock(pos, n, 0, n - 1))
+                  .makeClosure(pos, 0, 1) // Closure: k0{} [i] = b[i]
+                  .withArgs(Atom.noAtoms);
+            }
+            return null;
+          }
+        });
+  }
+
   static {
 
     // primBitShiftL w :: Bit w -> Ix w -> Bit w
