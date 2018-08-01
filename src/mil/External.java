@@ -795,58 +795,173 @@ public class External extends TopDefn {
     genRelBinOp("primBitLe", Prim.ule, Prim.ult);
   }
 
-  private static Block bitBitBlock(Position pos, int n, int lo, int hi) {
-    // invariant:  0 <= lo <= hi < n
-    Temp[] vs = Temp.makeTemps(1); // [i] -- index of bit to set
-    if (hi > lo) {
-      int mid = 1 + ((lo + hi) / 2);
-      Temp v = new Temp();
-      return new Block(
-          pos,
-          vs,
-          new Bind(
-              v,
-              Prim.ult.withArgs(vs[0], mid * Type.WORDSIZE),
-              new If(
-                  v,
-                  new BlockCall(bitBitBlock(pos, n, lo, mid - 1), vs),
-                  new BlockCall(bitBitBlock(pos, n, mid, hi), vs))));
-    } else {
-      Temp p = new Temp();
-      Temp m = new Temp();
+  protected abstract static class BitmanipGenerator extends Generator {
+
+    /** Default constructor. */
+    protected BitmanipGenerator(int needs) {
+      super(needs);
+    }
+
+    /**
+     * Construct a decision tree to find the appropriate position within the representation of a Bit
+     * vector. In the generated code: n is the number of words needed to represent a Bit vector of
+     * the appropriate width; lo and hi specify the range of words that the generated block should
+     * cover, using a binary search if necessary to reduce the range to a single word; numArgs is
+     * the number of arguments that must be passed at each step, not including the bit index
+     * argument, which will be added on the end. (In practice, numArgs will either be 0 if we are
+     * constructing a new Bit vector (bitBit), or n if we are modifying or testing an existing Bit
+     * vector (bitSet, bitClear, bitFlip, bitTest)).
+     */
+    protected Block decisionTree(Position pos, int n, int lo, int hi, int numArgs) {
+      // invariant:  0 <= lo <= hi < n
+      Temp[] vs = Temp.makeTemps(numArgs + 1); // arguments for words, plus bit index argument
+      if (hi > lo) {
+        int mid = 1 + ((lo + hi) / 2);
+        Temp v = new Temp();
+        return new Block(
+            pos,
+            vs,
+            new Bind(
+                v,
+                Prim.ult.withArgs(vs[numArgs], mid * Type.WORDSIZE),
+                new If(
+                    v,
+                    new BlockCall(decisionTree(pos, n, lo, mid - 1, numArgs), vs),
+                    new BlockCall(decisionTree(pos, n, mid, hi, numArgs), vs))));
+      } else {
+        Temp p = new Temp();
+        Temp m = new Temp();
+        return new Block(
+            pos,
+            vs, // b[v0,...,i]
+            new Bind(
+                p,
+                Prim.sub.withArgs(vs[numArgs], lo * Type.WORDSIZE), //  = p <- sub((i, offset))
+                new Bind(
+                    m,
+                    Prim.shl.withArgs(1, p), //    m <- shl((1, p))
+                    makeResult(vs, m, n, lo)))); //    ... calc result ...
+      }
+    }
+
+    /**
+     * Construct the final result of the computation in a code sequence where: vs is the list of
+     * arguments to the the enclosing block; m is a previously calculated mask for the relevant bit
+     * within the selected word; n is the number of words in the representation for the Bit vector;
+     * and lo is the index of the word containing the relevant bit.
+     */
+    abstract Code makeResult(Temp[] vs, Atom mask, int n, int lo);
+  }
+
+  protected abstract static class ConstructBitmanipGenerator extends BitmanipGenerator {
+
+    /** Default constructor. */
+    protected ConstructBitmanipGenerator(int needs) {
+      super(needs);
+    }
+
+    Tail generate(Position pos, Type[] ts) {
+      BigInteger w = ts[0].getBitArg(); // Width of bit vector
+      if (w != null) {
+        int width = w.intValue();
+        int n = Type.numWords(width);
+        return new BlockCall(decisionTree(pos, n, 0, n - 1, 0))
+            .makeClosure(pos, 0, 1) // Closure: k0{} [i] = b[i]
+            .withArgs(Atom.noAtoms);
+      }
+      return null;
+    }
+  }
+
+  protected abstract static class ConsumeBitmanipGenerator extends BitmanipGenerator {
+
+    /** Default constructor. */
+    protected ConsumeBitmanipGenerator(int needs) {
+      super(needs);
+    }
+
+    Tail generate(Position pos, Type[] ts) {
+      BigInteger w = ts[0].getBitArg(); // Width of bit vector
+      if (w != null) {
+        int width = w.intValue();
+        int n = Type.numWords(width);
+        return new BlockCall(decisionTree(pos, n, 0, n - 1, n))
+            .makeClosure(pos, n, 1) // Closure: k0{v0,...} [i] = b[v0,...i]
+            .makeClosure(pos, 0, n) // Closure: k1{} [v0,...] = k0{v0,...}
+            .withArgs(Atom.noAtoms);
+      }
+      return null;
+    }
+
+    protected static Atom[] reuseOtherWords(Temp[] vs, Atom w, int n, int lo) {
       Atom[] as = new Atom[n];
       for (int i = 0; i < n; i++) {
-        as[i] = (i == lo) ? m : IntConst.Zero;
+        as[i] = (i == lo) ? w : vs[i];
       }
-      return new Block(
-          pos,
-          vs, // b[i]
-          new Bind(
-              p,
-              Prim.sub.withArgs(vs[0], lo * Type.WORDSIZE), //  = p <- sub((i, offset))
-              new Bind(
-                  m,
-                  Prim.shl.withArgs(1, p), //    m <- shl((1, p))
-                  new Done(new Return(as))))); //    return [0..., m, ...0]
+      return as;
     }
   }
 
   static {
-
-    // primBitBit w :: Ix w -> Bit w
     generators.put(
         "primBitBit",
-        new Generator(1) {
-          Tail generate(Position pos, Type[] ts) {
-            BigInteger w = ts[0].getBitArg(); // Width of bit vector
-            if (w != null) {
-              int width = w.intValue();
-              int n = Type.numWords(width);
-              return new BlockCall(bitBitBlock(pos, n, 0, n - 1))
-                  .makeClosure(pos, 0, 1) // Closure: k0{} [i] = b[i]
-                  .withArgs(Atom.noAtoms);
+        new ConstructBitmanipGenerator(1) {
+          Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
+            Atom[] as = new Atom[n];
+            for (int i = 0; i < n; i++) {
+              as[i] = (i == lo) ? mask : IntConst.Zero;
             }
-            return null;
+            return new Done(new Return(as));
+          }
+        });
+
+    generators.put(
+        "primBitSetBit",
+        new ConsumeBitmanipGenerator(1) {
+          Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
+            Temp w = new Temp();
+            return new Bind(
+                w,
+                Prim.or.withArgs(mask, vs[lo]),
+                new Done(new Return(reuseOtherWords(vs, w, n, lo))));
+          }
+        });
+
+    generators.put(
+        "primBitClearBit",
+        new ConsumeBitmanipGenerator(1) {
+          Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
+            Temp w = new Temp();
+            Temp x = new Temp();
+            return new Bind(
+                x,
+                Prim.not.withArgs(mask),
+                new Bind(
+                    w,
+                    Prim.and.withArgs(x, vs[lo]),
+                    new Done(new Return(reuseOtherWords(vs, w, n, lo)))));
+          }
+        });
+
+    generators.put(
+        "primBitFlipBit",
+        new ConsumeBitmanipGenerator(1) {
+          Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
+            Temp w = new Temp();
+            return new Bind(
+                w,
+                Prim.xor.withArgs(mask, vs[lo]),
+                new Done(new Return(reuseOtherWords(vs, w, n, lo))));
+          }
+        });
+
+    generators.put(
+        "primBitTestBit",
+        new ConsumeBitmanipGenerator(1) {
+          Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
+            Temp w = new Temp();
+            return new Bind(
+                w, Prim.and.withArgs(mask, vs[lo]), new Done(Prim.neq.withArgs(w, IntConst.Zero)));
           }
         });
   }
