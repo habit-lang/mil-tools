@@ -278,10 +278,27 @@ public class External extends TopDefn {
     return (impl == null) ? null : impl.tops();
   }
 
+  protected abstract static class Generator {
+
+    /** Minimum number of type arguments needed to use this generator. */
+    int needs;
+
+    /** Default constructor. */
+    protected Generator(int needs) {
+      this.needs = needs;
+    }
+
+    /**
+     * Generate a tail as the implementation of an external described by a reference and list of
+     * types.
+     */
+    abstract Tail generate(Position pos, Type[] ts);
+  }
+
   /**
    * Stores a mapping from String references to generators for external function implementations.
    */
-  private static HashMap<String, ExternalGenerator> generators = new HashMap();
+  private static HashMap<String, Generator> generators = new HashMap();
 
   /**
    * Use the ref and ts fields to determine if we can generate an implementation, post
@@ -289,7 +306,7 @@ public class External extends TopDefn {
    */
   Tail generateTail() {
     if (ref != null && ts != null) { // Do not generate code if ref or ts is missing
-      ExternalGenerator gen = generators.get(ref);
+      Generator gen = generators.get(ref);
       if (gen != null && ts.length >= gen.needs) {
         return gen.generate(pos, ts);
       }
@@ -303,7 +320,7 @@ public class External extends TopDefn {
     // putchar :: Word -> Proc Word
     generators.put(
         "putchar",
-        new ExternalGenerator(0) {
+        new Generator(0) {
           Tail generate(Position pos, Type[] ts) {
             // Declare a new primitive
             Type wordTuple = Type.tuple(DataName.word.asType());
@@ -318,7 +335,7 @@ public class External extends TopDefn {
     // primBitFromLiteral v w ... :: Proxy -> Bit w
     generators.put(
         "primBitFromLiteral",
-        new ExternalGenerator(2) {
+        new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
             //  TODO: values returned by these getNat() calls should be representable with a single
             // int (no overflow)
@@ -341,7 +358,7 @@ public class External extends TopDefn {
     // primIxFromLiteral v m :: Proxy -> Ix m
     generators.put(
         "primIxFromLiteral",
-        new ExternalGenerator(2) {
+        new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger v = ts[0].getNat(); // Value of literal
             BigInteger m = ts[1].getIxArg(); // Modulus for index type
@@ -359,7 +376,7 @@ public class External extends TopDefn {
     // primIxMaxBound w :: Ix w
     generators.put(
         "primIxMaxBound",
-        new ExternalGenerator(1) {
+        new Generator(1) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getIxArg(); // Modulus for index type
             if (w != null) {
@@ -372,7 +389,7 @@ public class External extends TopDefn {
     // primIxToBits m w :: Ix m -> Bit w
     generators.put(
         "primIxToBits",
-        new ExternalGenerator(2) {
+        new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger m = ts[0].getIxArg(); // Modulus for index type
             BigInteger w = ts[1].getBitArg(); // Width of bitdata type
@@ -396,7 +413,7 @@ public class External extends TopDefn {
     // primModIx m w :: Bit w -> Ix m
     generators.put(
         "primModIx",
-        new ExternalGenerator(2) {
+        new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger m = ts[0].getIxArg(); // Modulus for index type
             BigInteger w = ts[1].getBitArg(); // Width of bitdata type
@@ -425,7 +442,7 @@ public class External extends TopDefn {
     // primRelaxIx n m :: Ix n -> Ix m
     generators.put(
         "primRelaxIx",
-        new ExternalGenerator(2) {
+        new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger n = ts[0].getIxArg(); // Smaller index modulus
             BigInteger m = ts[1].getIxArg(); // Larger index modulus
@@ -453,7 +470,7 @@ public class External extends TopDefn {
     // primIx... m :: Ix m -> Ix m -> Bool
     generators.put(
         ref,
-        new ExternalGenerator(1) {
+        new Generator(1) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger m = ts[0].getIxArg(); // Index upper bound
             if (m != null) {
@@ -481,7 +498,7 @@ public class External extends TopDefn {
     // primBitNot w :: Bit w -> Bit w
     generators.put(
         "primBitNot",
-        new ExternalGenerator(1) {
+        new Generator(1) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
@@ -515,7 +532,7 @@ public class External extends TopDefn {
     // primBitNegate w :: Bit w -> Bit w
     generators.put(
         "primBitNegate",
-        new ExternalGenerator(1) {
+        new Generator(1) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
@@ -552,7 +569,7 @@ public class External extends TopDefn {
     // primBitRef w :: Bit w -> Bit w -> Bit w
     generators.put(
         ref,
-        new ExternalGenerator(1) {
+        new Generator(1) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
@@ -594,7 +611,7 @@ public class External extends TopDefn {
     // primBitRef w :: Bit w -> Bit w -> Bit w
     generators.put(
         ref,
-        new ExternalGenerator(1) {
+        new Generator(1) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
@@ -632,7 +649,7 @@ public class External extends TopDefn {
     // primBitRef w :: Bit w -> Bit w -> Flag
     generators.put(
         ref,
-        new ExternalGenerator(1) {
+        new Generator(1) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
@@ -699,7 +716,7 @@ public class External extends TopDefn {
     // primBit... w ... :: Bit w -> Bit w -> Flag
     generators.put(
         ref,
-        new ExternalGenerator(1) {
+        new Generator(1) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
@@ -810,7 +827,7 @@ public class External extends TopDefn {
     // primBitBit w :: Ix w -> Bit w
     generators.put(
         "primBitBit",
-        new ExternalGenerator(1) {
+        new Generator(1) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
@@ -830,7 +847,7 @@ public class External extends TopDefn {
     // primBitShiftL w :: Bit w -> Ix w -> Bit w
     generators.put(
         "primBitShiftL",
-        new ExternalGenerator(1) {
+        new Generator(1) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
@@ -852,7 +869,7 @@ public class External extends TopDefn {
     // primBitShiftRu w :: Bit w -> Ix w -> Bit w
     generators.put(
         "primBitShiftRu",
-        new ExternalGenerator(1) {
+        new Generator(1) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
