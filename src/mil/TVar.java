@@ -92,8 +92,8 @@ public final class TVar extends TInd {
 
   /**
    * Calculate a type skeleton for this type, replacing occurrences of any of the TVar objects in
-   * generics with a TGen value corresponding to its index. Any Any other unbound TVars are kept as
-   * is. All TInd and bound TVar nodes are eliminated in the process.
+   * generics with a TGen value corresponding to its index. Any other unbound TVars are kept as is.
+   * All TInd and bound TVar nodes are eliminated in the process.
    */
   Type skeleton(Type[] thisenv, TVar[] generics) {
     if (bound != null) {
