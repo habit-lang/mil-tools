@@ -325,10 +325,7 @@ public class External extends TopDefn {
             // Declare a new primitive
             Type wordTuple = Type.tuple(DataName.word.asType());
             Prim p = new Prim("putchar", 1, 1, Prim.IMPURE, new BlockType(wordTuple, wordTuple));
-            return new PrimCall(p)
-                .makeClosure(pos, 1, 0) // k0{w} [] = putchar((w))
-                .makeClosure(pos, 0, 1) // k1{} [w] = k0{w}
-                .withArgs(Atom.noAtoms);
+            return new PrimCall(p).makeBinaryFuncClosure(pos, 1, 0);
           }
         });
   }
@@ -352,7 +349,7 @@ public class External extends TopDefn {
               // TODO: Temp.makeTemps(1) in the next line is used for the proxy argument; can we
               // eliminate this?
               ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(1), t);
-              return new ClosAlloc(k).withArgs(Atom.noAtoms);
+              return new ClosAlloc(k).withArgs();
             }
             return null;
           }
@@ -373,7 +370,7 @@ public class External extends TopDefn {
               // TODO: Temp.makeTemps(1) in the next line is used for the proxy argument; can we
               // eliminate this?
               ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(1), t);
-              return new ClosAlloc(k).withArgs(Atom.noAtoms);
+              return new ClosAlloc(k).withArgs();
             }
             return null;
           }
@@ -410,7 +407,7 @@ public class External extends TopDefn {
                 as[i] = IntConst.Zero;
               }
               ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, vs, new Return(as));
-              return new ClosAlloc(k).withArgs(Atom.noAtoms);
+              return new ClosAlloc(k).withArgs();
             }
             return null;
           }
@@ -430,14 +427,12 @@ public class External extends TopDefn {
               if ((mod & (mod - 1)) == 0) { // Test for power of two
                 Temp[] args = Temp.makeTemps(n);
                 Tail t = Prim.and.withArgs(args[0], mod - 1);
-                return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t))
-                    .withArgs(Atom.noAtoms);
+                return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t)).withArgs();
               }
               if (n == 1) {
                 Temp[] args = Temp.makeTemps(n);
                 Tail t = Prim.rem.withArgs(args[0], mod);
-                return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t))
-                    .withArgs(Atom.noAtoms);
+                return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t)).withArgs();
               }
               // TODO: add support for n>1, mod not a power of two ...
             }
@@ -460,7 +455,7 @@ public class External extends TopDefn {
               // code generator (although that will likely not happen in practice because this
               // definition should be inlined
               // by the optimizer).
-              return new Return().makeClosure(pos, 0, 1).withArgs(Atom.noAtoms);
+              return new Return().makeUnaryFuncClosure(pos, 1);
             }
             return null;
           }
@@ -480,10 +475,7 @@ public class External extends TopDefn {
           Tail generate(Position pos, Type[] ts) {
             BigInteger m = ts[0].getIxArg(); // Index upper bound
             if (m != null) {
-              return new PrimCall(cmp)
-                  .makeClosure(pos, 1, 1)
-                  .makeClosure(pos, 0, 1)
-                  .withArgs(Atom.noAtoms);
+              return new PrimCall(cmp).makeBinaryFuncClosure(pos, 1, 1);
             }
             return null;
           }
@@ -527,9 +519,7 @@ public class External extends TopDefn {
                 code = new Bind(v, Prim.not.withArgs(vs[n] = new Temp()), code);
               }
 
-              return new BlockCall(new Block(pos, vs, code)) // b[v0,...] = ...
-                  .makeClosure(pos, 0, vs.length) // k{} [v0,...] = b[v0,...]
-                  .withArgs(Atom.noAtoms); // return k{}
+              return new BlockCall(new Block(pos, vs, code)).makeUnaryFuncClosure(pos, vs.length);
             }
             return null;
           }
@@ -560,9 +550,7 @@ public class External extends TopDefn {
                 code = new Bind(cs[i], p.withArgs(as[i], bs[i]), code);
               }
               return new BlockCall(new Block(pos, Temp.append(as, bs), code))
-                  .makeClosure(pos, n, n) // Closure: k0{a0,...} [b0,...] = b[a0,...,b0,...]
-                  .makeClosure(pos, 0, n) // Closure: k1{} [a0,...] = k0{a0,...}
-                  .withArgs(Atom.noAtoms);
+                  .makeBinaryFuncClosure(pos, n, n);
             }
             return null;
           }
@@ -589,9 +577,7 @@ public class External extends TopDefn {
               if (n == 1) {
                 Temp[] args = Temp.makeTemps(1);
                 Code code = maskTail(Prim.neg.withArgs(args), width);
-                return new BlockCall(new Block(pos, args, code))
-                    .makeClosure(pos, 0, 1) // Closure: k1{} [a] = b[a]
-                    .withArgs(Atom.noAtoms);
+                return new BlockCall(new Block(pos, args, code)).makeUnaryFuncClosure(pos, 1);
               }
             }
             return null;
@@ -629,10 +615,7 @@ public class External extends TopDefn {
               if (n == 1) {
                 Temp[] args = Temp.makeTemps(2);
                 Code code = maskTail(p.withArgs(args), width);
-                return new BlockCall(new Block(pos, args, code))
-                    .makeClosure(pos, 1, 1) // Closure: k0{a} [b] = b[a,b]
-                    .makeClosure(pos, 0, 1) // Closure: k1{} [a] = k0{a}
-                    .withArgs(Atom.noAtoms);
+                return new BlockCall(new Block(pos, args, code)).makeBinaryFuncClosure(pos, 1, 1);
               }
             }
             return null;
@@ -666,9 +649,7 @@ public class External extends TopDefn {
               int n = Type.numWords(width);
               if (n > 0) {
                 return new BlockCall(bitEqBlock(pos, n, test, bearly))
-                    .makeClosure(pos, n, n) // Closure: k0{a0,...} [b0,...] = b[a0,...,b0,...]
-                    .makeClosure(pos, 0, n) // Closure: k1{} [a0,...] = k0{a0,...}
-                    .withArgs(Atom.noAtoms);
+                    .makeBinaryFuncClosure(pos, n, n);
               }
             }
             return null;
@@ -733,9 +714,7 @@ public class External extends TopDefn {
               int n = Type.numWords(width);
               if (n > 0) {
                 return new BlockCall(bitLexCompBlock(pos, n, lsw, slsw))
-                    .makeClosure(pos, n, n) // Closure: k0{a0,...} [b0,...] = b[a0,...,b0,...]
-                    .makeClosure(pos, 0, n) // Closure: k1{} [a0,...] = k0{a0,...}
-                    .withArgs(Atom.noAtoms);
+                    .makeBinaryFuncClosure(pos, n, n);
               }
             }
             return null;
@@ -865,9 +844,7 @@ public class External extends TopDefn {
       if (w != null) {
         int width = w.intValue();
         int n = Type.numWords(width);
-        return new BlockCall(decisionTree(pos, n, 0, n - 1, 0))
-            .makeClosure(pos, 0, 1) // Closure: k0{} [i] = b[i]
-            .withArgs(Atom.noAtoms);
+        return new BlockCall(decisionTree(pos, n, 0, n - 1, 0)).makeUnaryFuncClosure(pos, 1);
       }
       return null;
     }
@@ -885,10 +862,7 @@ public class External extends TopDefn {
       if (w != null) {
         int width = w.intValue();
         int n = Type.numWords(width);
-        return new BlockCall(decisionTree(pos, n, 0, n - 1, n))
-            .makeClosure(pos, n, 1) // Closure: k0{v0,...} [i] = b[v0,...i]
-            .makeClosure(pos, 0, n) // Closure: k1{} [v0,...] = k0{v0,...}
-            .withArgs(Atom.noAtoms);
+        return new BlockCall(decisionTree(pos, n, 0, n - 1, n)).makeBinaryFuncClosure(pos, n, 1);
       }
       return null;
     }
@@ -983,7 +957,7 @@ public class External extends TopDefn {
               // ... unless this definition is optimized away (which, it should be ... assuming that
               // the optimizer is invoked ...)
               ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(n), t);
-              return new ClosAlloc(k).withArgs(Atom.noAtoms);
+              return new ClosAlloc(k).withArgs();
             }
             return null;
           }
@@ -1004,10 +978,7 @@ public class External extends TopDefn {
               if (n == 1) { // Do not handle Bit 0 or vectors larger than one word
                 Temp[] args = Temp.makeTemps(2);
                 Code code = maskTail(Prim.shl.withArgs(args), width);
-                return new BlockCall(new Block(pos, args, code))
-                    .makeClosure(pos, 1, 1) // Closure: k0{a} [b] = b[a,b]
-                    .makeClosure(pos, 0, 1) // Closure: k1{} [a] = k0{a}
-                    .withArgs(Atom.noAtoms);
+                return new BlockCall(new Block(pos, args, code)).makeBinaryFuncClosure(pos, 1, 1);
               }
             }
             return null;
@@ -1024,9 +995,7 @@ public class External extends TopDefn {
               int width = w.intValue();
               int n = Type.numWords(width);
               return new BlockCall(shiftRightBlock(pos, n, 0, n - 1))
-                  .makeClosure(pos, n, 1) // Closure: k0{v0,...} s = b[v0,...,s]
-                  .makeClosure(pos, 0, n) // Closure: k1{} [v0,...] = k0{v0,...}
-                  .withArgs(Atom.noAtoms);
+                  .makeBinaryFuncClosure(pos, n, 1);
             }
             return null;
           }

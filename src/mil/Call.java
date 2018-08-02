@@ -508,11 +508,33 @@ public abstract class Call extends Tail {
    * (with the assumption that this call requires (m+n) arguments), returning a new Call for the
    * ClosureDefn (without a specified list of arguments) as the result.
    */
-  Call makeClosure(Position pos, int m, int n) {
+  private Call makeClosure(Position pos, int m, int n) {
     Temp[] stored = Temp.makeTemps(m);
     Temp[] args = Temp.makeTemps(n);
     return new ClosAlloc(
         new ClosureDefn(pos, stored, args, this.withArgs(Temp.append(stored, args))));
+  }
+
+  /**
+   * From this call, which requires n MIL arguments, construct the closure structures for a unary
+   * function that takes m word values (that together represent the argument to the function).
+   */
+  Tail makeUnaryFuncClosure(Position pos, int m) {
+    return this // Defines:
+        .makeClosure(pos, 0, m) //    k0{} [a1,..,am] = ...(a1,..,am)
+        .withArgs(); // Returns: k0{}
+  }
+
+  /**
+   * From this call, which requires m+n MIL arguments, construct the closure structures for a binary
+   * function that takes m word values (representing the first argument to the function) and then n
+   * word values (representing the second argument).
+   */
+  Tail makeBinaryFuncClosure(Position pos, int m, int n) {
+    return this // Defines:
+        .makeClosure(pos, m, n) //    k0{a1,..,am} [b1,...,bn] = ...(a1,...,am,b1,...,bn)
+        .makeClosure(pos, 0, m) //    k1{} [a1,..,am]          = k0{a1,..,am}
+        .withArgs(); // Returns: k1{}
   }
 
   Tail repTransform(RepTypeSet set, RepEnv env) {
