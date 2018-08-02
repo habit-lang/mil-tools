@@ -413,6 +413,40 @@ public class External extends TopDefn {
           }
         });
 
+    // primIxShiftL w p :: Ix n -> Ix p -> Ix n,  where w=2^p
+    generators.put(
+        "primIxShiftL",
+        new Generator(2) {
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger w = ts[0].getIxArg(); // Modulus for index type
+            BigInteger p = ts[1].getIxArg(); // Modulus for shift amount
+            if (w != null
+                && p != null
+                && BigInteger.ONE.shiftLeft(p.intValue()).compareTo(w) == 0) {
+              Temp[] vs = Temp.makeTemps(2); // One word for each Ix argument
+              Block b = new Block(pos, vs, maskTail(Prim.shl.withArgs(vs[0], vs[1]), w.intValue()));
+              return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
+            }
+            return null;
+          }
+        });
+
+    // primIxShiftR w p :: Ix n -> Ix p -> Ix n,  where w=2^p
+    generators.put(
+        "primIxShiftR",
+        new Generator(2) {
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger w = ts[0].getIxArg(); // Modulus for index type
+            BigInteger p = ts[1].getIxArg(); // Modulus for shift amount
+            if (w != null
+                && p != null
+                && BigInteger.ONE.shiftLeft(p.intValue()).compareTo(w) == 0) {
+              return new PrimCall(Prim.lshr).makeBinaryFuncClosure(pos, 1, 1);
+            }
+            return null;
+          }
+        });
+
     // primModIx m w :: Bit w -> Ix m
     generators.put(
         "primModIx",
