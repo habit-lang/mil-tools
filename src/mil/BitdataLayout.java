@@ -230,12 +230,12 @@ public class BitdataLayout extends DataName {
         code);
   }
 
-  static Block generateBitConcat(int u, int v) { // :: Bit u -> Bit v -> Bit (u+v)
+  static Block generateBitConcat(Position pos, int u, int v) { // :: Bit u -> Bit v -> Bit (u+v)
     Temp[] as = Temp.makeTemps(Type.numWords(u)); // as :: Bit u
     Temp[] bs = Temp.makeTemps(Type.numWords(v)); // bs :: Bit v
     Temp[] ws = Temp.makeTemps(Type.numWords(u + v));
     return new Block(
-        BuiltinPosition.position,
+        pos,
         Temp.append(as, bs),
         initialize(
             u + v,

@@ -354,6 +354,24 @@ public class External extends TopDefn {
             return null;
           }
         });
+
+    // primBitConcat m n p :: Bit m -> Bit n -> Bit p,  where m+n = p
+    generators.put(
+        "primBitConcat",
+        new Generator(3) {
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger m = ts[0].getBitArg(); // Width of first input (most significant bits)
+            BigInteger n = ts[1].getBitArg(); // Width of second input (least significant bits)
+            BigInteger p = ts[2].getBitArg(); // width of result
+            if (m != null && n != null && p != null && m.add(n).compareTo(p) == 0) {
+              int mw = m.intValue();
+              int nw = n.intValue();
+              return new BlockCall(BitdataLayout.generateBitConcat(pos, mw, nw))
+                  .makeBinaryFuncClosure(pos, Type.numWords(mw), Type.numWords(nw));
+            }
+            return null;
+          }
+        });
   }
 
   static {
