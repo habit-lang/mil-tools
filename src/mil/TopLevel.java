@@ -312,18 +312,20 @@ public class TopLevel extends TopDefn {
   private int summary;
 
   void findIn(TopLevels[] topLevels) {
-    summary = tail.summary();
-    int idx = this.summary % topLevels.length;
-    if (idx < 0) idx += topLevels.length;
-    for (TopLevels ts = topLevels[idx]; ts != null; ts = ts.next) {
-      if (ts.head.summary == this.summary
-          && this.tail.alphaTail(null, ts.head.tail, null)
-          && this.lhs.length == ts.head.lhs.length) {
-        MILProgram.report("Identifying topdefn " + toString() + " with " + ts.head.toString());
-        this.tail = new Return(ts.head.tops());
+    if (tail.isPure()) {
+      summary = tail.summary();
+      int idx = this.summary % topLevels.length;
+      if (idx < 0) idx += topLevels.length;
+      for (TopLevels ts = topLevels[idx]; ts != null; ts = ts.next) {
+        if (ts.head.summary == this.summary
+            && this.tail.alphaTail(null, ts.head.tail, null)
+            && this.lhs.length == ts.head.lhs.length) {
+          MILProgram.report("Identifying topdefn " + toString() + " with " + ts.head.toString());
+          this.tail = new Return(ts.head.tops());
+        }
       }
+      topLevels[idx] = new TopLevels(this, topLevels[idx]);
     }
-    topLevels[idx] = new TopLevels(this, topLevels[idx]);
   }
 
   /**
