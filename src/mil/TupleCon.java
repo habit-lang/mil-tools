@@ -112,6 +112,16 @@ public class TupleCon extends PrimTycon {
   }
 
   /**
+   * Test to determine if this type is a tuple of the form [t1,...,tn], returning either the
+   * components of the tuple in an array, or null if there is no match. The argument is the number
+   * of potential tuple components that have already been seen; the initial call should use 0 for
+   * this argument.
+   */
+  Type[] tupleComponents(int n) {
+    return (n == arity) ? new Type[n] : null;
+  }
+
+  /**
    * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full
    * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.
    */

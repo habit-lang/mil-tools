@@ -312,6 +312,30 @@ public abstract class Tycon extends TypeName {
   }
 
   /**
+   * Worker function for funcFromTuple(). Tests to determine if this skeleton is an application of
+   * (->>) to a tuple of types, returning either the tuple components in an array or null if there
+   * is no match.
+   */
+  Type[] funcFromTuple1() {
+    return null;
+  }
+
+  /** Test to determine if this type is the MILArrow, ->>, without any arguments. */
+  boolean isMILArrow() {
+    return false;
+  }
+
+  /**
+   * Test to determine if this type is a tuple of the form [t1,...,tn], returning either the
+   * components of the tuple in an array, or null if there is no match. The argument is the number
+   * of potential tuple components that have already been seen; the initial call should use 0 for
+   * this argument.
+   */
+  Type[] tupleComponents(int n) {
+    return null;
+  }
+
+  /**
    * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full
    * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.
    */

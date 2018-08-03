@@ -727,6 +727,78 @@ public abstract class Type extends Scheme {
   }
 
   /**
+   * Continue the work of generatePrim() in the special case where we have found a type of the form
+   * [d1,...,dn] ->> rt. The type rt is the receiver here and the types d1,...,dn are in the array
+   * ds.
+   */
+  Call generatePrim(Position pos, String id, Type[] ds) {
+    Type[] rs = tupleComponents(0); // Look for tuple components from this range type
+    if (rs == null) { // Fail if this is not a tuple type
+      return null;
+    } else if (rs.length == 1) { // Possible recursion ,,,
+      Call call = rs[0].generatePrimNested(pos, id, ds);
+      if (call != null) {
+        return call;
+      }
+    }
+    BlockType bt = new BlockType(Type.tuple(ds), Type.tuple(rs));
+    return new PrimCall(new Prim(id, ds.length, rs.length, Prim.IMPURE, bt));
+  }
+
+  /**
+   * Test to see whether the receiver matches the grammar for pt, but with the additional
+   * information that it appears in the context of an enclosing type of the form [d1,...,dn] ->>
+   * [this].
+   */
+  Call generatePrimNested(Position pos, String id, Type[] ds) {
+    return null;
+  }
+
+  /** Build a new array that combines the elements from the left array with those from the right. */
+  public static Type[] append(Type[] left, Type[] right) {
+    int l = left.length;
+    if (l == 0) {
+      return right;
+    }
+    int r = right.length;
+    if (r == 0) {
+      return left;
+    }
+    Type[] n = new Type[l + r];
+    for (int i = 0; i < l; i++) {
+      n[i] = left[i];
+    }
+    for (int i = 0; i < r; i++) {
+      n[l + i] = right[i];
+    }
+    return n;
+  }
+
+  /**
+   * Worker function for funcFromTuple(). Tests to determine if this skeleton is an application of
+   * (->>) to a tuple of types, returning either the tuple components in an array or null if there
+   * is no match.
+   */
+  Type[] funcFromTuple1() {
+    return null;
+  }
+
+  /** Test to determine if this type is the MILArrow, ->>, without any arguments. */
+  boolean isMILArrow() {
+    return false;
+  }
+
+  /**
+   * Test to determine if this type is a tuple of the form [t1,...,tn], returning either the
+   * components of the tuple in an array, or null if there is no match. The argument is the number
+   * of potential tuple components that have already been seen; the initial call should use 0 for
+   * this argument.
+   */
+  Type[] tupleComponents(int n) {
+    return null;
+  }
+
+  /**
    * Returns true if bitdata values of this type use the lo bits representation, or false for hi
    * bits. This method should only be used for types that have an associated bit size.
    */

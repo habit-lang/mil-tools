@@ -310,24 +310,14 @@ public class External extends TopDefn {
       if (gen != null && ts.length >= gen.needs) {
         return gen.generate(pos, ts);
       }
+      if (ts.length == 0) {
+        Tail t = declared.generatePrim(pos, ref);
+        if (t != null) {
+          return t;
+        }
+      }
     }
     return null; // TODO: fix this!
-  }
-
-  static {
-
-    // TODO: this is a temporary placeholder that should be removed ...
-    // putchar :: Word -> Proc Word
-    generators.put(
-        "putchar",
-        new Generator(0) {
-          Tail generate(Position pos, Type[] ts) {
-            // Declare a new primitive
-            Type wordTuple = Type.tuple(DataName.word.asType());
-            Prim p = new Prim("putchar", 1, 1, Prim.IMPURE, new BlockType(wordTuple, wordTuple));
-            return new PrimCall(p).makeBinaryFuncClosure(pos, 1, 0);
-          }
-        });
   }
 
   static {

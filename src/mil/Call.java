@@ -508,7 +508,7 @@ public abstract class Call extends Tail {
    * (with the assumption that this call requires (m+n) arguments), returning a new Call for the
    * ClosureDefn (without a specified list of arguments) as the result.
    */
-  private Call makeClosure(Position pos, int m, int n) {
+  public Call makeClosure(Position pos, int m, int n) {
     Temp[] stored = Temp.makeTemps(m);
     Temp[] args = Temp.makeTemps(n);
     return new ClosAlloc(

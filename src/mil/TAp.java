@@ -20,6 +20,7 @@ package mil;
 
 import compiler.*;
 import compiler.Failure;
+import compiler.Position;
 import core.*;
 import obdd.Pat;
 
@@ -253,6 +254,61 @@ public class TAp extends Type {
    */
   Type[] bitdataTyconRep(Type a) {
     return fun.bitdataTyconRep2(arg, a);
+  }
+
+  /**
+   * Generate a call to a new primitive, wrapped in an appropriate chain of closure definitions, if
+   * this type can be derived from pt in the following grammar: pt ::= [d1,...,dn] ->> rt ; rt ::=
+   * [pt] | [r1,...,rm] .
+   */
+  Tail generatePrim(Position pos, String id) {
+    Type[] ds = fun.funcFromTuple1();
+    if (ds != null) {
+      Call call = arg.generatePrim(pos, id, ds);
+      if (call != null) {
+        return call.makeClosure(pos, 0, ds.length).withArgs();
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Test to see whether the receiver matches the grammar for pt, but with the additional
+   * information that it appears in the context of an enclosing type of the form [d1,...,dn] ->>
+   * [this].
+   */
+  Call generatePrimNested(Position pos, String id, Type[] ds) {
+    Type[] ds1 = fun.funcFromTuple1();
+    if (ds1 != null) {
+      Call call = arg.generatePrim(pos, id, Type.append(ds, ds1));
+      if (call != null) {
+        return call.makeClosure(pos, ds.length, ds1.length);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Worker function for funcFromTuple(). Tests to determine if this skeleton is an application of
+   * (->>) to a tuple of types, returning either the tuple components in an array or null if there
+   * is no match.
+   */
+  Type[] funcFromTuple1() {
+    return fun.isMILArrow() ? arg.tupleComponents(0) : null;
+  }
+
+  /**
+   * Test to determine if this type is a tuple of the form [t1,...,tn], returning either the
+   * components of the tuple in an array, or null if there is no match. The argument is the number
+   * of potential tuple components that have already been seen; the initial call should use 0 for
+   * this argument.
+   */
+  Type[] tupleComponents(int n) {
+    Type[] ts = fun.tupleComponents(n + 1);
+    if (ts != null) {
+      ts[ts.length - (n + 1)] = arg;
+    }
+    return ts;
   }
 
   /**

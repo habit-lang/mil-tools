@@ -19,6 +19,7 @@
 package mil;
 
 import compiler.*;
+import compiler.Position;
 import core.*;
 
 /**
@@ -94,4 +95,13 @@ public abstract class Scheme {
 
   /** Return the representation vector for values of this type. */
   abstract Type[] repCalc();
+
+  /**
+   * Generate a call to a new primitive, wrapped in an appropriate chain of closure definitions, if
+   * this type can be derived from pt in the following grammar: pt ::= [d1,...,dn] ->> rt ; rt ::=
+   * [pt] | [r1,...,rm] .
+   */
+  Tail generatePrim(Position pos, String id) {
+    return null;
+  }
 }

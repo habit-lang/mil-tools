@@ -34,6 +34,11 @@ public class MILArrow extends PrimTycon {
 
   public static final Tycon milArrow = new MILArrow();
 
+  /** Test to determine if this type is the MILArrow, ->>, without any arguments. */
+  boolean isMILArrow() {
+    return true;
+  }
+
   /**
    * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full
    * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.

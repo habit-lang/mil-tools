@@ -20,6 +20,7 @@ package mil;
 
 import compiler.*;
 import compiler.Failure;
+import compiler.Position;
 import core.*;
 import obdd.Pat;
 
@@ -350,6 +351,53 @@ public class TTycon extends TConst {
    */
   Type[] bitdataTyconRep2(Type a, Type b) {
     return name.bitdataTyconRep2(a, b);
+  }
+
+  /**
+   * Generate a call to a new primitive, wrapped in an appropriate chain of closure definitions, if
+   * this type can be derived from pt in the following grammar: pt ::= [d1,...,dn] ->> rt ; rt ::=
+   * [pt] | [r1,...,rm] .
+   */
+  Tail generatePrim(Position pos, String id) {
+    Synonym s = name.isSynonym();
+    return (s != null) ? s.getExpansion().generatePrim(pos, id) : null;
+  }
+
+  /**
+   * Test to see whether the receiver matches the grammar for pt, but with the additional
+   * information that it appears in the context of an enclosing type of the form [d1,...,dn] ->>
+   * [this].
+   */
+  Call generatePrimNested(Position pos, String id, Type[] ds) {
+    Synonym s = name.isSynonym();
+    return (s != null) ? s.getExpansion().generatePrimNested(pos, id, ds) : null;
+  }
+
+  /**
+   * Worker function for funcFromTuple(). Tests to determine if this skeleton is an application of
+   * (->>) to a tuple of types, returning either the tuple components in an array or null if there
+   * is no match.
+   */
+  Type[] funcFromTuple1() {
+    Synonym s = name.isSynonym();
+    return (s != null) ? s.getExpansion().funcFromTuple1() : null;
+  }
+
+  /** Test to determine if this type is the MILArrow, ->>, without any arguments. */
+  boolean isMILArrow() {
+    Synonym s = name.isSynonym();
+    return (s != null) ? s.getExpansion().isMILArrow() : name.isMILArrow();
+  }
+
+  /**
+   * Test to determine if this type is a tuple of the form [t1,...,tn], returning either the
+   * components of the tuple in an array, or null if there is no match. The argument is the number
+   * of potential tuple components that have already been seen; the initial call should use 0 for
+   * this argument.
+   */
+  Type[] tupleComponents(int n) {
+    Synonym s = name.isSynonym();
+    return (s != null) ? s.getExpansion().tupleComponents(n) : name.tupleComponents(n);
   }
 
   boolean useBitdataLo(Type t, Type s) {
