@@ -186,8 +186,10 @@ public class External extends TopDefn {
 
   void collect(TypeSet set) {
     declared = declared.canonScheme(set);
-    for (int i = 0; i < ts.length; i++) {
-      ts[i] = ts[i].canonType(set);
+    if (ts != null) {
+      for (int i = 0; i < ts.length; i++) {
+        ts[i] = ts[i].canonType(set);
+      }
     }
   }
 

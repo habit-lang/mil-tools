@@ -32,9 +32,9 @@ public class AreaVar extends Name {
 
   void addArea(Handler handler, MILEnv milenv, Type type) {
     if (milenv.findTop(id) == null) {
-      TopLevel tl = new TopLevel(pos, id, PrimCall.loop); // TODO: replace tail with something else!
-      tl.setDeclared(0, type);
-      milenv.addTop(id, new TopDef(tl, 0));
+      // TODO: The final code generator will need a strategy for allocating the areas that
+      // are declared here as externals ...
+      milenv.addTop(id, new TopExt(type, new External(pos, id, type, null, null)));
     } else {
       handler.report(
           new Failure(
