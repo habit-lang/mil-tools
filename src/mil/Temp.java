@@ -63,7 +63,13 @@ public class Temp extends Atom {
   /** Build a new array that combines the elements from the left array with those from the right. */
   public static Temp[] append(Temp[] left, Temp[] right) {
     int l = left.length;
+    if (l == 0) {
+      return right;
+    }
     int r = right.length;
+    if (r == 0) {
+      return left;
+    }
     Temp[] n = new Temp[l + r];
     for (int i = 0; i < l; i++) {
       n[i] = left[i];

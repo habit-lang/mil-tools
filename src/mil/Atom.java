@@ -115,7 +115,13 @@ public abstract class Atom {
   /** Build a new array that combines the elements from the left array with those from the right. */
   public static Atom[] append(Atom[] left, Atom[] right) {
     int l = left.length;
+    if (l == 0) {
+      return right;
+    }
     int r = right.length;
+    if (r == 0) {
+      return left;
+    }
     Atom[] n = new Atom[l + r];
     for (int i = 0; i < l; i++) {
       n[i] = left[i];
