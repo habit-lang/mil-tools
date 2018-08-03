@@ -434,11 +434,20 @@ public class CoreParser extends Phase implements CoreTokens {
         {
           String id = lexer.getLexeme();
           if (lexer.nextToken(/* id */ ) == BOPEN) {
-            if (lexer.nextToken(/* BOPEN */ ) != VARID) {
-              throw missing("primitive reference");
+            switch (lexer.nextToken(/* BOPEN */ )) {
+              case VARID:
+              case VARSYM:
+              case CONID:
+              case CONSYM:
+              case STRLIT:
+              case NATLIT:
+              case BITLIT:
+                break;
+              default:
+                throw missing("primitive reference");
             }
             String ref = lexer.getLexeme();
-            lexer.nextToken(/* VARID */ );
+            lexer.nextToken(/* {VAR,CON}{ID,SYM}|STRLIT|NATLIT|BITLIT */ );
             TypeExp[] spec = typeAtomExps(0);
             require(BCLOSE);
             return new ExternalId(pos, id, ref, spec);
