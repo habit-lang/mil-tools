@@ -439,7 +439,7 @@ public abstract class Defn {
   /** Update all declared types with canonical versions. */
   abstract void canonDeclared(MILSpec spec);
 
-  void topLevelrepTransform(RepTypeSet set) {
+  void topLevelrepTransform(Handler handler, RepTypeSet set) {
     /* do nothing */
   }
 

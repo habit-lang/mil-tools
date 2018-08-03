@@ -431,7 +431,7 @@ public class TopLevel extends TopDefn {
     }
   }
 
-  void topLevelrepTransform(RepTypeSet set) {
+  void topLevelrepTransform(Handler handler, RepTypeSet set) {
     // Is a change of representation required?
     Type[][] reps = TopLhs.reps(lhs);
     if (reps != null) {

@@ -236,11 +236,11 @@ public class External extends TopDefn {
     declared = declared.canonScheme(spec);
   }
 
-  void topLevelrepTransform(RepTypeSet set) {
+  void topLevelrepTransform(Handler handler, RepTypeSet set) {
     declared = declared.canonType(set);
     debug.Log.println("Determining representation for external " + id + " :: " + declared);
     Type[] r = declared.repCalc();
-    Tail t = generateTail();
+    Tail t = generateTail(handler);
     if (t == null) { // Program will continue to use an external definition
       if (r != null) { // Check for a change in representation
         if (r.length != 1) {
@@ -304,7 +304,7 @@ public class External extends TopDefn {
    * Use the ref and ts fields to determine if we can generate an implementation, post
    * representation transformation, for an external primitive.
    */
-  Tail generateTail() {
+  Tail generateTail(Handler handler) {
     if (ref != null && ts != null) { // Do not generate code if ref or ts is missing
       Generator gen = generators.get(ref);
       if (gen != null && ts.length >= gen.needs) {
@@ -316,8 +316,15 @@ public class External extends TopDefn {
           return t;
         }
       }
+      handler.report(
+          new Failure(
+              pos,
+              "Unable to generate implementation for \""
+                  + ref
+                  + "\" with type parameters "
+                  + Type.toString(ts)));
     }
-    return null; // TODO: fix this!
+    return null;
   }
 
   static {
