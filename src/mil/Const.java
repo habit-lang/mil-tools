@@ -20,6 +20,7 @@ package mil;
 
 import compiler.*;
 import core.*;
+import java.math.BigInteger;
 
 public abstract class Const extends Atom {
 
@@ -70,5 +71,24 @@ public abstract class Const extends Atom {
 
   Atom[] repArg(RepTypeSet set, RepEnv env) {
     return null;
+  }
+
+  /** Construct an array of Atoms that represents the bit vector with the given value and width. */
+  public static Atom[] atoms(BigInteger v, int w) {
+    if (w == 1) {
+      return new FlagConst[] {FlagConst.fromBool(v.compareTo(BigInteger.ZERO) != 0)};
+    } else {
+      IntConst[] as = new IntConst[Type.numWords(w)];
+      int i = 0; // index into array as (least significant word first)
+      while (w > 0) { // while there are still bits to write
+        int bits = v.intValue(); // get least significant bits
+        if ((w -= Type.WORDSIZE) < 0) { // truncate if necessary
+          bits &= (1 << (Type.WORDSIZE + w)) - 1;
+        }
+        as[i++] = new IntConst(bits); // save word value
+        v = v.shiftRight(Type.WORDSIZE); // discard least significant bits
+      }
+      return as;
+    }
   }
 }

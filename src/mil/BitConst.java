@@ -97,11 +97,11 @@ public class BitConst extends Const {
 
   /** Return the representation vector for this Atom. */
   Type[] repCalc() {
-    return Type.words(Type.numWords(width));
+    return Type.repBits(width);
   }
 
   Atom[] repArg(RepTypeSet set, RepEnv env) {
-    return IntConst.words(val, width);
+    return Const.atoms(val, width);
   }
 
   /** Calculate an LLVM Value corresponding to a given MIL argument. */

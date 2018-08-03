@@ -342,7 +342,7 @@ public class External extends TopDefn {
                 && w != null
                 && v.compareTo(BigInteger.ZERO) >= 0
                 && BigInteger.ONE.shiftLeft(w.intValue()).compareTo(v) > 0) {
-              Tail t = new Return(IntConst.words(v, w.intValue()));
+              Tail t = new Return(Const.atoms(v, w.intValue()));
               // TODO: Temp.makeTemps(1) in the next line is used for the proxy argument; can we
               // eliminate this?
               ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(1), t);

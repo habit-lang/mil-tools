@@ -221,13 +221,7 @@ public class BitdataLayout extends DataName {
    * value.
    */
   static Code initialize(int total, Temp[] ws, BigInteger bits, Code code) {
-    return new Bind(
-        ws,
-        new Return(
-            (total == 1)
-                ? new Atom[] {FlagConst.fromBool(bits.testBit(0))}
-                : IntConst.words(bits, total)),
-        code);
+    return new Bind(ws, new Return(Const.atoms(bits, total)), code);
   }
 
   static Block generateBitConcat(Position pos, int u, int v) { // :: Bit u -> Bit v -> Bit (u+v)
@@ -283,8 +277,8 @@ public class BitdataLayout extends DataName {
       maskTestBlock = new Block(cf.getPos(), "masktest_" + cf, vs, new Done(t));
     } else {
       int n = Type.numWords(total); // number of words in output
-      Atom[] mask = IntConst.words(maskNat, total);
-      Atom[] bits = IntConst.words(bitsNat, total);
+      Atom[] mask = Const.atoms(maskNat, total);
+      Atom[] bits = Const.atoms(bitsNat, total);
       maskTestBlock = eq ? Block.returnFalse : Block.returnTrue; // base case, if no data to compare
 
       for (int i = 1; i <= n; i++) {
