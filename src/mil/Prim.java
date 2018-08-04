@@ -334,6 +334,14 @@ public class Prim {
     }
 
     /**
+     * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+     * bnot(this(args)) == p(args), or null if there is no such primitive.
+     */
+    Prim bnotDual() {
+      return Prim.beq;
+    }
+
+    /**
      * Generate an LLVM right hand side for this binary MIL primitive with the given values as
      * input.
      */
@@ -352,6 +360,14 @@ public class Prim {
 
     public boolean op(boolean n, boolean m) {
       return n == m;
+    }
+
+    /**
+     * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+     * bnot(this(args)) == p(args), or null if there is no such primitive.
+     */
+    Prim bnotDual() {
+      return Prim.bxor;
     }
 
     /**
@@ -376,6 +392,14 @@ public class Prim {
     }
 
     /**
+     * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+     * bnot(this(args)) == p(args), or null if there is no such primitive.
+     */
+    Prim bnotDual() {
+      return Prim.bge;
+    }
+
+    /**
      * Generate an LLVM right hand side for this binary MIL primitive with the given values as
      * input.
      */
@@ -394,6 +418,14 @@ public class Prim {
 
     public boolean op(boolean n, boolean m) {
       return !n | m;
+    }
+
+    /**
+     * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+     * bnot(this(args)) == p(args), or null if there is no such primitive.
+     */
+    Prim bnotDual() {
+      return Prim.bgt;
     }
 
     /**
@@ -418,6 +450,14 @@ public class Prim {
     }
 
     /**
+     * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+     * bnot(this(args)) == p(args), or null if there is no such primitive.
+     */
+    Prim bnotDual() {
+      return Prim.ble;
+    }
+
+    /**
      * Generate an LLVM right hand side for this binary MIL primitive with the given values as
      * input.
      */
@@ -436,6 +476,14 @@ public class Prim {
 
     public boolean op(boolean n, boolean m) {
       return n | !m;
+    }
+
+    /**
+     * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+     * bnot(this(args)) == p(args), or null if there is no such primitive.
+     */
+    Prim bnotDual() {
+      return Prim.blt;
     }
 
     /**
@@ -707,6 +755,14 @@ public class Prim {
     }
 
     /**
+     * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+     * bnot(this(args)) == p(args), or null if there is no such primitive.
+     */
+    Prim bnotDual() {
+      return Prim.neq;
+    }
+
+    /**
      * Generate an LLVM right hand side for this binary MIL primitive with the given values as
      * input.
      */
@@ -725,6 +781,14 @@ public class Prim {
 
     public boolean op(int n, int m) {
       return n != m;
+    }
+
+    /**
+     * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+     * bnot(this(args)) == p(args), or null if there is no such primitive.
+     */
+    Prim bnotDual() {
+      return Prim.eq;
     }
 
     /**
@@ -749,6 +813,14 @@ public class Prim {
     }
 
     /**
+     * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+     * bnot(this(args)) == p(args), or null if there is no such primitive.
+     */
+    Prim bnotDual() {
+      return Prim.sge;
+    }
+
+    /**
      * Generate an LLVM right hand side for this binary MIL primitive with the given values as
      * input.
      */
@@ -767,6 +839,14 @@ public class Prim {
 
     public boolean op(int n, int m) {
       return n <= m;
+    }
+
+    /**
+     * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+     * bnot(this(args)) == p(args), or null if there is no such primitive.
+     */
+    Prim bnotDual() {
+      return Prim.sgt;
     }
 
     /**
@@ -791,6 +871,14 @@ public class Prim {
     }
 
     /**
+     * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+     * bnot(this(args)) == p(args), or null if there is no such primitive.
+     */
+    Prim bnotDual() {
+      return Prim.sle;
+    }
+
+    /**
      * Generate an LLVM right hand side for this binary MIL primitive with the given values as
      * input.
      */
@@ -809,6 +897,14 @@ public class Prim {
 
     public boolean op(int n, int m) {
       return n >= m;
+    }
+
+    /**
+     * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+     * bnot(this(args)) == p(args), or null if there is no such primitive.
+     */
+    Prim bnotDual() {
+      return Prim.slt;
     }
 
     /**
@@ -833,6 +929,14 @@ public class Prim {
     }
 
     /**
+     * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+     * bnot(this(args)) == p(args), or null if there is no such primitive.
+     */
+    Prim bnotDual() {
+      return Prim.uge;
+    }
+
+    /**
      * Generate an LLVM right hand side for this binary MIL primitive with the given values as
      * input.
      */
@@ -851,6 +955,14 @@ public class Prim {
 
     public boolean op(int n, int m) {
       return (n <= m) ^ (n < 0) ^ (m < 0);
+    }
+
+    /**
+     * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+     * bnot(this(args)) == p(args), or null if there is no such primitive.
+     */
+    Prim bnotDual() {
+      return Prim.ugt;
     }
 
     /**
@@ -875,6 +987,14 @@ public class Prim {
     }
 
     /**
+     * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+     * bnot(this(args)) == p(args), or null if there is no such primitive.
+     */
+    Prim bnotDual() {
+      return Prim.ule;
+    }
+
+    /**
      * Generate an LLVM right hand side for this binary MIL primitive with the given values as
      * input.
      */
@@ -893,6 +1013,14 @@ public class Prim {
 
     public boolean op(int n, int m) {
       return (n >= m) ^ (n < 0) ^ (m < 0);
+    }
+
+    /**
+     * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+     * bnot(this(args)) == p(args), or null if there is no such primitive.
+     */
+    Prim bnotDual() {
+      return Prim.ult;
     }
 
     /**
@@ -1018,6 +1146,14 @@ public class Prim {
     private loop() {
       super("loop", 0, 0, DOESNTRETURN, haltType);
     }
+  }
+
+  /**
+   * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
+   * bnot(this(args)) == p(args), or null if there is no such primitive.
+   */
+  Prim bnotDual() {
+    return null;
   }
 
   private static final BlockType loadType =

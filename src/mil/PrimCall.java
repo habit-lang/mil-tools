@@ -573,58 +573,25 @@ public class PrimCall extends Call {
 
   private static Code bnotVar(Atom x, Facts facts) {
     Tail a = x.lookupFact(facts);
-    if (a != null) {
+    return (a != null) ? a.bnotRewrite() : null;
+  }
 
-      // Eliminate double negation:
-      Atom[] ap = a.isPrim(Prim.bnot);
-      if (ap != null) {
-        MILProgram.report("eliminated double bnot");
-        return done(ap[0]); // bnot(bnot(u)) == u
-      }
-
-      // Handle negations of relational operators:
-      if ((ap = a.isPrim(Prim.eq)) != null) { //  eq --> neq
-        MILProgram.report("replaced bnot(eq(x,y)) with neq(x,y)");
-        return done(Prim.neq, ap);
-      }
-      if ((ap = a.isPrim(Prim.neq)) != null) { //  neq --> eq
-        MILProgram.report("replaced bnot(neq(x,y)) with eq(x,y)");
-        return done(Prim.eq, ap);
-      }
-      if ((ap = a.isPrim(Prim.slt)) != null) { //  slt --> sge
-        MILProgram.report("replaced bnot(slt(x,y)) with sge(x,y)");
-        return done(Prim.sge, ap);
-      }
-      if ((ap = a.isPrim(Prim.sge)) != null) { //  sge --> slt
-        MILProgram.report("replaced bnot(sge(x,y)) with slt(x,y)");
-        return done(Prim.slt, ap);
-      }
-      if ((ap = a.isPrim(Prim.sle)) != null) { //  sle --> sgt
-        MILProgram.report("replaced bnot(sle(x,y)) with sgt(x,y)");
-        return done(Prim.sgt, ap);
-      }
-      if ((ap = a.isPrim(Prim.sgt)) != null) { //  sgt --> sle
-        MILProgram.report("replaced bnot(sgt(x,y)) with sle(x,y)");
-        return done(Prim.sle, ap);
-      }
-      if ((ap = a.isPrim(Prim.ult)) != null) { //  ult --> uge
-        MILProgram.report("replaced bnot(ult(x,y)) with uge(x,y)");
-        return done(Prim.uge, ap);
-      }
-      if ((ap = a.isPrim(Prim.uge)) != null) { //  uge --> ult
-        MILProgram.report("replaced bnot(uge(x,y)) with ult(x,y)");
-        return done(Prim.ult, ap);
-      }
-      if ((ap = a.isPrim(Prim.ule)) != null) { //  ule --> ugt
-        MILProgram.report("replaced bnot(ule(x,y)) with ugt(x,y)");
-        return done(Prim.ugt, ap);
-      }
-      if ((ap = a.isPrim(Prim.ugt)) != null) { //  ugt --> ule
-        MILProgram.report("replaced bnot(ugt(x,y)) with ule(x,y)");
-        return done(Prim.ule, ap);
-      }
+  /** Look for a rewrite of bnot(x) where x is the result of this Tail. */
+  Code bnotRewrite() {
+    // Eliminate double negation:
+    if (p == Prim.bnot) {
+      MILProgram.report("eliminated double bnot");
+      return done(args[0]); // bnot(bnot(u)) == u
     }
-    return null;
+
+    // Handle negations of relational operators:
+    Prim q = p.bnotDual();
+    if (q != null) { //  bnot(p(x,y)) --> q(x,y)
+      MILProgram.report("replaced bnot(" + p.getId() + "(x,y)) with " + q.getId() + "(x,y)");
+      return done(q, args);
+    }
+
+    return null; // No further rewrites apply
   }
 
   private static Code notVar(Atom x, Facts facts) {

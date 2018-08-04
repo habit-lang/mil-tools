@@ -322,6 +322,11 @@ public abstract class Tail {
     return null;
   }
 
+  /** Look for a rewrite of bnot(x) where x is the result of this Tail. */
+  Code bnotRewrite() {
+    return null;
+  }
+
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
    * equivalent program fragments have the same summary value.
