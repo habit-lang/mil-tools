@@ -16,24 +16,23 @@
     You should have received a copy of the GNU General Public License
     along with mil-tools.  If not, see <https://www.gnu.org/licenses/>.
 */
-package llvm;
+package mil;
 
+import compiler.*;
+import core.*;
 
-/**
- * Comparison operations return a boolean as the result of comparing two values of the same type.
- */
-public abstract class CmpOp extends BinOp {
+/** A base class for primitive binary flag operators. */
+public abstract class PrimBinFOp extends Prim {
 
   /** Default constructor. */
-  public CmpOp(Type ty, Value l, Value r) {
-    super(ty, l, r);
+  public PrimBinFOp(String id, int arity, int outity, int purity, BlockType blockType) {
+    super(id, arity, outity, purity, blockType);
   }
 
-  /**
-   * Return the result type of this operation, which by default is the same as the type of the
-   * arguments.
-   */
-  public Type resultType() {
-    return Type.i1;
+  abstract boolean op(boolean n, boolean m);
+
+  Code fold(boolean n, boolean m) {
+    MILProgram.report("constant folding for " + getId());
+    return new Done(new Return(FlagConst.fromBool(op(n, m))));
   }
 }

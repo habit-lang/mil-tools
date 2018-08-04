@@ -138,6 +138,13 @@ public class Prim {
 
   protected static final Type flagTuple = Type.tuple(DataName.flag.asType());
 
+  protected static final Type flagFlagTuple =
+      Type.tuple(DataName.flag.asType(), DataName.flag.asType());
+
+  protected static final BlockType unaryFlagType = new BlockType(flagTuple, flagTuple);
+
+  protected static final BlockType binaryFlagType = new BlockType(flagFlagTuple, flagTuple);
+
   protected static final Type wordTuple = Type.tuple(DataName.word.asType());
 
   protected static final Type wordWordTuple =
@@ -146,8 +153,6 @@ public class Prim {
   protected static final BlockType unaryWordType = new BlockType(wordTuple, wordTuple);
 
   protected static final BlockType binaryWordType = new BlockType(wordWordTuple, wordTuple);
-
-  protected static final BlockType unaryFlagType = new BlockType(flagTuple, flagTuple);
 
   protected static final BlockType flagToWordType = new BlockType(flagTuple, wordTuple);
 
@@ -271,6 +276,174 @@ public class Prim {
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value v) {
       return new llvm.Xor(ty, new llvm.Int(1), v);
+    }
+  }
+
+  public static final PrimBinFOp band = new band();
+
+  private static class band extends PrimBinFOp {
+
+    private band() {
+      super("band", 2, 1, PURE, binaryFlagType);
+    }
+
+    public boolean op(boolean n, boolean m) {
+      return n & m;
+    }
+
+    /**
+     * Generate an LLVM right hand side for this binary MIL primitive with the given values as
+     * input.
+     */
+    llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
+      return new llvm.And(ty, l, r);
+    }
+  }
+
+  public static final PrimBinFOp bor = new bor();
+
+  private static class bor extends PrimBinFOp {
+
+    private bor() {
+      super("bor", 2, 1, PURE, binaryFlagType);
+    }
+
+    public boolean op(boolean n, boolean m) {
+      return n | m;
+    }
+
+    /**
+     * Generate an LLVM right hand side for this binary MIL primitive with the given values as
+     * input.
+     */
+    llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
+      return new llvm.Or(ty, l, r);
+    }
+  }
+
+  public static final PrimBinFOp bxor = new bxor();
+
+  private static class bxor extends PrimBinFOp {
+
+    private bxor() {
+      super("bxor", 2, 1, PURE, binaryFlagType);
+    }
+
+    public boolean op(boolean n, boolean m) {
+      return n ^ m;
+    }
+
+    /**
+     * Generate an LLVM right hand side for this binary MIL primitive with the given values as
+     * input.
+     */
+    llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
+      return new llvm.Xor(ty, l, r);
+    }
+  }
+
+  public static final PrimBinFOp beq = new beq();
+
+  private static class beq extends PrimBinFOp {
+
+    private beq() {
+      super("beq", 2, 1, PURE, binaryFlagType);
+    }
+
+    public boolean op(boolean n, boolean m) {
+      return n == m;
+    }
+
+    /**
+     * Generate an LLVM right hand side for this binary MIL primitive with the given values as
+     * input.
+     */
+    llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
+      return new llvm.ICmp(ty, l, r, "eq");
+    }
+  }
+
+  public static final PrimBinFOp blt = new blt();
+
+  private static class blt extends PrimBinFOp {
+
+    private blt() {
+      super("blt", 2, 1, PURE, binaryFlagType);
+    }
+
+    public boolean op(boolean n, boolean m) {
+      return !n & m;
+    }
+
+    /**
+     * Generate an LLVM right hand side for this binary MIL primitive with the given values as
+     * input.
+     */
+    llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
+      return new llvm.ICmp(ty, l, r, "ult");
+    }
+  }
+
+  public static final PrimBinFOp ble = new ble();
+
+  private static class ble extends PrimBinFOp {
+
+    private ble() {
+      super("ble", 2, 1, PURE, binaryFlagType);
+    }
+
+    public boolean op(boolean n, boolean m) {
+      return !n | m;
+    }
+
+    /**
+     * Generate an LLVM right hand side for this binary MIL primitive with the given values as
+     * input.
+     */
+    llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
+      return new llvm.ICmp(ty, l, r, "ule");
+    }
+  }
+
+  public static final PrimBinFOp bgt = new bgt();
+
+  private static class bgt extends PrimBinFOp {
+
+    private bgt() {
+      super("bgt", 2, 1, PURE, binaryFlagType);
+    }
+
+    public boolean op(boolean n, boolean m) {
+      return n & !m;
+    }
+
+    /**
+     * Generate an LLVM right hand side for this binary MIL primitive with the given values as
+     * input.
+     */
+    llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
+      return new llvm.ICmp(ty, l, r, "ugt");
+    }
+  }
+
+  public static final PrimBinFOp bge = new bge();
+
+  private static class bge extends PrimBinFOp {
+
+    private bge() {
+      super("bge", 2, 1, PURE, binaryFlagType);
+    }
+
+    public boolean op(boolean n, boolean m) {
+      return n | !m;
+    }
+
+    /**
+     * Generate an LLVM right hand side for this binary MIL primitive with the given values as
+     * input.
+     */
+    llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
+      return new llvm.ICmp(ty, l, r, "uge");
     }
   }
 

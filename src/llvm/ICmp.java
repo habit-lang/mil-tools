@@ -19,8 +19,11 @@
 package llvm;
 
 
-/** Integer comparison. */
-public class ICmp extends CmpOp {
+/**
+ * Integer comparison operations return a boolean as the result of comparing two integral values of
+ * the same type.
+ */
+public class ICmp extends BinOp {
 
   private String cond;
 
@@ -28,6 +31,14 @@ public class ICmp extends CmpOp {
   public ICmp(Type ty, Value l, Value r, String cond) {
     super(ty, l, r);
     this.cond = cond;
+  }
+
+  /**
+   * Return the result type of this operation, which by default is the same as the type of the
+   * arguments.
+   */
+  public Type resultType() {
+    return Type.i1;
   }
 
   /** Append a printable string for this instruction to the specified buffer. */
