@@ -356,7 +356,7 @@ public class External extends TopDefn {
 
     // primBitConcat m n p :: Bit m -> Bit n -> Bit p,  where m+n = p
     generators.put(
-        "primBitConcat",
+        ":#",
         new Generator(3) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger m = ts[0].getBitArg(); // Width of first input (most significant bits)
