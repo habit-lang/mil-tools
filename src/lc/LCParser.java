@@ -35,9 +35,7 @@ public class LCParser extends CoreParser implements LCTokens {
   public void parse(LCProgram prog) {
     lexer.enterSection();
     for (; ; ) {
-      if (lexer.getToken() == SEMI) {
-        lexer.nextToken(/* SEMI */ );
-      } else {
+      if (!lexer.match(SEMI)) {
         try {
           CoreDefn defn = maybeCoreDefn();
           if (defn != null) {
@@ -113,9 +111,7 @@ public class LCParser extends CoreParser implements LCTokens {
     LCDefns defns = null;
     lexer.enterSection();
     for (; ; ) {
-      if (lexer.getToken() == SEMI) {
-        lexer.nextToken();
-      } else {
+      if (!lexer.match(SEMI)) {
         LCDefn d = maybeParseDefn();
         if (d == null) {
           lexer.leaveSection();
@@ -183,21 +179,34 @@ public class LCParser extends CoreParser implements LCTokens {
   /** Parse an expression. Expr ::= TExpr1 | ... | TExprN n>=1 */
   private Expr parseExpr() throws Failure {
     Expr e = parseTExpr();
-    // !System.out.println("parseExpr looking for BARs: " + my + ", token=" + lexer.getToken());
     while (lexer.getToken() == BAR) {
       Position pos = lexer.getPos();
       lexer.nextToken(/* | */ );
       e = new EFatbar(pos, e, parseTExpr());
     }
-    // !System.out.println("parseExpr done: " + my + ", token=" + lexer.getToken());
     return e;
   }
 
-  /** Parse an expression with a possible type annotation. TExpr ::= CExpr [ :: Type ] n>=1 */
+  /** Report an error if the parser result passed in as an argument to this function is null. */
+  private Expr failIfMissing(Expr e) throws Failure {
+    if (e == null) {
+      throw new ParseFailure(lexer.getPos(), "Syntax error in expression");
+    }
+    return e;
+  }
+
+  /** Parse an expression, possibly followed by a type signature, or throw a parser exception. */
   private Expr parseTExpr() throws Failure {
-    Expr e = parseCExpr();
-    // !System.out.println("parseTExpr looking for COCOs: " + my + ", token=" + lexer.getToken());
-    if (lexer.getToken() == COCO) {
+    return failIfMissing(maybeParseTExpr());
+  }
+
+  /**
+   * Try to parse an expression with an optional type annotation, TExpr ::= CExpr [ :: Type ], n>=1,
+   * returning null if there is no expression.
+   */
+  private Expr maybeParseTExpr() throws Failure {
+    Expr e = maybeParseCExpr();
+    if (e != null && lexer.getToken() == COCO) {
       Position pos = lexer.getPos();
       lexer.nextToken(/* :: */ );
       e = new EType(pos, e, typeExp());
@@ -205,9 +214,15 @@ public class LCParser extends CoreParser implements LCTokens {
     return e;
   }
 
+  /**
+   * Parse a special form expression, or throw a parser exception. CExpr = LambdaExpr | LetExpr |
+   * IfExpr | DoExpr | InfixExpr
+   */
   private Expr parseCExpr() throws Failure {
-    // !int my = count++;
-    // !System.out.println("parseCExpr begins: " + my + ", token=" + lexer.getToken());
+    return failIfMissing(maybeParseCExpr());
+  }
+
+  private Expr maybeParseCExpr() throws Failure {
     switch (lexer.getToken()) {
       case LAMBDA:
         {
@@ -237,7 +252,7 @@ public class LCParser extends CoreParser implements LCTokens {
       case CASE:
         return parseCase(false);
     }
-    return parseInfixExpr();
+    return maybeParseInfixExpr();
   }
 
   /** Parse a block of statements in a do expression. */
@@ -249,7 +264,13 @@ public class LCParser extends CoreParser implements LCTokens {
   }
 
   private Expr parseStmts() throws Failure {
-    while (lexer.match(SEMI)) /* skip semicolons/empty statements */ ;
+    return failIfMissing(maybeParseStmts());
+  }
+
+  private Expr maybeParseStmts() throws Failure {
+    while (lexer.match(SEMI)) {
+      /* skip semicolons/empty statements */
+    }
     switch (lexer.getToken()) {
       case LET:
         {
@@ -270,25 +291,17 @@ public class LCParser extends CoreParser implements LCTokens {
         }
 
       case IF:
-        {
-          Expr e = parseCond(true);
-          return lexer.match(SEMI)
-              ? new EFrom(e.getPosition(), new FreshVar(), e, parseStmts())
-              : e;
-        }
+        return parseExprStmts(parseCond(true));
 
       case CASE:
-        {
-          Expr e = parseCase(true);
-          return lexer.match(SEMI)
-              ? new EFrom(e.getPosition(), new FreshVar(), e, parseStmts())
-              : e;
-        }
+        return parseExprStmts(parseCase(true));
 
       default:
         {
-          Expr e = parseTExpr();
-          if (lexer.match(FROM)) {
+          Expr e = maybeParseTExpr();
+          if (e == null) {
+            return null;
+          } else if (lexer.match(FROM)) {
             LamVar v = e.asLamVar(null);
             Position pos = e.getPosition();
             e = parseTExpr();
@@ -308,9 +321,9 @@ public class LCParser extends CoreParser implements LCTokens {
 
   private Expr parseExprStmts(Expr e) throws Failure { // stmts -> exp _ [ ; stmts ]
     lexer.itemEnd("expression");
-    if (lexer.getToken() == SEMI) {
-      lexer.nextToken(/* SEMI */ );
-      return new EFrom(e.getPosition(), new FreshVar(), e, parseStmts());
+    if (lexer.match(SEMI)) {
+      Expr s = maybeParseStmts();
+      return (s == null) ? e : new EFrom(e.getPosition(), new FreshVar(), e, s);
     }
     return e;
   }
@@ -422,6 +435,23 @@ public class LCParser extends CoreParser implements LCTokens {
   }
 
   /**
+   * Parse an infix expression without having read any initial portion, throwing an exception if no
+   * suitable initial token is found.
+   */
+  private Expr parseInfixExpr() throws Failure {
+    return failIfMissing(maybeParseInfixExpr());
+  }
+
+  /**
+   * Parse an infix expression or return null if the current token is not in the appropriate FIRST
+   * set.
+   */
+  private Expr maybeParseInfixExpr() throws Failure {
+    Expr e = maybeParseAExpr();
+    return (e == null) ? null : parseInfixExpr(e);
+  }
+
+  /**
    * Parse an infix expression having already read the first (leftmost) aexpr, passed in as
    * parameter e.
    */
@@ -446,15 +476,6 @@ public class LCParser extends CoreParser implements LCTokens {
       }
     }
     return e;
-  }
-
-  /** Parse an infix expression without having read any initial portion of the expression. */
-  private Expr parseInfixExpr() throws Failure {
-    Expr e = maybeParseAExpr();
-    if (e == null) {
-      throw new ParseFailure(lexer.getPos(), "Syntax error in expression");
-    }
-    return parseInfixExpr(e);
   }
 
   /** Parse an atomic expression (aexpr), or return null if no valid expression is found. */
