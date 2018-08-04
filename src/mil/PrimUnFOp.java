@@ -37,7 +37,7 @@ public abstract class PrimUnFOp extends Prim {
     stack[fp] = BoolValue.make(op(stack[fp].getBool()));
   }
 
-  Code foldUnary(boolean n) {
+  Code fold(boolean n) {
     MILProgram.report("constant folding for " + getId());
     return PrimCall.done(op(n));
   }

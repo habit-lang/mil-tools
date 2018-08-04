@@ -37,7 +37,7 @@ public abstract class PrimFtoW extends Prim {
     stack[fp] = new IntValue(op(stack[fp].getBool()));
   }
 
-  Code foldUnary(boolean n) {
+  Code fold(boolean n) {
     MILProgram.report("constant folding for " + getId());
     return PrimCall.done(op(n));
   }

@@ -151,25 +151,25 @@ public class PrimCall extends Call {
     if (p == Prim.bnot) {
       Atom x = args[0];
       FlagConst a = x.isFlagConst();
-      return (a == null) ? bnotVar(x, facts) : Prim.bnot.foldUnary(a.getVal());
+      return (a == null) ? bnotVar(x, facts) : Prim.bnot.fold(a.getVal());
     }
 
     if (p == Prim.not) {
       Atom x = args[0];
       IntConst a = x.isIntConst();
-      return (a == null) ? notVar(x, facts) : Prim.not.foldUnary(a.getVal());
+      return (a == null) ? notVar(x, facts) : Prim.not.fold(a.getVal());
     }
 
     if (p == Prim.neg) {
       Atom x = args[0];
       IntConst a = x.isIntConst();
-      return (a == null) ? negVar(x, facts) : Prim.neg.foldUnary(a.getVal());
+      return (a == null) ? negVar(x, facts) : Prim.neg.fold(a.getVal());
     }
 
     if (p == Prim.flagToWord) {
       Atom x = args[0];
       FlagConst a = x.isFlagConst();
-      return (a == null) ? flagToWordVar(x, facts) : Prim.flagToWord.foldUnary(a.getVal());
+      return (a == null) ? flagToWordVar(x, facts) : Prim.flagToWord.fold(a.getVal());
     }
 
     if (p == Prim.add) {
@@ -181,7 +181,7 @@ public class PrimCall extends Call {
         Code nc = addVarConst(y, a.getVal(), facts);
         return (nc != null) ? nc : done(p, y, x);
       } else {
-        return Prim.add.foldBinary(a.getVal(), b.getVal());
+        return Prim.add.fold(a.getVal(), b.getVal());
       }
     }
 
@@ -194,7 +194,7 @@ public class PrimCall extends Call {
         Code nc = mulVarConst(y, a.getVal(), facts);
         return (nc != null) ? nc : done(p, y, x);
       } else {
-        return Prim.mul.foldBinary(a.getVal(), b.getVal());
+        return Prim.mul.fold(a.getVal(), b.getVal());
       }
     }
 
@@ -207,7 +207,7 @@ public class PrimCall extends Call {
         Code nc = orVarConst(y, a.getVal(), facts);
         return (nc != null) ? nc : done(p, y, x);
       } else {
-        return Prim.or.foldBinary(a.getVal(), b.getVal());
+        return Prim.or.fold(a.getVal(), b.getVal());
       }
     }
 
@@ -220,7 +220,7 @@ public class PrimCall extends Call {
         Code nc = andVarConst(y, a.getVal(), facts);
         return (nc != null) ? nc : done(p, y, x);
       } else {
-        return Prim.and.foldBinary(a.getVal(), b.getVal());
+        return Prim.and.fold(a.getVal(), b.getVal());
       }
     }
 
@@ -233,7 +233,7 @@ public class PrimCall extends Call {
         Code nc = xorVarConst(y, a.getVal(), facts);
         return (nc != null) ? nc : done(p, y, x);
       } else {
-        return Prim.xor.foldBinary(a.getVal(), b.getVal());
+        return Prim.xor.fold(a.getVal(), b.getVal());
       }
     }
 
@@ -246,7 +246,7 @@ public class PrimCall extends Call {
           ? ((b == null) ? subVarVar(x, y, facts) : subVarConst(x, b.getVal(), facts))
           : ((b == null)
               ? subConstVar(a.getVal(), y, facts)
-              : Prim.sub.foldBinary(a.getVal(), b.getVal()));
+              : Prim.sub.fold(a.getVal(), b.getVal()));
     }
 
     if (p == Prim.shl) {
@@ -258,7 +258,7 @@ public class PrimCall extends Call {
           ? ((b == null) ? shlVarVar(x, y, facts) : shlVarConst(x, b.getVal(), facts))
           : ((b == null)
               ? shlConstVar(a.getVal(), y, facts)
-              : Prim.shl.foldBinary(a.getVal(), b.getVal()));
+              : Prim.shl.fold(a.getVal(), b.getVal()));
     }
 
     if (p == Prim.lshr) {
@@ -270,7 +270,7 @@ public class PrimCall extends Call {
           ? ((b == null) ? lshrVarVar(x, y, facts) : lshrVarConst(x, b.getVal(), facts))
           : ((b == null)
               ? lshrConstVar(a.getVal(), y, facts)
-              : Prim.lshr.foldBinary(a.getVal(), b.getVal()));
+              : Prim.lshr.fold(a.getVal(), b.getVal()));
     }
 
     if (p == Prim.ashr) {
@@ -282,7 +282,7 @@ public class PrimCall extends Call {
           ? ((b == null) ? ashrVarVar(x, y, facts) : ashrVarConst(x, b.getVal(), facts))
           : ((b == null)
               ? ashrConstVar(a.getVal(), y, facts)
-              : Prim.ashr.foldBinary(a.getVal(), b.getVal()));
+              : Prim.ashr.fold(a.getVal(), b.getVal()));
     }
 
     if (p == Prim.eq) {
@@ -292,7 +292,7 @@ public class PrimCall extends Call {
       if (a != null) {
         IntConst b = y.isIntConst();
         if (b != null) {
-          return Prim.eq.foldRel(a.getVal(), b.getVal());
+          return Prim.eq.fold(a.getVal(), b.getVal());
         }
       }
       return null;
@@ -305,7 +305,7 @@ public class PrimCall extends Call {
       if (a != null) {
         IntConst b = y.isIntConst();
         if (b != null) {
-          return Prim.neq.foldRel(a.getVal(), b.getVal());
+          return Prim.neq.fold(a.getVal(), b.getVal());
         }
       }
       return null;
@@ -318,7 +318,7 @@ public class PrimCall extends Call {
       if (a != null) {
         IntConst b = y.isIntConst();
         if (b != null) {
-          return Prim.slt.foldRel(a.getVal(), b.getVal());
+          return Prim.slt.fold(a.getVal(), b.getVal());
         }
       }
       return null;
@@ -331,7 +331,7 @@ public class PrimCall extends Call {
       if (a != null) {
         IntConst b = y.isIntConst();
         if (b != null) {
-          return Prim.sgt.foldRel(a.getVal(), b.getVal());
+          return Prim.sgt.fold(a.getVal(), b.getVal());
         }
       }
       return null;
@@ -344,7 +344,7 @@ public class PrimCall extends Call {
       if (a != null) {
         IntConst b = y.isIntConst();
         if (b != null) {
-          return Prim.sle.foldRel(a.getVal(), b.getVal());
+          return Prim.sle.fold(a.getVal(), b.getVal());
         }
       }
       return null;
@@ -357,7 +357,7 @@ public class PrimCall extends Call {
       if (a != null) {
         IntConst b = y.isIntConst();
         if (b != null) {
-          return Prim.sge.foldRel(a.getVal(), b.getVal());
+          return Prim.sge.fold(a.getVal(), b.getVal());
         }
       }
       return null;
@@ -370,7 +370,7 @@ public class PrimCall extends Call {
       if (a != null) {
         IntConst b = y.isIntConst();
         if (b != null) {
-          return Prim.ult.foldRel(a.getVal(), b.getVal());
+          return Prim.ult.fold(a.getVal(), b.getVal());
         }
       }
       return null;
@@ -383,7 +383,7 @@ public class PrimCall extends Call {
       if (a != null) {
         IntConst b = y.isIntConst();
         if (b != null) {
-          return Prim.ugt.foldRel(a.getVal(), b.getVal());
+          return Prim.ugt.fold(a.getVal(), b.getVal());
         }
       }
       return null;
@@ -396,7 +396,7 @@ public class PrimCall extends Call {
       if (a != null) {
         IntConst b = y.isIntConst();
         if (b != null) {
-          return Prim.ule.foldRel(a.getVal(), b.getVal());
+          return Prim.ule.fold(a.getVal(), b.getVal());
         }
       }
       return null;
@@ -409,7 +409,7 @@ public class PrimCall extends Call {
       if (a != null) {
         IntConst b = y.isIntConst();
         if (b != null) {
-          return Prim.uge.foldRel(a.getVal(), b.getVal());
+          return Prim.uge.fold(a.getVal(), b.getVal());
         }
       }
       return null;

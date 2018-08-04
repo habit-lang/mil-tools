@@ -37,7 +37,7 @@ public abstract class PrimRelOp extends Prim {
     stack[fp] = BoolValue.make(op(stack[fp].getInt(), stack[fp + 1].getInt()));
   }
 
-  Code foldRel(int n, int m) {
+  Code fold(int n, int m) {
     MILProgram.report("constant folding for " + getId());
     return new Done(new Return(FlagConst.fromBool(op(n, m))));
   }

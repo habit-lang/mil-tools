@@ -37,7 +37,7 @@ public abstract class PrimBinOp extends Prim {
     stack[fp] = new IntValue(op(stack[fp].getInt(), stack[fp + 1].getInt()));
   }
 
-  Code foldBinary(int n, int m) {
+  Code fold(int n, int m) {
     MILProgram.report("constant folding for " + getId());
     return PrimCall.done(op(n, m));
   }

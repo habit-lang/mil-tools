@@ -1020,14 +1020,6 @@ public class Prim {
     }
   }
 
-  Code foldBinary(int n, int m) {
-    return null;
-  }
-
-  Code foldRel(int n, int m) {
-    return null;
-  }
-
   private static final BlockType loadType =
       new BlockType(
           Type.tuple(
