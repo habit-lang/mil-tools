@@ -45,8 +45,11 @@ public abstract class Handler {
 
   /** Throw a failure to abort compilation if this handler has already reported failures. */
   public void abortOnFailures() throws Failure {
-    if (hasFailures()) {
-      throw new Failure("Aborting due to previously reported errors");
+    if (numFailures > 0) {
+      if (numFailures == 1) {
+        throw new Failure("Aborting after previously reported error");
+      }
+      throw new Failure("Aborting after " + numFailures + " previously reported errors");
     }
   }
 
