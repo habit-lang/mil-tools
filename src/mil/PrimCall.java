@@ -415,6 +415,110 @@ public class PrimCall extends Call {
       return null;
     }
 
+    if (p == Prim.beq) {
+      Atom x = args[0];
+      Atom y = args[1];
+      FlagConst a = x.isFlagConst();
+      if (a != null) {
+        FlagConst b = y.isFlagConst();
+        if (b != null) {
+          return Prim.beq.fold(a.getVal(), b.getVal());
+        }
+      }
+      return null;
+    }
+
+    if (p == Prim.bxor) {
+      Atom x = args[0];
+      Atom y = args[1];
+      FlagConst a = x.isFlagConst();
+      if (a != null) {
+        FlagConst b = y.isFlagConst();
+        if (b != null) {
+          return Prim.bxor.fold(a.getVal(), b.getVal());
+        }
+      }
+      return null;
+    }
+
+    if (p == Prim.blt) {
+      Atom x = args[0];
+      Atom y = args[1];
+      FlagConst a = x.isFlagConst();
+      if (a != null) {
+        FlagConst b = y.isFlagConst();
+        if (b != null) {
+          return Prim.blt.fold(a.getVal(), b.getVal());
+        }
+      }
+      return null;
+    }
+
+    if (p == Prim.bgt) {
+      Atom x = args[0];
+      Atom y = args[1];
+      FlagConst a = x.isFlagConst();
+      if (a != null) {
+        FlagConst b = y.isFlagConst();
+        if (b != null) {
+          return Prim.bgt.fold(a.getVal(), b.getVal());
+        }
+      }
+      return null;
+    }
+
+    if (p == Prim.ble) {
+      Atom x = args[0];
+      Atom y = args[1];
+      FlagConst a = x.isFlagConst();
+      if (a != null) {
+        FlagConst b = y.isFlagConst();
+        if (b != null) {
+          return Prim.ble.fold(a.getVal(), b.getVal());
+        }
+      }
+      return null;
+    }
+
+    if (p == Prim.bge) {
+      Atom x = args[0];
+      Atom y = args[1];
+      FlagConst a = x.isFlagConst();
+      if (a != null) {
+        FlagConst b = y.isFlagConst();
+        if (b != null) {
+          return Prim.bge.fold(a.getVal(), b.getVal());
+        }
+      }
+      return null;
+    }
+
+    if (p == Prim.band) {
+      Atom x = args[0];
+      Atom y = args[1];
+      FlagConst a = x.isFlagConst();
+      if (a != null) {
+        FlagConst b = y.isFlagConst();
+        if (b != null) {
+          return Prim.band.fold(a.getVal(), b.getVal());
+        }
+      }
+      return null;
+    }
+
+    if (p == Prim.bor) {
+      Atom x = args[0];
+      Atom y = args[1];
+      FlagConst a = x.isFlagConst();
+      if (a != null) {
+        FlagConst b = y.isFlagConst();
+        if (b != null) {
+          return Prim.bor.fold(a.getVal(), b.getVal());
+        }
+      }
+      return null;
+    }
+
     if (p == Prim.load || p == Prim.store) {
       Atom[] nargs = rewriteAddress(args, facts);
       return (args == nargs) ? null : done(p, nargs);
