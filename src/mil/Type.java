@@ -414,12 +414,12 @@ public abstract class Type extends Scheme {
   }
 
   /**
-   * Determine whether this type is a valid argument for a Bit type (i.e., a TNat in the range 1 to
+   * Determine whether this type is a valid argument for a Bit type (i.e., a TNat in the range 0 to
    * BigMAXWIDTH inclusive).
    */
   BigInteger getBitArg() {
     BigInteger n = getNat();
-    return (n != null && (n.compareTo(BigInteger.ONE) >= 0) && (n.compareTo(BigMAXWIDTH) <= 0))
+    return (n != null && (n.compareTo(BigInteger.ZERO) >= 0) && (n.compareTo(BigMAXWIDTH) <= 0))
         ? n
         : null;
   }

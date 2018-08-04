@@ -552,25 +552,38 @@ public class External extends TopDefn {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
               int width = w.intValue();
-              int n = Type.numWords(width);
-              Temp[] vs = Temp.makeTemps(n); // variables returned from block
-              Temp[] ws = Temp.makeTemps(n); // arguments to closure
-              Code code = new Done(new Return(Temp.clone(vs)));
-              int rem = width % Type.WORDSIZE; // nonzero => unused bits in most sig word
+              switch (width) {
+                case 0:
+                  return new Return().makeUnaryFuncClosure(pos, 0);
 
-              // Use Prim.xor on the most significant word if not all bits are used:
-              if (rem != 0) {
-                Temp v = vs[--n];
-                code = new Bind(v, Prim.xor.withArgs(vs[n] = new Temp(), (1 << rem) - 1), code);
+                case 1:
+                  return new PrimCall(Prim.bnot).makeUnaryFuncClosure(pos, 1);
+
+                default:
+                  {
+                    int n = Type.numWords(width);
+                    Temp[] vs = Temp.makeTemps(n); // variables returned from block
+                    Temp[] ws = Temp.makeTemps(n); // arguments to closure
+                    Code code = new Done(new Return(Temp.clone(vs)));
+                    int rem = width % Type.WORDSIZE; // nonzero => unused bits in most sig word
+
+                    // Use Prim.xor on the most significant word if not all bits are used:
+                    if (rem != 0) {
+                      Temp v = vs[--n];
+                      code =
+                          new Bind(v, Prim.xor.withArgs(vs[n] = new Temp(), (1 << rem) - 1), code);
+                    }
+
+                    // Use Prim.not on any remaining words:
+                    while (n > 0) {
+                      Temp v = vs[--n];
+                      code = new Bind(v, Prim.not.withArgs(vs[n] = new Temp()), code);
+                    }
+
+                    return new BlockCall(new Block(pos, vs, code))
+                        .makeUnaryFuncClosure(pos, vs.length);
+                  }
               }
-
-              // Use Prim.not on any remaining words:
-              while (n > 0) {
-                Temp v = vs[--n];
-                code = new Bind(v, Prim.not.withArgs(vs[n] = new Temp()), code);
-              }
-
-              return new BlockCall(new Block(pos, vs, code)).makeUnaryFuncClosure(pos, vs.length);
             }
             return null;
           }
@@ -579,9 +592,11 @@ public class External extends TopDefn {
 
   /**
    * A general method for generating implementations for BITWISE binary operations (and, or, xor)
-   * where no special masking is required on the most significant word.
+   * where no special masking is required on the most significant word. The primitive p is used for
+   * the general case of bit vectors with width>1, while the primitive pf is used for the special
+   * case width==1 that uses a Flag representation rather than Words.
    */
-  static void genBitwiseBinOp(String ref, final PrimBinOp p) {
+  static void genBitwiseBinOp(String ref, final PrimBinOp p, final PrimBinFOp pf) {
     // primBitRef w :: Bit w -> Bit w -> Bit w
     generators.put(
         ref,
@@ -590,18 +605,28 @@ public class External extends TopDefn {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
               int width = w.intValue();
-              int n = Type.numWords(width);
+              switch (width) {
+                case 0:
+                  return new Return().makeBinaryFuncClosure(pos, 0, 0);
 
-              // Block: b[a0,...b0,...] = c0 <- p((a0,b0)); ...; return [c0,...]
-              Temp[] as = Temp.makeTemps(n); // inputs
-              Temp[] bs = Temp.makeTemps(n);
-              Temp[] cs = Temp.makeTemps(n); // output
-              Code code = new Done(new Return(cs));
-              for (int i = n; 0 < i--; ) {
-                code = new Bind(cs[i], p.withArgs(as[i], bs[i]), code);
+                case 1:
+                  return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
+
+                default:
+                  {
+                    // Block: b[a0,...b0,...] = c0 <- p((a0,b0)); ...; return [c0,...]
+                    int n = Type.numWords(width);
+                    Temp[] as = Temp.makeTemps(n); // inputs
+                    Temp[] bs = Temp.makeTemps(n);
+                    Temp[] cs = Temp.makeTemps(n); // output
+                    Code code = new Done(new Return(cs));
+                    for (int i = n; 0 < i--; ) {
+                      code = new Bind(cs[i], p.withArgs(as[i], bs[i]), code);
+                    }
+                    return new BlockCall(new Block(pos, Temp.append(as, bs), code))
+                        .makeBinaryFuncClosure(pos, n, n);
+                  }
               }
-              return new BlockCall(new Block(pos, Temp.append(as, bs), code))
-                  .makeBinaryFuncClosure(pos, n, n);
             }
             return null;
           }
@@ -609,9 +634,9 @@ public class External extends TopDefn {
   }
 
   static {
-    genBitwiseBinOp("primBitAnd", Prim.and);
-    genBitwiseBinOp("primBitOr", Prim.or);
-    genBitwiseBinOp("primBitXor", Prim.xor);
+    genBitwiseBinOp("primBitAnd", Prim.and, Prim.band);
+    genBitwiseBinOp("primBitOr", Prim.or, Prim.bor);
+    genBitwiseBinOp("primBitXor", Prim.xor, Prim.bxor);
   }
 
   static {
@@ -624,11 +649,22 @@ public class External extends TopDefn {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
               int width = w.intValue();
-              int n = Type.numWords(width);
-              if (n == 1) {
-                Temp[] args = Temp.makeTemps(1);
-                Code code = maskTail(Prim.neg.withArgs(args), width);
-                return new BlockCall(new Block(pos, args, code)).makeUnaryFuncClosure(pos, 1);
+              switch (width) {
+                case 0:
+                  return new Return().makeUnaryFuncClosure(pos, 0);
+
+                case 1: // Negate is the identity function on Bit 1!
+                  return new Return().makeUnaryFuncClosure(pos, 1);
+
+                default:
+                  {
+                    int n = Type.numWords(width);
+                    if (n == 1) {
+                      Temp[] args = Temp.makeTemps(1);
+                      Code code = maskTail(Prim.neg.withArgs(args), width);
+                      return new BlockCall(new Block(pos, args, code)).makeUnaryFuncClosure(pos, 1);
+                    }
+                  }
               }
             }
             return null;
@@ -649,11 +685,11 @@ public class External extends TopDefn {
   /**
    * A general method for generating implementations for ARITHMETIC binary operations (add, sub,
    * mul), where masking of the most significant word may be required to match the requested length.
-   * TODO: For the time being, these implementations only work for 0 < width <= Type.WORDSIZE. The
+   * TODO: For the time being, these implementations only work for 0 <= width <= Type.WORDSIZE. The
    * algorithms for these operations on multi-word values are more complex and more varied, so they
    * will require a more sophisticated approach.
    */
-  static void genArithBinOp(String ref, final PrimBinOp p) {
+  static void genArithBinOp(String ref, final PrimBinOp p, final PrimBinFOp pf) {
     // primBitRef w :: Bit w -> Bit w -> Bit w
     generators.put(
         ref,
@@ -662,11 +698,23 @@ public class External extends TopDefn {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
               int width = w.intValue();
-              int n = Type.numWords(width);
-              if (n == 1) {
-                Temp[] args = Temp.makeTemps(2);
-                Code code = maskTail(p.withArgs(args), width);
-                return new BlockCall(new Block(pos, args, code)).makeBinaryFuncClosure(pos, 1, 1);
+              switch (width) {
+                case 0:
+                  return new Return().makeBinaryFuncClosure(pos, 0, 0);
+
+                case 1:
+                  return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
+
+                default:
+                  {
+                    int n = Type.numWords(width);
+                    if (n == 1) {
+                      Temp[] args = Temp.makeTemps(2);
+                      Code code = maskTail(p.withArgs(args), width);
+                      return new BlockCall(new Block(pos, args, code))
+                          .makeBinaryFuncClosure(pos, 1, 1);
+                    }
+                  }
               }
             }
             return null;
@@ -675,20 +723,22 @@ public class External extends TopDefn {
   }
 
   static {
-    genArithBinOp("primBitPlus", Prim.add);
-    genArithBinOp("primBitMinus", Prim.sub);
-    genArithBinOp("primBitTimes", Prim.mul);
+    genArithBinOp("primBitPlus", Prim.add, Prim.bxor);
+    genArithBinOp("primBitMinus", Prim.sub, Prim.bxor);
+    genArithBinOp("primBitTimes", Prim.mul, Prim.band);
   }
 
   /**
-   * A general method for generating implementations for EQUALITY comparisons on Bit vector values
-   * (with at least one word representations ... no support for Bit 0). All but the least
-   * significant words are compared using Prim.eq, branching to Block bearly if the equality test
-   * fails (so bearly should be returnFalse for ==, or returnTrue for /=). The least significant
-   * word, and the result of the whole computation if all other parts were equal, is determined
-   * using the specified test (Prim.eq for == or Prim.neq for /=).
+   * A general method for generating implementations for EQUALITY comparisons on Bit vector values.
+   * The primitive pf is used for the single bit case and the block bz provides the result for the 0
+   * width case. For the general case, all but the least significant words are compared using
+   * Prim.eq, branching to Block bearly if the equality test fails (so bearly should be returnFalse
+   * for ==, or returnTrue for /=). The comparison on the least significant word, and the result of
+   * the whole computation if all other parts were equal, is determined using the specified test
+   * primitive (Prim.eq for == or Prim.neq for /=).
    */
-  static void genEqBinOp(String ref, final PrimRelOp test, final Block bearly) {
+  static void genEqBinOp(
+      String ref, final PrimRelOp test, final Block bearly, final PrimBinFOp pf, final Block bz) {
     // primBitRef w :: Bit w -> Bit w -> Flag
     generators.put(
         ref,
@@ -697,10 +747,19 @@ public class External extends TopDefn {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
               int width = w.intValue();
-              int n = Type.numWords(width);
-              if (n > 0) {
-                return new BlockCall(bitEqBlock(pos, n, test, bearly))
-                    .makeBinaryFuncClosure(pos, n, n);
+              switch (width) {
+                case 0:
+                  return new BlockCall(bz).makeBinaryFuncClosure(pos, 0, 0);
+
+                case 1:
+                  return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
+
+                default:
+                  {
+                    int n = Type.numWords(width);
+                    return new BlockCall(bitEqBlock(pos, n, test, bearly))
+                        .makeBinaryFuncClosure(pos, n, n);
+                  }
               }
             }
             return null;
@@ -745,15 +804,18 @@ public class External extends TopDefn {
   }
 
   static {
-    genEqBinOp("primBitEq", Prim.eq, Block.returnFalse);
-    genEqBinOp("primBitNe", Prim.neq, Block.returnTrue);
+    genEqBinOp("primBitEq", Prim.eq, Block.returnFalse, Prim.beq, Block.returnTrue);
+    genEqBinOp("primBitNe", Prim.neq, Block.returnTrue, Prim.bxor, Block.returnFalse);
   }
 
   /**
    * A general method for generating implementations for lexicographic orderings on Bit vector
-   * values. TODO: Should we add support for Bit 0?
+   * values. See bitLexCompBlock() for explanation of lsw and slsw arguments. The primitive pf is
+   * used in the special case for bit vectors of width 1, and the bz block is used to generate code
+   * for width==0.
    */
-  static void genRelBinOp(String ref, final PrimRelOp lsw, final PrimRelOp slsw) {
+  static void genRelBinOp(
+      String ref, final PrimRelOp lsw, final PrimRelOp slsw, final PrimBinFOp pf, final Block bz) {
     // primBit... w ... :: Bit w -> Bit w -> Flag
     generators.put(
         ref,
@@ -762,10 +824,19 @@ public class External extends TopDefn {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
               int width = w.intValue();
-              int n = Type.numWords(width);
-              if (n > 0) {
-                return new BlockCall(bitLexCompBlock(pos, n, lsw, slsw))
-                    .makeBinaryFuncClosure(pos, n, n);
+              switch (width) {
+                case 0:
+                  return new BlockCall(bz).makeBinaryFuncClosure(pos, 0, 0);
+
+                case 1:
+                  return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
+
+                default:
+                  {
+                    int n = Type.numWords(width);
+                    return new BlockCall(bitLexCompBlock(pos, n, lsw, slsw))
+                        .makeBinaryFuncClosure(pos, n, n);
+                  }
               }
             }
             return null;
@@ -819,10 +890,10 @@ public class External extends TopDefn {
   }
 
   static {
-    genRelBinOp("primBitGt", Prim.ugt, Prim.ugt);
-    genRelBinOp("primBitGe", Prim.uge, Prim.ugt);
-    genRelBinOp("primBitLt", Prim.ult, Prim.ult);
-    genRelBinOp("primBitLe", Prim.ule, Prim.ult);
+    genRelBinOp("primBitGt", Prim.ugt, Prim.ugt, Prim.bgt, Block.returnFalse);
+    genRelBinOp("primBitGe", Prim.uge, Prim.ugt, Prim.bge, Block.returnTrue);
+    genRelBinOp("primBitLt", Prim.ult, Prim.ult, Prim.blt, Block.returnFalse);
+    genRelBinOp("primBitLe", Prim.ule, Prim.ult, Prim.ble, Block.returnTrue);
   }
 
   protected abstract static class BitmanipGenerator extends Generator {
