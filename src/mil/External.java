@@ -318,13 +318,7 @@ public class External extends TopDefn {
           return t;
         }
       }
-      handler.report(
-          new Failure(
-              pos,
-              "Unable to generate implementation for \""
-                  + ref
-                  + "\" with type parameters "
-                  + Type.toString(ts)));
+      handler.report(new Failure(pos, "No generated implementation"));
     }
     return null;
   }
