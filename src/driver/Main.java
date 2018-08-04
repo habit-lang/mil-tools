@@ -213,6 +213,7 @@ class Main {
         case 's': // Specialization
           message("Running specializer ...");
           spec = mil.specialize(handler);
+          handler.abortOnFailures();
           mil = spec.getProg();
           optimized = false;
           break;
@@ -223,6 +224,7 @@ class Main {
             throw new Failure("Representation transformation requires prior specialization pass");
           }
           rep = mil.repTransform(handler);
+          handler.abortOnFailures();
           mil.shake();
           optimized = false;
           break;
