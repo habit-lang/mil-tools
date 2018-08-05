@@ -890,10 +890,18 @@ public class External extends TopDefn {
     genRelBinOp("primBitLe", Prim.ule, Prim.ult, Prim.ble, Block.returnTrue);
   }
 
-  protected abstract static class BitmanipGenerator extends Generator {
+  /**
+   * Provides a framework for generating implementations of functions that take (at least) an Ix w
+   * argument and produce a Bit w result; this includes BitManip operations like bitBit, setBit, and
+   * testBit, as well as shift operations like bitShiftL. In each case, the implementation consists
+   * of a set of blocks that perform a (runtime) binary search on the index value to identify a
+   * specific word position within the representation of a Bit w value. Operator specific logic is
+   * then added to the leaves of the resulting decision trees.
+   */
+  protected abstract static class BitPosGenerator extends Generator {
 
     /** Default constructor. */
-    protected BitmanipGenerator(int needs) {
+    protected BitPosGenerator(int needs) {
       super(needs);
     }
 
@@ -907,7 +915,7 @@ public class External extends TopDefn {
      * constructing a new Bit vector (bitBit), or n if we are modifying or testing an existing Bit
      * vector (bitSet, bitClear, bitFlip, bitTest)).
      */
-    protected Block decisionTree(Position pos, int n, int lo, int hi, int numArgs) {
+    protected Block decisionTree(Position pos, int width, int n, int lo, int hi, int numArgs) {
       // invariant:  0 <= lo <= hi < n
       Temp[] vs = Temp.makeTemps(numArgs + 1); // arguments for words, plus bit index argument
       if (hi > lo) {
@@ -921,22 +929,47 @@ public class External extends TopDefn {
                 Prim.ult.withArgs(vs[numArgs], mid * Type.WORDSIZE),
                 new If(
                     v,
-                    new BlockCall(decisionTree(pos, n, lo, mid - 1, numArgs), vs),
-                    new BlockCall(decisionTree(pos, n, mid, hi, numArgs), vs))));
+                    new BlockCall(decisionTree(pos, width, n, lo, mid - 1, numArgs), vs),
+                    new BlockCall(decisionTree(pos, width, n, mid, hi, numArgs), vs))));
       } else {
-        Temp p = new Temp();
-        Temp m = new Temp();
-        return new Block(
-            pos,
-            vs, // b[v0,...,i]
-            new Bind(
-                p,
-                Prim.sub.withArgs(vs[numArgs], lo * Type.WORDSIZE), //  = p <- sub((i, offset))
-                new Bind(
-                    m,
-                    Prim.shl.withArgs(1, p), //    m <- shl((1, p))
-                    makeResult(vs, m, n, lo)))); //    ... calc result ...
+        return decisionLeaf(pos, vs, width, n, lo, numArgs);
       }
+    }
+
+    /**
+     * This method generates the code to be executed when we have identified which of the n words in
+     * the relevant Bit vector representation (i.e., the one at offset lo) contains the bit
+     * specified by the index parameter (the last argument of vs).
+     */
+    abstract Block decisionLeaf(Position pos, Temp[] vs, int width, int n, int lo, int numArgs);
+  }
+
+  protected abstract static class BitmanipGenerator extends BitPosGenerator {
+
+    /** Default constructor. */
+    protected BitmanipGenerator(int needs) {
+      super(needs);
+    }
+
+    /**
+     * For each of the BitManip operators, once we have found the word (lo) that the index is
+     * pointing to, then we can calculate a single bit mask that determines which specific bit will
+     * be accessed/modified. Once this mask is calculated (in m below), a different method is
+     * required to construct the final result for each of the BitManip operators.
+     */
+    Block decisionLeaf(Position pos, Temp[] vs, int width, int n, int lo, int numArgs) {
+      Temp p = new Temp();
+      Temp m = new Temp();
+      return new Block(
+          pos,
+          vs, // b[v0,...,i]
+          new Bind(
+              p,
+              Prim.sub.withArgs(vs[numArgs], lo * Type.WORDSIZE), //  = p <- sub((i, offset))
+              new Bind(
+                  m,
+                  Prim.shl.withArgs(1, p), //    m <- shl((1, p))
+                  makeResult(vs, m, n, lo)))); //    ... calc result ...
     }
 
     /**
@@ -960,7 +993,7 @@ public class External extends TopDefn {
       if (w != null) {
         int width = w.intValue();
         int n = Type.numWords(width);
-        return new BlockCall(decisionTree(pos, n, 0, n - 1, 0)).makeUnaryFuncClosure(pos, 1);
+        return new BlockCall(decisionTree(pos, width, n, 0, n - 1, 0)).makeUnaryFuncClosure(pos, 1);
       }
       return null;
     }
@@ -978,7 +1011,8 @@ public class External extends TopDefn {
       if (w != null) {
         int width = w.intValue();
         int n = Type.numWords(width);
-        return new BlockCall(decisionTree(pos, n, 0, n - 1, n)).makeBinaryFuncClosure(pos, n, 1);
+        return new BlockCall(decisionTree(pos, width, n, 0, n - 1, n))
+            .makeBinaryFuncClosure(pos, n, 1);
       }
       return null;
     }
@@ -1082,136 +1116,224 @@ public class External extends TopDefn {
 
   static {
 
-    // primBitShiftL w :: Bit w -> Ix w -> Bit w
+    // primBitShiftL w :: Bit w -> Ix w -> Bit w,  for w>1
     generators.put(
         "primBitShiftL",
-        new Generator(1) {
+        new BitPosGenerator(1) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
               int width = w.intValue();
-              int n = Type.numWords(width);
-              if (n == 1) { // Do not handle Bit 0 or vectors larger than one word
-                Temp[] args = Temp.makeTemps(2);
-                Code code = maskTail(Prim.shl.withArgs(args), width);
-                return new BlockCall(new Block(pos, args, code)).makeBinaryFuncClosure(pos, 1, 1);
+              if (width > 1) { // TODO: add support for width 0 and width 1?
+                int n = Type.numWords(width);
+                return new BlockCall(decisionTree(pos, width, n, 0, n - 1, n))
+                    .makeBinaryFuncClosure(pos, n, 1);
               }
             }
             return null;
           }
+
+          Block decisionLeaf(Position pos, Temp[] vs, int width, int n, int lo, int numArgs) {
+            Temp v = new Temp();
+            if (lo == 0) {
+              return shiftLeftOffsetBlock(pos, vs, width, n, lo);
+            } else {
+              return new Block(
+                  pos,
+                  vs,
+                  new Bind(
+                      v,
+                      Prim.eq.withArgs(vs[n], lo * Type.WORDSIZE),
+                      new If(
+                          v,
+                          new BlockCall(shiftLeftMultipleBlock(pos, width, n, lo), vs),
+                          new BlockCall(
+                              shiftLeftOffsetBlock(pos, Temp.makeTemps(n + 1), width, n, lo),
+                              vs))));
+            }
+          }
+
+          /**
+           * Build a block to handle the case in a shift left where the shift is a multiple of the
+           * WORDSIZE.
+           */
+          private Block shiftLeftMultipleBlock(Position pos, int width, int n, int lo) {
+            Temp[] vs = Temp.makeTemps(n + 1); // [v0,...,shift]
+            Atom[] as = new Atom[n];
+            for (int i = 0; i < lo; i++) { // words below lo in the result are zero
+              as[i] = IntConst.Zero;
+            }
+            for (int i = lo; i < n; i++) { // words at or above lo are shifted up from lower indices
+              as[i] = vs[i - lo];
+            }
+            Code code = new Done(new Return(as)); // Mask most significant word, if necessary
+            int rem = width % Type.WORDSIZE;
+            if (rem != 0) {
+              Temp t = new Temp();
+              code = new Bind(t, Prim.and.withArgs(as[n - 1], (1 << rem) - 1), code);
+              as[n - 1] = t;
+            }
+            return new Block(pos, vs, code);
+          }
+
+          /**
+           * Build a block to handle the case in a shift left where the shift is offset, NOT a
+           * multiple of the WORDSIZE. Also provides code for the case of a large shift that reaches
+           * in to the most significant word.
+           */
+          private Block shiftLeftOffsetBlock(Position pos, Temp[] vs, int width, int n, int lo) {
+            Atom[] as = new Atom[n];
+            Temp offs = new Temp(); // holds offset within word
+            Temp comp = new Temp(); // holds complement of offset (comp + offs == WORDSIZE)
+            Code code = new Done(new Return(as)); // Build up code in reverse ...
+
+            // Zero out least significant words of result:
+            for (int i = 0; i < lo; i++) {
+              as[i] = IntConst.Zero;
+            }
+
+            // Create new temporaries for the remaining words:
+            Temp[] ts = (n > lo) ? Temp.makeTemps(n - lo) : null;
+            for (int i = lo; i < n; i++) {
+              as[i] = ts[i - lo];
+            }
+
+            // Add code to mask most significant word, if necessary:
+            // TODO: The implementation of this method is somewhat contorted by the need to have
+            // initialized the ts
+            // and as arrays by the time we get to this point; is there a cleaner way to do this?
+            int rem = width % Type.WORDSIZE;
+            if (rem != 0) {
+              Temp t = new Temp();
+              code = new Bind(t, Prim.and.withArgs(ts[n - lo - 1], (1 << rem) - 1), code);
+              as[n - 1] = t;
+            }
+
+            // Set outputs that combine data from adjacent words in the input:
+            for (int i = lo + 1; i < n; i++) {
+              Temp p = new Temp();
+              Temp q = new Temp();
+              code =
+                  new Bind(
+                      p,
+                      Prim.shl.withArgs(vs[i - lo], offs),
+                      new Bind(
+                          q,
+                          Prim.lshr.withArgs(vs[i - lo - 1], comp),
+                          new Bind(ts[i - lo], Prim.or.withArgs(p, q), code)));
+            }
+
+            // Construct block, including code to calculate offs, comp, and lsw of output:
+            return new Block(
+                pos,
+                vs,
+                new Bind(
+                    offs,
+                    Prim.sub.withArgs(vs[n], lo * Type.WORDSIZE),
+                    new Bind(
+                        comp,
+                        Prim.sub.withArgs(Type.WORDSIZE, offs),
+                        new Bind(ts[0], Prim.shl.withArgs(vs[0], offs), code))));
+          }
         });
 
-    // primBitShiftRu w :: Bit w -> Ix w -> Bit w
+    // primBitShiftRu w :: Bit w -> Ix w -> Bit w,  for w>1
     generators.put(
         "primBitShiftRu",
-        new Generator(1) {
+        new BitPosGenerator(1) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null) {
               int width = w.intValue();
-              int n = Type.numWords(width);
-              return new BlockCall(shiftRightBlock(pos, n, 0, n - 1))
-                  .makeBinaryFuncClosure(pos, n, 1);
+              if (width > 1) { // TODO: add support for width 0 and width 1?
+                int n = Type.numWords(width);
+                return new BlockCall(decisionTree(pos, width, n, 0, n - 1, n))
+                    .makeBinaryFuncClosure(pos, n, 1);
+              }
             }
             return null;
           }
+
+          Block decisionLeaf(Position pos, Temp[] vs, int width, int n, int lo, int numArgs) {
+            if (lo + 1 == n) {
+              return shiftRightOffsetBlock(pos, vs, n, lo);
+            } else {
+              Temp v = new Temp();
+              return new Block(
+                  pos,
+                  vs,
+                  new Bind(
+                      v,
+                      Prim.eq.withArgs(vs[n], lo * Type.WORDSIZE),
+                      new If(
+                          v,
+                          new BlockCall(shiftRightMultipleBlock(pos, n, lo), vs),
+                          new BlockCall(
+                              shiftRightOffsetBlock(pos, Temp.makeTemps(n + 1), n, lo), vs))));
+            }
+          }
+
+          /**
+           * Build a block to handle the case in a shift right where the shift is a multiple of the
+           * WORDSIZE.
+           */
+          private Block shiftRightMultipleBlock(Position pos, int n, int lo) {
+            Temp[] vs = Temp.makeTemps(n + 1); // [v0,...,shift]
+            Atom[] as = new Atom[n];
+            int i = 0;
+            for (; i + lo < n; i++) {
+              as[i] = vs[i + lo];
+            }
+            for (; i < n; i++) {
+              as[i] = IntConst.Zero;
+            }
+            return new Block(pos, vs, new Done(new Return(as)));
+          }
+
+          /**
+           * Build a block to handle the case in a shift right where the shift is offset, NOT a
+           * multiple of the WORDSIZE. Also provides code for the case of a large shift that reaches
+           * in to the most significant word.
+           */
+          private Block shiftRightOffsetBlock(Position pos, Temp[] vs, int n, int lo) {
+            Atom[] as = new Atom[n];
+            Temp offs = new Temp(); // holds offset within word
+            Temp comp = new Temp(); // holds complement of offset (comp + offs == WORDSIZE)
+            Code code = new Done(new Return(as));
+            int i = 0;
+            // Set words that blend data from two sources:
+            for (; i + lo < n - 1; i++) {
+              Temp p = new Temp();
+              Temp q = new Temp();
+              Temp r = new Temp();
+              code =
+                  new Bind(
+                      p,
+                      Prim.shl.withArgs(vs[i + lo + 1], comp),
+                      new Bind(
+                          q,
+                          Prim.lshr.withArgs(vs[i + lo], offs),
+                          new Bind(r, Prim.or.withArgs(p, q), code)));
+              as[i] = r;
+            }
+            // Set most significant non-zero word:
+            Temp r = new Temp();
+            code = new Bind(r, Prim.lshr.withArgs(vs[n - 1], offs), code);
+            as[i++] = r;
+
+            // Zero any remaining parts of result:
+            for (; i < n; i++) {
+              as[i] = IntConst.Zero;
+            }
+            return new Block(
+                pos,
+                vs,
+                new Bind(
+                    offs,
+                    Prim.sub.withArgs(vs[n], lo * Type.WORDSIZE),
+                    new Bind(comp, Prim.sub.withArgs(Type.WORDSIZE, offs), code)));
+          }
         });
-  }
-
-  private static Block shiftRightBlock(Position pos, int n, int lo, int hi) {
-    // invariant:  0 <= lo <= hi < n
-    if (hi > lo) {
-      int mid = 1 + ((lo + hi) / 2);
-      Temp[] vs = Temp.makeTemps(n + 1); // [v0,...,shift]
-      Temp v = new Temp();
-      return new Block(
-          pos,
-          vs,
-          new Bind(
-              v,
-              Prim.ult.withArgs(vs[n], mid * Type.WORDSIZE),
-              new If(
-                  v,
-                  new BlockCall(shiftRightBlock(pos, n, lo, mid - 1), vs),
-                  new BlockCall(shiftRightBlock(pos, n, mid, hi), vs))));
-    } else if (lo + 1 == n) {
-      return shiftRightOffsetBlock(pos, n, lo);
-    } else {
-      Temp[] vs = Temp.makeTemps(n + 1);
-      Temp v = new Temp();
-      return new Block(
-          pos,
-          vs,
-          new Bind(
-              v,
-              Prim.eq.withArgs(vs[n], lo * Type.WORDSIZE),
-              new If(
-                  v,
-                  new BlockCall(shiftRightMultipleBlock(pos, n, lo), vs),
-                  new BlockCall(shiftRightOffsetBlock(pos, n, lo), vs))));
-    }
-  }
-
-  /**
-   * Build a block to handle the case in a shift right where the shift is a multiple of the
-   * WORDSIZE.
-   */
-  private static Block shiftRightMultipleBlock(Position pos, int n, int lo) {
-    Temp[] vs = Temp.makeTemps(n + 1); // args
-    Atom[] as = new Atom[n];
-    int i = 0;
-    for (; i + lo < n; i++) {
-      as[i] = vs[i + lo];
-    }
-    for (; i < n; i++) {
-      as[i] = IntConst.Zero;
-    }
-    return new Block(pos, vs, new Done(new Return(as)));
-  }
-
-  /**
-   * Build a block to handle the case in a shift right where the shift is offset, NOT a multiple of
-   * the WORDSIZE. Also provides code for the case of a large shift that reaches in to the most
-   * significant word.
-   */
-  private static Block shiftRightOffsetBlock(Position pos, int n, int lo) {
-    Temp[] vs = Temp.makeTemps(n + 1); // args
-    Atom[] as = new Atom[n];
-    Temp offs = new Temp(); // holds offset within word
-    Temp comp = new Temp(); // holds complement of offset (comp + offs == WORDSIZE)
-    Code code = new Done(new Return(as));
-    int i = 0;
-    // Set words that blend data from two sources:
-    for (; i + lo < n - 1; i++) {
-      Temp p = new Temp();
-      Temp q = new Temp();
-      Temp r = new Temp();
-      code =
-          new Bind(
-              p,
-              Prim.shl.withArgs(vs[i + lo + 1], comp),
-              new Bind(
-                  q,
-                  Prim.lshr.withArgs(vs[i + lo], offs),
-                  new Bind(r, Prim.or.withArgs(p, q), code)));
-      as[i] = r;
-    }
-    // Set most significant non-zero word:
-    Temp r = new Temp();
-    code = new Bind(r, Prim.lshr.withArgs(vs[n - 1], offs), code);
-    as[i++] = r;
-
-    // Zero any remaining parts of result:
-    for (; i < n; i++) {
-      as[i] = IntConst.Zero;
-    }
-    return new Block(
-        pos,
-        vs,
-        new Bind(
-            offs,
-            Prim.sub.withArgs(vs[n], lo * Type.WORDSIZE),
-            new Bind(comp, Prim.sub.withArgs(Type.WORDSIZE, offs), code)));
   }
 
   /** Rewrite the components of this definition to account for changes in representation. */
