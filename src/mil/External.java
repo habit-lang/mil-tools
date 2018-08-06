@@ -222,6 +222,13 @@ public class External extends TopDefn {
             + this
             + " :: "
             + this.declared);
+    if (ts != null) {
+      Type[] nts = new Type[ts.length];
+      for (int i = 0; i < ts.length; i++) {
+        nts[i] = ts[i].canonType(spec);
+      }
+      ts = nts;
+    }
   }
 
   /**
