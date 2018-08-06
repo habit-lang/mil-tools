@@ -1365,6 +1365,37 @@ public class External extends TopDefn {
         });
   }
 
+  static {
+
+    // structSelect m s f n :: ARef m s -> #f -> ARef n t
+    generators.put(
+        "structSelect",
+        new Generator(4) {
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger m = ts[0].getNat(); // Alignment of structure
+            StructName sn = ts[1].structName(); // Structure
+            String lab = ts[2].getLabel(); // Field label
+            BigInteger n = ts[3].getNat(); // Alignment of field
+            if (m != null && sn != null && lab != null && n != null) {
+              // TODO: For now, we ignore the alignment values, trusting that the values passed in
+              // by the front
+              // end will be valid ... but it probably would not be a bad idea to check them here
+              // too.
+              StructField[] fields = sn.getFields();
+              for (int i = 0; i < fields.length; i++) {
+                if (fields[i].answersTo(lab)) {
+                  Temp[] vs = Temp.makeTemps(1);
+                  Tail tail = Prim.add.withArgs(vs[0], fields[i].getOffset());
+                  ClosureDefn k = new ClosureDefn(pos, vs, Temp.makeTemps(1), tail);
+                  return new ClosAlloc(k).makeUnaryFuncClosure(pos, 1);
+                }
+              }
+            }
+            return null;
+          }
+        });
+  }
+
   /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {
     /* Processing of External definitions was completed during the first pass. */
