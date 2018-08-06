@@ -1336,6 +1336,35 @@ public class External extends TopDefn {
         });
   }
 
+  static {
+
+    // (@) n a :: Ref (Array n a) -> Ix n -> Ref a
+    generators.put(
+        "@",
+        new Generator(2) {
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger n = ts[0].getNat(); // Alignment of structure
+            Type bs = ts[1].byteSize(null); // Size of array elements
+            BigInteger s;
+            if (n != null && bs != null && (s = bs.getNat()) != null) {
+              int size = s.intValue(); // TODO: check that size is in a reasonable range?
+              Temp[] ri = Temp.makeTemps(2);
+              Temp v = new Temp();
+              Block b =
+                  new Block(
+                      pos,
+                      ri, // b[r,i]
+                      new Bind(
+                          v,
+                          Prim.mul.withArgs(ri[1], size), //  = v <- mul((i, size))
+                          new Done(Prim.add.withArgs(ri[0], v)))); //    add((r, v))
+              return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
+            }
+            return null;
+          }
+        });
+  }
+
   /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {
     /* Processing of External definitions was completed during the first pass. */
