@@ -520,9 +520,8 @@ public abstract class Call extends Tail {
    * function that takes m word values (that together represent the argument to the function).
    */
   Tail makeUnaryFuncClosure(Position pos, int m) {
-    return this // Defines:
-        .makeClosure(pos, 0, m) //    k0{} [a1,..,am] = ...(a1,..,am)
-        .withArgs(); // Returns: k0{}
+    return makeClosure(pos, 0, m) // k0{} [a1,..,am] = ...(a1,..,am)
+        .withArgs();
   }
 
   /**
@@ -531,10 +530,18 @@ public abstract class Call extends Tail {
    * word values (representing the second argument).
    */
   Tail makeBinaryFuncClosure(Position pos, int m, int n) {
-    return this // Defines:
-        .makeClosure(pos, m, n) //    k0{a1,..,am} [b1,...,bn] = ...(a1,...,am,b1,...,bn)
-        .makeClosure(pos, 0, m) //    k1{} [a1,..,am]          = k0{a1,..,am}
-        .withArgs(); // Returns: k1{}
+    return makeClosure(pos, m, n) //    k0{a1,..,am} [b1,...,bn] = ...(a1,...,am,b1,...,bn)
+        .makeUnaryFuncClosure(pos, m);
+  }
+
+  /**
+   * From this call, which requires m+n+p MIL arguments, construct the closure structures for a
+   * ternary function that takes m word values (representing the first argument), then n words
+   * (representing the second argument), and then p words (representing the third argument).
+   */
+  Tail makeTernaryFuncClosure(Position pos, int m, int n, int p) {
+    return makeClosure(pos, m + n, p) //    k0{a1,...,b1,...} [c1,...] = ...(a1,...,b1,....,c1,...)
+        .makeBinaryFuncClosure(pos, m, n);
   }
 
   Tail repTransform(RepTypeSet set, RepEnv env) {

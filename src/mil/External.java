@@ -514,6 +514,139 @@ public class External extends TopDefn {
         });
   }
 
+  static {
+
+    // primGenIncIx a n :: a -> (Ix n -> a) -> Ix n -> a
+    generators.put(
+        "primGenIncIx",
+        new Generator(2) {
+          Tail generate(Position pos, Type[] ts) {
+            // TODO: Use ts[0] to find representation (length) for n
+            BigInteger n = ts[1].getIxArg(); // Index modulus
+            if (n != null && n.compareTo(BigInteger.ZERO) > 0) {
+              // inc[j, i] = m <- add((i, 1)); j @ m
+              Temp[] ji = Temp.makeTemps(2);
+              Temp m = new Temp();
+              Block inc =
+                  new Block(
+                      pos,
+                      ji,
+                      new Bind(m, Prim.add.withArgs(ji[1], 1), new Done(new Enter(ji[0], m))));
+
+              // b[n, j, i] = w <- ult((i, n-1)); if w then inc[j, i] else return n
+              Temp[] nji = Temp.makeTemps(3);
+              Block b = guardBlock(pos, nji, Prim.ult.withArgs(nji[2], n.intValue() - 1), inc);
+              return new BlockCall(b).makeTernaryFuncClosure(pos, 1, 1, 1);
+            }
+            return null;
+          }
+        });
+
+    // primGenDecIx n :: a -> (Ix n -> a) -> Ix n -> a
+    generators.put(
+        "primGenDecIx",
+        new Generator(2) {
+          Tail generate(Position pos, Type[] ts) {
+            // TODO: Use ts[0] to find representation (length) for n
+            BigInteger n = ts[1].getIxArg(); // Index modulus
+            if (n != null && n.compareTo(BigInteger.ZERO) > 0) {
+              // dec[j, i] = m <- sub((i, 1)); j @ m
+              Temp[] ji = Temp.makeTemps(2);
+              Temp m = new Temp();
+              Block dec =
+                  new Block(
+                      pos,
+                      ji,
+                      new Bind(m, Prim.sub.withArgs(ji[1], 1), new Done(new Enter(ji[0], m))));
+
+              // b[n, j, i] = w <- ugt((i, 0)); if w then dec[j, i] else return n
+              Temp[] nji = Temp.makeTemps(3);
+              Block b = guardBlock(pos, nji, Prim.ugt.withArgs(nji[2], 0), dec);
+              return new BlockCall(b).makeTernaryFuncClosure(pos, 1, 1, 1);
+            }
+            return null;
+          }
+        });
+
+    // primMaybeIx a n :: a -> (Ix n -> a) -> Word -> a
+    generators.put(
+        "primGenMaybeIx",
+        new Generator(2) {
+          Tail generate(Position pos, Type[] ts) {
+            // TODO: Use ts[0] to find representation (length) for n
+            BigInteger n = ts[1].getIxArg(); // Index modulus
+            if (n != null && n.compareTo(BigInteger.ZERO) > 0) {
+              // yes[j, i] = j @ i
+              Temp[] ji = Temp.makeTemps(2);
+              Block yes = new Block(pos, ji, new Done(new Enter(ji[0], ji[1])));
+
+              // b[n, j, i] = w <- ule((i, n-1)); if w then yes[j, i] else return n
+              // NOTE: using (v <= N-1) rather than (v < N) is important for the case where
+              // N=(2^WORDSIZE)
+              Temp[] njv = Temp.makeTemps(3);
+              Block b = guardBlock(pos, njv, Prim.ule.withArgs(njv[2], n.intValue() - 1), yes);
+              return new BlockCall(b).makeTernaryFuncClosure(pos, 1, 1, 1);
+            }
+            return null;
+          }
+        });
+
+    // primGenLeqIx a n :: a -> (Ix n -> a) -> Word -> Ix n -> a
+    generators.put(
+        "primGenLeqIx",
+        new Generator(2) {
+          Tail generate(Position pos, Type[] ts) {
+            // TODO: Use ts[0] to find representation (length) for n
+            BigInteger n = ts[1].getIxArg(); // Index modulus
+            if (n != null && n.compareTo(BigInteger.ZERO) > 0) {
+              // no[thing] = return thing
+              Temp[] thing = Temp.makeTemps(1);
+              Block no = new Block(pos, thing, new Done(new Return(thing)));
+
+              // yes[j, i] = j @ i
+              Temp[] ji = Temp.makeTemps(2);
+              Block yes = new Block(pos, ji, new Done(new Enter(ji[0], ji[1])));
+
+              // b[n, j, v, i] = w <- ule((v, i)); if w then yes[j, v] else return n
+              Temp[] njvi = Temp.makeTemps(4);
+              Temp w = new Temp();
+              Block b =
+                  new Block(
+                      pos,
+                      njvi,
+                      new Bind(
+                          w,
+                          Prim.ule.withArgs(njvi[2], njvi[3]),
+                          new If(
+                              w,
+                              new BlockCall(yes, new Atom[] {njvi[1], njvi[2]}),
+                              new BlockCall(no, new Atom[] {njvi[0]}))));
+              return new BlockCall(b).makeClosure(pos, 3, 1).makeTernaryFuncClosure(pos, 1, 1, 1);
+            }
+            return null;
+          }
+        });
+  }
+
+  static Block guardBlock(Position pos, Temp[] vs, Tail test, Block yes) {
+    // no[thing] = return thing
+    Temp[] thing = Temp.makeTemps(1);
+    Block no = new Block(pos, thing, new Done(new Return(thing)));
+
+    // b[n, j, v] = w <- test; if w then yes[j,v] else no[n]
+    Temp w = new Temp();
+    return new Block(
+        pos,
+        vs,
+        new Bind(
+            w,
+            test,
+            new If(
+                w,
+                new BlockCall(yes, new Atom[] {vs[1], vs[2]}),
+                new BlockCall(no, new Atom[] {vs[0]}))));
+  }
+
   /**
    * A general method for generating comparisons on Ix values. Because Ix values are represented by
    * a single Word, we can implement each of these using the corresponding (unsigned) comparison on
