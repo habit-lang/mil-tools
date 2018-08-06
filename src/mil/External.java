@@ -1367,6 +1367,109 @@ public class External extends TopDefn {
 
   static {
 
+    // primInitArray n a :: (Ix n -> Init a) -> Init (Array n a)
+    generators.put(
+        "primInitArray",
+        new Generator(2) {
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger n = ts[0].getIxArg(); // Array length
+            Type bs = ts[1].byteSize(null); // Size of array elements
+            BigInteger s;
+            if (n != null && bs != null && (s = bs.getNat()) != null) {
+              int len =
+                  n.intValue(); // TODO: calls to intValue produce wrong results for large n, s
+              int size = s.intValue();
+              return (len <= 4) ? initArrayUnroll(pos, len, size) : initArrayLoop(pos, len, size);
+            }
+            return null;
+          }
+        });
+  }
+
+  /**
+   * Generate code for a loop-based implementation of initArray. The structure of the generated code
+   * is as follows: (len=array length, size=element size)
+   *
+   * <p>initArray <- k0{} k0{} f = k1{f} k1{f} r = loop[f, r, 0] loop[f, r, j] = v <- ult((j, len))
+   * if v then step[f, r, j] else done[] step[f, r, i] = g <- f @ i x <- g @ r j <- add((i, i)) s <-
+   * add((r, size)) loop[f, s, j] done[] = Unit()
+   *
+   * <p>(Assumes implementation: Init a = [Ref a] ->> [Unit])
+   */
+  private static Tail initArrayLoop(Position pos, int len, int size) {
+    Block done = new Block(pos, Temp.noTemps, new Done(Cfun.Unit.withArgs())); // bdone[] = Unit()
+    Temp[] fsj = Temp.makeTemps(3);
+    Block loop = new Block(pos, fsj, null); // bloop[f, s, j] = ...
+    Temp[] fri = Temp.makeTemps(3);
+    Block step = new Block(pos, fri, null); // bstep[f, r, j] = ...
+
+    Temp v = new Temp();
+    loop.setCode(
+        new Bind(
+            v,
+            Prim.ult.withArgs(fsj[2], len),
+            new If(v, new BlockCall(step, Temp.clone(fsj)), new BlockCall(done, Atom.noAtoms))));
+
+    Temp g = new Temp();
+    Temp x = new Temp();
+    Temp j = new Temp();
+    Temp s = new Temp();
+    step.setCode(
+        new Bind(
+            g,
+            new Enter(fri[0], fri[2]),
+            new Bind(
+                x,
+                new Enter(g, fri[1]),
+                new Bind(
+                    j,
+                    Prim.add.withArgs(fri[2], 1),
+                    new Bind(
+                        s,
+                        Prim.add.withArgs(fri[1], size),
+                        new Done(new BlockCall(loop, new Atom[] {fri[0], s, j})))))));
+
+    Temp[] f = Temp.makeTemps(1);
+    Temp[] r = Temp.makeTemps(1);
+    ClosureDefn k1 =
+        new ClosureDefn(pos, f, r, new BlockCall(loop, new Atom[] {f[0], r[0], IntConst.Zero}));
+    return new ClosAlloc(k1).makeUnaryFuncClosure(pos, 1);
+  }
+
+  /**
+   * Generate code for an implementation of initArray that uses a separate section of code for every
+   * array element, essentially unrolling the loop that is produced by initArrayLoop. This will
+   * likely produce a lot of code unless the array length is small. The structure of the generated
+   * code is as follows:
+   *
+   * <p>initArray <- k0{} k0{} f = k1{f} k1{f} r = work[f, r] work[f, r] = g0 <- f @ 0 x0 <- f0 @ r
+   * //... r1 <- add((r0, size)) g1 <- f @ 1 x1 <- g1 @ r1 //... Unit()
+   */
+  private static Tail initArrayUnroll(Position pos, int len, int size) {
+    Code code = new Done(Cfun.Unit.withArgs());
+    Temp f = new Temp();
+    Temp r = new Temp();
+    if (len > 0) {
+      int i = len - 1;
+      for (; ; ) {
+        Temp g = new Temp();
+        code =
+            new Bind(g, new Enter(f, new IntConst(i)), new Bind(new Temp(), new Enter(g, r), code));
+        if (i > 0) {
+          Temp r1 = new Temp();
+          code = new Bind(r, Prim.add.withArgs(r1, size), code);
+          r = r1;
+        } else {
+          break;
+        }
+      }
+    }
+    Block work = new Block(pos, new Temp[] {f, r}, code);
+    return new BlockCall(work).makeBinaryFuncClosure(pos, 1, 1);
+  }
+
+  static {
+
     // structSelect m s f n :: ARef m s -> #f -> ARef n t
     generators.put(
         "structSelect",

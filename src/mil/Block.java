@@ -52,6 +52,15 @@ public class Block extends Defn {
     this(pos, (Temp[]) null, code);
   }
 
+  /**
+   * Set the code field for this block; this is intended to be used in situations where we are
+   * generating code for recursively defined blocks whose Code cannot be constucted until the Block
+   * itself has been defined.
+   */
+  public void setCode(Code code) {
+    this.code = code;
+  }
+
   private BlockType declared;
 
   private BlockType defining;
