@@ -205,7 +205,7 @@ class Main {
           break;
 
         case 'o': // MIL optimizer
-          message("Running MIL optimizer ...");
+          message("Running optimizer ...");
           mil.optimize();
           optimized = true;
           break;
