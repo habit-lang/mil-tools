@@ -30,6 +30,11 @@ public class TLab extends TLit {
     this.str = str;
   }
 
+  /** Return the string associated with this type if it is a label type, or else return null. */
+  public String getLabel() {
+    return str;
+  }
+
   /**
    * Test to determine whether this type is alpha equivalent to another type, by checking to see if
    * the two type skeletons are equal. (Assumes that TGen generics have been allocated in the same

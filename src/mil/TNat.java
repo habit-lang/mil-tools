@@ -36,6 +36,14 @@ public class TNat extends TLit {
   }
 
   /**
+   * Return the number associated with this type if it is a natural number type, or else return
+   * null.
+   */
+  public BigInteger getNat() {
+    return num;
+  }
+
+  /**
    * Test to determine whether this type is alpha equivalent to another type, by checking to see if
    * the two type skeletons are equal. (Assumes that TGen generics have been allocated in the same
    * order in both inputs.)
@@ -87,14 +95,6 @@ public class TNat extends TLit {
    */
   public Type simplifyNatType(Type[] tenv) {
     return this;
-  }
-
-  /**
-   * Return the number associated with this type if it is a natural number type, or else return
-   * null.
-   */
-  public BigInteger getNat() {
-    return num;
   }
 
   /**

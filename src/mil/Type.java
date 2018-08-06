@@ -31,6 +31,19 @@ public abstract class Type extends Scheme {
   /** An empty array of types. */
   public static final Type[] noTypes = new Type[0];
 
+  /**
+   * Return the number associated with this type if it is a natural number type, or else return
+   * null.
+   */
+  public BigInteger getNat() {
+    return null;
+  }
+
+  /** Return the string associated with this type if it is a label type, or else return null. */
+  public String getLabel() {
+    return null;
+  }
+
   /** Test to see if this type scheme is polymorphic. */
   public boolean isQuantified() {
     return false;
@@ -310,14 +323,6 @@ public abstract class Type extends Scheme {
    */
   public Type simplifyNatType(Type[] tenv) {
     debug.Internal.error("simplifyNatType applied to invalid type: " + skeleton(tenv));
-    return null;
-  }
-
-  /**
-   * Return the number associated with this type if it is a natural number type, or else return
-   * null.
-   */
-  public BigInteger getNat() {
     return null;
   }
 
