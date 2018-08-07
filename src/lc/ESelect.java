@@ -141,7 +141,7 @@ class ESelect extends PosExpr {
       final CGEnv env,
       final Block abort,
       final TailCont kt) { // id [ fields ], e [ fields ],  e . lab
-    debug.Internal.error("bitdata values do not have monadic type");
+    debug.Internal.error("values of this form do not have monadic type");
     return null;
   }
 }

@@ -495,7 +495,7 @@ public class LCParser extends CoreParser implements LCTokens {
           Position pos = lexer.getPos();
           String id = lexer.getLexeme();
           if (lexer.nextToken(/* CONID */ ) == SOPEN) {
-            e = new EConstruct(pos, id, parseFields());
+            e = parseConstruct(pos, id);
           } else {
             e = new EId(pos, id);
           }
@@ -558,17 +558,65 @@ public class LCParser extends CoreParser implements LCTokens {
     }
   }
 
+  /**
+   * Parse a bitdata constructor or a structure initializer, both of which begin with CONID [ ...
+   * The two different forms can be distinguished by the symbol that is used to separate field names
+   * and values: id = expr in bitdata constructors and id <- expr in initializers. However, there is
+   * an ambiguity here in the case where there are no fields. For the time being, we choose to
+   * interpret C [] as a bitdata constructor, but this ambiguity could be properly resolved later in
+   * scope analysis. TODO: Fix this ambiguity!
+   */
+  private EConstruct parseConstruct(Position pos, String id) throws Failure {
+    if (lexer.nextToken(/* SOPEN */ ) != VARID) {
+      require(SCLOSE);
+      return new EBitdata(pos, id, new EField[0]);
+    }
+    Position pos1 = lexer.getPos();
+    String id1 = lexer.getLexeme();
+    switch (lexer.nextToken(/* VARID */ )) {
+      case EQ:
+        { // bitdata constructor
+          lexer.nextToken(/* EQ */ );
+          EField f = new EField(pos1, id1, parseCExpr());
+          EField[] fs = lexer.match(BAR) ? parseFields(1, EQ) : new EField[1];
+          fs[0] = f;
+          require(SCLOSE);
+          return new EBitdata(pos, id, fs);
+        }
+      case FROM:
+        { // structure initializer
+          lexer.nextToken(/* FROM */ );
+          EField f = new EField(pos1, id1, parseCExpr());
+          EField[] fs = lexer.match(BAR) ? parseFields(1, FROM) : new EField[1];
+          fs[0] = f;
+          require(SCLOSE);
+          return new EStructInit(pos, id, fs);
+        }
+    }
+    throw new ParseFailure(lexer.getPos(), "expecting = or <- symbol");
+  }
+
+  /**
+   * Parse a list of fields of the form id = expr in a bitdata update expression, having just
+   * recognized the opening [ symbol at the start of the (possibly empty) list.
+   */
   private EField[] parseFields() throws Failure {
     lexer.nextToken(/* SOPEN */ );
-    EField[] fs = parseFields(0);
+    EField[] fs = parseFields(0, EQ);
     require(SCLOSE);
     return fs;
   }
 
-  private EField[] parseFields(int i) throws Failure {
+  /**
+   * Parse a list of fields, separated by | symbols. The i parameter specifies the number of fields
+   * that have already been read (we must make space for these in the array that is returned) and
+   * sym specifies the symbol that separates the identifier from the expression in each individual
+   * field.
+   */
+  private EField[] parseFields(int i, int sym) throws Failure {
     if (lexer.getToken() == VARID) {
-      EField f = parseField();
-      EField[] fs = lexer.match(BAR) ? parseFields(i + 1) : new EField[i + 1];
+      EField f = parseField(sym);
+      EField[] fs = lexer.match(BAR) ? parseFields(i + 1, sym) : new EField[i + 1];
       fs[i] = f;
       return fs;
     } else {
@@ -576,11 +624,15 @@ public class LCParser extends CoreParser implements LCTokens {
     }
   }
 
-  private EField parseField() throws Failure {
+  /**
+   * Parse a single field of the form VARID sym expr, having already found the initial VARID, and
+   * where the symbol sym, passed in as a parameter, should be either EQ or FROM.
+   */
+  private EField parseField(int sym) throws Failure {
     Position pos = lexer.getPos();
     String id = lexer.getLexeme();
     lexer.nextToken(/* VARID */ );
-    require(EQ);
+    require(sym);
     Expr e = parseCExpr();
     return new EField(pos, id, e);
   }

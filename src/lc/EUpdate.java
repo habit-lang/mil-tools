@@ -38,7 +38,7 @@ class EUpdate extends PosExpr {
 
   void display(Screen s) { // e [ fields ]
     e.displayParen(s);
-    EField.display(s, fields);
+    EField.display(s, "=", fields);
   }
 
   /**
@@ -188,7 +188,7 @@ class EUpdate extends PosExpr {
       final CGEnv env,
       final Block abort,
       final TailCont kt) { // id [ fields ], e [ fields ],  e . lab
-    debug.Internal.error("bitdata values do not have monadic type");
+    debug.Internal.error("values of this form do not have monadic type");
     return null;
   }
 }
