@@ -129,7 +129,7 @@ class EAp extends Expr {
 
   /** Compile an expression into a Tail. */
   Code compTail(final CGEnv env, final Block abort, final TailCont kt) { //  f x
-    return f.compTemp(
+    return f.compAtom(
         env,
         new AtomCont() {
           Code with(final Atom fv) {
@@ -137,7 +137,7 @@ class EAp extends Expr {
             return new Bind(
                 ft,
                 new Sel(Cfun.Func, 0, fv), // TODO: do we need an assert too?
-                x.compTemp(
+                x.compAtom(
                     env,
                     new AtomCont() {
                       Code with(final Atom xv) {
@@ -150,7 +150,7 @@ class EAp extends Expr {
 
   /** Compile a monadic expression into a Tail. */
   Code compTailM(final CGEnv env, final Block abort, final TailCont kt) { //  f x
-    return this.compTemp(
+    return this.compAtom(
         env,
         new AtomCont() {
           Code with(final Atom v) {

@@ -125,7 +125,7 @@ class EBitdata extends EConstruct {
       final Code c = code;
       final int j = invmap[i];
       code =
-          fields[i].compTemp(
+          fields[i].compAtom(
               env,
               new AtomCont() {
                 Code with(final Atom a) {

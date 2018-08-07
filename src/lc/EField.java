@@ -111,8 +111,8 @@ class EField extends Name {
     }
   }
 
-  Code compTemp(final CGEnv env, final AtomCont ka) {
-    return e.compTemp(env, ka);
+  Code compAtom(final CGEnv env, final AtomCont ka) {
+    return e.compAtom(env, ka);
   }
 
   Code compUpdate(CGEnv env, Tail t, final BitdataField field, final TailCont kt) {
@@ -120,7 +120,7 @@ class EField extends Name {
     return new Bind(
         a,
         t,
-        e.compTemp(
+        e.compAtom(
             env,
             new AtomCont() {
               Code with(final Atom b) { // b holds value to insert

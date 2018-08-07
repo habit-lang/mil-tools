@@ -133,7 +133,7 @@ class ECase extends PosExpr {
 
   /** Compile an expression into a Tail. */
   Code compTail(final CGEnv env, final Block abort, final TailCont kt) { //  case e of alts
-    return e.compTemp(
+    return e.compAtom(
         env,
         new AtomCont() {
           Code with(final Atom dv) {
@@ -151,7 +151,7 @@ class ECase extends PosExpr {
   /** Compile a monadic expression into a Tail. */
   Code compTailM(final CGEnv env, final Block abort, final TailCont kt) { //  case e of alts
     // TODO: too much cut and paste from compTail version
-    return e.compTemp(
+    return e.compAtom(
         env,
         new AtomCont() {
           Code with(final Atom dv) {

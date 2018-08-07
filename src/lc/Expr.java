@@ -157,8 +157,8 @@ abstract class Expr {
 
   abstract Expr lift(LiftEnv lenv);
 
-  /** Compile an expression into a Variable. */
-  Code compTemp(final CGEnv env, final AtomCont ka) {
+  /** Compile an expression into an Atom. */
+  Code compAtom(final CGEnv env, final AtomCont ka) {
     return compTail(
         env,
         MILProgram.abort,

@@ -128,14 +128,14 @@ class EUpdate extends PosExpr {
   /** Compile an expression into a Tail. */
   Code compTail(final CGEnv env, final Block abort, final TailCont kt) { // e [ fields ]
     // sketch of generated code:
-    //     compTemp[e]   $ \t ->
+    //     compAtom[e]   $ \t ->
     //     Bind(r <- Sel cf 0 t,
-    //     compTemp[e1]  $ \v1 ->
+    //     compAtom[e1]  $ \v1 ->
     //     Bind(t1 <- update_lab1((v1, t)),
-    //     compTemp[e2]  $ \v2 ->
+    //     compAtom[e2]  $ \v2 ->
     //     Bind(t2 <- update_lab2((v2, t1)),
     //     ...
-    //     compTemp[eN]  $ \vN ->
+    //     compAtom[eN]  $ \vN ->
     //     Bind(tN <- update_labN((vN, tN-1)),
     //     kt(C(tN))
     if (cf == null) {

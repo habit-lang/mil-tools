@@ -122,7 +122,7 @@ class ESelect extends PosExpr {
 
   /** Compile an expression into a Tail. */
   Code compTail(final CGEnv env, final Block abort, final TailCont kt) { // e . lab
-    return e.compTemp(
+    return e.compAtom(
         env,
         new AtomCont() {
           Code with(final Atom a) {

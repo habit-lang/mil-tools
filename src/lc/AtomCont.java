@@ -23,8 +23,8 @@ import core.*;
 import mil.*;
 
 /**
- * Represents a continuation that takes a variable containing the result of a previous calculation
- * and returns a code sequence that uses that variable to complete a computation.
+ * Represents a continuation that takes an atom containing the result of a previous calculation and
+ * returns a code sequence that uses that atom to complete a computation.
  */
 abstract class AtomCont {
 
