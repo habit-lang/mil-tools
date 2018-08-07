@@ -64,8 +64,9 @@ class EBitdata extends EConstruct {
       handler.report(new UnknownConstructorFailure(pos, id));
     } else if ((bn = cf.bitdataName()) == null) {
       handler.report(new BitdataRequiredFailure(pos, cf));
+    } else {
+      layout = bn.getLayouts()[cf.getNum()];
     }
-    layout = bn.getLayouts()[cf.getNum()];
     return EField.inScopeOf(handler, milenv, env, null, fields);
   }
 
