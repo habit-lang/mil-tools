@@ -81,14 +81,6 @@ public class BitdataName extends DataName {
     for (int i = 0; i < layouts.length; i++) {
       layouts[i].calculateBitdataBlocks(cfuns[i]);
     }
-
-    /*
-        debug.Log.println("bitdata type ------------------");
-        debug.Log.println(this + ", BitSize=" + bitSize);
-        for (int i=0; i<layouts.length; i++) {
-          layouts[i].display(cfuns[i]);
-        }
-    */
   }
 
   /** Return the bit pattern for this object. */

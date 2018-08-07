@@ -339,34 +339,4 @@ public class BitdataLayout extends DataName {
       fields[i].calculateBitdataBlocks(cf, this);
     }
   }
-
-  void display(Cfun cf) {
-    MILProgram prog = new MILProgram();
-    addToProg(prog);
-    try {
-      System.out.println("bitdata layout ----------------");
-      prog.shake();
-      prog.dump();
-      System.out.println("Running type checker:");
-      prog.typeChecking(new SimpleHandler());
-      prog.dump();
-      System.out.println("Running optimizer:");
-      prog.optimize();
-      prog.typeChecking(new SimpleHandler());
-      prog.dump();
-      debugDump();
-    } catch (Exception e) {
-      System.out.println("Exception occurred: " + e);
-      e.printStackTrace();
-    }
-    System.out.println("done --------------------------");
-  }
-
-  void addToProg(MILProgram prog) {
-    prog.addEntry(constructorBlock);
-    prog.addEntry(maskTestBlock);
-    for (int i = 0; i < fields.length; i++) {
-      fields[i].addToProg(prog);
-    }
-  }
 }

@@ -375,9 +375,4 @@ public class BitdataField extends Name {
     generateSelector(cf, layout);
     generateUpdate(cf, layout);
   }
-
-  void addToProg(MILProgram prog) {
-    prog.addEntry(selectorBlock);
-    // prog.addEntry(updateBlock);
-  }
 }
