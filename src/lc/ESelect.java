@@ -107,7 +107,7 @@ class ESelect extends PosExpr {
       cf = bn.getCfuns()[0]; // record outer constructor
     }
     BitdataField[] lfields = layout.getFields();
-    index = BitdataField.index(lab, lfields);
+    index = Name.index(lab, lfields);
     if (index < 0) {
       throw new Failure(pos, "There is no \"" + lab + "\" field for type " + et);
     }

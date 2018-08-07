@@ -111,7 +111,7 @@ class EField extends Name {
   }
 
   int checkTypeConstruct(TVarsInScope tis, Cfun cf, BitdataField[] lfields) throws Failure {
-    int p = BitdataField.index(id, lfields);
+    int p = Name.index(id, lfields);
     if (p < 0) {
       throw new Failure(
           pos, "Constructor " + cf + " does not include a field with label \"" + id + "\"");
@@ -122,7 +122,7 @@ class EField extends Name {
   }
 
   BitdataField checkTypeUpdate(TVarsInScope tis, Type et, BitdataField[] lfields) throws Failure {
-    int p = BitdataField.index(id, lfields);
+    int p = Name.index(id, lfields);
     if (p < 0) {
       throw new Failure(pos, "There is no \"" + id + "\" field for type " + et);
     }

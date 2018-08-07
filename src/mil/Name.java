@@ -51,4 +51,17 @@ public abstract class Name {
   public boolean answersTo(String id) {
     return id.equals(this.id);
   }
+
+  /**
+   * Find the number for the field with the given label in the specified array of names, or else
+   * return (-1) to indicate that there is no element with the given name.
+   */
+  public static int index(String lab, Name[] names) {
+    for (int i = 0; i < names.length; i++) {
+      if (names[i].answersTo(lab)) {
+        return i;
+      }
+    }
+    return (-1);
+  }
 }

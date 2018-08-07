@@ -58,19 +58,6 @@ public class BitdataField extends Name {
     debug.Log.println(id + " :: " + type + " -- offset=" + offset + ", width=" + width);
   }
 
-  /**
-   * Find the number for the field with the given label in the specified array, or else return (-1)
-   * to indicate that there is no corresponding field.
-   */
-  public static int index(String lab, BitdataField[] fields) {
-    for (int i = 0; i < fields.length; i++) {
-      if (fields[i].answersTo(lab)) {
-        return i;
-      }
-    }
-    return (-1);
-  }
-
   Tail repTransformSel(RepTypeSet set, RepEnv env, Atom a) {
     return new BlockCall(selectorBlock, a.repAtom(set, env));
   }
