@@ -60,6 +60,11 @@ public class DataName extends Tycon {
     isRecursive = true;
   }
 
+  /** Determine whether this has been marked as a recursive type. */
+  public boolean isRecursive() {
+    return isRecursive;
+  }
+
   /** A constructor for defining names that have BuiltinPosition. */
   public DataName(String id, Kind kind, int arity) {
     this(BuiltinPosition.position, id, kind, arity);
