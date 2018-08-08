@@ -22,6 +22,7 @@ import compiler.*;
 import compiler.Failure;
 import compiler.Position;
 import core.*;
+import obdd.Pat;
 
 /**
  * Represents a monomorphic allocator type in which any generic variables are interpreted using a
@@ -65,6 +66,11 @@ class TIndAllocType extends AllocType {
    */
   public AllocType generalize(TVar[] generics) {
     return generalize(generics, tenv);
+  }
+
+  /** Return the bit pattern for the ith stored component of this AllocType. */
+  Pat bitPat(int i) {
+    return stored[i].bitPat(tenv);
   }
 
   /** Calculate a new version of this allocator type with canonical components. */

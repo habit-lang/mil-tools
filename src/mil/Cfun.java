@@ -23,6 +23,8 @@ import compiler.BuiltinPosition;
 import compiler.Failure;
 import compiler.Position;
 import core.*;
+import obdd.MaskTestPat;
+import obdd.Pat;
 
 /** Names for constructor functions, each of which is associated with a specific DataName value. */
 public class Cfun extends Name {

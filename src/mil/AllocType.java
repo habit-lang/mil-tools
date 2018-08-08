@@ -22,6 +22,7 @@ import compiler.*;
 import compiler.Failure;
 import compiler.Position;
 import core.*;
+import obdd.Pat;
 
 /**
  * Represents the type of a MIL allocator, each of which describes the types of a tuple of values
@@ -227,6 +228,11 @@ public class AllocType {
       }
     }
     return true;
+  }
+
+  /** Return the bit pattern for the ith stored component of this AllocType. */
+  Pat bitPat(int i) {
+    return stored[i].bitPat(null);
   }
 
   /**

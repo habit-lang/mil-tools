@@ -142,6 +142,15 @@ public class Pat {
   }
 
   /**
+   * Pad this pattern with (arbitrary) bits on the left to ensure the specified overall width
+   * (assumes that this.width <= width).
+   */
+  public Pat padLeftTo(int width) {
+    int padding = width - this.width;
+    return (padding > 0) ? new Pat(width, bdd) : this;
+  }
+
+  /**
    * Construct a new version of this pattern with extra @padding@ bits on the right (least
    * significant bits).
    */
@@ -155,6 +164,23 @@ public class Pat {
    */
   public Pat concat(Pat that) {
     return new Pat(this.width + that.width, this.bdd.shiftLeft(that.width).and(that.bdd));
+  }
+
+  /**
+   * Bit pattern concatenation for an array of bit patterns. TODO: There is likely a more efficient
+   * way to implement this ...
+   */
+  public static Pat concat(Pat[] pats) {
+    int i = pats.length;
+    if (i == 0) {
+      return Pat.all(0);
+    } else {
+      Pat p = pats[--i];
+      while (--i >= 0) {
+        p = pats[i].concat(p);
+      }
+      return p;
+    }
   }
 
   /**
