@@ -111,6 +111,66 @@ class EField extends Name {
     }
   }
 
+  static Code compInit(
+      final CGEnv env,
+      final Block abort,
+      final EField[] fields,
+      final int lo,
+      final int hi,
+      final TailCont kt) {
+    if (lo == hi) {
+      // TODO: The generated code here is not correct:  We are trying to build an initializer for
+      // some
+      // structure type S, but the expression e :: Init T is an initializer for a single field f ::
+      // T of S.
+      // What we need here is an external or primitive of type  Init T -> #f -> Init S  that is
+      // valid for
+      // any combination of T, f, S such that f ::T is a field of S.  (Assuming Init a = [Ref a] ->>
+      // [Unit],
+      // the implementation of this function is straightforward:  \init. \#f. \r -> init (r + O),
+      // where
+      // O is the offset for f in S.  But we will need to add abstract syntax for #f types to be
+      // able to
+      // use this ...
+      return fields[lo].e.compTail(env, abort, kt);
+    } else {
+      final int mid = (lo + hi) / 2;
+      return compInit(
+          env,
+          abort,
+          fields,
+          lo,
+          mid,
+          new TailCont() {
+            Code with(final Tail t1) {
+              final Temp v1 = new Temp();
+              return new Bind(
+                  v1,
+                  t1,
+                  compInit(
+                      env,
+                      abort,
+                      fields,
+                      mid + 1,
+                      hi,
+                      new TailCont() {
+                        Code with(final Tail t2) {
+                          final Temp v2 = new Temp();
+                          final Temp f = new Temp();
+                          return new Bind(
+                              v2,
+                              t2,
+                              new Bind(
+                                  f,
+                                  new Enter(new TopExt(EStructInit.initSeq), v1),
+                                  kt.with(new Enter(f, v2))));
+                        }
+                      }));
+            }
+          });
+    }
+  }
+
   Code compAtom(final CGEnv env, final AtomCont ka) {
     return e.compAtom(env, ka);
   }

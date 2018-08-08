@@ -102,9 +102,21 @@ class EStructInit extends EConstruct {
   /** Compile an expression into a Tail. */
   Code compTail(
       final CGEnv env, final Block abort, final TailCont kt) { // id [ fields ] (struct initializer)
-    debug.Internal.error("code generation for structure initializers is not implemented");
-    return null;
+    if (fields.length == 0) {
+      debug.Internal.error("code generation for structure initializers with no fields");
+    }
+    return EField.compInit(env, abort, fields, 0, fields.length - 1, kt);
   }
+
+  private static final Type inita = Type.tuple(Type.init(Type.gen(0)));
+
+  private static final Scheme initSeqScheme =
+      new Forall(
+          new Prefix(new Tyvar[] {Tyvar.area}),
+          Type.milfun(inita, Type.tuple(Type.milfun(inita, inita))));
+
+  public static final mil.External initSeq =
+      new mil.External(BuiltinPosition.position, "initSeq", initSeqScheme, "initSeq", Type.noTypes);
 
   /** Compile a monadic expression into a Tail. */
   Code compTailM(
