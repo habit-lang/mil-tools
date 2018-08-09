@@ -23,6 +23,7 @@ import compiler.BuiltinPosition;
 import compiler.Failure;
 import compiler.Position;
 import core.*;
+import java.math.BigInteger;
 import obdd.MaskTestPat;
 import obdd.Pat;
 
@@ -213,6 +214,26 @@ public class Cfun extends Name {
   Cfun specializeCfun(MILSpec spec, AllocType type, TVarSubst s) {
     Type inst = type.resultType().apply(s).canonType(spec);
     return dn.specializeDataName(spec, inst).getCfuns()[num];
+  }
+
+  /**
+   * Build a bitdata layout corresponding to this constructor function with the additional
+   * parameters that specify the associated bitdata type (bn), tagbits, offset (for rightmost
+   * field), bit patterns for fields (fpats), bit pattern p for the full constructor, and a suitably
+   * chosen mask test predicate, mt.
+   */
+  BitdataLayout makeLayout(
+      BitdataName bn, BigInteger tagbits, int offset, Pat[] fpats, Pat p, MaskTestPat mt) {
+    int n = getArity();
+    BitdataField[] fields = new BitdataField[n];
+    for (int i = n - 1; i >= 0; i--) {
+      int width = fpats[i].getWidth();
+      fields[i] = new BitdataField(pos, id + i, allocType.storedType(i), offset, width);
+      offset += width;
+    }
+    BitdataLayout layout = new BitdataLayout(pos, id, bn, tagbits, fields, p);
+    layout.setMaskTest(mt);
+    return layout;
   }
 
   Code repTransformAssert(RepTypeSet set, Atom a, Code c) {

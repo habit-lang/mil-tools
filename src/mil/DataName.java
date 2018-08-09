@@ -24,6 +24,8 @@ import compiler.Failure;
 import compiler.Handler;
 import compiler.Position;
 import core.*;
+import java.math.BigInteger;
+import obdd.MaskTestPat;
 import obdd.Pat;
 
 /** Represents a type constructor that is introduced as an algebraic data type. */
@@ -212,6 +214,187 @@ public class DataName extends Tycon {
   }
 
   private static int count = 0;
+
+  /**
+   * Try to find a bitdata encoding of a type with one nullary and one non-nullary constructor by
+   * using a bit pattern that is not used by the latter as the representation for the former. We
+   * refer to this as "recycling" because it is an attempt to make something new from junk. This
+   * method is intended to be called only when there are exactly two constructors, one nullary and
+   * one non nullary, but it it possible to adapt the approach to more general cases.
+   */
+  BitdataName recycling(int maxWidth, Pat[] fpats) {
+    if (maxWidth <= Type.WORDSIZE) {
+      Pat p = Pat.concat(fpats); // Bit pattern for the non-nullary case
+      if (!p.isAll()) { // If they are not all used ...
+        int s = p.smallestOutside(); // then pick the smallest value to represent the nullary cfun
+        Pat q = Pat.intmod(maxWidth, s); // Find the bit pattern for that single value
+
+        // Create a new bitdata type T based on the following encoding:
+        //     bitdata T/maxWidth = C [ s ]      -- for the nullary constructor
+        //                        | D [ fields ] -- for the non nullary constructor
+
+        BitdataName bn = new BitdataName(pos, id, kind, arity);
+        bn.setBitSize(new TNat(maxWidth)); // set the width
+        bn.setPat(p.or(q)); // set the bit pattern, including both constructors
+
+        // Create layouts for two constructors:
+        BitdataLayout[] layouts = new BitdataLayout[cfuns.length];
+        for (int i = 0; i < cfuns.length; i++) {
+          Cfun cf = cfuns[i];
+          layouts[i] =
+              (cf.getArity() == 0)
+                  ? cf.makeLayout(bn, BigInteger.valueOf(s), 0, null, q, new MaskTestPat(q, false))
+                  : cf.makeLayout(bn, BigInteger.ZERO, 0, fpats, p, new MaskTestPat(p, true));
+        }
+        bn.setCfuns(BitdataLayout.calcCfuns(layouts));
+        bn.setLayouts(layouts);
+        debug.Log.println(
+            "Found bitdata representation for " + this + " using recycling strategy:");
+        bn.debugDump();
+        return bn;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Try to find a bitdata encoding of a type where every constructor has a distinct tag of some
+   * fixed width. We will assume that this method is only used when there are no nullary
+   * constructors in the type; the generalTagging scheme can be used instead if there are nullary
+   * constructors. In particular, this allows us to assume that none of the pats[i] arrays in this
+   * call is null.
+   */
+  BitdataName simpleTagging(int maxWidth, Pat[][] pats) {
+    int tagWidth = lg(cfuns.length); // how many bits will be needed for tags?
+    if (maxWidth + tagWidth <= Type.WORDSIZE) {
+      // Create a new bitdata type T based on the following encoding:
+      //
+      //     bitdata T/(maxWidth+tagWidth)
+      //        = C_0   [ pad_0   | fields_1   | 0   ]
+      //        | ...
+      //        | C_n-1 [ pad_n-1 | fields_n-1 | n-1 ]
+
+      BitdataName bn = new BitdataName(pos, id, kind, arity);
+      int width = maxWidth + tagWidth;
+      Pat p = Pat.empty(width); // to calculate the pattern for all constructors
+      bn.setBitSize(new TNat(width)); // set the width
+
+      BitdataLayout[] layouts = new BitdataLayout[cfuns.length];
+      for (int i = 0; i < cfuns.length; i++) {
+        BigInteger tagbits = BigInteger.valueOf(i); // tag value
+        Pat q = Pat.concat(pats[i]); // bit pattern for fields
+        MaskTestPat mt;
+        if (tagWidth > 0) {
+          Pat tag = Pat.intmod(tagWidth, tagbits, 0);
+          q = q.concat(tag); // add on bit pattern for tag
+          mt = new MaskTestPat(tag.padLeftTo(width), false);
+        } else {
+          mt = new MaskTestPat(Pat.all(width), false);
+        }
+        q = q.padLeftTo(width);
+        layouts[i] = cfuns[i].makeLayout(bn, tagbits, tagWidth, pats[i], q, mt);
+        p = p.or(q);
+      }
+      bn.setPat(p);
+      bn.setCfuns(BitdataLayout.calcCfuns(layouts));
+      bn.setLayouts(layouts);
+      debug.Log.println(
+          "Found bitdata representation for " + this + " using simple tagging strategy:");
+      bn.debugDump();
+      return bn;
+    }
+    return null;
+  }
+
+  /**
+   * Try to find a bitdata encoding of a type where there is one distinct tag for each non-nullary
+   * constructor, and all the nullary constructors (we assume that there is at least one) share a
+   * single (zero) tag. If there are no non-nullary constructors, then this just gives a simple
+   * enumeration type.
+   */
+  BitdataName generalTagging(int maxWidth, Pat[][] pats, int numNullary, int numNonNullary) {
+    int tagWidth = lg(1 + numNonNullary); // how many bits will be needed for tags?
+    int nullaryWidth = lg(numNullary); // how many bits needed for nullary tags?
+    if (nullaryWidth > maxWidth) { // maxWidth should be big enough to include nullaryWidth
+      maxWidth = nullaryWidth;
+    }
+    if (maxWidth + tagWidth <= Type.WORDSIZE) {
+      // Create a new bitdata type T based on the following encoding:
+      //
+      //     bitdata T'/S = C1   [ pad1 | fields1 | 1 ]  -- \v -> (v&mask)==1
+      //                  | ...
+      //                  | CM   [ padM | fieldsM | M ]  -- \v -> (v&mask)==M
+      //                  | CM+1 [              0 | 0 ]  -- \v -> (v==0)
+      //                  | ...
+      //                  | CM+N [            N-1 | 0 ]  -- \v -> (v==(N-1)<<lg(1+M))
+      //
+      // In this example, we assume all the non-nullary constructors come first; in practice, they
+      // could
+      // be arbitrarily interleaved with the nullary constructors.
+
+      BitdataName bn = new BitdataName(pos, id, kind, arity);
+      int width = maxWidth + tagWidth;
+      Pat p = Pat.empty(width); // to calculate the pattern for all constructors
+      bn.setBitSize(new TNat(width)); // set the width
+
+      int nullaryTag = 0; // Next available integer for a nullary constructor tag
+      int nonNullaryTag = 0; // Next available integer for a non-nullary constructor tag
+
+      BitdataLayout[] layouts = new BitdataLayout[cfuns.length];
+      for (int i = 0; i < cfuns.length; i++) {
+        Cfun cf = cfuns[i];
+        BigInteger tagbits;
+        Pat[] fpats;
+        MaskTestPat mt;
+        Pat q;
+        if (cf.getArity() == 0) { // nullary constructor
+          tagbits = BigInteger.valueOf(nullaryTag << tagWidth); // tag value
+          fpats = null;
+          q = Pat.intmod(width, tagbits, 0);
+          mt = new MaskTestPat(q, false);
+          nullaryTag++;
+        } else { // non-nullary constructor
+          tagbits = BigInteger.valueOf(nonNullaryTag);
+          fpats = pats[i];
+          q = Pat.concat(fpats);
+          if (tagWidth > 0) {
+            q = q.concat(Pat.intmod(tagWidth, tagbits, 0));
+          }
+          q = q.padLeftTo(width);
+          mt = new MaskTestPat(Pat.intmod(width, tagbits, 0), false);
+          nonNullaryTag++;
+        }
+        layouts[i] = cf.makeLayout(bn, tagbits, tagWidth, fpats, q, mt);
+        p = p.or(q);
+      }
+      bn.setPat(p);
+      bn.setCfuns(BitdataLayout.calcCfuns(layouts));
+      bn.setLayouts(layouts);
+      debug.Log.println(
+          "Found bitdata representation for " + this + " using general tagging strategy:");
+      bn.debugDump();
+      return bn;
+    }
+    return null;
+  }
+
+  /**
+   * Return the minimum number of bits needed to represent n distinct values. For example, lg(1) =
+   * 0, lg(2) = 1, lg(3) = lg(4) = 2, lg(5) = lg(6) = lg(7) = lg(8) = 3, etc. This function is
+   * included in DataName as a utility function for the bitdataEncoding method, but otherwise has no
+   * special relation to the DataName class.
+   */
+  static int lg(int n) {
+    if (n <= 1) {
+      return 0;
+    } else {
+      int i = 0;
+      for (n--; n > 0; i++) {
+        n = n >>> 1;
+      }
+      return i;
+    }
+  }
 
   /** Representation vector for bitdata types of width one. */
   public static final Type[] flagRep = new Type[] {flag.asType()};

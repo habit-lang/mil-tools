@@ -171,6 +171,15 @@ public class BitdataLayout extends DataName {
     return this;
   }
 
+  static Cfun[] calcCfuns(BitdataLayout[] layouts) {
+    Cfun[] cfuns = new Cfun[layouts.length];
+    for (int i = 0; i < layouts.length; i++) {
+      BitdataLayout layout = layouts[i];
+      cfuns[i] = new Cfun(layout.pos, layout.id, layout.bn, i, layout.cfunType());
+    }
+    return cfuns;
+  }
+
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     return bn.repCalc();
