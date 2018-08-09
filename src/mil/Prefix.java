@@ -84,22 +84,6 @@ public class Prefix {
     return (numGenerics > 0) ? new Forall(this, type) : type;
   }
 
-  /**
-   * Test to determine whether two prefixes are alpha equivalent, meaning that they define the same
-   * number of generic variables with the same kind in each position (order matters).
-   */
-  boolean alphaPrefix(Prefix p) {
-    if (this.numGenerics != p.numGenerics) {
-      return false;
-    }
-    for (int i = 0; i < numGenerics; i++) {
-      if (!this.vars[i].getKind().same(p.vars[i].getKind())) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   public Type[] instantiate() {
     Type[] tenv = new Type[numGenerics];
     for (int i = 0; i < numGenerics; i++) {

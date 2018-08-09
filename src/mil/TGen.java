@@ -36,17 +36,27 @@ public class TGen extends Type {
   }
 
   /**
-   * Test to determine whether this type is alpha equivalent to another type, by checking to see if
-   * the two type skeletons are equal. (Assumes that TGen generics have been allocated in the same
-   * order in both inputs.)
+   * Determine whether this TGen can be (or has already been) associated with the given
+   * correspondence.
    */
-  boolean alphaType(Type that) {
-    return that.alphaTGen(this);
+  boolean mapsTo(TGen b, TGenCorresp corresp) {
+    return corresp != null && corresp.maps(n, b);
+  }
+
+  /**
+   * Test to determine whether this type is alpha equivalent to another type, by checking to see if
+   * the two type skeletons are equal, possibly with some correspondence between the TGen objects in
+   * the two types. We use the names left and right to keep track of which types were on the left
+   * and the right in the original alphaEquiv() call so that we can build the TGenCorresp in a
+   * consistent manner.
+   */
+  boolean alphaType(Type left, TGenCorresp corresp) {
+    return left.alphaTGen(this, corresp);
   }
 
   /** Test to determine whether this type is equal to a given TGen. */
-  boolean alphaTGen(TGen that) {
-    return this.n == that.n;
+  boolean alphaTGen(TGen right, TGenCorresp corresp) {
+    return this.mapsTo(right, corresp);
   }
 
   /**

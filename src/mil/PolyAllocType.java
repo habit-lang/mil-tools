@@ -79,23 +79,7 @@ class PolyAllocType extends AllocType {
    * an explicity declared type.
    */
   public boolean alphaEquiv(AllocType at) {
-    return prefix.isEmpty() ? at.alphaAllocType(this) : at.alphaPolyAllocType(this);
-  }
-
-  /**
-   * Test to determine whether this AllocType is alpha equivalent to the AllocType passed in as an
-   * argument (considering only the stored and result components of that argument).
-   */
-  boolean alphaAllocType(AllocType at) {
-    return prefix.isEmpty() && super.alphaAllocType(at);
-  }
-
-  /**
-   * Test to determine whether this AllocType is alpha equivalent to the PolyAllocType passed in as
-   * an argument.
-   */
-  boolean alphaPolyAllocType(PolyAllocType pat) {
-    return this.prefix.alphaPrefix(pat.prefix) && super.alphaAllocType(pat);
+    return at.alphaAllocType(this, prefix.isEmpty() ? null : new TGenCorresp());
   }
 
   /** Test to see if this allocator type is polymorphic. */

@@ -56,7 +56,7 @@ public final class TVar extends TInd {
     tw.write("?" + num);
   }
 
-  boolean alphaType(Type t) {
+  boolean alphaType(Type t, TGenCorresp corresp) {
     if (bound != null) {
       debug.Internal.error("alphaType on bound TVar");
     }

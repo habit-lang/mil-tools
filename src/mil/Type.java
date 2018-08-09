@@ -66,32 +66,32 @@ public abstract class Type extends Scheme {
   }
 
   /** Test to determine whether two type schemes are alpha equivalent. */
-  public boolean alphaEquiv(Scheme s) {
-    return s.alphaType(this);
+  public boolean alphaEquiv(Scheme right) {
+    return right.alphaType(this, null);
   }
 
   /** Test to determine whether this type is equal to a given TGen. */
-  boolean alphaTGen(TGen that) {
+  boolean alphaTGen(TGen right, TGenCorresp corresp) {
     return false;
   }
 
   /** Test to determine whether this type is equal to a given type application. */
-  boolean alphaTAp(TAp that) {
+  boolean alphaTAp(TAp right, TGenCorresp corresp) {
     return false;
   }
 
   /** Test to determine whether this type is equal to a given TTycon. */
-  boolean alphaTTycon(TTycon that) {
+  boolean alphaTTycon(TTycon right) {
     return false;
   }
 
   /** Test to determine whether this type is equal to a given TNat. */
-  boolean alphaTNat(TNat that) {
+  boolean alphaTNat(TNat right) {
     return false;
   }
 
   /** Test to determine whether this type is equal to a given TLab. */
-  boolean alphaTLab(TLab that) {
+  boolean alphaTLab(TLab right) {
     return false;
   }
 

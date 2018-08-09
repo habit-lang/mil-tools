@@ -40,24 +40,28 @@ public class Forall extends Scheme {
   }
 
   /** Test to determine whether two type schemes are alpha equivalent. */
-  public boolean alphaEquiv(Scheme s) {
-    return prefix.isEmpty() ? s.alphaType(this.type) : s.alphaForall(this);
+  public boolean alphaEquiv(Scheme right) {
+    return prefix.isEmpty()
+        ? right.alphaType(this.type, null)
+        : right.alphaForall(this, new TGenCorresp());
   }
 
   /**
    * Test to determine whether this type scheme is alpha equivalent to the given Forall type scheme.
    */
-  boolean alphaForall(Forall f) {
-    return this.prefix.alphaPrefix(f.prefix) && this.type.alphaType(f.type);
+  boolean alphaForall(Forall left, TGenCorresp corresp) {
+    return this.type.alphaType(left.type, corresp);
   }
 
   /**
    * Test to determine whether this type is alpha equivalent to another type, by checking to see if
-   * the two type skeletons are equal. (Assumes that TGen generics have been allocated in the same
-   * order in both inputs.)
+   * the two type skeletons are equal, possibly with some correspondence between the TGen objects in
+   * the two types. We use the names left and right to keep track of which types were on the left
+   * and the right in the original alphaEquiv() call so that we can build the TGenCorresp in a
+   * consistent manner.
    */
-  boolean alphaType(Type that) {
-    return prefix.isEmpty() && this.type.alphaType(that);
+  boolean alphaType(Type left, TGenCorresp corresp) {
+    return this.type.alphaType(left, corresp);
   }
 
   public String toString(int prec) {

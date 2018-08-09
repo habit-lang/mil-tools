@@ -70,23 +70,7 @@ class PolyBlockType extends BlockType {
    * explicitly declared type.
    */
   public boolean alphaEquiv(BlockType bt) {
-    return prefix.isEmpty() ? bt.alphaBlockType(this) : bt.alphaPolyBlockType(this);
-  }
-
-  /**
-   * Test to determine whether this BlockType is alpha equivalent to the BlockType passed in as an
-   * argument (considering only the dom and rng components of that argument).
-   */
-  boolean alphaBlockType(BlockType bt) {
-    return prefix.isEmpty() && super.alphaBlockType(bt);
-  }
-
-  /**
-   * Test to determine whether this BlockType is alpha equivalent to the PolyBlockType passed in as
-   * an argument.
-   */
-  boolean alphaPolyBlockType(PolyBlockType pbt) {
-    return this.prefix.alphaPrefix(pbt.prefix) && super.alphaBlockType(pbt);
+    return bt.alphaBlockType(this, prefix.isEmpty() ? null : new TGenCorresp());
   }
 
   /** Test to see if this block type is polymorphic. */

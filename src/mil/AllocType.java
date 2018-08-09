@@ -185,31 +185,23 @@ public class AllocType {
    * an explicity declared type.
    */
   public boolean alphaEquiv(AllocType at) {
-    return at.alphaAllocType(this);
+    return at.alphaAllocType(this, null);
   }
 
   /**
    * Test to determine whether this AllocType is alpha equivalent to the AllocType passed in as an
    * argument (considering only the stored and result components of that argument).
    */
-  boolean alphaAllocType(AllocType at) {
-    if (this.stored.length != at.stored.length) {
+  boolean alphaAllocType(AllocType left, TGenCorresp corresp) {
+    if (this.stored.length != left.stored.length) {
       return false;
     }
     for (int i = 0; i < stored.length; i++) {
-      if (!this.stored[i].alphaType(at.stored[i])) {
+      if (!this.stored[i].alphaType(left.stored[i], corresp)) {
         return false;
       }
     }
-    return this.result.alphaType(at.result);
-  }
-
-  /**
-   * Test to determine whether this AllocType is alpha equivalent to the PolyAllocType passed in as
-   * an argument.
-   */
-  boolean alphaPolyAllocType(PolyAllocType pat) {
-    return false;
+    return this.result.alphaType(left.result, corresp);
   }
 
   /** Test to see if this allocator type is polymorphic. */

@@ -115,23 +115,15 @@ public class BlockType {
    * explicitly declared type.
    */
   public boolean alphaEquiv(BlockType bt) {
-    return bt.alphaBlockType(this);
+    return bt.alphaBlockType(this, null);
   }
 
   /**
    * Test to determine whether this BlockType is alpha equivalent to the BlockType passed in as an
-   * argument (considering only the dom and rng components of that argument).
+   * argument given the (optional) correspondence between TGens.
    */
-  boolean alphaBlockType(BlockType bt) {
-    return this.dom.alphaType(bt.dom) && this.rng.alphaType(bt.rng);
-  }
-
-  /**
-   * Test to determine whether this BlockType is alpha equivalent to the PolyBlockType passed in as
-   * an argument.
-   */
-  boolean alphaPolyBlockType(PolyBlockType pbt) {
-    return false;
+  boolean alphaBlockType(BlockType left, TGenCorresp corresp) {
+    return this.dom.alphaType(left.dom, corresp) && this.rng.alphaType(left.rng, corresp);
   }
 
   /** Test to see if this block type is polymorphic. */

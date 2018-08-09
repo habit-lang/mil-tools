@@ -50,7 +50,7 @@ public class TInd extends Type {
     bound.write(tw, prec, args);
   }
 
-  boolean alphaType(Type t) {
+  boolean alphaType(Type t, TGenCorresp corresp) {
     debug.Internal.error("alphaType on TInd");
     return false;
   }
