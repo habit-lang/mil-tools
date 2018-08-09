@@ -154,6 +154,9 @@ public class Prim {
 
   protected static final BlockType binaryWordType = new BlockType(wordWordTuple, wordTuple);
 
+  protected static final BlockType nzdivType =
+      new BlockType(Type.tuple(DataName.word.asType(), DataName.nzword.asType()), wordTuple);
+
   protected static final BlockType flagToWordType = new BlockType(flagTuple, wordTuple);
 
   protected static final BlockType relopType = new BlockType(wordWordTuple, flagTuple);
@@ -739,6 +742,43 @@ public class Prim {
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
       return new llvm.SRem(ty, l, r);
+    }
+  }
+
+  public static final Prim nzdiv = new nzdiv();
+
+  private static class nzdiv extends Prim {
+
+    private nzdiv() {
+      super("nzdiv", 2, 1, PURE, nzdivType);
+    }
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is not expected to produce any results, but execution is expected to continue with
+     * the given code.
+     */
+    llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
+      debug.Internal.error(id + " is not a void primitive");
+      return c;
+    }
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is expected to return a result (that should be captured in the specified lhs), and
+     * then execution is expected to continue on to the specified code, c.
+     */
+    llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
+      return new llvm.Op(
+          lhs, this.op(llvm.Type.i32, args[0].toLLVM(tm, vm, s), args[1].toLLVM(tm, vm, s)), c);
+    }
+
+    /**
+     * Generate an LLVM right hand side for this binary MIL primitive with the given values as
+     * input.
+     */
+    llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
+      return new llvm.UDiv(ty, l, r);
     }
   }
 
