@@ -67,6 +67,10 @@ public abstract class Atom {
     return false;
   }
 
+  public boolean sameNZConst(NZConst c) {
+    return false;
+  }
+
   public boolean sameBitConst(BitConst c) {
     return false;
   }
