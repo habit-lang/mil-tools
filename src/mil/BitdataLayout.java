@@ -136,6 +136,7 @@ public class BitdataLayout extends DataName {
       debug.Log.print("  " + i + ": ");
       fields[i].debugDump();
     }
+    debug.Log.println("  mask-test " + maskTest.toString(id));
   }
 
   /**

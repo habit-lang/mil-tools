@@ -92,6 +92,15 @@ public class BitdataName extends DataName {
     return layouts[num].getPat();
   }
 
+  public void debugDump() {
+    debug.Log.println(
+        "bitdata " + id + ": size " + bitSize + ", with " + layouts.length + " layout(s):");
+    for (int i = 0; i < layouts.length; i++) {
+      debug.Log.print("  " + i + ": ");
+      layouts[i].debugDump();
+    }
+  }
+
   DataName canonDataName(TypeSet set) {
     // We do not need to calculate a new version of the type in these cases because we know that
     // none of the
