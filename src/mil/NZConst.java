@@ -67,6 +67,14 @@ public class NZConst extends Const {
   }
 
   /**
+   * Return the nonzero value associated with this atom; a return of zero indicates that the atom
+   * was not an NZConst.
+   */
+  int getNZConst() {
+    return val;
+  }
+
+  /**
    * Calculate a static value for this atom, or else return null if the result must be calculated at
    * runtime.
    */

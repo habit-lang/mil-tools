@@ -285,6 +285,34 @@ public class PrimCall extends Call {
               : Prim.ashr.fold(a.getVal(), b.getVal()));
     }
 
+    if (p == Prim.nzdiv) {
+      Atom y = args[1];
+      int d = args[1].getNZConst();
+      if (d > 0) { // Look for a constant denominator
+        Atom x = args[0];
+        IntConst a = x.isIntConst();
+        if (a != null) {
+          int n = a.getVal(); // Look for a constant numerator
+          if (n > 0) { // To be cautious, only consider positive values
+            MILProgram.report("constant folding for nzdiv");
+            return done(new IntConst(n / d));
+          }
+        }
+        if (d == 1) { // Look for a (redundant) divide by 1
+          return done(x);
+        }
+        if ((d & (d - 1)) == 0) { // Look for division by a power of two, d=(1<<n)
+          int n = 1; // Calculate the value of n
+          for (int i = (d >>> 1); (i >>>= 1) > 0; n++) {
+            /* no extra work here */
+          }
+          MILProgram.report("rewrite: nzdiv((x, " + d + ")) ==> lshr((x, " + n + "))");
+          return done(Prim.lshr, x, n);
+        }
+      }
+      return null;
+    }
+
     if (p == Prim.eq) {
       Atom x = args[0];
       Atom y = args[1];

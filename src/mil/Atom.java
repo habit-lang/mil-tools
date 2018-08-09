@@ -288,6 +288,14 @@ public abstract class Atom {
   }
 
   /**
+   * Return the nonzero value associated with this atom; a return of zero indicates that the atom
+   * was not an NZConst.
+   */
+  int getNZConst() {
+    return 0;
+  }
+
+  /**
    * Determine whether this src argument is a value base (i.e., a numeric or global/primitive
    * constant) that is suitable for use in complex addressing modes.
    */
