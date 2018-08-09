@@ -93,9 +93,13 @@ public class DataName extends Tycon {
 
   public static final DataName word = new DataName("Word", Kind.simple(0), 0);
 
+  public static final DataName nzword = new DataName("NZWord", Kind.simple(0), 0);
+
   public static final DataName flag = new DataName("Flag", Kind.simple(0), 0);
 
   public static final DataName bit = new DataName("Bit", natToStar, 1);
+
+  public static final DataName nzbit = new DataName("NZBit", natToStar, 1);
 
   public static final DataName ix = new DataName("Ix", natToStar, 1);
 
@@ -113,7 +117,7 @@ public class DataName extends Tycon {
 
   /** Return the nat that specifies the bit size of the type produced by this type constructor. */
   public Type bitSize() {
-    return (this == DataName.word)
+    return (this == DataName.word || this == DataName.nzword)
         ? Type.TypeWORDSIZE
         : (this == DataName.flag) ? Type.TypeFLAGSIZE : null;
   }
@@ -122,8 +126,10 @@ public class DataName extends Tycon {
   public Pat bitPat() {
     // TODO: cache these patterns?
     return (this == DataName.word)
-        ? obdd.Pat.all(Type.WORDSIZE)
-        : (this == DataName.flag) ? obdd.Pat.all(Type.FLAGSIZE) : null;
+        ? Pat.all(Type.WORDSIZE)
+        : (this == DataName.nzword)
+            ? Pat.nonzero(Type.WORDSIZE)
+            : (this == DataName.flag) ? Pat.all(Type.FLAGSIZE) : null;
   }
 
   public obdd.Pat getPat(int num) {
@@ -399,6 +405,12 @@ public class DataName extends Tycon {
   /** Representation vector for bitdata types of width one. */
   public static final Type[] flagRep = new Type[] {flag.asType()};
 
+  /** Representation vector for Ix, ARef, APtr, etc. types that fit in a single word. */
+  public static final Type[] wordRep = new Type[] {word.asType()};
+
+  /** Representation vector for NZBit types that fit in a single word. */
+  public static final Type[] nzwordRep = new Type[] {nzword.asType()};
+
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     return null;
@@ -417,7 +429,9 @@ public class DataName extends Tycon {
   Type[] bitdataTyconRep(Type a) {
     return (this == DataName.bit)
         ? a.simplifyNatType(null).bitvectorRep()
-        : (this == DataName.ix) ? Type.words(1) : null;
+        : (this == DataName.nzbit)
+            ? a.simplifyNatType(null).nzbitvectorRep()
+            : (this == DataName.ix) ? DataName.wordRep : null;
   }
 
   /**
@@ -425,7 +439,7 @@ public class DataName extends Tycon {
    * representation vector, or else null.
    */
   Type[] bitdataTyconRep2(Type a, Type b) {
-    return (this == DataName.aref || this == DataName.aptr) ? Type.words(1) : null;
+    return (this == DataName.aref || this == DataName.aptr) ? DataName.wordRep : null;
   }
 
   /**

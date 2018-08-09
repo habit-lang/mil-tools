@@ -115,4 +115,12 @@ public class TNat extends TLit {
   Type[] bitvectorRep() {
     return Type.repBits(num.intValue());
   }
+
+  /**
+   * Return the representation for a value of type NZBit n, assuming that this object is the TNat
+   * for n.
+   */
+  Type[] nzbitvectorRep() {
+    return Type.numWords(num.intValue()) == 1 ? DataName.nzwordRep : null;
+  }
 }

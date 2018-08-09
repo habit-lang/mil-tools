@@ -403,7 +403,7 @@ public class TTycon extends TConst {
   }
 
   boolean useBitdataLo(Type t, Type s) {
-    return name != DataName.aref;
+    return name != DataName.aref && name != DataName.aptr;
   }
 
   /**

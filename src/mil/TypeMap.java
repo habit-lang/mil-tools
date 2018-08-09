@@ -32,6 +32,7 @@ class TypeMap extends TypeSet {
 
     // Create some basic mappings
     typeMap.put(DataName.word.asType(), llvm.Type.i32);
+    typeMap.put(DataName.nzword.asType(), llvm.Type.i32);
     typeMap.put(DataName.flag.asType(), llvm.Type.i1);
   }
 

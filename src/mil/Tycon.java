@@ -126,7 +126,8 @@ public abstract class Tycon extends TypeName {
    * to the argument a). The specified type environment, tenv, is used for both this and a.
    */
   Type bitSize(Type[] tenv, Type a) {
-    if (this == DataName.bit) { // BitSize(Bit n) ==>  n
+    if (this == DataName.bit
+        || this == DataName.nzbit) { // BitSize(Bit n) ==>  n,  same for (NZBit n)
       return a.simplifyNatType(tenv);
     } else if (this == DataName.ix) { // BitSize(Ix n)  ==>  (calculation below)
       BigInteger n = a.ixBound(tenv);
@@ -148,8 +149,9 @@ public abstract class Tycon extends TypeName {
    * and b.
    */
   Type bitSize(Type[] tenv, Type a, Type b) {
-    if (this == DataName.aref) { // BitSize(ARef (2^(WORDSIZE-w)) a) = w (if 0<=w<=WORDSIZE)
-      int w = a.arefWidth(tenv);
+    if (this == DataName.aref
+        || this == DataName.aptr) { // BitSize(ARef (2^(WORDSIZE-w)) a) = w (if 0<=w<=WORDSIZE)
+      int w = a.arefWidth(tenv); // (same calculation for aptr)
       return (w > 0) ? new TNat(BigInteger.valueOf(w)) : null;
     }
     return null;
@@ -167,15 +169,10 @@ public abstract class Tycon extends TypeName {
 
   Pat bitPat(Type[] tenv, Type a) {
     if (this == DataName.bit) {
-      BigInteger n = a.simplifyNatType(tenv).getNat();
-      if (n == null) {
-        debug.Internal.error("Unresolved size parameter " + a.skeleton(tenv));
-      }
-      int w = n.intValue();
-      if (w < 0 || w > Type.MAXWIDTH) {
-        debug.Internal.error("Bit width " + w + " is out of allowed range");
-      }
-      return obdd.Pat.all(w);
+      return obdd.Pat.all(a.bitWidth(tenv));
+    } else if (this == DataName.nzbit) {
+      int w = a.bitWidth(tenv);
+      return (w > 0) ? obdd.Pat.nonzero(w) : null;
     } else if (this == DataName.ix) {
       BigInteger n = a.ixBound(tenv);
       if (n.signum() <= 0) {
@@ -195,6 +192,9 @@ public abstract class Tycon extends TypeName {
     if (this == DataName.aref) {
       int w = a.arefWidth(tenv);
       return (w > 0) ? obdd.Pat.nonzero(w) : null;
+    } else if (this == DataName.aptr) {
+      int w = a.arefWidth(tenv);
+      return (w > 0) ? obdd.Pat.all(w) : null;
     }
     return null;
   }

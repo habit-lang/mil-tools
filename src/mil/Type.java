@@ -502,6 +502,18 @@ public abstract class Type extends Scheme {
     return null;
   }
 
+  int bitWidth(Type[] tenv) {
+    BigInteger n = simplifyNatType(tenv).getNat();
+    if (n == null) {
+      debug.Internal.error("Unresolved size parameter " + skeleton(tenv));
+    }
+    int w = n.intValue();
+    if (w < 0 || w > Type.MAXWIDTH) {
+      debug.Internal.error("Bit width " + w + " is out of allowed range");
+    }
+    return w;
+  }
+
   Pat bitPat(Type[] tenv, Type a, Type b) {
     return null;
   }
@@ -720,6 +732,14 @@ public abstract class Type extends Scheme {
    * n.
    */
   Type[] bitvectorRep() {
+    return null;
+  }
+
+  /**
+   * Return the representation for a value of type NZBit n, assuming that this object is the TNat
+   * for n.
+   */
+  Type[] nzbitvectorRep() {
     return null;
   }
 
