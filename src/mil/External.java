@@ -332,7 +332,7 @@ public class External extends TopDefn {
 
   static {
 
-    // primBitFromLiteral v w ... :: Proxy -> Bit w
+    // primBitFromLiteral v w ... :: Proxy v -> Bit w
     generators.put(
         "primBitFromLiteral",
         new Generator(2) {
@@ -576,10 +576,7 @@ public class External extends TopDefn {
             // TODO: Use ts[0] to find representation (length) for n
             BigInteger n = ts[1].getIxArg(); // Index modulus
             if (n != null && n.compareTo(BigInteger.ZERO) > 0) {
-              // yes[j, i] = j @ i
-              Temp[] ji = Temp.makeTemps(2);
-              Block yes = new Block(pos, ji, new Done(new Enter(ji[0], ji[1])));
-
+              Block yes = enterBlock(pos); // yes[j, i] = j @ i
               // b[n, j, i] = w <- ule((i, n-1)); if w then yes[j, i] else return n
               // NOTE: using (v <= N-1) rather than (v < N) is important for the case where
               // N=(2^WORDSIZE)
@@ -599,14 +596,8 @@ public class External extends TopDefn {
             // TODO: Use ts[0] to find representation (length) for n
             BigInteger n = ts[1].getIxArg(); // Index modulus
             if (n != null && n.compareTo(BigInteger.ZERO) > 0) {
-              // no[thing] = return thing
-              Temp[] thing = Temp.makeTemps(1);
-              Block no = new Block(pos, thing, new Done(new Return(thing)));
-
-              // yes[j, i] = j @ i
-              Temp[] ji = Temp.makeTemps(2);
-              Block yes = new Block(pos, ji, new Done(new Enter(ji[0], ji[1])));
-
+              Block yes = enterBlock(pos); // yes[j, i] = j @ i
+              Block no = returnBlock(pos); // no[thing] = return thing
               // b[n, j, v, i] = w <- ule((v, i)); if w then yes[j, v] else return n
               Temp[] njvi = Temp.makeTemps(4);
               Temp w = new Temp();
@@ -628,23 +619,40 @@ public class External extends TopDefn {
         });
   }
 
-  static Block guardBlock(Position pos, Temp[] vs, Tail test, Block yes) {
-    // no[thing] = return thing
-    Temp[] thing = Temp.makeTemps(1);
-    Block no = new Block(pos, thing, new Done(new Return(thing)));
+  /**
+   * Return a block that takes two arguments---a function and another value---and just applies the
+   * former to the latter.
+   */
+  static Block enterBlock(Position pos) {
+    Temp[] fx = Temp.makeTemps(2);
+    return new Block(pos, fx, new Done(new Enter(fx[0], fx[1])));
+  }
 
-    // b[n, j, v] = w <- test; if w then yes[j,v] else no[n]
+  /** Return a block that takes a single argument and immediately returns that argument. */
+  static Block returnBlock(Position pos) {
+    Temp[] vs = Temp.makeTemps(1);
+    return new Block(pos, vs, new Done(new Return(vs)));
+  }
+
+  /**
+   * Return a block of the form b[n, j, v] = w <- test; if w then yes[j,v] else return n. The njv
+   * argument is expected to provide the three temporaries that will be used as arguments to the
+   * block, and it is expected that the test will involve the variable v (i.e., njv[2]). The n and j
+   * parameters will typically be instantiated to Nothing and Just in practical uses, which may
+   * explain the choice of names ...
+   */
+  static Block guardBlock(Position pos, Temp[] njv, Tail test, Block yes) {
     Temp w = new Temp();
     return new Block(
         pos,
-        vs,
+        njv,
         new Bind(
             w,
             test,
             new If(
                 w,
-                new BlockCall(yes, new Atom[] {vs[1], vs[2]}),
-                new BlockCall(no, new Atom[] {vs[0]}))));
+                new BlockCall(yes, new Atom[] {njv[1], njv[2]}),
+                new BlockCall(returnBlock(pos), new Atom[] {njv[0]}))));
   }
 
   /**
