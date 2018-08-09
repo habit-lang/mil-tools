@@ -105,6 +105,10 @@ public class BitdataLayout extends DataName {
     this.maskTest = maskTest;
   }
 
+  public AllocType cfunType() {
+    return new AllocType((isNullary() ? Type.noTypes : new Type[] {this.asType()}), bn.asType());
+  }
+
   /** Return the bit pattern for this object. */
   public obdd.Pat getPat() {
     return pat;

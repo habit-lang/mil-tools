@@ -144,12 +144,9 @@ class BitdataConDefn extends Name {
   static void calcCfuns(BitdataName bn, BitdataConDefn[] constrs) {
     Cfun[] cfuns = new Cfun[constrs.length];
     BitdataLayout[] layouts = new BitdataLayout[constrs.length];
-    Type result = bn.asType(); // result type
     for (int i = 0; i < constrs.length; i++) {
       BitdataConDefn ci = constrs[i];
-      AllocType type =
-          new AllocType(
-              ci.layout.isNullary() ? Type.noTypes : new Type[] {ci.layout.asType()}, result);
+      AllocType type = ci.layout.cfunType();
       cfuns[i] = new Cfun(ci.pos, ci.id, bn, i, type);
       layouts[i] = ci.layout;
       debug.Log.println(cfuns[i] + " :: " + type);
