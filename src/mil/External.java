@@ -1486,6 +1486,63 @@ public class External extends TopDefn {
 
   static {
 
+    // primNZBitFromLiteral v w ... :: Proxy v -> Bit w
+    generators.put(
+        "primNZBitFromLiteral",
+        new Generator(2) {
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger v = ts[0].getNat(); // Value of literal
+            BigInteger w = ts[1].getBitArg(); // Width of bit vector
+            if (v != null
+                && w != null
+                && v.compareTo(BigInteger.ZERO) > 0 // critical test: v must not be zero!
+                && w.compareTo(BigInteger.valueOf(Type.WORDSIZE))
+                    <= 0 // Bit w must fit in a single word
+                && BigInteger.ONE.shiftLeft(w.intValue()).compareTo(v) > 0) { // v must be < 2^w
+              Tail t = new Return(new NZConst(v.intValue()));
+              ClosureDefn k =
+                  new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(1), t); //  k{} _ = return [v]
+              return new ClosAlloc(k).withArgs();
+            }
+            return null;
+          }
+        });
+
+    // primNZBitNonZero w :: Bit w -> Maybe (NZBit w)
+    generators.put(
+        "primNZBitNonZero",
+        new Generator(1) {
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger w = ts[0].getBitArg(); // Width of bit vector
+            if (w != null
+                && w.compareTo(BigInteger.ZERO) > 0
+                && w.compareTo(BigInteger.valueOf(Type.WORDSIZE)) <= 0) {
+              // This implementation will only work if we have used switched to using Word as
+              // the representation for Maybe (NZBit w) ...
+              return new Return().makeUnaryFuncClosure(pos, 1);
+            }
+            return null;
+          }
+        });
+
+    // primNZBitDiv w :: Bit w -> NZBit w -> Bit w
+    generators.put(
+        "primNZBitDiv",
+        new Generator(1) {
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger w = ts[0].getBitArg(); // Width of bit vector (must fit within a single word)
+            if (w != null
+                && w.compareTo(BigInteger.ZERO) > 0
+                && w.compareTo(BigInteger.valueOf(Type.WORDSIZE)) <= 0) {
+              return new PrimCall(Prim.nzdiv).makeBinaryFuncClosure(pos, 1, 1);
+            }
+            return null;
+          }
+        });
+  }
+
+  static {
+
     // (@) n a :: Ref (Array n a) -> Ix n -> Ref a
     generators.put(
         "@",
