@@ -1690,13 +1690,12 @@ public class External extends TopDefn {
               // end will be valid ... but it probably would not be a bad idea to check them here
               // too.
               StructField[] fields = sn.getFields();
-              for (int i = 0; i < fields.length; i++) {
-                if (fields[i].answersTo(lab)) {
-                  Temp[] vs = Temp.makeTemps(1);
-                  Tail tail = Prim.add.withArgs(vs[0], fields[i].getOffset());
-                  ClosureDefn k = new ClosureDefn(pos, vs, Temp.makeTemps(1), tail);
-                  return new ClosAlloc(k).makeUnaryFuncClosure(pos, 1);
-                }
+              int i = Name.index(lab, fields);
+              if (i >= 0) {
+                Temp[] vs = Temp.makeTemps(1);
+                Tail tail = Prim.add.withArgs(vs[0], fields[i].getOffset());
+                ClosureDefn k = new ClosureDefn(pos, vs, Temp.makeTemps(1), tail);
+                return new ClosAlloc(k).makeUnaryFuncClosure(pos, 1);
               }
             }
             return null;

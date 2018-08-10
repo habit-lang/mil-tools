@@ -55,10 +55,9 @@ public class SelTypeExp extends PosTypeExp {
       throw new Failure(pos, "Expected bitdata type");
     } else {
       BitdataLayout[] layouts = bn.getLayouts();
-      for (int i = 0; i < layouts.length; i++) {
-        if (layouts[i].answersTo(lab)) {
-          return layouts[i].asType();
-        }
+      int i = Name.index(lab, layouts);
+      if (i >= 0) {
+        return layouts[i].asType();
       }
       throw new Failure(pos, "Label " + lab + " is not used in " + bn);
     }
