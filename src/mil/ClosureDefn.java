@@ -510,8 +510,12 @@ public class ClosureDefn extends Defn {
   }
 
   void collect(TypeSet set) {
-    declared = declared.canonAllocType(set);
-    defining = defining.canonAllocType(set); // TODO: is this needed?  Could it be null?
+    if (declared != null) {
+      declared = declared.canonAllocType(set);
+    }
+    if (defining != null) {
+      defining = defining.canonAllocType(set);
+    }
     Atom.collect(params, set);
     Atom.collect(args, set);
     tail.collect(set);

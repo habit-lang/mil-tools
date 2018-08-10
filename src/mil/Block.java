@@ -916,8 +916,12 @@ public class Block extends Defn {
   }
 
   void collect(TypeSet set) {
-    declared = declared.canonBlockType(set);
-    defining = defining.canonBlockType(set); // TODO: is this needed?  Could it be null?
+    if (declared != null) {
+      declared = declared.canonBlockType(set);
+    }
+    if (defining != null) {
+      defining = defining.canonBlockType(set);
+    }
     Atom.collect(params, set);
     code.collect(set);
   }

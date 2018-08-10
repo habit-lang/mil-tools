@@ -383,7 +383,9 @@ public class BlockCall extends Call {
   }
 
   void collect(TypeSet set) {
-    type = type.canonBlockType(set);
+    if (type != null) {
+      type = type.canonBlockType(set);
+    }
     Atom.collect(args, set);
   }
 

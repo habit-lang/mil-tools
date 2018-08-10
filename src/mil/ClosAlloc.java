@@ -191,8 +191,12 @@ public class ClosAlloc extends Allocator {
   }
 
   void collect(TypeSet set) {
-    type = type.canonAllocType(set);
-    outputs = outputs.canonType(set);
+    if (type != null) {
+      type = type.canonAllocType(set);
+    }
+    if (outputs != null) {
+      outputs = outputs.canonType(set);
+    }
     Atom.collect(args, set);
   }
 

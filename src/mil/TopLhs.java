@@ -114,8 +114,12 @@ class TopLhs {
   void findAmbigTVars(Handler handler, TVars gens) {}
 
   void collect(TypeSet set) {
-    declared = declared.canonScheme(set);
-    defining = defining.canonType(set);
+    if (declared != null) {
+      declared = declared.canonScheme(set);
+    }
+    if (defining != null) {
+      defining = defining.canonType(set);
+    }
   }
 
   void printlnSig(PrintWriter out) {

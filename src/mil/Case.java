@@ -405,7 +405,9 @@ public class Case extends Code {
 
   void collect(TypeSet set) {
     a.collect(set);
-    dom = dom.canonType(set);
+    if (dom != null) {
+      dom = dom.canonType(set);
+    }
     for (int i = 0; i < alts.length; i++) {
       alts[i].collect(set);
     }

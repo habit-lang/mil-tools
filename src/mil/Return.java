@@ -177,7 +177,9 @@ public class Return extends Call {
   }
 
   void collect(TypeSet set) { // Sufficient for Return
-    outputs = outputs.canonType(set);
+    if (outputs != null) {
+      outputs = outputs.canonType(set);
+    }
     Atom.collect(args, set);
   }
 

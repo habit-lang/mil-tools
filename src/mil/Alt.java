@@ -199,7 +199,9 @@ public class Alt {
   }
 
   void collect(TypeSet set) {
-    type = type.canonAllocType(set);
+    if (type != null) {
+      type = type.canonAllocType(set);
+    }
     cf = cf.canonCfun(set);
     bc.collect(set);
   }

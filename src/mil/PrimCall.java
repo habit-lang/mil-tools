@@ -1771,7 +1771,9 @@ public class PrimCall extends Call {
   }
 
   void collect(TypeSet set) {
-    type = type.canonBlockType(set);
+    if (type != null) {
+      type = type.canonBlockType(set);
+    }
     p = p.canonPrim(set);
     Atom.collect(args, set);
   }

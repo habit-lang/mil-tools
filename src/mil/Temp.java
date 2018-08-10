@@ -243,7 +243,9 @@ public class Temp extends Atom {
   }
 
   void collect(TypeSet set) {
-    type = type.canonType(set);
+    if (type != null) {
+      type = type.canonType(set);
+    }
   }
 
   Atom specializeAtom(MILSpec spec, TVarSubst s, SpecEnv env) {

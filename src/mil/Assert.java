@@ -242,7 +242,9 @@ public class Assert extends Code {
   }
 
   void collect(TypeSet set) {
-    type = type.canonAllocType(set); // TODO: it's not clear that we need (i.e., use) this ...
+    if (type != null) {
+      type = type.canonAllocType(set);
+    }
     cf = cf.canonCfun(set);
     a.collect(set);
     c.collect(set);

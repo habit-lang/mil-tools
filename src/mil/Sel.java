@@ -222,8 +222,12 @@ public class Sel extends Tail {
 
   void collect(TypeSet set) {
     a.collect(set);
-    outputs = outputs.canonType(set); // TODO: this naming/param order for canon is confusing!
-    type = type.canonAllocType(set);
+    if (outputs != null) {
+      outputs = outputs.canonType(set);
+    }
+    if (type != null) {
+      type = type.canonAllocType(set);
+    }
     cf = cf.canonCfun(set);
   }
 

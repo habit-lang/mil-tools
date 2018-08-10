@@ -224,8 +224,12 @@ public class Enter extends Call {
   }
 
   void collect(TypeSet set) {
-    outputs = outputs.canonType(set);
-    ftype = ftype.canonType(set);
+    if (outputs != null) {
+      outputs = outputs.canonType(set);
+    }
+    if (ftype != null) {
+      ftype = ftype.canonType(set);
+    }
     f.collect(set);
     Atom.collect(args, set);
   }
