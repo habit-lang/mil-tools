@@ -349,7 +349,8 @@ public class External extends TopDefn {
             BigInteger w = ts[1].getBitArg(); // Width of bit vector
             if (v != null
                 && w != null
-                && v.compareTo(BigInteger.ZERO) >= 0
+                && v.signum() >= 0
+                && w.signum() > 0
                 && BigInteger.ONE.shiftLeft(w.intValue()).compareTo(v) > 0) {
               return new Return(Const.atoms(v, w.intValue())).constClosure(pos, 1);
             }
@@ -365,7 +366,11 @@ public class External extends TopDefn {
             BigInteger m = ts[0].getBitArg(); // Width of first input (most significant bits)
             BigInteger n = ts[1].getBitArg(); // Width of second input (least significant bits)
             BigInteger p = ts[2].getBitArg(); // width of result
-            if (m != null && n != null && p != null && m.add(n).compareTo(p) == 0) {
+            if (m != null
+                && n != null
+                && p != null
+                && m.add(n).compareTo(p) == 0
+                && p.signum() > 0) {
               int mw = m.intValue();
               int nw = n.intValue();
               return new BlockCall(BitdataLayout.generateBitConcat(pos, mw, nw))
@@ -385,7 +390,7 @@ public class External extends TopDefn {
           Tail generate(Position pos, Type[] ts) {
             BigInteger v = ts[0].getNat(); // Value of literal
             BigInteger m = ts[1].getIxArg(); // Modulus for index type
-            if (v != null && m != null && v.compareTo(BigInteger.ZERO) >= 0 && v.compareTo(m) < 0) {
+            if (v != null && m != null && v.signum() >= 0 && v.compareTo(m) < 0) {
               return new Return(new IntConst(v.intValue())).constClosure(pos, 1);
             }
             return null;
@@ -414,6 +419,7 @@ public class External extends TopDefn {
             BigInteger w = ts[1].getBitArg(); // Width of bitdata type
             if (m != null
                 && w != null
+                && w.signum() > 0
                 && BigInteger.ONE.shiftLeft(w.intValue()).compareTo(m) >= 0) {
               Temp[] vs = Temp.makeTemps(1); // Argument holds incoming index
               int n = Type.numWords(w.intValue());
@@ -470,7 +476,7 @@ public class External extends TopDefn {
           Tail generate(Position pos, Type[] ts) {
             BigInteger m = ts[0].getIxArg(); // Modulus for index type
             BigInteger w = ts[1].getBitArg(); // Width of bitdata type
-            if (m != null && w != null) {
+            if (m != null && w != null && w.signum() > 0) {
               int mod = m.intValue();
               int width = w.intValue();
               int n = Type.numWords(width);
@@ -1144,7 +1150,7 @@ public class External extends TopDefn {
 
     Tail generate(Position pos, Type[] ts) {
       BigInteger w = ts[0].getBitArg(); // Width of bit vector
-      if (w != null) {
+      if (w != null && w.signum() > 0) {
         int width = w.intValue();
         int n = Type.numWords(width);
         return new BlockCall(decisionTree(pos, width, n, 0, n - 1, 0)).makeUnaryFuncClosure(pos, 1);
@@ -1162,7 +1168,7 @@ public class External extends TopDefn {
 
     Tail generate(Position pos, Type[] ts) {
       BigInteger w = ts[0].getBitArg(); // Width of bit vector
-      if (w != null) {
+      if (w != null && w.signum() > 0) {
         int width = w.intValue();
         int n = Type.numWords(width);
         return new BlockCall(decisionTree(pos, width, n, 0, n - 1, n))
@@ -1248,7 +1254,7 @@ public class External extends TopDefn {
         new Generator(1) { // :: Bit w -> Ix w
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getBitArg(); // Bit vector width
-            if (w != null && w.compareTo(BigInteger.ZERO) > 0) {
+            if (w != null && w.signum() > 0) {
               int width = w.intValue();
               int n = Type.numWords(width);
               Tail t = new Return(new IntConst(width - 1));
@@ -1501,7 +1507,7 @@ public class External extends TopDefn {
             BigInteger w = ts[1].getBitArg(); // Width of bit vector
             if (v != null
                 && w != null
-                && v.compareTo(BigInteger.ZERO) > 0 // critical test: v must not be zero!
+                && v.signum() > 0 // critical test: v must not be zero!
                 && w.compareTo(BigInteger.valueOf(Type.WORDSIZE))
                     <= 0 // Bit w must fit in a single word
                 && BigInteger.ONE.shiftLeft(w.intValue()).compareTo(v) > 0) { // v must be < 2^w
@@ -1521,9 +1527,9 @@ public class External extends TopDefn {
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
             if (w != null
-                && w.compareTo(BigInteger.ZERO) > 0
+                && w.signum() > 0
                 && w.compareTo(BigInteger.valueOf(Type.WORDSIZE)) <= 0) {
-              // This implementation will only work if we have used switched to using Word as
+              // This implementation will only work if we have switched to using Word as
               // the representation for Maybe (NZBit w) ...
               return new Return().makeUnaryFuncClosure(pos, 1);
             }
@@ -1538,7 +1544,7 @@ public class External extends TopDefn {
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector (must fit within a single word)
             if (w != null
-                && w.compareTo(BigInteger.ZERO) > 0
+                && w.signum() > 0
                 && w.compareTo(BigInteger.valueOf(Type.WORDSIZE)) <= 0) {
               return new PrimCall(Prim.nzdiv).makeBinaryFuncClosure(pos, 1, 1);
             }
