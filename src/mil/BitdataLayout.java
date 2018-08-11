@@ -235,24 +235,31 @@ public class BitdataLayout extends DataName {
   /** Generate code for a constructor for this layout. */
   public void generateConstructor(Cfun cf) {
     int total = getWidth(); // number of bits in output
-    int n = Type.numWords(total); // number of words in output
-    Temp[][] args = new Temp[fields.length][]; // args for each input
-    Temp[] ws = Temp.makeTemps(n);
-    Code c = new Done(new Return(Temp.clone(ws)));
-    // (Clone ws so that we are free to change its elements without modifying the code in c.)
+    Temp[] params;
+    Code code;
+    if (total == 0) {
+      params = Temp.makeTemps(fields.length); // Can assume all/any fields must have width 0
+      code = new Done(new DataAlloc(Cfun.Unit).withArgs());
+    } else {
+      int n = Type.numWords(total); // number of words in output
+      Temp[][] args = new Temp[fields.length][]; // args for each input
+      Temp[] ws = Temp.makeTemps(n);
+      code = new Done(new Return(Temp.clone(ws)));
+      // (Clone ws so that we are free to change its elements without modifying the code in c.)
 
-    // Add code to set each field (assuming that each field is already zero-ed out):
-    for (int k = 0; k < fields.length; k++) {
-      args[k] = Temp.makeTemps(Type.numWords(fields[k].getWidth()));
-      c = fields[k].genUpdateZeroedField(total, ws, args[k], c);
+      // Add code to set each field (assuming that each field is already zero-ed out):
+      for (int k = 0; k < fields.length; k++) {
+        args[k] = Temp.makeTemps(Type.numWords(fields[k].getWidth()));
+        code = fields[k].genUpdateZeroedField(total, ws, args[k], code);
+      }
+
+      // Set initial value for tagbits:
+      code = initialize(total, ws, tagbits, code);
+
+      // Collect all of the arguments:
+      params = Temp.concat(args);
     }
-
-    // Set initial value for tagbits:
-    c = initialize(total, ws, tagbits, c);
-
-    // Build a chain of closure definitions to capture constructor arguments:
-    Temp[] params = Temp.concat(args);
-    constructorBlock = new Block(cf.getPos(), "construct_" + cf, params, c);
+    constructorBlock = new Block(cf.getPos(), "construct_" + cf, params, code);
   }
 
   /**
@@ -306,13 +313,15 @@ public class BitdataLayout extends DataName {
     BigInteger maskNat = maskTest.getMask();
     BigInteger bitsNat = maskTest.getBits();
     boolean eq = maskTest.getOp();
-    if (total == 1) { // special case for single bit types
+    if (total < 2) { // special case for width 0 and width 1 types
       Temp[] vs = Temp.makeTemps(1);
       Tail t =
-          maskNat.testBit(0) // nonzero mask ==> depends on vs[0]
-              ? ((eq != bitsNat.testBit(0)) ? new Return(vs) : Prim.bnot.withArgs(vs[0]))
-              : new Return(
-                  FlagConst.fromBool(eq == bitsNat.testBit(0))); // zero mask ==> const function
+          total == 0 // width 0 case
+              ? new Return(FlagConst.True)
+              : maskNat.testBit(0) // nonzero mask ==> depends on vs[0]
+                  ? ((eq != bitsNat.testBit(0)) ? new Return(vs) : Prim.bnot.withArgs(vs[0]))
+                  : new Return(
+                      FlagConst.fromBool(eq == bitsNat.testBit(0))); // zero mask ==> const function
       maskTestBlock = new Block(cf.getPos(), "masktest_" + cf, vs, new Done(t));
     } else {
       int n = Type.numWords(total); // number of words in output

@@ -714,7 +714,7 @@ public abstract class Type extends Scheme {
    * of Word values or, for values of width 1, a single MIL Flag value.
    */
   public static Type[] repBits(int w) {
-    return (w == 1) ? DataName.flagRep : Type.words(Type.numWords(w));
+    return (w == 0) ? DataName.unitRep : (w == 1) ? DataName.flagRep : Type.words(Type.numWords(w));
   }
 
   /** Return the representation vector for values of this type. */

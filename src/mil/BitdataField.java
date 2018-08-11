@@ -80,19 +80,23 @@ public class BitdataField extends Name {
    */
   void generateSelector(Cfun cf, BitdataLayout layout) {
     int total = layout.getWidth(); // number of bits in output
-    Temp[] params = Temp.makeTemps(Type.numWords(total)); // input parameters
-    Temp[] ws = Temp.makeTemps(Type.numWords(width)); // output parameters
-    Code code = new Done(new Return(Temp.clone(ws))); // final return
-    selectorBlock =
-        new Block(
-            pos,
-            "select_" + id,
-            params, // create the new block
-            width == 1
-                ? selectorBit(total, params, ws, code)
-                : type.useBitdataLo()
-                    ? selectorLo(total, params, ws, code)
-                    : selectorHi(total, params, ws, code));
+    Temp[] params;
+    Code code;
+    if (width == 0) {
+      params = Temp.makeTemps(total == 0 ? 1 : Type.numWords(total));
+      code = new Done(new DataAlloc(Cfun.Unit).withArgs());
+    } else {
+      params = Temp.makeTemps(Type.numWords(total)); // input parameters
+      Temp[] ws = Temp.makeTemps(Type.numWords(width)); // output parameters
+      code = new Done(new Return(Temp.clone(ws))); // final return
+      code =
+          width == 1
+              ? selectorBit(total, params, ws, code)
+              : type.useBitdataLo()
+                  ? selectorLo(total, params, ws, code)
+                  : selectorHi(total, params, ws, code);
+    }
+    selectorBlock = new Block(pos, "select_" + id, params, code); // create the new block
   }
 
   /**
@@ -197,14 +201,27 @@ public class BitdataField extends Name {
    */
   public void generateUpdate(Cfun cf, BitdataLayout layout) {
     int total = layout.getWidth(); // number of bits in output
-    int n = Type.numWords(total); // number of words in output
-    int m = Type.numWords(width);
-    Temp[] ws = Temp.makeTemps(n); // arguments to hold full bitdata value
-    Temp[] args = Temp.makeTemps(m); // arguments to hold new field value
-    Code code =
-        genMaskField(
-            total, ws, genUpdateZeroedField(total, ws, args, new Done(new Return(Temp.clone(ws)))));
-    Block impl = new Block(pos, Temp.append(ws, args), code);
+    Block impl;
+    if (total == 0) { // If total==0, then any fields must also have zero width
+      impl = new Block(pos, Temp.makeTemps(2), new Done(Cfun.Unit.withArgs()));
+    } else { // General case, total>0
+      int n = Type.numWords(total); // number of words in output
+      Temp[] ws = Temp.makeTemps(n); // arguments to hold full bitdata value
+      Temp[] args; // arguments to hold new field value
+      Code code;
+      if (width == 0) { // If width==0, then update just returns original value
+        args = Temp.makeTemps(1);
+        code = new Done(new Return(ws));
+      } else { // If width>0, do the proper logic to update the field
+        args = Temp.makeTemps(Type.numWords(width));
+        code =
+            genMaskField(
+                total,
+                ws,
+                genUpdateZeroedField(total, ws, args, new Done(new Return(Temp.clone(ws)))));
+      }
+      impl = new Block(pos, Temp.append(ws, args), code);
+    }
     Type lt = layout.asType();
     BlockType bt = new BlockType(Type.tuple(lt, getType()), Type.tuple(lt));
     updatePrim = new BlockPrim("update_" + id, 2, 1, Prim.PURE, bt, impl);

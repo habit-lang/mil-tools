@@ -19,6 +19,7 @@
 package mil;
 
 import compiler.*;
+import compiler.BuiltinPosition;
 import compiler.Failure;
 import compiler.Handler;
 import compiler.Position;
@@ -71,6 +72,11 @@ public abstract class Top extends Atom {
   Type[] repCalc() {
     return type.repCalc();
   }
+
+  public static final Top Unit =
+      new TopDef(
+          new TopLevel(BuiltinPosition.position, new TopLhs(), new DataAlloc(Cfun.Unit).withArgs()),
+          0);
 
   abstract Defn getDefn();
 

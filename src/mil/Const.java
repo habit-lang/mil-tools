@@ -75,7 +75,9 @@ public abstract class Const extends Atom {
 
   /** Construct an array of Atoms that represents the bit vector with the given value and width. */
   public static Atom[] atoms(BigInteger v, int w) {
-    if (w == 1) {
+    if (w == 0) {
+      return new Atom[] {Top.Unit};
+    } else if (w == 1) {
       return new FlagConst[] {FlagConst.fromBool(v.compareTo(BigInteger.ZERO) != 0)};
     } else {
       IntConst[] as = new IntConst[Type.numWords(w)];

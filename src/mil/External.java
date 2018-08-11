@@ -682,6 +682,14 @@ public class External extends TopDefn {
     genIxCompare("primIxGe", Prim.uge);
   }
 
+  static Tail unaryUnit(Position pos) { // Tail for \x -> Unit, i.e., k{} where k{} x = Unit()
+    return new DataAlloc(Cfun.Unit).withArgs().constClosure(pos, 1);
+  }
+
+  static Tail binaryUnit(Position pos) { // Tail for \y -> \x -> Unit
+    return unaryUnit(pos).constClosure(pos, 1);
+  }
+
   static {
 
     // primBitNot w :: Bit w -> Bit w
@@ -694,7 +702,7 @@ public class External extends TopDefn {
               int width = w.intValue();
               switch (width) {
                 case 0:
-                  return new Return().makeUnaryFuncClosure(pos, 0);
+                  return unaryUnit(pos);
 
                 case 1:
                   return new PrimCall(Prim.bnot).makeUnaryFuncClosure(pos, 1);
@@ -747,7 +755,7 @@ public class External extends TopDefn {
               int width = w.intValue();
               switch (width) {
                 case 0:
-                  return new Return().makeBinaryFuncClosure(pos, 0, 0);
+                  return binaryUnit(pos);
 
                 case 1:
                   return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
@@ -791,7 +799,7 @@ public class External extends TopDefn {
               int width = w.intValue();
               switch (width) {
                 case 0:
-                  return new Return().makeUnaryFuncClosure(pos, 0);
+                  return unaryUnit(pos);
 
                 case 1: // Negate is the identity function on Bit 1!
                   return new Return().makeUnaryFuncClosure(pos, 1);
@@ -840,7 +848,7 @@ public class External extends TopDefn {
               int width = w.intValue();
               switch (width) {
                 case 0:
-                  return new Return().makeBinaryFuncClosure(pos, 0, 0);
+                  return binaryUnit(pos);
 
                 case 1:
                   return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
@@ -889,7 +897,7 @@ public class External extends TopDefn {
               int width = w.intValue();
               switch (width) {
                 case 0:
-                  return new BlockCall(bz).makeBinaryFuncClosure(pos, 0, 0);
+                  return new BlockCall(bz).withArgs().constClosure(pos, 1).constClosure(pos, 1);
 
                 case 1:
                   return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
@@ -966,7 +974,7 @@ public class External extends TopDefn {
               int width = w.intValue();
               switch (width) {
                 case 0:
-                  return new BlockCall(bz).makeBinaryFuncClosure(pos, 0, 0);
+                  return new BlockCall(bz).makeBinaryFuncClosure(pos, 1, 1);
 
                 case 1:
                   return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
