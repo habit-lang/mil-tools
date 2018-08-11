@@ -467,6 +467,14 @@ public class Case extends Code {
     return new Case(a.specializeAtom(spec, s, env), salts, sdef);
   }
 
+  Code bitdataRewrite(BitdataMap m) {
+    Alt[] nalts = new Alt[alts.length];
+    for (int i = 0; i < alts.length; i++) {
+      nalts[i] = alts[i].bitdataRewrite(m);
+    }
+    return new Case(a, nalts, def);
+  }
+
   Code repTransform(RepTypeSet set, RepEnv env) {
     BitdataName bn = dom.bitdataName();
     if (bn != null) {

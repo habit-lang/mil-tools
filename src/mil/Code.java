@@ -338,6 +338,8 @@ public abstract class Code {
   /** Generate a specialized version of this code sequence. */
   abstract Code specializeCode(MILSpec spec, TVarSubst s, SpecEnv env);
 
+  abstract Code bitdataRewrite(BitdataMap m);
+
   abstract Code repTransform(RepTypeSet set, RepEnv env);
 
   /**

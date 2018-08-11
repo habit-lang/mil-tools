@@ -293,6 +293,10 @@ public class Done extends Code {
     return new Done(t.specializeTail(spec, s, env));
   }
 
+  Code bitdataRewrite(BitdataMap m) {
+    return new Done(t.bitdataRewrite(m));
+  }
+
   Code repTransform(RepTypeSet set, RepEnv env) {
     return new Done(t.repTransform(set, env));
   }

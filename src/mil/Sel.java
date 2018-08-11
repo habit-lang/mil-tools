@@ -250,6 +250,18 @@ public class Sel extends Tail {
     return new Sel(cf.specializeCfun(spec, type, s), n, a.specializeAtom(spec, s, env));
   }
 
+  Tail bitdataRewrite(BitdataMap m) {
+    BitdataRep r = cf.findRep(m); // Look for a possible change of representation
+    if (r == null) { // No new representation for this type
+      return this;
+    } else if (cf.getArity()
+        == 0) { // Representation change, but nullary so there is no layout constructor
+      return new Sel(cf.bitdataRewrite(r), n, a);
+    } else { // Representation change, requires layout constructor
+      return new BlockCall(cf.bitdataSelBlock(r, n)).withArgs(a);
+    }
+  }
+
   Tail repTransform(RepTypeSet set, RepEnv env) {
     return cf.repTransformSel(set, env, n, a);
   }

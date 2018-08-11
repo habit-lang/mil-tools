@@ -259,6 +259,11 @@ public class Alt {
     return new Alt(cf.specializeCfun(spec, type, s), bc.specializeBlockCall(spec, s, env));
   }
 
+  Alt bitdataRewrite(BitdataMap m) {
+    BitdataRep r = cf.findRep(m);
+    return (r == null) ? this : new Alt(cf.bitdataRewrite(r), bc);
+  }
+
   Alt repTransformAlt(RepTypeSet set, RepEnv env) {
     return new Alt(cf.canonCfun(set), bc.repTransformBlockCall(set, env));
   }

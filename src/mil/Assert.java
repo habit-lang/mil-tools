@@ -269,6 +269,11 @@ public class Assert extends Code {
         c.specializeCode(spec, s, env));
   }
 
+  Code bitdataRewrite(BitdataMap m) {
+    BitdataRep r = cf.findRep(m);
+    return (r == null) ? this : new Assert(a, cf.bitdataRewrite(r), c.bitdataRewrite(m));
+  }
+
   Code repTransform(RepTypeSet set, RepEnv env) {
     return cf.repTransformAssert(set, a, c.repTransform(set, env));
   }

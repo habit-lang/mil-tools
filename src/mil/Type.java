@@ -683,6 +683,10 @@ public abstract class Type extends Scheme {
     return this;
   }
 
+  DataName isDataName() {
+    return null;
+  }
+
   private static Type[][] wordsCache = new Type[10][];
 
   public static Type[] words(int n) {

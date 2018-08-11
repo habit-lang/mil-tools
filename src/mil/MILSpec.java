@@ -227,4 +227,24 @@ public class MILSpec extends TypeSet {
     prog.shake(); // Calculate SCCs for the resulting specialized program
     prog.canonDeclared(this); // Update declared types to use the specialized datatypes
   }
+
+  /**
+   * Build a list of all the zero arity (no parameters), nonrecursive, datatypes with one or more
+   * constructors that do not already have an associated bitSize, and might therefore be candidates
+   * for replacing with bitdata types.
+   */
+  public DataNames bitdataCandidates() {
+    DataNames cands = null;
+    for (Type t : specDataNames.keySet()) {
+      DataName dn = specDataNames.get(t);
+      if (t != dn.asType() && dn.getArity() == 0 && !dn.isRecursive() && dn.bitSize() == null) {
+        Cfun[] cfuns = dn.getCfuns();
+        if (cfuns != null && cfuns.length > 0) {
+          debug.Log.println("DataName " + dn + " is a candidate for bitdata representation");
+          cands = new DataNames(dn, cands);
+        }
+      }
+    }
+    return cands;
+  }
 }

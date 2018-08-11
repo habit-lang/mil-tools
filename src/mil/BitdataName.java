@@ -69,7 +69,7 @@ public class BitdataName extends DataName {
     return pat;
   }
 
-  private BitdataLayout[] layouts;
+  protected BitdataLayout[] layouts;
 
   public BitdataLayout[] getLayouts() {
     return layouts;
@@ -123,6 +123,10 @@ public class BitdataName extends DataName {
   DataName specializeDataName(MILSpec spec, Type inst) {
     // Do not specialize bitdata types
     return this;
+  }
+
+  BitdataRep findRep(BitdataMap m) {
+    return null;
   }
 
   /** Return the representation vector for values of this type. */

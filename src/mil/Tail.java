@@ -392,6 +392,10 @@ public abstract class Tail {
   /** Generate a specialized version of this Tail. */
   abstract Tail specializeTail(MILSpec spec, TVarSubst s, SpecEnv env);
 
+  Tail bitdataRewrite(BitdataMap m) {
+    return this;
+  }
+
   abstract Tail repTransform(RepTypeSet set, RepEnv env);
 
   /**

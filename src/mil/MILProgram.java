@@ -408,6 +408,20 @@ public class MILProgram {
     }
   }
 
+  public void bitdataRewrite(DataNames cands) {
+    if (cands != null) {
+      BitdataMap m = new BitdataMap();
+      if (m.addMappings(cands) > 0) { // If any mappings were found, then rewrite the program
+        for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
+          for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
+            ds.head.bitdataRewrite(m);
+          }
+        }
+        collect(m); // Update types and any constructors/datatypes/etc. that were not rewritten
+      }
+    }
+  }
+
   public RepTypeSet repTransform(Handler handler) throws Failure {
     RepTypeSet set = new RepTypeSet();
     collect(set);

@@ -183,6 +183,18 @@ public class DataAlloc extends Allocator {
     return new DataAlloc(cf.specializeCfun(spec, type, s));
   }
 
+  Tail bitdataRewrite(BitdataMap m) {
+    BitdataRep r = cf.findRep(m); // Look for a possible change of representation
+    if (r == null) { // No new representation for this type
+      return this;
+    } else if (cf.getArity()
+        == 0) { // Representation change, but nullary so there is no layout constructor
+      return new DataAlloc(cf.bitdataRewrite(r)).withArgs(args);
+    } else { // Representation change, requires layout constructor
+      return new BlockCall(cf.bitdataConsBlock(r)).withArgs(args);
+    }
+  }
+
   Tail repTransform(RepTypeSet set, RepEnv env) {
     return cf.repTransformDataAlloc(set, Atom.repArgs(set, env, args));
   }

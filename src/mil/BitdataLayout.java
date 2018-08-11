@@ -171,6 +171,10 @@ public class BitdataLayout extends DataName {
     return this;
   }
 
+  BitdataRep findRep(BitdataMap m) {
+    return null;
+  }
+
   static Cfun[] calcCfuns(BitdataLayout[] layouts) {
     Cfun[] cfuns = new Cfun[layouts.length];
     for (int i = 0; i < layouts.length; i++) {
@@ -178,6 +182,27 @@ public class BitdataLayout extends DataName {
       cfuns[i] = new Cfun(layout.pos, layout.id, layout.bn, i, layout.cfunType());
     }
     return cfuns;
+  }
+
+  /**
+   * Generate a block for constructing a value with this bitdata layout and the given constructor
+   * function.
+   */
+  Block makeConsBlock(Cfun cf) {
+    Temp[] args = Temp.makeTemps(fields.length);
+    Temp v = new Temp();
+    return new Block(pos, args, new Bind(v, cfuns[0].withArgs(args), new Done(cf.withArgs(v))));
+  }
+
+  /**
+   * Generate a block of code for selecting the nth component for a bitdata value with this layout
+   * that was built using the given constructor function.
+   */
+  Block makeSelBlock(Cfun cf, int n) {
+    Temp[] args = Temp.makeTemps(1);
+    Temp v = new Temp();
+    return new Block(
+        pos, args, new Bind(v, new Sel(cf, 0, args[0]), new Done(new Sel(cfuns[0], n, v))));
   }
 
   /** Return the representation vector for values of this type. */

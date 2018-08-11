@@ -247,6 +247,10 @@ public class External extends TopDefn {
     declared = declared.canonScheme(spec);
   }
 
+  void bitdataRewrite(BitdataMap m) {
+    /* Nothing to do here */
+  }
+
   void topLevelrepTransform(Handler handler, RepTypeSet set) {
     declared = declared.canonType(set);
     debug.Log.println("Determining representation for external " + id + " :: " + declared);

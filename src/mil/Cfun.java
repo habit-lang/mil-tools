@@ -216,6 +216,10 @@ public class Cfun extends Name {
     return dn.specializeDataName(spec, inst).getCfuns()[num];
   }
 
+  BitdataRep findRep(BitdataMap m) {
+    return dn.findRep(m);
+  }
+
   /**
    * Build a bitdata layout corresponding to this constructor function with the additional
    * parameters that specify the associated bitdata type (bn), tagbits, offset (for rightmost
@@ -223,17 +227,45 @@ public class Cfun extends Name {
    * chosen mask test predicate, mt.
    */
   BitdataLayout makeLayout(
-      BitdataName bn, BigInteger tagbits, int offset, Pat[] fpats, Pat p, MaskTestPat mt) {
+      BitdataMap m,
+      BitdataName bn,
+      BigInteger tagbits,
+      int offset,
+      Pat[] fpats,
+      Pat p,
+      MaskTestPat mt) {
     int n = getArity();
     BitdataField[] fields = new BitdataField[n];
     for (int i = n - 1; i >= 0; i--) {
       int width = fpats[i].getWidth();
-      fields[i] = new BitdataField(pos, id + i, allocType.storedType(i), offset, width);
+      fields[i] =
+          new BitdataField(pos, id + i, allocType.storedType(i).canonType(m), offset, width);
       offset += width;
     }
     BitdataLayout layout = new BitdataLayout(pos, id, bn, tagbits, fields, p);
     layout.setMaskTest(mt);
     return layout;
+  }
+
+  /**
+   * Return the ith main constructor function in the bitdata type that is associated with this
+   * constructor.
+   */
+  Cfun bitdataRewrite(BitdataRep r) {
+    return r.bitdataCfun(num);
+  }
+
+  /** Return the block that implements this constructor under the given BitdataRep. */
+  Block bitdataConsBlock(BitdataRep r) {
+    return r.bitdataConsBlock(num);
+  }
+
+  /**
+   * Return the block that implements selection of the nth component of this constructor under the
+   * given BitdataRep.
+   */
+  Block bitdataSelBlock(BitdataRep r, int n) {
+    return r.bitdataSelBlock(num, n);
   }
 
   Code repTransformAssert(RepTypeSet set, Atom a, Code c) {

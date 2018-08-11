@@ -984,6 +984,10 @@ public class Block extends Defn {
     declared = declared.canonBlockType(spec);
   }
 
+  void bitdataRewrite(BitdataMap m) {
+    code = code.bitdataRewrite(m);
+  }
+
   /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {
     Temp[][] npss = Temp.reps(params); // analyze params

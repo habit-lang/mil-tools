@@ -280,6 +280,18 @@ public abstract class Tycon extends TypeName {
     return inst;
   }
 
+  BitdataRep findRep(BitdataMap m) {
+    return null;
+  }
+
+  BitdataRep isBitdataRep() {
+    return null;
+  }
+
+  DataName isDataName() {
+    return null;
+  }
+
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     return null;

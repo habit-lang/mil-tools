@@ -450,6 +450,10 @@ public class Bind extends Code {
         svs, t.specializeTail(spec, s, env), c.specializeCode(spec, s, new SpecEnv(vs, svs, env)));
   }
 
+  Code bitdataRewrite(BitdataMap m) {
+    return new Bind(vs, t.bitdataRewrite(m), c.bitdataRewrite(m));
+  }
+
   Code repTransform(RepTypeSet set, RepEnv env) {
     Temp[][] nvss = Temp.reps(vs);
     Temp[] nvs = Temp.repParams(vs, nvss);

@@ -303,6 +303,10 @@ public class If extends Code {
         ifFalse.specializeBlockCall(spec, s, env));
   }
 
+  Code bitdataRewrite(BitdataMap m) {
+    return this;
+  }
+
   Code repTransform(RepTypeSet set, RepEnv env) {
     return new If(
         a, ifTrue.repTransformBlockCall(set, env), ifFalse.repTransformBlockCall(set, env));

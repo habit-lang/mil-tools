@@ -39,11 +39,13 @@ class Main {
     System.err.println("usage: java driver.Main [options] inputFile ...");
     System.err.println("options: -d             debugging on");
     System.err.println("         -v             verbose on");
-    System.err.println("         -p{c,s,o,r}*   passes");
+    System.err.println("         -p{c,o,b,s,r}* passes");
     System.err.println("                        c = cfun rewrite");
     System.err.println("                        o = optimizer");
-    System.err.println("                        s = specialization");
-    System.err.println("                        r = representation (requires prior s)");
+    System.err.println("                        s = specialization (eliminate polymorphism)");
+    System.err.println("                        b = bitdata generation (immediately after s)");
+    System.err.println(
+        "                        r = representation transformation (requires earlier s)");
     System.err.println("         -m[filename]   mil code");
     System.err.println("         -g[filename]   GraphViz file for mil structure");
     System.err.println("         -c[filename]   type set");
@@ -202,6 +204,7 @@ class Main {
         case 'c': // Constructor function rewrite
           message("Performing constructor function rewrite ...");
           mil.cfunRewrite();
+          optimized = false;
           break;
 
         case 'o': // MIL optimizer
@@ -218,10 +221,21 @@ class Main {
           optimized = false;
           break;
 
+        case 'b': // Bitdata generation
+          message("Running bitdata generation ...");
+          if (i == 0 || passes.charAt(i - 1) != 's') {
+            throw new Failure(
+                "Bitdata generation can only be used immediately after a specialization pass");
+          }
+          mil.bitdataRewrite(spec.bitdataCandidates());
+          optimized = false;
+          break;
+
         case 'r': // Representation transformation
           message("Running representation transformation ...");
           if (spec == null) {
-            throw new Failure("Representation transformation requires prior specialization pass");
+            throw new Failure(
+                "Representation transformation only valid after an earlier specialization pass");
           }
           rep = mil.repTransform(handler);
           handler.abortOnFailures();
@@ -250,20 +264,6 @@ class Main {
       final RepTypeSet rep,
       final boolean optimized)
       throws Failure {
-
-    milOutput.run(
-        new Action() {
-          void run(PrintWriter out) {
-            mil.dump(out);
-          }
-        });
-
-    graphvizOutput.run(
-        new Action() {
-          void run(PrintWriter out) {
-            mil.toDot(out);
-          }
-        });
 
     typesetOutput.run(
         new Action() {
@@ -295,6 +295,20 @@ class Main {
             } else {
               rep.dump(out);
             }
+          }
+        });
+
+    milOutput.run(
+        new Action() {
+          void run(PrintWriter out) {
+            mil.dump(out);
+          }
+        });
+
+    graphvizOutput.run(
+        new Action() {
+          void run(PrintWriter out) {
+            mil.toDot(out);
           }
         });
 
