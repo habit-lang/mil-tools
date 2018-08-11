@@ -147,12 +147,10 @@ public class DataName extends Tycon {
     } else {
       DataName newDn = set.getDataName(this);
       if (newDn == null) {
-        // TODO: if all of the new Cfuns have the same type as the originals, then we don't need to
-        // generate a
-        // new type here at all ... but this might be hard to implement because we have to add the
-        // mapping from
-        // this --> newDn before we can generate the Cfuns, and hence before we know if they are the
-        // same ...
+        if (isEnumeration()) { // There is no need to make new versions of "enumeration" types
+          set.putDataName(this, this);
+          return this;
+        }
         newDn = new DataName(pos, id, kind, arity); // copy attributes of original
         set.putDataName(this, newDn); // add mapping from old to new
         set.putDataName(newDn, newDn); // TODO: this is a hack!
@@ -167,6 +165,26 @@ public class DataName extends Tycon {
       }
       return newDn;
     }
+  }
+
+  /**
+   * Determine whether a given name is an "enumeration", by which we mean that it has no parameters,
+   * and no non-nullary constructors. Examples of such types include the Unit type, and simple
+   * enumerations like the Booleans. It is not necessary to generate a new version of an enumeration
+   * type in canonDataName: the result would be the same as the original, except for the change in
+   * name.
+   */
+  boolean isEnumeration() {
+    if (arity != 0) {
+      return false;
+    } else if (cfuns != null) {
+      for (int i = 0; i < cfuns.length; i++) {
+        if (cfuns[i].getArity() != 0) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   /**
@@ -203,19 +221,22 @@ public class DataName extends Tycon {
   DataName specializeDataName(MILSpec spec, Type inst) {
     // Look for a previous specialization of this DataName:
     DataName newDn = spec.get(inst);
-    if (newDn != null) {
-      return newDn;
+    if (newDn == null) {
+      if (isEnumeration()) {
+        spec.put(inst, this);
+        return this;
+      }
+      // If there was no previous specialized version, then we should make one!
+      newDn = new DataName(pos, id + count++, KAtom.STAR, 0);
+      spec.put(inst, newDn); // add to table now so that mapping is visible for cfun types
+      spec.put(newDn.asType(), newDn); // the new type is its own specialized form
+      newDn.isRecursive = this.isRecursive;
+      newDn.cfuns = new Cfun[this.cfuns.length]; // make specialized versions of cfuns
+      for (int i = 0; i < this.cfuns.length; i++) {
+        newDn.cfuns[i] = this.cfuns[i].specialize(spec, newDn, inst);
+      }
+      debug.Log.println(newDn.getId() + " is a specialized DataName for " + inst);
     }
-    // If there was no previous specialized version, then we should make one!
-    newDn = new DataName(pos, id + count++, KAtom.STAR, 0);
-    spec.put(inst, newDn); // add to table now so that mapping is visible for cfun types
-    spec.put(newDn.asType(), newDn); // the new type is its own specialized form
-    newDn.isRecursive = this.isRecursive;
-    newDn.cfuns = new Cfun[this.cfuns.length]; // make specialized versions of cfuns
-    for (int i = 0; i < this.cfuns.length; i++) {
-      newDn.cfuns[i] = this.cfuns[i].specialize(spec, newDn, inst);
-    }
-    debug.Log.println(newDn.getId() + " is a specialized DataName for " + inst);
     return newDn;
   }
 
