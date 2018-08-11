@@ -351,11 +351,7 @@ public class External extends TopDefn {
                 && w != null
                 && v.compareTo(BigInteger.ZERO) >= 0
                 && BigInteger.ONE.shiftLeft(w.intValue()).compareTo(v) > 0) {
-              Tail t = new Return(Const.atoms(v, w.intValue()));
-              // TODO: Temp.makeTemps(1) in the next line is used for the proxy argument; can we
-              // eliminate this?
-              ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(1), t);
-              return new ClosAlloc(k).withArgs();
+              return new Return(Const.atoms(v, w.intValue())).constClosure(pos, 1);
             }
             return null;
           }
@@ -382,7 +378,7 @@ public class External extends TopDefn {
 
   static {
 
-    // primIxFromLiteral v m :: Proxy -> Ix m
+    // primIxFromLiteral v m :: Proxy v -> Ix m
     generators.put(
         "primIxFromLiteral",
         new Generator(2) {
@@ -390,11 +386,7 @@ public class External extends TopDefn {
             BigInteger v = ts[0].getNat(); // Value of literal
             BigInteger m = ts[1].getIxArg(); // Modulus for index type
             if (v != null && m != null && v.compareTo(BigInteger.ZERO) >= 0 && v.compareTo(m) < 0) {
-              Tail t = new Return(new IntConst(v.intValue()));
-              // TODO: Temp.makeTemps(1) in the next line is used for the proxy argument; can we
-              // eliminate this?
-              ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(1), t);
-              return new ClosAlloc(k).withArgs();
+              return new Return(new IntConst(v.intValue())).constClosure(pos, 1);
             }
             return null;
           }

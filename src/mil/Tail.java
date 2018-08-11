@@ -396,6 +396,11 @@ public abstract class Tail {
     return this;
   }
 
+  public Tail constClosure(Position pos, int n) {
+    Temp[] args = Temp.makeTemps(n);
+    return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, this)).withArgs();
+  }
+
   abstract Tail repTransform(RepTypeSet set, RepEnv env);
 
   /**
