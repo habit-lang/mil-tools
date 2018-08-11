@@ -196,7 +196,7 @@ public class DataAlloc extends Allocator {
   }
 
   Tail repTransform(RepTypeSet set, RepEnv env) {
-    return cf.repTransformDataAlloc(set, Atom.repArgs(set, env, args));
+    return cf.repCfun().repTransformDataAlloc(set, Atom.repArgs(set, env, args));
   }
 
   llvm.Value staticAlloc(TypeMap tm, llvm.Program prog, llvm.Value[] vals) {

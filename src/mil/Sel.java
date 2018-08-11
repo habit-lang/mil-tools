@@ -263,7 +263,7 @@ public class Sel extends Tail {
   }
 
   Tail repTransform(RepTypeSet set, RepEnv env) {
-    return cf.repTransformSel(set, env, n, a);
+    return cf.repCfun().repTransformSel(set, env, n, a);
   }
 
   /**
@@ -275,7 +275,7 @@ public class Sel extends Tail {
    * bitdata names or layouts, neither of which require this special treatment.
    */
   Code repTransform(RepTypeSet set, RepEnv env, Temp[] vs, Code c) {
-    return cf.repTransformSel(set, env, vs, n, a, c);
+    return cf.repCfun().repTransformSel(set, env, vs, n, a, c);
   }
 
   /** Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. */

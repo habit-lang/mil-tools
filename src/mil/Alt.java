@@ -265,7 +265,7 @@ public class Alt {
   }
 
   Alt repTransformAlt(RepTypeSet set, RepEnv env) {
-    return new Alt(cf.canonCfun(set), bc.repTransformBlockCall(set, env));
+    return new Alt(cf.repCfun().canonCfun(set), bc.repTransformBlockCall(set, env));
   }
 
   static Code repTransformBitdataCase(

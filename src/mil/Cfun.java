@@ -296,6 +296,14 @@ public class Cfun extends Name {
     return allocType.repOffset(n);
   }
 
+  /**
+   * Translate an occurence of a constructor function for a singleton type into a reference to the
+   * Unit type; in all other cases, just return the orginal constructor.
+   */
+  Cfun repCfun() {
+    return (dn.isSingleton()) ? Cfun.Unit : this;
+  }
+
   /** Returns the LLVM type for value that is returned by a function. */
   llvm.Type retType(TypeMap tm) {
     return tm.toLLVM(allocType.resultType());

@@ -530,6 +530,9 @@ public class DataName extends Tycon {
     }
   }
 
+  /** Representation vector for singleton types. */
+  public static final Type[] unitRep = new Type[] {unit.asType()};
+
   /** Representation vector for bitdata types of width one. */
   public static final Type[] flagRep = new Type[] {flag.asType()};
 
@@ -540,13 +543,8 @@ public class DataName extends Tycon {
   public static final Type[] nzwordRep = new Type[] {nzword.asType()};
 
   /** Return the representation vector for values of this type. */
-  Type[] repCalc() {
-    return null;
-    // TODO: The current method of eliminating the runtime representation for singleton types does
-    // not work
-    // as intended, so the test below is disabled until we figure out a better option ...
-    // No runtime representation needed for singleton types, otherwise no change in representation.
-    // return isSingleton() ? Type.noTypes : null;
+  Type[] repCalc() { // Singleton types are all represented by the Unit type
+    return isSingleton() ? DataName.unitRep : null;
   }
 
   /**
@@ -571,8 +569,8 @@ public class DataName extends Tycon {
   }
 
   /**
-   * Determine if this is a singleton type (i.e., a type with only one value), in which case no
-   * representation is required.
+   * Determine if this is a singleton type (i.e., a type with only one value), in which case we will
+   * use the Unit type to provide a representation.
    */
   boolean isSingleton() {
     return cfuns != null && cfuns.length == 1 && cfuns[0].getArity() == 0;
