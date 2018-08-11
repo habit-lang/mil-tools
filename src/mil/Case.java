@@ -420,8 +420,7 @@ public class Case extends Code {
   Code cfunSimplify() {
     // If there are no alternatives, replace this Case with a Done:
     if (alts.length == 0) { // no alternatives; use default
-      // TODO: this line is commented out because report isn't introduced until optimize ...
-      // MILProgram.report("eliminating case with no alternatives");
+      MILProgram.report("eliminating case with no alternatives");
       return (def == null) ? Code.halt : new Done(def);
     }
 
@@ -444,8 +443,7 @@ public class Case extends Code {
     // possible newtype match:
     if (count == used.length) {
       if (count == 1) { // Look for a single constructor type:
-        // TODO: this line is commented out because report isn't introduced until optimize ...
-        // MILProgram.report("eliminating case on single constructor type");
+        MILProgram.report("eliminating case on single constructor type");
         return new Done(alts[0].getBlockCall());
       }
       def = null; // Eliminate the default case

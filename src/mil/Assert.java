@@ -254,8 +254,7 @@ public class Assert extends Code {
   Code cfunSimplify() {
     c = c.cfunSimplify(); // Simplify rest of code
     if (cf.isSingleConstructor()) { // Eliminate assert for a single constructor type
-      // TODO: this line is commented out because report isn't introduced until optimize ...
-      // MILProgram.report("eliminating assert for singleton constructor " + cf.getId());
+      MILProgram.report("eliminating assert for singleton constructor " + cf.getId());
       return c;
     }
     return this;
