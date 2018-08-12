@@ -536,7 +536,7 @@ public class Case extends Code {
    * used to capture renamings of MIL temporaries, and succs provides the successor labels for the
    * end of the code.
    */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Label[] succs) {
-    return Alt.toLLVM(tm, vm, a.toLLVM(tm, vm, s), alts, def, succs);
+  llvm.Code toLLVMCode(LLVMMap lm, VarMap vm, TempSubst s, Label[] succs) {
+    return Alt.toLLVMCase(lm, vm, a.toLLVMAtom(lm, vm, s), alts, def, succs);
   }
 }

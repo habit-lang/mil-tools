@@ -329,9 +329,9 @@ public class TAp extends Type {
    * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full
    * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.
    */
-  llvm.Type toLLVMCalc(Type c, TypeMap tm, int args) {
-    tm.push(arg); // arg is already in canonical form
-    return fun.toLLVMCalc(c, tm, args + 1); // traverse towards head
+  llvm.Type toLLVMCalc(Type c, LLVMMap lm, int args) {
+    lm.push(arg); // arg is already in canonical form
+    return fun.toLLVMCalc(c, lm, args + 1); // traverse towards head
   }
 
   Type getArg() {
@@ -339,9 +339,9 @@ public class TAp extends Type {
   }
 
   /** Calculate an array of llvm Types corresponding to the components of a given MIL Tuple type. */
-  llvm.Type[] tupleToArray(TypeMap tm, int args) {
-    llvm.Type[] tys = fun.tupleToArray(tm, ++args);
-    tys[tys.length - args] = tm.toLLVM(arg);
+  llvm.Type[] tupleToArray(LLVMMap lm, int args) {
+    llvm.Type[] tys = fun.tupleToArray(lm, ++args);
+    tys[tys.length - args] = lm.toLLVM(arg);
     return tys;
   }
 
@@ -350,9 +350,9 @@ public class TAp extends Type {
    * type as the first argument and adding an extra argument for each component in this type, which
    * must be a tuple.
    */
-  llvm.Type[] closureArgs(TypeMap tm, llvm.Type ptr, int args) {
-    llvm.Type[] cargs = fun.closureArgs(tm, ptr, ++args);
-    cargs[cargs.length - args] = tm.toLLVM(arg);
+  llvm.Type[] closureArgs(LLVMMap lm, llvm.Type ptr, int args) {
+    llvm.Type[] cargs = fun.closureArgs(lm, ptr, ++args);
+    cargs[cargs.length - args] = lm.toLLVM(arg);
     return cargs;
   }
 }

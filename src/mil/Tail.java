@@ -425,6 +425,18 @@ public abstract class Tail {
     return this.add(vs);
   }
 
+  /**
+   * Calculate an array of static values for this tail, or null if none of the results produced by
+   * this tail have statically known values. (Either because they are truly not statically known, or
+   * because we choose not to compute static values for certain forms of Tail.) If there are
+   * multiple results, only some of which are statically known, then the array that is returned will
+   * be non-null, but will have null values in places where static values are not known.
+   */
+  llvm.Value[] calcStaticValue(LLVMMap lm, llvm.Program prog) {
+    // handles Enter, BlockCall, PrimCall, Sel (optimizer should remove static Sels), ...
+    return null;
+  }
+
   /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
   void countCalls() {
     /* no non-tail calls here */
@@ -444,53 +456,41 @@ public abstract class Tail {
   }
 
   /**
-   * Calculate an array of static values for this tail, or null if none of the results produced by
-   * this tail have statically known values. (Either because they are truly not statically known, or
-   * because we choose not to compute static values for certain forms of Tail.) If there are
-   * multiple results, only some of which are statically known, then the array that is returned will
-   * be non-null, but will have null values in places where static values are not known.
-   */
-  llvm.Value[] staticValueCalc(TypeMap tm, llvm.Program prog) {
-    // handles Enter, BlockCall, PrimCall, Sel (optimizer should remove static Sels), ...
-    return null;
-  }
-
-  /**
    * Generate LLVM code to evaluate this Tail with a continuation that binds the results to the
    * variables in vs and then executes the specified code.
    */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Temp[] vs, llvm.Code code) {
+  llvm.Code toLLVMCont(LLVMMap lm, VarMap vm, TempSubst s, Temp[] vs, llvm.Code code) {
     Type rt = this.resultType(); // Find the type of the values that will be returned
     if (rt.sameTTycon(null, Type.empty)) { // Tail does not return any results
-      return toLLVM(tm, vm, s, code); // ... so execute the tail, and then continue
+      return toLLVMContVoid(lm, vm, s, code); // ... so execute the tail, and then continue
     } else {
       llvm.Local lhs; // Assuming type correctness, vs.length >= 1
       if (vs.length == 1) { // Just one result?
-        lhs = vm.lookup(tm, vs[0]); // ... save result directly
+        lhs = vm.lookup(lm, vs[0]); // ... save result directly
       } else { // Multiple results?
-        lhs = vm.reg(tm.toLLVM(rt)); // ... a register to hold the structure
+        lhs = vm.reg(lm.toLLVM(rt)); // ... a register to hold the structure
         for (int n = vs.length;
             --n >= 0; ) { // ... and a sequence of extractvalues to access components
-          code = new llvm.Op(vm.lookup(tm, vs[n]), new llvm.ExtractValue(lhs, n), code);
+          code = new llvm.Op(vm.lookup(lm, vs[n]), new llvm.ExtractValue(lhs, n), code);
         }
       }
-      return toLLVM(tm, vm, s, lhs, code); // ... execute tail, capture result, and continue
+      return toLLVMContBind(lm, vm, s, lhs, code); // ... execute tail, capture result, and continue
     }
   }
 
   /** Generate LLVM code to execute this Tail in tail call position. */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Label[] succs) {
+  llvm.Code toLLVMDone(LLVMMap lm, VarMap vm, TempSubst s, Label[] succs) {
     Type rt = this.resultType(); // Find the type of the values that will be returned
     if (rt.sameTTycon(null, Type.empty)) { // Tail does not return any results
-      return this.toLLVM(
-          tm,
+      return this.toLLVMContVoid(
+          lm,
           vm,
           s, // ... so execute the tail
           new llvm.RetVoid()); // ... and return without a result
     } else {
-      llvm.Local lhs = vm.reg(tm.toLLVM(rt));
-      return this.toLLVM(
-          tm,
+      llvm.Local lhs = vm.reg(lm.toLLVM(rt));
+      return this.toLLVMContBind(
+          lm,
           vm,
           s,
           lhs, // ... execute tail, capture result in lhs
@@ -499,10 +499,11 @@ public abstract class Tail {
   }
 
   /** Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. */
-  abstract llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, llvm.Code c);
+  abstract llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, llvm.Code c);
 
   /**
    * Generate LLVM code to execute this Tail and return a result from the right hand side of a Bind.
    */
-  abstract llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c);
+  abstract llvm.Code toLLVMContBind(
+      LLVMMap lm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c);
 }

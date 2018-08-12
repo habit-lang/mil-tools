@@ -90,26 +90,28 @@ public abstract class Top extends Atom {
     return null;
   }
 
-  /** Calculate an LLVM Value corresponding to a given MIL argument. */
-  llvm.Value toLLVM(TypeMap tm, VarMap vm) {
-    return vm.lookupGlobal(tm, this);
-  }
-
   Type getType() {
     return type;
   }
 
   /**
-   * Test to determine whether two Top values refer to the same item. Implemented using a standard
-   * double dispatch strategy.
+   * Test to determine whether two Top values refer to the same item. Implemented using double
+   * dispatch.
    */
   abstract boolean sameTop(Top that);
 
+  /** Test to determine whether this Top refers to the ith TopLhs in the given TopLevel. */
   boolean sameTopDef(TopLevel topLevel, int i) {
     return false;
   }
 
+  /** Test to determine whether this Top refers to the specified External. */
   boolean sameTopExt(External external) {
     return false;
+  }
+
+  /** Calculate an LLVM Value corresponding to a given MIL argument. */
+  llvm.Value toLLVMAtom(LLVMMap lm, VarMap vm) {
+    return vm.lookupGlobal(lm, this);
   }
 }

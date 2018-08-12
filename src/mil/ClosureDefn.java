@@ -633,23 +633,27 @@ public class ClosureDefn extends Defn {
   }
 
   /** Returns the LLVM type for value that is returned by a function. */
-  llvm.Type retType(TypeMap tm) {
-    return declared.resultType().retType(tm);
+  llvm.Type retType(LLVMMap lm) {
+    return declared.resultType().retType(lm);
   }
 
-  llvm.Type closurePtrType(TypeMap tm) {
-    return tm.toLLVM(declared.resultType());
+  llvm.Type closurePtrType(LLVMMap lm) {
+    return lm.toLLVM(declared.resultType());
   }
 
-  llvm.Type codePtrType(TypeMap tm) {
-    return closurePtrType(tm).codePtrType();
+  llvm.Type codePtrType(LLVMMap lm) {
+    return closurePtrType(lm).codePtrType();
   }
 
   /**
    * Calculate the type of a structure describing the layout of a closure for a specific definition.
    */
-  llvm.Type closureLayoutTypeCalc(TypeMap tm) {
-    return declared.closureLayoutTypeCalc(tm);
+  llvm.Type closureLayoutTypeCalc(LLVMMap lm) {
+    return declared.closureLayoutTypeCalc(lm);
+  }
+
+  llvm.Global closureGlobalCalc(LLVMMap lm) {
+    return new llvm.Global(codePtrType(lm), label());
   }
 
   /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
@@ -684,41 +688,38 @@ public class ClosureDefn extends Defn {
     return tail.findSuccs(cfg, src);
   }
 
-  llvm.Local[] formals(TypeMap tm, VarMap dvm) {
+  /** Generate an array containing the formal parameters for this closure definition. */
+  llvm.Local[] formalsClosureDefn(LLVMMap lm, VarMap dvm) {
     llvm.Local[] fs = new llvm.Local[1 + args.length]; // Closure pointer + arguments
-    fs[0] = dvm.reg(closurePtrType(tm));
+    fs[0] = dvm.reg(closurePtrType(lm));
     for (int i = 0; i < args.length; i++) {
-      fs[1 + i] = dvm.lookup(tm, args[i]);
+      fs[1 + i] = dvm.lookup(lm, args[i]);
     }
     return fs;
   }
 
-  llvm.Code toLLVM(TypeMap tm, DefnVarMap vm, llvm.Local clo, Label[] succs) {
-    // Generate code for the tail portion of this closure definition:
+  /** Generate code for the tail portion of this closure definition. */
+  llvm.Code toLLVMClosureDefn(LLVMMap lm, DefnVarMap dvm, llvm.Local clo, Label[] succs) {
     llvm.Code code =
         new llvm.CodeComment(
-            "body of closure starts here", vm.loadGlobals(tail.toLLVM(tm, vm, null, succs)));
+            "body of closure starts here", dvm.loadGlobals(tail.toLLVMDone(lm, dvm, null, succs)));
 
     if (params.length == 0) { // load closure parameters from memory
       return code;
     } else {
-      llvm.Type ptrt = tm.closureLayoutType(this).ptr(); // type identifies components of closure
-      llvm.Local ptr = vm.reg(ptrt); // holds a pointer to the closure object
+      llvm.Type ptrt = lm.closureLayoutType(this).ptr(); // type identifies components of closure
+      llvm.Local ptr = dvm.reg(ptrt); // holds a pointer to the closure object
       for (int n = params.length; --n >= 0; ) { // extract stored parameters
         llvm.Local pptr =
-            vm.reg(params[n].lookupType(tm).ptr()); // holds pointer to stored parameter
+            dvm.reg(params[n].lookupType(lm).ptr()); // holds pointer to stored parameter
         code =
             new llvm.Op(
                 pptr,
                 new llvm.Getelementptr(ptr, new llvm.Int(0), new llvm.Int(n + 1)),
-                new llvm.Op(vm.lookup(tm, params[n]), new llvm.Load(pptr), code));
+                new llvm.Op(dvm.lookup(lm, params[n]), new llvm.Load(pptr), code));
       }
       return new llvm.CodeComment(
           "load stored values from closure", new llvm.Op(ptr, new llvm.Bitcast(clo, ptrt), code));
     }
-  }
-
-  llvm.Global closureGlobalCalc(TypeMap tm) {
-    return new llvm.Global(codePtrType(tm), label());
   }
 }

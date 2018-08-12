@@ -183,8 +183,12 @@ class TopLhs {
     exports.addTop(id, t);
   }
 
-  llvm.GlobalVarDefn globalVarDefn(TypeMap tm) {
-    return new llvm.GlobalVarDefn(id, tm.toLLVM(defining).defaultValue());
+  /**
+   * Create a global variable definition for a component of a TopLevel definition that has no static
+   * value and will be calculated instead at runtime.
+   */
+  llvm.GlobalVarDefn globalVarDefn(LLVMMap lm) {
+    return new llvm.GlobalVarDefn(id, lm.toLLVM(defining).defaultValue());
   }
 
   Temp makeTemp() {

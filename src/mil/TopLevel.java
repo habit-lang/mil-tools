@@ -512,11 +512,6 @@ public class TopLevel extends TopDefn {
     return null;
   }
 
-  /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
-  void countCalls() {
-    tail.countCalls();
-  }
-
   /**
    * An array of llvm.Value objects (one for each left hand side) that stores the compile-time
    * values for this TopLevel. A null entry indicates that the values cannot be determined at
@@ -534,36 +529,37 @@ public class TopLevel extends TopDefn {
   }
 
   /** Calculate a staticValue (which could be null) for each top level definition. */
-  void calcStaticValues(TypeMap tm, llvm.Program prog) {
-    staticValue = tail.staticValueCalc(tm, prog);
+  void calcStaticValues(LLVMMap lm, llvm.Program prog) {
+    staticValue = tail.calcStaticValue(lm, prog);
     // Add global variable definitions for any lhs components without a static value:
     for (int i = 0; i < lhs.length; i++) {
       if (staticValue == null || staticValue[i] == null) {
-        prog.add(lhs[i].globalVarDefn(tm));
+        prog.add(lhs[i].globalVarDefn(lm));
       }
     }
   }
 
-  /**
-   * Reset the static value field and return true if this is a toplevel definition, or return false
-   * for any other form of definition.
-   */
-  boolean resetStaticValues() {
+  /** Reset the static value field for this definition. */
+  void resetStaticValues() {
     staticValue = null;
-    return true;
+  }
+
+  /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
+  void countCalls() {
+    tail.countCalls();
   }
 
   /**
    * Generate code (in reverse) to initialize each TopLevel (unless all of the components are
    * statically known). TODO: what if a TopLevel has an empty array of Lhs?
    */
-  llvm.Code addRevInitCode(TypeMap tm, InitVarMap ivm, llvm.Code code) {
+  llvm.Code addRevInitCode(LLVMMap lm, InitVarMap ivm, llvm.Code code) {
     if (staticValue == null || staticValue.length == 0) {
-      return this.revInitCode(tm, ivm, code); // no static values
+      return this.revInitCode(lm, ivm, code); // no static values
     } else {
       for (int i = 0; i < staticValue.length; i++) {
         if (staticValue[i] == null) {
-          return this.revInitCode(tm, ivm, code); // some static values
+          return this.revInitCode(lm, ivm, code); // some static values
         }
       }
       return code; // all components have static values, no new code required
@@ -574,15 +570,15 @@ public class TopLevel extends TopDefn {
    * Worker function for generateRevInitCode, called when we have established that the tail
    * expression for this TopLevel should be executed during program initialization.
    */
-  private llvm.Code revInitCode(TypeMap tm, InitVarMap ivm, llvm.Code code) {
+  private llvm.Code revInitCode(LLVMMap lm, InitVarMap ivm, llvm.Code code) {
     Temp[] vs = new Temp[lhs.length];
     for (int i = 0; i < lhs.length; i++) {
       vs[i] = lhs[i].makeTemp();
     }
-    code = llvm.Code.reverseOnto(tail.toLLVM(tm, ivm, null, vs, null), code);
+    code = llvm.Code.reverseOnto(tail.toLLVMCont(lm, ivm, null, vs, null), code);
     for (int i = 0; i < lhs.length; i++) {
       if (staticValue == null || staticValue[i] == null) {
-        llvm.Local var = ivm.lookup(tm, vs[i]);
+        llvm.Local var = ivm.lookup(lm, vs[i]);
         ivm.mapGlobal(this, i, var);
         code = new llvm.Store(var, new llvm.Global(var.getType().ptr(), lhs[i].getId()), code);
       }

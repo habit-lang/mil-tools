@@ -178,8 +178,9 @@ public class Prim {
      * primitive is expected to return a result (that should be captured in the specified lhs), and
      * then execution is expected to continue on to the specified code, c.
      */
-    llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
-      return new llvm.Op(lhs, this.op(llvm.Type.i32, args[0].toLLVM(tm, vm, s)), c);
+    llvm.Code toLLVMPrimCont(
+        LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
+      return new llvm.Op(lhs, this.op(llvm.Type.i32, args[0].toLLVMAtom(lm, vm, s)), c);
     }
 
     /**
@@ -270,8 +271,9 @@ public class Prim {
      * primitive is expected to return a result (that should be captured in the specified lhs), and
      * then execution is expected to continue on to the specified code, c.
      */
-    llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
-      return new llvm.Op(lhs, this.op(llvm.Type.i1, args[0].toLLVM(tm, vm, s)), c);
+    llvm.Code toLLVMPrimCont(
+        LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
+      return new llvm.Op(lhs, this.op(llvm.Type.i1, args[0].toLLVMAtom(lm, vm, s)), c);
     }
 
     /**
@@ -578,8 +580,9 @@ public class Prim {
      * primitive is expected to return a result (that should be captured in the specified lhs), and
      * then execution is expected to continue on to the specified code, c.
      */
-    llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
-      return new llvm.Op(lhs, this.op(llvm.Type.i32, args[0].toLLVM(tm, vm, s)), c);
+    llvm.Code toLLVMPrimCont(
+        LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
+      return new llvm.Op(lhs, this.op(llvm.Type.i32, args[0].toLLVMAtom(lm, vm, s)), c);
     }
 
     /**
@@ -675,7 +678,7 @@ public class Prim {
      * primitive is not expected to produce any results, but execution is expected to continue with
      * the given code.
      */
-    llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
+    llvm.Code toLLVMPrimVoid(LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
       debug.Internal.error(id + " is not a void primitive");
       return c;
     }
@@ -685,9 +688,12 @@ public class Prim {
      * primitive is expected to return a result (that should be captured in the specified lhs), and
      * then execution is expected to continue on to the specified code, c.
      */
-    llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
+    llvm.Code toLLVMPrimCont(
+        LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
       return new llvm.Op(
-          lhs, this.op(llvm.Type.i32, args[0].toLLVM(tm, vm, s), args[1].toLLVM(tm, vm, s)), c);
+          lhs,
+          this.op(llvm.Type.i32, args[0].toLLVMAtom(lm, vm, s), args[1].toLLVMAtom(lm, vm, s)),
+          c);
     }
 
     /**
@@ -721,7 +727,7 @@ public class Prim {
      * primitive is not expected to produce any results, but execution is expected to continue with
      * the given code.
      */
-    llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
+    llvm.Code toLLVMPrimVoid(LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
       debug.Internal.error(id + " is not a void primitive");
       return c;
     }
@@ -731,9 +737,12 @@ public class Prim {
      * primitive is expected to return a result (that should be captured in the specified lhs), and
      * then execution is expected to continue on to the specified code, c.
      */
-    llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
+    llvm.Code toLLVMPrimCont(
+        LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
       return new llvm.Op(
-          lhs, this.op(llvm.Type.i32, args[0].toLLVM(tm, vm, s), args[1].toLLVM(tm, vm, s)), c);
+          lhs,
+          this.op(llvm.Type.i32, args[0].toLLVMAtom(lm, vm, s), args[1].toLLVMAtom(lm, vm, s)),
+          c);
     }
 
     /**
@@ -758,7 +767,7 @@ public class Prim {
      * primitive is not expected to produce any results, but execution is expected to continue with
      * the given code.
      */
-    llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
+    llvm.Code toLLVMPrimVoid(LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
       debug.Internal.error(id + " is not a void primitive");
       return c;
     }
@@ -768,9 +777,12 @@ public class Prim {
      * primitive is expected to return a result (that should be captured in the specified lhs), and
      * then execution is expected to continue on to the specified code, c.
      */
-    llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
+    llvm.Code toLLVMPrimCont(
+        LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
       return new llvm.Op(
-          lhs, this.op(llvm.Type.i32, args[0].toLLVM(tm, vm, s), args[1].toLLVM(tm, vm, s)), c);
+          lhs,
+          this.op(llvm.Type.i32, args[0].toLLVMAtom(lm, vm, s), args[1].toLLVMAtom(lm, vm, s)),
+          c);
     }
 
     /**
@@ -1089,8 +1101,9 @@ public class Prim {
      * primitive is expected to return a result (that should be captured in the specified lhs), and
      * then execution is expected to continue on to the specified code, c.
      */
-    llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
-      return new llvm.Op(lhs, new llvm.Zext(args[0].toLLVM(tm, vm, s), llvm.Type.i32), c);
+    llvm.Code toLLVMPrimCont(
+        LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
+      return new llvm.Op(lhs, new llvm.Zext(args[0].toLLVMAtom(lm, vm, s), llvm.Type.i32), c);
     }
   }
 
@@ -1301,11 +1314,11 @@ public class Prim {
   /**
    * Calculate an LLVM Global object corresponding to a primitive that is implemented using an
    * external function. The results are cached in a hash table, and a declaration for the primitive
-   * is added to the program associated with this TypeMap when the first occurrence is found.
+   * is added to the program associated with this LLVMMap when the first occurrence is found.
    */
-  llvm.Global primGlobalCalc(TypeMap tm) {
-    llvm.FunctionType ft = blockType.toLLVM(tm);
-    tm.declare(id, ft);
+  llvm.Global primGlobalCalc(LLVMMap lm) {
+    llvm.FunctionType ft = blockType.toLLVM(lm);
+    lm.declare(id, ft);
     return new llvm.Global(ft, id);
   }
 
@@ -1314,9 +1327,9 @@ public class Prim {
    * is not expected to produce any results, but execution is expected to continue with the given
    * code.
    */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
+  llvm.Code toLLVMPrimVoid(LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
     // Default approach is to call a function:
-    return new llvm.CallVoid(tm.globalFor(this), Atom.toLLVM(tm, vm, s, args), c);
+    return new llvm.CallVoid(lm.globalFor(this), Atom.toLLVMValues(lm, vm, s, args), c);
   }
 
   /**
@@ -1324,9 +1337,12 @@ public class Prim {
    * is expected to return a result (that should be captured in the specified lhs), and then
    * execution is expected to continue on to the specified code, c.
    */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
+  llvm.Code toLLVMPrimCont(
+      LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
     // Default approach is to call a function:
     return new llvm.Op(
-        lhs, new llvm.Call(lhs.getType(), tm.globalFor(this), Atom.toLLVM(tm, vm, s, args)), c);
+        lhs,
+        new llvm.Call(lhs.getType(), lm.globalFor(this), Atom.toLLVMValues(lm, vm, s, args)),
+        c);
   }
 }

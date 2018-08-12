@@ -78,5 +78,6 @@ abstract class Label extends Node {
     return s;
   }
 
-  abstract llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s);
+  /** Generate code for this Label within an enclosing LLVM function definition. */
+  abstract llvm.Code toLLVMLabel(LLVMMap lm, VarMap vm, TempSubst s);
 }

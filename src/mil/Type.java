@@ -847,14 +847,14 @@ public abstract class Type extends Scheme {
    * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full
    * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.
    */
-  llvm.Type toLLVMCalc(Type c, TypeMap tm, int args) {
+  llvm.Type toLLVMCalc(Type c, LLVMMap lm, int args) {
     //  debug.Internal.error("toLLVM not defined for type " + this);
     return llvm.Type.vd; // not reached
   }
 
   /** Returns the LLVM type for value that is returned by a function. */
-  llvm.Type retType(TypeMap tm) {
-    return tm.toLLVM(this.canonType(tm).getArg());
+  llvm.Type retType(LLVMMap lm) {
+    return lm.toLLVM(this.canonType(lm).getArg());
   }
 
   Type getArg() {
@@ -863,7 +863,7 @@ public abstract class Type extends Scheme {
   }
 
   /** Calculate an array of llvm Types corresponding to the components of a given MIL Tuple type. */
-  llvm.Type[] tupleToArray(TypeMap tm, int args) {
+  llvm.Type[] tupleToArray(LLVMMap lm, int args) {
     if (this != TupleCon.tuple(args).asType()) {
       // TODO: uncomment the following to trigger stricter error checking
       //    debug.Internal.error("tupleToArray not defined for " + this);
@@ -877,7 +877,7 @@ public abstract class Type extends Scheme {
    * type as the first argument and adding an extra argument for each component in this type, which
    * must be a tuple.
    */
-  llvm.Type[] closureArgs(TypeMap tm, llvm.Type ptr, int args) {
+  llvm.Type[] closureArgs(LLVMMap lm, llvm.Type ptr, int args) {
     if (this != TupleCon.tuple(args).asType()) {
       //    debug.Internal.error("closureArgs not defined for " + this);
       //    return null; // not reached

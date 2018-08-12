@@ -43,10 +43,10 @@ public class MILArrow extends PrimTycon {
    * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full
    * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.
    */
-  llvm.Type toLLVMCalc(Type c, TypeMap tm, int args) {
+  llvm.Type toLLVMCalc(Type c, LLVMMap lm, int args) {
     if (args != 2) {
       debug.Internal.error("MILArrow toLLVM arity mismatch");
     }
-    return tm.closurePtrTypeCalc(c);
+    return lm.closurePtrTypeCalc(c);
   }
 }

@@ -45,7 +45,8 @@ class GotoLabel extends Label {
     succs = new Label[] {lab};
   }
 
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s) {
+  /** Generate code for this Label within an enclosing LLVM function definition. */
+  llvm.Code toLLVMLabel(LLVMMap lm, VarMap vm, TempSubst s) {
     return new llvm.Goto(lab.label());
   }
 }

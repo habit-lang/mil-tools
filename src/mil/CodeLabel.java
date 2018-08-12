@@ -55,8 +55,9 @@ class CodeLabel extends Label {
     return (preds.next == null) ? b.mapParams(preds.args, s) : s;
   }
 
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s) {
-    llvm.Code code = b.toLLVM(tm, vm, s, succs);
+  /** Generate code for this Label within an enclosing LLVM function definition. */
+  llvm.Code toLLVMLabel(LLVMMap lm, VarMap vm, TempSubst s) {
+    llvm.Code code = b.toLLVMBlock(lm, vm, s, succs);
     if (preds.next != null) { // multiple predecessors: merge parameters using phi functions
       Temp[] params = b.getParams();
       if (params.length > 0) {
@@ -70,9 +71,9 @@ class CodeLabel extends Label {
           int j = numpreds;
           for (PredNodes ps = preds; ps != null; ps = ps.next) {
             blocks[--j] = ps.head.label();
-            values[j] = ps.args[i].toLLVM(tm, vm, s);
+            values[j] = ps.args[i].toLLVMAtom(lm, vm, s);
           }
-          code = new llvm.Op(vm.lookup(tm, params[i]), new llvm.Phi(blocks, values), code);
+          code = new llvm.Op(vm.lookup(lm, params[i]), new llvm.Phi(blocks, values), code);
         }
       }
     }

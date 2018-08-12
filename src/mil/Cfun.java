@@ -305,19 +305,19 @@ public class Cfun extends Name {
   }
 
   /** Returns the LLVM type for value that is returned by a function. */
-  llvm.Type retType(TypeMap tm) {
-    return tm.toLLVM(allocType.resultType());
+  llvm.Type retType(LLVMMap lm) {
+    return lm.toLLVM(allocType.resultType());
   }
 
-  llvm.Type dataPtrType(TypeMap tm) {
-    return tm.toLLVM(dn.asType());
+  llvm.Type dataPtrType(LLVMMap lm) {
+    return lm.toLLVM(dn.asType());
   }
 
   /**
    * Calculate a structure type describing the layout of a data value built with a specific
    * constructor.
    */
-  llvm.Type cfunLayoutTypeCalc(TypeMap tm) {
-    return allocType.cfunLayoutTypeCalc(tm);
+  llvm.Type cfunLayoutTypeCalc(LLVMMap lm) {
+    return allocType.cfunLayoutTypeCalc(lm);
   }
 }

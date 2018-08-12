@@ -85,13 +85,14 @@ public class TopExt extends Top {
   }
 
   /**
-   * Test to determine whether two Top values refer to the same item. Implemented using a standard
-   * double dispatch strategy.
+   * Test to determine whether two Top values refer to the same item. Implemented using double
+   * dispatch.
    */
   boolean sameTop(Top that) {
     return that.sameTopExt(external);
   }
 
+  /** Test to determine whether this Top refers to the specified External. */
   boolean sameTopExt(External external) {
     return this.external == external;
   }

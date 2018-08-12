@@ -473,6 +473,21 @@ public class MILProgram {
     }
   }
 
+  /** Calculate a staticValue (which could be null) for each top level definition. */
+  void calcStaticValues(LLVMMap lm, llvm.Program prog) {
+    for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
+      // First reset all static values in this SCC to null
+      // TODO: Is this necessary? Why would they contain non-null values?
+      // TODO: Is this sufficient to produce the correct results for mutually recursive definitions?
+      for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
+        ds.head.resetStaticValues();
+      }
+      for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
+        ds.head.calcStaticValues(lm, prog);
+      }
+    }
+  }
+
   void analyzeCalls() {
     // Reset call counts for all blocks in this program:
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
@@ -505,35 +520,13 @@ public class MILProgram {
     // ! System.out.println();
   }
 
-  /** Calculate a staticValue (which could be null) for each top level definition. */
-  void calcStaticValues(TypeMap tm, llvm.Program prog) {
-    for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
-      boolean anyTopLevels = false;
-      // First reset all static values in this SCC to null
-      // TODO: Is this necessary? Why would they contain non-null values?
-      // TODO: Is this sufficient to produce the correct results for mutually recursive definitions?
-      for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
-        anyTopLevels |= ds.head.resetStaticValues();
-      }
-      if (anyTopLevels) { // The second pass is only necessary if there are TopLevels in this SCC
-        for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
-          ds.head.calcStaticValues(tm, prog);
-        }
-      }
-    }
-  }
-
-  /**
-   * Identify all of the blocks in this program that should be "callable" as a function in the
-   * generated code: this includes all blocks that are listed as entry points, as well as all blocks
-   * that are used in a non-tail call somewhere in the program.
-   */
+  /** Generate an LLVM implementation of this MIL program. */
   public llvm.Program toLLVM() {
     analyzeCalls();
     CFGs cfgs = null;
     llvm.Program prog = new llvm.Program();
-    TypeMap tm = new TypeMap(prog);
-    calcStaticValues(tm, prog);
+    LLVMMap lm = new LLVMMap(prog);
+    calcStaticValues(lm, prog);
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
         CFG cfg = ds.head.makeCFG();
@@ -543,7 +536,7 @@ public class MILProgram {
           // System.out.println(TempSubst.toString(s));
 
           DefnVarMap dvm = new DefnVarMap();
-          prog.add(cfg.toLLVMFuncDefn(tm, dvm, s));
+          prog.add(cfg.toLLVMFuncDefn(lm, dvm, s));
 
           // TODO: revert to adding each new CFG to the front of the list
           // cfgs = new CFGs(cfg, cfgs);
@@ -559,7 +552,7 @@ public class MILProgram {
         }
       }
     }
-    prog.add(generateInitFunction(tm));
+    prog.add(generateInitFunction(lm));
     //  CFGs.toDot("cfgs.dot", cfgs);       // TODO: should not generate this unless requested
     return prog;
   }
@@ -567,12 +560,12 @@ public class MILProgram {
   /**
    * Generate LLVM code to initialize all TopLevels in this program that do not have static values.
    */
-  llvm.FuncDefn generateInitFunction(TypeMap tm) {
+  llvm.FuncDefn generateInitFunction(LLVMMap lm) {
     llvm.Code code = null;
     InitVarMap ivm = new InitVarMap();
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
-        code = ds.head.addRevInitCode(tm, ivm, code);
+        code = ds.head.addRevInitCode(lm, ivm, code);
       }
     }
     return new llvm.FuncDefn(

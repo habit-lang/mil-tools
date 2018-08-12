@@ -199,24 +199,28 @@ public class DataAlloc extends Allocator {
     return cf.repCfun().repTransformDataAlloc(set, Atom.repArgs(set, env, args));
   }
 
-  llvm.Value staticAlloc(TypeMap tm, llvm.Program prog, llvm.Value[] vals) {
+  /**
+   * Create a reference to a statically allocated data structure corresponding to this Allocator,
+   * having already established that all of the components (if any) are statically known.
+   */
+  llvm.Value staticAlloc(LLVMMap lm, llvm.Program prog, llvm.Value[] vals) {
     vals[0] = new llvm.Int(cf.getNum()); // add tag at front of object
-    return staticAlloc(prog, vals, tm.cfunLayoutType(cf), cf.dataPtrType(tm));
+    return staticAlloc(prog, vals, lm.cfunLayoutType(cf), cf.dataPtrType(lm));
   }
 
   /**
    * Generate LLVM code to execute this Tail and return a result from the right hand side of a Bind.
    */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) {
-    llvm.Type objt = tm.cfunLayoutType(cf).ptr(); // type of a pointer to a cf object
+  llvm.Code toLLVMContBind(LLVMMap lm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) {
+    llvm.Type objt = lm.cfunLayoutType(cf).ptr(); // type of a pointer to a cf object
     llvm.Local obj = vm.reg(objt); // a register to point to the new object
     return alloc(
-        tm,
+        lm,
         vm,
         s,
         objt,
         obj,
         new llvm.Int(cf.getNum()),
-        new llvm.Op(lhs, new llvm.Bitcast(obj, cf.retType(tm)), c));
+        new llvm.Op(lhs, new llvm.Bitcast(obj, cf.retType(lm)), c));
   }
 }

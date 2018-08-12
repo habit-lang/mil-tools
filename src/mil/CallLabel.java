@@ -45,17 +45,18 @@ class CallLabel extends Label {
     succs = Label.noLabels;
   }
 
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s) {
+  /** Generate code for this Label within an enclosing LLVM function definition. */
+  llvm.Code toLLVMLabel(LLVMMap lm, VarMap vm, TempSubst s) {
     if (preds == null || preds.next != null) {
       debug.Internal.error("CallLabel should have a unique predecessor");
     }
-    llvm.Value[] vals = Atom.toLLVM(tm, vm, s, preds.args);
-    llvm.Type rt = b.retType(tm);
+    llvm.Value[] vals = Atom.toLLVMValues(lm, vm, s, preds.args);
+    llvm.Type rt = b.retType(lm);
     if (rt == llvm.Type.vd) { // use CallVoid if block does not produce a value
-      return new llvm.CallVoid(tm.globalFor(b), vals, new llvm.RetVoid());
+      return new llvm.CallVoid(lm.globalFor(b), vals, new llvm.RetVoid());
     } else { // otherwise use Call
       llvm.Local v = vm.reg(rt); // and allocate a register to hold the result
-      return new llvm.Op(v, new llvm.Call(v.getType(), tm.globalFor(b), vals), new llvm.Ret(v));
+      return new llvm.Op(v, new llvm.Call(v.getType(), lm.globalFor(b), vals), new llvm.Ret(v));
     }
   }
 }

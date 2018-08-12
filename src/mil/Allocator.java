@@ -83,29 +83,37 @@ public abstract class Allocator extends Call {
    * multiple results, only some of which are statically known, then the array that is returned will
    * be non-null, but will have null values in places where static values are not known.
    */
-  llvm.Value[] staticValueCalc(TypeMap tm, llvm.Program prog) {
+  llvm.Value[] calcStaticValue(LLVMMap lm, llvm.Program prog) {
     llvm.Value[] comps = null; // lazily allocated array of components
     int n = args.length;
     if (n <= 0) {
       comps = new llvm.Value[1]; // leave space for the tag at index 0
     } else {
-      llvm.Value v = args[0].staticValueCalc();
+      llvm.Value v = args[0].calcStaticValue();
       if (v == null) {
         return null; // if any component is unknown, then so is the full allocator
       }
       comps = new llvm.Value[1 + n]; // again, allow for tag at index 0
       comps[1] = v;
       for (int i = 1; i < n; i++) {
-        if ((comps[1 + i] = args[i].staticValueCalc()) == null) {
+        if ((comps[1 + i] = args[i].calcStaticValue()) == null) {
           return null;
         }
       }
     }
-    return new llvm.Value[] {staticAlloc(tm, prog, comps)};
+    return new llvm.Value[] {staticAlloc(lm, prog, comps)};
   }
 
-  abstract llvm.Value staticAlloc(TypeMap tm, llvm.Program prog, llvm.Value[] vals);
+  /**
+   * Create a reference to a statically allocated data structure corresponding to this Allocator,
+   * having already established that all of the components (if any) are statically known.
+   */
+  abstract llvm.Value staticAlloc(LLVMMap lm, llvm.Program prog, llvm.Value[] vals);
 
+  /**
+   * Create a reference to a statically allocated data structure with the given layout and object
+   * types and array of component (statically known) values.
+   */
   llvm.Value staticAlloc(
       llvm.Program prog, llvm.Value[] vals, llvm.Type layoutType, llvm.Type genPtrType) {
     // Create a private constant containing all the fields for this object:
@@ -120,7 +128,7 @@ public abstract class Allocator extends Call {
   }
 
   /** Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, llvm.Code c) {
+  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, llvm.Code c) {
     debug.Internal.error("Allocator does not return void");
     return c;
   }
@@ -130,7 +138,7 @@ public abstract class Allocator extends Call {
    * the (uninitialized) memory, fill in the tag and fields, and then continue with the code in c.
    */
   llvm.Code alloc(
-      TypeMap tm,
+      LLVMMap lm,
       VarMap vm,
       TempSubst s,
       llvm.Type objt,
@@ -143,7 +151,7 @@ public abstract class Allocator extends Call {
     int n = args.length;
     if (n > 0) {
       while (--n >= 0) {
-        c = storeField(vm, s, obj, n + 1, args[n].toLLVM(tm, vm, s), c);
+        c = storeField(vm, s, obj, n + 1, args[n].toLLVMAtom(lm, vm, s), c);
       }
       c = new llvm.CodeComment("initialize other fields", c);
     }

@@ -1788,14 +1788,14 @@ public class PrimCall extends Call {
   }
 
   /** Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, llvm.Code c) {
-    return p.toLLVM(tm, vm, s, args, c);
+  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, llvm.Code c) {
+    return p.toLLVMPrimVoid(lm, vm, s, args, c);
   }
 
   /**
    * Generate LLVM code to execute this Tail and return a result from the right hand side of a Bind.
    */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) {
-    return p.toLLVM(tm, vm, s, args, lhs, c);
+  llvm.Code toLLVMContBind(LLVMMap lm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) {
+    return p.toLLVMPrimCont(lm, vm, s, args, lhs, c);
   }
 }

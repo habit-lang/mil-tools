@@ -136,21 +136,22 @@ public class TopDef extends Top {
   }
 
   /**
-   * Calculate a static value for this atom, or else return null if the result must be calculated at
+   * Calculate a static value for this atom, or return null if the result must be determined at
    * runtime.
    */
-  llvm.Value staticValueCalc() {
+  llvm.Value calcStaticValue() {
     return topLevel.staticValue(i);
   }
 
   /**
-   * Test to determine whether two Top values refer to the same item. Implemented using a standard
-   * double dispatch strategy.
+   * Test to determine whether two Top values refer to the same item. Implemented using double
+   * dispatch.
    */
   boolean sameTop(Top that) {
     return that.sameTopDef(topLevel, i);
   }
 
+  /** Test to determine whether this Top refers to the ith TopLhs in the given TopLevel. */
   boolean sameTopDef(TopLevel topLevel, int i) {
     return this.topLevel == topLevel && this.i == i;
   }

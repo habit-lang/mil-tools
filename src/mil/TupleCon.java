@@ -125,22 +125,22 @@ public class TupleCon extends PrimTycon {
    * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full
    * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.
    */
-  llvm.Type toLLVMCalc(Type c, TypeMap tm, int args) {
+  llvm.Type toLLVMCalc(Type c, LLVMMap lm, int args) {
     if (arity != args) {
       debug.Internal.error("TupleCon toLLVM arity mismatch");
     }
     if (arity == 0) {
       return llvm.Type.vd;
     } else if (arity == 1) {
-      return tm.toLLVM(tm.stackArg(1));
+      return lm.toLLVM(lm.stackArg(1));
     } else {
       llvm.Type[] tys = new llvm.Type[arity];
       for (int i = 0; i < arity; i++) {
-        tys[i] = tm.toLLVM(tm.stackArg(i + 1));
+        tys[i] = lm.toLLVM(lm.stackArg(i + 1));
       }
       // Define a symbolic name for this type:
       llvm.DefinedType dt = new llvm.DefinedType(new llvm.StructType(tys));
-      tm.typedef("corresponds to MIL tuple type " + c, dt);
+      lm.typedef("corresponds to MIL tuple type " + c, dt);
       return dt;
     }
   }

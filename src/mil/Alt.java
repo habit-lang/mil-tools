@@ -330,8 +330,8 @@ public class Alt {
   }
 
   /** Generate LLVM code for a Case. */
-  static llvm.Code toLLVM(
-      TypeMap tm, VarMap vm, llvm.Value v, Alt[] alts, BlockCall def, Label[] succs) {
+  static llvm.Code toLLVMCase(
+      LLVMMap lm, VarMap vm, llvm.Value v, Alt[] alts, BlockCall def, Label[] succs) {
     int nalts = alts.length;
     if (def == null) { // if there is no default, then we assume the match is exhaustive
       if (nalts == 0) {
@@ -348,7 +348,7 @@ public class Alt {
         nums[i] = new llvm.Int(alts[i].cf.getNum());
         bs[i] = succs[i].label();
       }
-      llvm.Type dt = TypeMap.tagType; // the type of the tag
+      llvm.Type dt = LLVMMap.tagType; // the type of the tag
       llvm.Local tag = vm.reg(dt); // a register to hold the tag
       llvm.Local addr = vm.reg(dt.ptr()); // a register that points to the tag
       return new llvm.CodeComment(

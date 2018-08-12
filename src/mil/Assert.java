@@ -305,7 +305,7 @@ public class Assert extends Code {
    * used to capture renamings of MIL temporaries, and succs provides the successor labels for the
    * end of the code.
    */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Label[] succs) {
-    return c.toLLVM(tm, vm, s, succs);
+  llvm.Code toLLVMCode(LLVMMap lm, VarMap vm, TempSubst s, Label[] succs) {
+    return c.toLLVMCode(lm, vm, s, succs);
   }
 }

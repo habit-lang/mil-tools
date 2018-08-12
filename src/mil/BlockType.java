@@ -195,14 +195,14 @@ public class BlockType {
   }
 
   /** Returns the LLVM type for value that is returned by a function. */
-  llvm.Type retType(TypeMap tm) {
-    return tm.toLLVM(rng);
+  llvm.Type retType(LLVMMap lm) {
+    return lm.toLLVM(rng);
   }
 
-  llvm.FunctionType toLLVM(TypeMap tm) {
-    llvm.Type rt = tm.toLLVM(rng);
+  llvm.FunctionType toLLVM(LLVMMap lm) {
+    llvm.Type rt = lm.toLLVM(rng);
     // TODO: eliminate duplicated calls to canonType in line below and in tupleToArray ...
-    llvm.Type[] tys = dom.canonType(tm).tupleToArray(tm, 0);
+    llvm.Type[] tys = dom.canonType(lm).tupleToArray(lm, 0);
     return new llvm.FunctionType(rt, tys);
   }
 }

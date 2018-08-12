@@ -46,8 +46,9 @@ class ClosureDefnCFG extends CFG {
     findSuccs();
   }
 
-  llvm.FuncDefn toLLVMFuncDefn(TypeMap tm, DefnVarMap dvm, TempSubst s) {
-    llvm.Local[] formals = k.formals(tm, dvm);
-    return toLLVM(tm, dvm, s, k.retType(tm), formals, k.toLLVM(tm, dvm, formals[0], succs));
+  llvm.FuncDefn toLLVMFuncDefn(LLVMMap lm, DefnVarMap dvm, TempSubst s) {
+    llvm.Local[] formals = k.formalsClosureDefn(lm, dvm);
+    return toLLVMBody(
+        lm, dvm, s, k.retType(lm), formals, k.toLLVMClosureDefn(lm, dvm, formals[0], succs));
   }
 }

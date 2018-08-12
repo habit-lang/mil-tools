@@ -215,24 +215,28 @@ public class ClosAlloc extends Allocator {
     return (args == null) ? Temps.add(args = k.addArgs(), vs) : vs;
   }
 
-  llvm.Value staticAlloc(TypeMap tm, llvm.Program prog, llvm.Value[] vals) {
-    vals[0] = tm.globalFor(k); // add code pointer to start of object
-    return staticAlloc(prog, vals, tm.closureLayoutType(k), k.closurePtrType(tm));
+  /**
+   * Create a reference to a statically allocated data structure corresponding to this Allocator,
+   * having already established that all of the components (if any) are statically known.
+   */
+  llvm.Value staticAlloc(LLVMMap lm, llvm.Program prog, llvm.Value[] vals) {
+    vals[0] = lm.globalFor(k); // add code pointer to start of object
+    return staticAlloc(prog, vals, lm.closureLayoutType(k), k.closurePtrType(lm));
   }
 
   /**
    * Generate LLVM code to execute this Tail and return a result from the right hand side of a Bind.
    */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) {
-    llvm.Type objt = tm.closureLayoutType(k).ptr(); // type of a pointer to a k object
+  llvm.Code toLLVMContBind(LLVMMap lm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) {
+    llvm.Type objt = lm.closureLayoutType(k).ptr(); // type of a pointer to a k object
     llvm.Local obj = vm.reg(objt); // a register to point to the new object
     return alloc(
-        tm,
+        lm,
         vm,
         s,
         objt,
         obj,
-        tm.globalFor(k),
-        new llvm.Op(lhs, new llvm.Bitcast(obj, k.closurePtrType(tm)), c));
+        lm.globalFor(k),
+        new llvm.Op(lhs, new llvm.Bitcast(obj, k.closurePtrType(lm)), c));
   }
 }

@@ -195,10 +195,10 @@ public class Return extends Call {
    * multiple results, only some of which are statically known, then the array that is returned will
    * be non-null, but will have null values in places where static values are not known.
    */
-  llvm.Value[] staticValueCalc(TypeMap tm, llvm.Program prog) {
+  llvm.Value[] calcStaticValue(LLVMMap lm, llvm.Program prog) {
     llvm.Value vals[] = null;
     for (int i = 0; i < args.length; i++) {
-      llvm.Value v = args[i].staticValueCalc();
+      llvm.Value v = args[i].calcStaticValue();
       if (v != null) {
         if (vals == null) { // lazily allocate array, knowing now that it is needed
           vals = new llvm.Value[args.length];
@@ -210,22 +210,22 @@ public class Return extends Call {
   }
 
   /** Generate LLVM code to execute this Tail in tail call position. */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Label[] succs) {
+  llvm.Code toLLVMDone(LLVMMap lm, VarMap vm, TempSubst s, Label[] succs) {
     if (args.length == 0) {
       return new llvm.RetVoid();
     } else if (args.length == 1) {
-      return new llvm.Ret(args[0].toLLVM(tm, vm, s));
+      return new llvm.Ret(args[0].toLLVMAtom(lm, vm, s));
     } else {
       llvm.Value[] vals = new llvm.Value[args.length];
       for (int i = 0; i < args.length; i++) {
-        vals[i] = args[i].toLLVM(tm, vm, s);
+        vals[i] = args[i].toLLVMAtom(lm, vm, s);
       }
-      return new llvm.Ret(new llvm.Struct(tm.toLLVM(outputs), vals));
+      return new llvm.Ret(new llvm.Struct(lm.toLLVM(outputs), vals));
     }
   }
 
   /** Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, llvm.Code c) {
+  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, llvm.Code c) {
     debug.Internal.error("A void Return should have been eliminated");
     return c; // Although this return value is actually correct for [] <- return []; c ...
   }
@@ -233,7 +233,7 @@ public class Return extends Call {
   /**
    * Generate LLVM code to execute this Tail and return a result from the right hand side of a Bind.
    */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) {
+  llvm.Code toLLVMContBind(LLVMMap lm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) {
     debug.Internal.error("Return should have been eliminated");
     return c;
   }

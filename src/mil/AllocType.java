@@ -324,19 +324,19 @@ public class AllocType {
    * Calculate a structure type describing the layout of a data value built with a specific
    * constructor.
    */
-  llvm.Type cfunLayoutTypeCalc(TypeMap tm) {
-    return structLayoutCalc(tm, TypeMap.tagType);
+  llvm.Type cfunLayoutTypeCalc(LLVMMap lm) {
+    return structLayoutCalc(lm, LLVMMap.tagType);
   }
 
   /**
    * Return the type of an allocated structure for this type that starts with a tag of the given
    * type.
    */
-  private llvm.StructType structLayoutCalc(TypeMap tm, llvm.Type tag) {
+  private llvm.StructType structLayoutCalc(LLVMMap lm, llvm.Type tag) {
     llvm.Type[] tys = new llvm.Type[1 + stored.length];
     tys[0] = tag;
     for (int i = 0; i < stored.length; i++) {
-      tys[i + 1] = tm.toLLVM(stored[i]);
+      tys[i + 1] = lm.toLLVM(stored[i]);
     }
     return new llvm.StructType(tys);
   }
@@ -344,7 +344,7 @@ public class AllocType {
   /**
    * Calculate the type of a structure describing the layout of a closure for a specific definition.
    */
-  llvm.Type closureLayoutTypeCalc(TypeMap tm) {
-    return structLayoutCalc(tm, tm.codePtrType(result));
+  llvm.Type closureLayoutTypeCalc(LLVMMap lm) {
+    return structLayoutCalc(lm, lm.codePtrType(result));
   }
 }

@@ -450,20 +450,20 @@ public class BlockCall extends Call {
   }
 
   /** Generate LLVM code to execute this Tail in tail call position. */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Label[] succs) {
+  llvm.Code toLLVMDone(LLVMMap lm, VarMap vm, TempSubst s, Label[] succs) {
     return new llvm.Goto(succs[0].label());
   }
 
   /** Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, llvm.Code c) {
-    return new llvm.CallVoid(tm.globalFor(b), Atom.toLLVM(tm, vm, s, args), c);
+  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, llvm.Code c) {
+    return new llvm.CallVoid(lm.globalFor(b), Atom.toLLVMValues(lm, vm, s, args), c);
   }
 
   /**
    * Generate LLVM code to execute this Tail and return a result from the right hand side of a Bind.
    */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) {
+  llvm.Code toLLVMContBind(LLVMMap lm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) {
     return new llvm.Op(
-        lhs, new llvm.Call(lhs.getType(), tm.globalFor(b), Atom.toLLVM(tm, vm, s, args)), c);
+        lhs, new llvm.Call(lhs.getType(), lm.globalFor(b), Atom.toLLVMValues(lm, vm, s, args)), c);
   }
 }

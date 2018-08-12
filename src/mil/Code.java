@@ -380,5 +380,5 @@ public abstract class Code {
    * used to capture renamings of MIL temporaries, and succs provides the successor labels for the
    * end of the code.
    */
-  abstract llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Label[] succs);
+  abstract llvm.Code toLLVMCode(LLVMMap lm, VarMap vm, TempSubst s, Label[] succs);
 }

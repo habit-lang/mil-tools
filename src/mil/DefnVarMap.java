@@ -30,6 +30,29 @@ import core.*;
  */
 class DefnVarMap extends VarMap {
 
+  /**
+   * Represents a list of values to be loaded from global variables at the start of an LLVM
+   * function.
+   */
+  private static class GlobalLoadList {
+
+    Top t;
+
+    llvm.Local v;
+
+    llvm.Global g;
+
+    GlobalLoadList next;
+
+    /** Default constructor. */
+    private GlobalLoadList(Top t, llvm.Local v, llvm.Global g, GlobalLoadList next) {
+      this.t = t;
+      this.v = v;
+      this.g = g;
+      this.next = next;
+    }
+  }
+
   private GlobalLoadList globalLoads = null;
 
   /**
@@ -37,18 +60,19 @@ class DefnVarMap extends VarMap {
    * a new LLVM local if necessary and add it to the globalLoads list so that it will properly
    * initialized at the start of the LLVM function.
    */
-  llvm.Value lookupGlobal(TypeMap tm, Top t) {
+  llvm.Value lookupGlobal(LLVMMap lm, Top t) {
     llvm.Value sv = t.staticValue();
-    if (sv != null) {
+    if (sv != null) { // Use a static value if possible
       return sv;
     }
     for (GlobalLoadList gs = globalLoads; gs != null; gs = gs.next) {
-      if (t.sameTop(gs.t)) {
+      if (t.sameTop(gs.t)) { // Or test to see if this item was already loaded
         return gs.v;
       }
     }
-    llvm.Type gt = tm.toLLVM(t.getType());
-    llvm.Global g = new llvm.Global(gt.ptr(), t.toString());
+    llvm.Type gt =
+        lm.toLLVM(t.getType()); // Otherwise, we need to load value at the start of the function
+    llvm.Global g = new llvm.Global(gt.ptr(), t.getId());
     llvm.Local v = reg(gt);
     globalLoads = new GlobalLoadList(t, v, g, globalLoads);
     return v;

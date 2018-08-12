@@ -47,7 +47,7 @@ public abstract class PrimUnOp extends Prim {
    * is not expected to produce any results, but execution is expected to continue with the given
    * code.
    */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
+  llvm.Code toLLVMPrimVoid(LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
     debug.Internal.error(id + " is not a void primitive");
     return c;
   }

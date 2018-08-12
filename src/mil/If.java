@@ -340,7 +340,7 @@ public class If extends Code {
    * used to capture renamings of MIL temporaries, and succs provides the successor labels for the
    * end of the code.
    */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Label[] succs) {
-    return new llvm.Cond(a.toLLVM(tm, vm, s), succs[0].label(), succs[1].label());
+  llvm.Code toLLVMCode(LLVMMap lm, VarMap vm, TempSubst s, Label[] succs) {
+    return new llvm.Cond(a.toLLVMAtom(lm, vm, s), succs[0].label(), succs[1].label());
   }
 }

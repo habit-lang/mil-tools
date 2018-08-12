@@ -22,10 +22,33 @@ import compiler.*;
 import core.*;
 
 /**
- * InitVarMap is a variant of VarMap that is intended to be used when generating code for an
+ * InitVarMap is a variant of VarMap that is intended to be used when generating code for the
  * initialization function that is run when the program is first executed.
  */
 class InitVarMap extends VarMap {
+
+  /**
+   * Represents a list of values to be loaded from global variables at the start of the generated
+   * LLVM initialization function.
+   */
+  private static class GlobalInitList {
+
+    TopLevel topLevel;
+
+    int i;
+
+    llvm.Local v;
+
+    GlobalInitList next;
+
+    /** Default constructor. */
+    private GlobalInitList(TopLevel topLevel, int i, llvm.Local v, GlobalInitList next) {
+      this.topLevel = topLevel;
+      this.i = i;
+      this.v = v;
+      this.next = next;
+    }
+  }
 
   private GlobalInitList globalInits = null;
 
@@ -34,7 +57,7 @@ class InitVarMap extends VarMap {
    * remaining mappings from a globalInits list that is built up by calls to mapGlobal as initial
    * values are calculated.
    */
-  llvm.Value lookupGlobal(TypeMap tm, Top t) {
+  llvm.Value lookupGlobal(LLVMMap lm, Top t) {
     llvm.Value sv = t.staticValue();
     if (sv != null) {
       return sv;

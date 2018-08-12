@@ -279,7 +279,7 @@ public class Sel extends Tail {
   }
 
   /** Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, llvm.Code c) {
+  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, llvm.Code c) {
     debug.Internal.error("Sel does not return void");
     return c;
   }
@@ -287,14 +287,15 @@ public class Sel extends Tail {
   /**
    * Generate LLVM code to execute this Tail and return a result from the right hand side of a Bind.
    */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) { // cf n a
-    llvm.Type objt = tm.cfunLayoutType(this.cf).ptr();
+  llvm.Code toLLVMContBind(
+      LLVMMap lm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) { // cf n a
+    llvm.Type objt = lm.cfunLayoutType(this.cf).ptr();
     llvm.Local base = vm.reg(objt); // register to hold a pointer to a structure for cfun this.cf
     llvm.Local addr =
         vm.reg(lhs.getType()); // register to hold pointer to the nth component of this.c
     return new llvm.Op(
         base,
-        new llvm.Bitcast(a.toLLVM(tm, vm, s), objt), // TODO: fix this type!
+        new llvm.Bitcast(a.toLLVMAtom(lm, vm, s), objt),
         new llvm.Op(
             addr,
             new llvm.Getelementptr(base, llvm.Int.ZERO, new llvm.Int(n + 1)),

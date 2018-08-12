@@ -99,15 +99,15 @@ public class IntConst extends Const {
   }
 
   /**
-   * Calculate a static value for this atom, or else return null if the result must be calculated at
+   * Calculate a static value for this atom, or return null if the result must be determined at
    * runtime.
    */
-  llvm.Value staticValueCalc() {
+  llvm.Value calcStaticValue() {
     return new llvm.Int(val);
   }
 
   /** Calculate an LLVM Value corresponding to a given MIL argument. */
-  llvm.Value toLLVM(TypeMap tm, VarMap vm) {
+  llvm.Value toLLVMAtom(LLVMMap lm, VarMap vm) {
     return new llvm.Int(val);
   }
 }

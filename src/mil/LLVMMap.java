@@ -22,12 +22,12 @@ import compiler.*;
 import core.*;
 import java.util.HashMap;
 
-class TypeMap extends TypeSet {
+class LLVMMap extends TypeSet {
 
   private llvm.Program prog;
 
   /** Default constructor. */
-  TypeMap(llvm.Program prog) {
+  LLVMMap(llvm.Program prog) {
     this.prog = prog;
 
     // Create some basic mappings
@@ -36,7 +36,7 @@ class TypeMap extends TypeSet {
     typeMap.put(DataName.flag.asType(), llvm.Type.i1);
   }
 
-  /** Add a type definition to the program associated with this TypeMap. */
+  /** Add a type definition to the program associated with this LLVMMap. */
   void typedef(llvm.DefinedType dt) {
     prog.add(new llvm.Typedef(dt));
   }
@@ -45,7 +45,7 @@ class TypeMap extends TypeSet {
     prog.add(new llvm.DefnComment(comment, new llvm.Typedef(dt)));
   }
 
-  /** Add a declaration for a primitive function to the program associated with this TypeMap. */
+  /** Add a declaration for a primitive function to the program associated with this LLVMMap. */
   void declare(String name, llvm.FunctionType ftype) {
     prog.add(new llvm.FuncDecl(name, ftype));
   }
@@ -123,6 +123,10 @@ class TypeMap extends TypeSet {
 
   private HashMap<Block, llvm.Global> blockGlobalMap = new HashMap();
 
+  /**
+   * Look for a global reference for the given definition in this LLVMMap, adding a new entry if
+   * required.
+   */
   llvm.Global globalFor(Block d) {
     llvm.Global g = blockGlobalMap.get(d);
     if (g == null) {
@@ -133,6 +137,10 @@ class TypeMap extends TypeSet {
 
   private HashMap<ClosureDefn, llvm.Global> closureGlobalMap = new HashMap();
 
+  /**
+   * Look for a global reference for the given definition in this LLVMMap, adding a new entry if
+   * required.
+   */
   llvm.Global globalFor(ClosureDefn d) {
     llvm.Global g = closureGlobalMap.get(d);
     if (g == null) {
@@ -143,6 +151,10 @@ class TypeMap extends TypeSet {
 
   private HashMap<Prim, llvm.Global> primGlobalMap = new HashMap();
 
+  /**
+   * Look for a global reference for the given definition in this LLVMMap, adding a new entry if
+   * required.
+   */
   llvm.Global globalFor(Prim d) {
     llvm.Global g = primGlobalMap.get(d);
     if (g == null) {

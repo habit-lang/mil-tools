@@ -105,7 +105,7 @@ public class BitConst extends Const {
   }
 
   /** Calculate an LLVM Value corresponding to a given MIL argument. */
-  llvm.Value toLLVM(TypeMap tm, VarMap vm) {
+  llvm.Value toLLVMAtom(LLVMMap lm, VarMap vm) {
     return new llvm.Int(val.intValue());
   }
 }

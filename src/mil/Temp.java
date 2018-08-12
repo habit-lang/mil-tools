@@ -386,17 +386,17 @@ public class Temp extends Atom {
     return ys;
   }
 
+  /** Find the LLVM type for this Temp value. */
+  llvm.Type lookupType(LLVMMap lm) {
+    return lm.toLLVM(type);
+  }
+
   Temp newParam() {
     return new Temp(this.type);
   }
 
-  /** Find the LLVM type for this Temp value. */
-  llvm.Type lookupType(TypeMap tm) {
-    return tm.toLLVM(type);
-  }
-
   /** Calculate an LLVM Value corresponding to a given MIL argument. */
-  llvm.Value toLLVM(TypeMap tm, VarMap vm) {
-    return vm.lookup(tm, this);
+  llvm.Value toLLVMAtom(LLVMMap lm, VarMap vm) {
+    return vm.lookup(lm, this);
   }
 }

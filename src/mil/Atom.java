@@ -443,18 +443,18 @@ public abstract class Atom {
   }
 
   /**
-   * Calculate a static value for this atom, or else return null if the result must be calculated at
+   * Calculate a static value for this atom, or return null if the result must be determined at
    * runtime.
    */
-  llvm.Value staticValueCalc() {
+  llvm.Value calcStaticValue() {
     return null;
   }
 
   /** Calculate a sequence of LLVM values corresponding to an array of MIL arguments. */
-  static llvm.Value[] toLLVM(TypeMap tm, VarMap vm, TempSubst s, Atom[] args) {
+  static llvm.Value[] toLLVMValues(LLVMMap lm, VarMap vm, TempSubst s, Atom[] args) {
     llvm.Value[] vals = new llvm.Value[args.length];
     for (int i = 0; i < args.length; i++) {
-      vals[i] = args[i].toLLVM(tm, vm, s);
+      vals[i] = args[i].toLLVMAtom(lm, vm, s);
     }
     return vals;
   }
@@ -463,10 +463,10 @@ public abstract class Atom {
    * Calculate an LLVM Value corresponding to a given MIL argument, prior to having applied the
    * given substitution.
    */
-  llvm.Value toLLVM(TypeMap tm, VarMap vm, TempSubst s) {
-    return this.apply(s).toLLVM(tm, vm);
+  llvm.Value toLLVMAtom(LLVMMap lm, VarMap vm, TempSubst s) {
+    return this.apply(s).toLLVMAtom(lm, vm);
   }
 
   /** Calculate an LLVM Value corresponding to a given MIL argument. */
-  abstract llvm.Value toLLVM(TypeMap tm, VarMap vm);
+  abstract llvm.Value toLLVMAtom(LLVMMap lm, VarMap vm);
 }

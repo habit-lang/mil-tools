@@ -252,27 +252,27 @@ public class Enter extends Call {
   }
 
   /** Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, llvm.Code c) {
-    llvm.Value[] acts = closureActuals(tm, vm, s); // actual parameters
-    llvm.Local cptr = vm.reg(tm.toLLVM(ftype)); // a register to hold the code pointer
+  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, llvm.Code c) {
+    llvm.Value[] acts = closureActuals(lm, vm, s); // actual parameters
+    llvm.Local cptr = vm.reg(lm.toLLVM(ftype)); // a register to hold the code pointer
     return enterCode(vm, acts[0], cptr, new llvm.CallVoid(cptr, acts, c));
   }
 
   /**
    * Generate LLVM code to execute this Tail and return a result from the right hand side of a Bind.
    */
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) {
-    llvm.Value[] acts = closureActuals(tm, vm, s); // actual parameters
-    llvm.Local cptr = vm.reg(tm.codePtrType(ftype)); // a register to hold the code pointer
+  llvm.Code toLLVMContBind(LLVMMap lm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) {
+    llvm.Value[] acts = closureActuals(lm, vm, s); // actual parameters
+    llvm.Local cptr = vm.reg(lm.codePtrType(ftype)); // a register to hold the code pointer
     return enterCode(
-        vm, acts[0], cptr, new llvm.Op(lhs, new llvm.Call(ftype.retType(tm), cptr, acts), c));
+        vm, acts[0], cptr, new llvm.Op(lhs, new llvm.Call(ftype.retType(lm), cptr, acts), c));
   }
 
-  llvm.Value[] closureActuals(TypeMap tm, VarMap vm, TempSubst s) {
+  llvm.Value[] closureActuals(LLVMMap lm, VarMap vm, TempSubst s) {
     llvm.Value[] acts = new llvm.Value[1 + args.length]; // make the argument list
-    acts[0] = f.toLLVM(tm, vm, s); // a pointer to the closure for f as an llvm value
+    acts[0] = f.toLLVMAtom(lm, vm, s); // a pointer to the closure for f as an llvm value
     for (int i = 0; i < args.length; i++) { // with llvm values for each of the function arguments
-      acts[i + 1] = args[i].toLLVM(tm, vm, s);
+      acts[i + 1] = args[i].toLLVMAtom(lm, vm, s);
     }
     return acts;
   }

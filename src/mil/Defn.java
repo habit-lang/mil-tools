@@ -458,6 +458,16 @@ public abstract class Defn {
    */
   abstract Temp[] addArgs() throws Failure;
 
+  /** Calculate a staticValue (which could be null) for each top level definition. */
+  void calcStaticValues(LLVMMap lm, llvm.Program prog) {
+    /* Nothing to do */
+  }
+
+  /** Reset the static value field for this definition. */
+  void resetStaticValues() {
+    /* Nothing to do */
+  }
+
   public int getNumberCalls() {
     return 0;
   }
@@ -495,24 +505,11 @@ public abstract class Defn {
     return null;
   }
 
-  /** Calculate a staticValue (which could be null) for each top level definition. */
-  void calcStaticValues(TypeMap tm, llvm.Program prog) {
-    /* Nothing to do */
-  }
-
-  /**
-   * Reset the static value field and return true if this is a toplevel definition, or return false
-   * for any other form of definition.
-   */
-  boolean resetStaticValues() {
-    return false;
-  }
-
   /**
    * Generate code (in reverse) to initialize each TopLevel (unless all of the components are
    * statically known). TODO: what if a TopLevel has an empty array of Lhs?
    */
-  llvm.Code addRevInitCode(TypeMap tm, InitVarMap ivm, llvm.Code code) {
+  llvm.Code addRevInitCode(LLVMMap lm, InitVarMap ivm, llvm.Code code) {
     return code;
   }
 }

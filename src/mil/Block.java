@@ -1040,8 +1040,12 @@ public class Block extends Defn {
   }
 
   /** Returns the LLVM type for value that is returned by a function. */
-  llvm.Type retType(TypeMap tm) {
-    return declared.retType(tm);
+  llvm.Type retType(LLVMMap lm) {
+    return declared.retType(lm);
+  }
+
+  llvm.Global blockGlobalCalc(LLVMMap lm) {
+    return new llvm.Global(declared.toLLVM(lm), label());
   }
 
   int numberCalls;
@@ -1127,15 +1131,15 @@ public class Block extends Defn {
     return TempSubst.extend(params, TempSubst.apply(args, s), s);
   }
 
-  llvm.Code toLLVM(TypeMap tm, VarMap vm, TempSubst s, Label[] succs) {
-    return code.toLLVM(tm, vm, s, succs);
+  /**
+   * Generate LLVM code for this Block suitable for use as a labeled block inside a function
+   * definition.
+   */
+  llvm.Code toLLVMBlock(LLVMMap lm, VarMap vm, TempSubst s, Label[] succs) {
+    return code.toLLVMCode(lm, vm, s, succs);
   }
 
   Temp[] getParams() {
     return params;
-  }
-
-  llvm.Global blockGlobalCalc(TypeMap tm) {
-    return new llvm.Global(declared.toLLVM(tm), label());
   }
 }
