@@ -536,6 +536,8 @@ public class TopLevel extends TopDefn {
     for (int i = 0; i < lhs.length; i++) {
       if (staticValue == null || staticValue[i] == null) {
         prog.add(lhs[i].globalVarDefn(lm));
+      } else if (isEntrypoint) {
+        prog.add(lhs[i].globalVarDefn(lm, staticValue[i]));
       }
     }
   }
