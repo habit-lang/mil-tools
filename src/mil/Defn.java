@@ -40,6 +40,20 @@ public abstract class Defn {
 
   public abstract String toString();
 
+  /**
+   * Track whether this definition is considered an entrypoint to the program; it may be necessary
+   * to consider this information during program optimization (e.g., the definition of an entrypoint
+   * should not be modified in a way that changes its external interface, such as by deleting unused
+   * parameters), or during code generation (where entrypoints may need to be marked in a different
+   * way from parts of the code that are intended only for internal use).
+   */
+  protected boolean isEntrypoint = false;
+
+  /** Set the flag to indicate whether this definition is considered to be an entrypoint. */
+  public void isEntrypoint(boolean b) {
+    isEntrypoint = b;
+  }
+
   /** Records the successors/callees of this node. */
   private Defns callees = null;
 
@@ -201,16 +215,16 @@ public abstract class Defn {
     // !   out.print(" " + ds.head.getId());
     // ! }
     // ! out.println(";");
-    displayDefn(out);
+    displayDefn(out, isEntrypoint);
   }
 
   public void displayDefn() {
     PrintWriter out = new PrintWriter(System.out);
-    displayDefn(out);
+    displayDefn(out, isEntrypoint);
     out.flush();
   }
 
-  abstract void displayDefn(PrintWriter out);
+  abstract void displayDefn(PrintWriter out, boolean isEntrypoint);
 
   void limitRecursion() throws Failure {
     /* do nothing */

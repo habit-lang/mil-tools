@@ -91,8 +91,11 @@ public class ClosureDefn extends Defn {
     return "style=filled, fillcolor=salmon";
   }
 
-  void displayDefn(PrintWriter out) {
+  void displayDefn(PrintWriter out, boolean isEntrypoint) {
     if (declared != null) {
+      if (isEntrypoint) {
+        out.print("export ");
+      }
       out.println(id + " :: " + declared);
     }
 
@@ -353,23 +356,27 @@ public class ClosureDefn extends Defn {
    * arguments are used.
    */
   int countUnusedArgs(Temp[] dst) {
-    int unused = dst.length - numUsedArgs; // count # of unused args
-    if (unused > 0) { // skip if no unused args
-      usedVars = usedVars(); // find vars used in body
-      for (int i = 0; i < dst.length; i++) { // scan argument list
-        if (usedArgs == null || !usedArgs[i]) { // skip if already known to be used
-          if (dst[i].isIn(usedVars) && !duplicated(i, dst)) {
-            if (usedArgs == null) { // initialize usedArgs for first use
-              usedArgs = new boolean[dst.length];
+    if (isEntrypoint) { // treat all arguments of entrypoints as used
+      return 0;
+    } else {
+      int unused = dst.length - numUsedArgs; // count # of unused args
+      if (unused > 0) { // skip if no unused args
+        usedVars = usedVars(); // find vars used in body
+        for (int i = 0; i < dst.length; i++) { // scan argument list
+          if (usedArgs == null || !usedArgs[i]) { // skip if already known to be used
+            if (dst[i].isIn(usedVars) && !duplicated(i, dst)) {
+              if (usedArgs == null) { // initialize usedArgs for first use
+                usedArgs = new boolean[dst.length];
+              }
+              usedArgs[i] = true; // mark this argument as used
+              numUsedArgs++; // update counts
+              unused--;
             }
-            usedArgs[i] = true; // mark this argument as used
-            numUsedArgs++; // update counts
-            unused--;
           }
         }
       }
+      return unused;
     }
-    return unused;
   }
 
   private Temps usedVars;
@@ -674,7 +681,7 @@ public class ClosureDefn extends Defn {
 
   /** Return a string label that can be used to identify this node. */
   String label() {
-    return "clos_" + id;
+    return isEntrypoint ? id : ("clos_" + id);
   }
 
   CFG makeCFG() {

@@ -37,6 +37,7 @@ public class MILProgram {
     // !System.out.println("Adding entry for " + defn.getId());
     if (!Defns.isIn(defn, entries)) {
       entries = new Defns(defn, entries);
+      defn.isEntrypoint(true);
     }
   }
 
@@ -123,6 +124,12 @@ public class MILProgram {
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       dsccs.head.dump(out);
     }
+    out.println("-----------------------------------------");
+    out.print("-- Entrypoints:");
+    for (Defns es = entries; es != null; es = es.next) {
+      out.print(" " + es.head);
+    }
+    out.println();
   }
 
   /** Add a special block for aborting the program. TODO: where do we set a type for this block? */

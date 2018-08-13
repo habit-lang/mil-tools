@@ -114,9 +114,9 @@ public class TopLevel extends TopDefn {
     return tail.dependencies(null);
   }
 
-  void displayDefn(PrintWriter out) {
+  void displayDefn(PrintWriter out, boolean isEntrypoint) {
     for (int i = 0; i < lhs.length; i++) {
-      lhs[i].displayDefn(out);
+      lhs[i].displayDefn(out, isEntrypoint);
     }
     out.print(toString());
     out.print(" <-");

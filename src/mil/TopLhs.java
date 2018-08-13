@@ -59,8 +59,11 @@ class TopLhs {
     return id;
   }
 
-  void displayDefn(PrintWriter out) {
+  void displayDefn(PrintWriter out, boolean isEntrypoint) {
     if (declared != null) {
+      if (isEntrypoint) {
+        out.print("export ");
+      }
       out.println(id + " :: " + declared);
     }
   }
