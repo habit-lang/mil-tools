@@ -369,16 +369,8 @@ public class TopLevel extends TopDefn {
     return declared.alphaEquiv(inst) ? this : null;
   }
 
-  TopLevel(TopLevel t) {
-    this(t.pos, t.makeLhs(t.lhs.length), null);
-  }
-
-  private TopLhs[] makeLhs(int n) {
-    TopLhs[] lhs = new TopLhs[n];
-    for (int i = 0; i < n; i++) {
-      lhs[i] = new TopLhs();
-    }
-    return lhs;
+  TopLevel(TopLevel t, int num) {
+    this(t.pos, TopLhs.makeLhs(t.lhs, num), null);
   }
 
   /** Fill in the body of this TopLevel as a specialized version of the given TopLevel. */
@@ -415,7 +407,7 @@ public class TopLevel extends TopDefn {
   /**
    * Generate a specialized version of an entry point. This requires a monomorphic definition (to
    * ensure that the required specialization is uniquely determined, and to allow the specialized
-   * version to share the same name as the original.
+   * version to share the same name as the original).
    */
   Defn specializeEntry(MILSpec spec) throws Failure {
     if (declared.isQuantified()) {
@@ -459,8 +451,9 @@ public class TopLevel extends TopDefn {
         } else {
           if (reps[i].length > 0) {
             Type[] ts = reps[i];
+            String tid = lhs[i].getId();
             for (int k = 0; k < ts.length; k++) {
-              nlhs[j] = new TopLhs();
+              nlhs[j] = new TopLhs(mkid(tid, k));
               nlhs[j++].setDeclared(ts[k]);
             }
           }

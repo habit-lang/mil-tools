@@ -940,8 +940,8 @@ public class Block extends Defn {
     return declared.alphaEquiv(inst) ? this : null;
   }
 
-  Block(Block b) {
-    this(b.pos, null);
+  Block(Block b, int num) {
+    this(b.pos, mkid(b.id, num), null, null);
   }
 
   /** Fill in the body of this definition as a specialized version of the given block. */
@@ -968,7 +968,7 @@ public class Block extends Defn {
   /**
    * Generate a specialized version of an entry point. This requires a monomorphic definition (to
    * ensure that the required specialization is uniquely determined, and to allow the specialized
-   * version to share the same name as the original.
+   * version to share the same name as the original).
    */
   Defn specializeEntry(MILSpec spec) throws Failure {
     if (declared.isQuantified()) {

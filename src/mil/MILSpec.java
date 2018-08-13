@@ -105,6 +105,7 @@ public class MILSpec extends TypeSet {
     debug.Log.println("Requesting specialization of " + d + " :: " + inst);
     // Get the list of previous specializations:
     Defns specs = specialized.get(d);
+    int num = 0; // count number of existing specializations
 
     // Search previous specializations for a matching type:
     for (Defns ds = specs; ds != null; ds = ds.next) {
@@ -112,11 +113,12 @@ public class MILSpec extends TypeSet {
       if (prev != null) {
         return prev;
       }
+      num++;
     }
 
     // Create a new item, insert in specialized table, and add a request to complete the definition
     // later:
-    Block newDefn = new Block(d);
+    Block newDefn = new Block(d, num);
     newDefn.setDeclared(inst);
     specialized.put(d, new Defns(newDefn, specs));
     requested = new SpecReqs(new SpecBlock(d, newDefn), requested);
@@ -128,6 +130,7 @@ public class MILSpec extends TypeSet {
     debug.Log.println("Requesting specialization of " + d + " :: " + inst);
     // Get the list of previous specializations:
     Defns specs = specialized.get(d);
+    int num = 0; // count number of existing specializations
 
     // Search previous specializations for a matching type:
     for (Defns ds = specs; ds != null; ds = ds.next) {
@@ -135,11 +138,12 @@ public class MILSpec extends TypeSet {
       if (prev != null) {
         return prev;
       }
+      num++;
     }
 
     // Create a new item, insert in specialized table, and add a request to complete the definition
     // later:
-    ClosureDefn newDefn = new ClosureDefn(d);
+    ClosureDefn newDefn = new ClosureDefn(d, num);
     newDefn.setDeclared(inst);
     specialized.put(d, new Defns(newDefn, specs));
     requested = new SpecReqs(new SpecClosureDefn(d, newDefn), requested);
@@ -151,6 +155,7 @@ public class MILSpec extends TypeSet {
     debug.Log.println("Requesting specialization of " + d + " :: " + inst);
     // Get the list of previous specializations:
     Defns specs = specialized.get(d);
+    int num = 0; // count number of existing specializations
 
     // Search previous specializations for a matching type:
     for (Defns ds = specs; ds != null; ds = ds.next) {
@@ -158,11 +163,12 @@ public class MILSpec extends TypeSet {
       if (prev != null) {
         return prev;
       }
+      num++;
     }
 
     // Create a new item, insert in specialized table, and add a request to complete the definition
     // later:
-    TopLevel newDefn = new TopLevel(d);
+    TopLevel newDefn = new TopLevel(d, num);
     newDefn.setDeclared(inst);
     specialized.put(d, new Defns(newDefn, specs));
     requested = new SpecReqs(new SpecTopLevel(d, newDefn), requested);
@@ -174,6 +180,7 @@ public class MILSpec extends TypeSet {
     debug.Log.println("Requesting specialization of " + d + " :: " + inst);
     // Get the list of previous specializations:
     Defns specs = specialized.get(d);
+    int num = 0; // count number of existing specializations
 
     // Search previous specializations for a matching type:
     for (Defns ds = specs; ds != null; ds = ds.next) {
@@ -181,11 +188,12 @@ public class MILSpec extends TypeSet {
       if (prev != null) {
         return prev;
       }
+      num++;
     }
 
     // Create a new item, insert in specialized table, and add a request to complete the definition
     // later:
-    External newDefn = new External(d);
+    External newDefn = new External(d, num);
     newDefn.setDeclared(inst);
     specialized.put(d, new Defns(newDefn, specs));
     requested = new SpecReqs(new SpecExternal(d, newDefn), requested);

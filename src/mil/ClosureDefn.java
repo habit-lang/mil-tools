@@ -535,8 +535,8 @@ public class ClosureDefn extends Defn {
     return declared.alphaEquiv(inst) ? this : null;
   }
 
-  ClosureDefn(ClosureDefn k) {
-    this(k.pos, null, null);
+  ClosureDefn(ClosureDefn k, int num) {
+    this(k.pos, mkid(k.id, num), null, null, null);
   }
 
   /**
@@ -566,7 +566,7 @@ public class ClosureDefn extends Defn {
   /**
    * Generate a specialized version of an entry point. This requires a monomorphic definition (to
    * ensure that the required specialization is uniquely determined, and to allow the specialized
-   * version to share the same name as the original.
+   * version to share the same name as the original).
    */
   Defn specializeEntry(MILSpec spec) throws Failure {
     if (declared.isQuantified()) {

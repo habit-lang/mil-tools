@@ -126,6 +126,18 @@ class TopLhs {
     out.println(id + " :: " + declared);
   }
 
+  static TopLhs[] makeLhs(TopLhs[] lhs, int n) {
+    if (n == 0 && lhs.length == 1) {
+      return new TopLhs[] {new TopLhs(lhs[0].id)};
+    } else {
+      TopLhs[] nlhs = new TopLhs[lhs.length];
+      for (int i = 0; i < lhs.length; i++) {
+        nlhs[i] = new TopLhs();
+      }
+      return nlhs;
+    }
+  }
+
   /** Set the type of this specialized TopLhs to the appropriate instance of the defining type. */
   void specialize(TopLhs lorig, TVarSubst s) {
     this.declared = lorig.defining.apply(s);

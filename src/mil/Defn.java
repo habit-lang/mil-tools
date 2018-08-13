@@ -429,10 +429,14 @@ public abstract class Defn {
     return null;
   }
 
+  protected static String mkid(String id, int num) {
+    return (num == 0) ? id : (id + num);
+  }
+
   /**
    * Generate a specialized version of an entry point. This requires a monomorphic definition (to
    * ensure that the required specialization is uniquely determined, and to allow the specialized
-   * version to share the same name as the original.
+   * version to share the same name as the original).
    */
   abstract Defn specializeEntry(MILSpec spec) throws Failure;
 

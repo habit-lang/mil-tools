@@ -209,8 +209,8 @@ public class External extends TopDefn {
     return declared.alphaEquiv(inst) ? this : null;
   }
 
-  External(External e) {
-    this(e.pos, e.declared, e.ref, e.ts);
+  External(External e, int num) {
+    this(e.pos, mkid(e.id, num), e.declared, e.ref, e.ts);
   }
 
   /** Handle specialization of Externals */
@@ -236,7 +236,7 @@ public class External extends TopDefn {
   /**
    * Generate a specialized version of an entry point. This requires a monomorphic definition (to
    * ensure that the required specialization is uniquely determined, and to allow the specialized
-   * version to share the same name as the original.
+   * version to share the same name as the original).
    */
   Defn specializeEntry(MILSpec spec) throws Failure {
     throw new ExternalAsEntrypoint(this);
@@ -269,12 +269,12 @@ public class External extends TopDefn {
     } else { // Generator has produced an implementation for this external
       TopLhs[] lhs; // Create a left hand side for the new top level definition
       if (r == null) { // no change in type representation:
-        lhs = new TopLhs[] {new TopLhs()};
+        lhs = new TopLhs[] {new TopLhs(id)};
         lhs[0].setDeclared(declared);
       } else {
         lhs = new TopLhs[r.length];
         for (int i = 0; i < r.length; i++) {
-          lhs[i] = new TopLhs();
+          lhs[i] = new TopLhs(mkid(id, i));
           lhs[i].setDeclared(r[i]);
         }
       }
