@@ -804,9 +804,8 @@ public abstract class Type extends Scheme {
   }
 
   /**
-   * Worker function for funcFromTuple(). Tests to determine if this skeleton is an application of
-   * (->>) to a tuple of types, returning either the tuple components in an array or null if there
-   * is no match.
+   * Test to determine if this skeleton is an application of (->>) to a tuple of types, returning
+   * either the tuple components in an array or null if there is no match.
    */
   Type[] funcFromTuple1() {
     return null;
@@ -824,6 +823,33 @@ public abstract class Type extends Scheme {
    * this argument.
    */
   Type[] tupleComponents(int n) {
+    return null;
+  }
+
+  /**
+   * Generate code for the specified Block that takes at least the arguments us++vs, and will
+   * require a call to f @ vs.
+   */
+  Code liftToCode(Block b, Temp[] us, Atom f, Temp[] vs) {
+    Type[] rs = tupleComponents(0); // Test to see if the range is a tuple
+    if (rs != null && rs.length == 1) {
+      Code c = rs[0].liftToCode0(b, us, f, vs);
+      if (c != null) {
+        return c;
+      }
+    }
+    // At this point, we know that range does not match [[d1...] ->> r], so we have found all of the
+    // required parameters:
+    b.setParams(Temp.append(us, vs));
+    return new Done(new Enter(f, vs));
+  }
+
+  /**
+   * Helper function for liftToCode, used in the case where the receiver is the only component (in
+   * position 0, explaining the name of this method) in a tuple type that is known to be the range
+   * of a ->> function.
+   */
+  Code liftToCode0(Block b, Temp[] us, Atom f, Temp[] vs) {
     return null;
   }
 

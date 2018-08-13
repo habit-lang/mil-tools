@@ -422,6 +422,17 @@ public class MILProgram {
     }
   }
 
+  /**
+   * Replace any MIL entrypoints in this program that have (possibly curried) function types
+   * involving at least one use of (->>) with a block that implements the same function as an
+   * uncurried block.
+   */
+  void makeEntryBlocks() {
+    for (Defns es = entries; es != null; es = es.next) {
+      es.head = es.head.makeEntryBlock();
+    }
+  }
+
   public RepTypeSet repTransform(Handler handler) throws Failure {
     RepTypeSet set = new RepTypeSet();
     collect(set);
@@ -436,6 +447,7 @@ public class MILProgram {
         ds.head.repTransform(handler, set);
       }
     }
+    makeEntryBlocks();
     return set;
   }
 

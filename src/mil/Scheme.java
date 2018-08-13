@@ -106,4 +106,16 @@ public abstract class Scheme {
   Tail generatePrim(Position pos, String id) {
     return null;
   }
+
+  /**
+   * Generate a block whose code implements an uncurried version of the TopLevel f, whose type is
+   * the receiver. For this operation to succeed, the declared type must be a monomorphic type
+   * matching the grammar: et ::= [d1,...dm] ->> [et] | [d1,...dm] ->> t where di, t are types and
+   * we apply the first production as many times as possible. For example, if the declared type is
+   * [[X,Y] ->> [[Z] ->> [R]]], then the generated block will have type [X,Y,Z] >>= [R] and body
+   * b[x,y,z] = t <- f @ [x,y]; t @ [z].
+   */
+  Block liftToBlock0(Position pos, String id, TopLevel f) {
+    return null;
+  }
 }

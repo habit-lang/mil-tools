@@ -988,6 +988,10 @@ public class Block extends Defn {
     code = code.bitdataRewrite(m);
   }
 
+  void setParams(Temp[] params) {
+    this.params = params;
+  }
+
   /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {
     Temp[][] npss = Temp.reps(params); // analyze params

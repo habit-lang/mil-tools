@@ -380,9 +380,8 @@ public class TTycon extends TConst {
   }
 
   /**
-   * Worker function for funcFromTuple(). Tests to determine if this skeleton is an application of
-   * (->>) to a tuple of types, returning either the tuple components in an array or null if there
-   * is no match.
+   * Test to determine if this skeleton is an application of (->>) to a tuple of types, returning
+   * either the tuple components in an array or null if there is no match.
    */
   Type[] funcFromTuple1() {
     Synonym s = name.isSynonym();
@@ -404,6 +403,29 @@ public class TTycon extends TConst {
   Type[] tupleComponents(int n) {
     Synonym s = name.isSynonym();
     return (s != null) ? s.getExpansion().tupleComponents(n) : name.tupleComponents(n);
+  }
+
+  /**
+   * Generate a block whose code implements an uncurried version of the TopLevel f, whose type is
+   * the receiver. For this operation to succeed, the declared type must be a monomorphic type
+   * matching the grammar: et ::= [d1,...dm] ->> [et] | [d1,...dm] ->> t where di, t are types and
+   * we apply the first production as many times as possible. For example, if the declared type is
+   * [[X,Y] ->> [[Z] ->> [R]]], then the generated block will have type [X,Y,Z] >>= [R] and body
+   * b[x,y,z] = t <- f @ [x,y]; t @ [z].
+   */
+  Block liftToBlock0(Position pos, String id, TopLevel f) {
+    Synonym s = name.isSynonym();
+    return (s != null) ? s.getExpansion().liftToBlock0(pos, id, f) : null;
+  }
+
+  /**
+   * Helper function for liftToCode, used in the case where the receiver is the only component (in
+   * position 0, explaining the name of this method) in a tuple type that is known to be the range
+   * of a ->> function.
+   */
+  Code liftToCode0(Block b, Temp[] us, Atom f, Temp[] vs) {
+    Synonym s = name.isSynonym();
+    return (s != null) ? s.getExpansion().liftToCode0(b, us, f, vs) : null;
   }
 
   boolean useBitdataLo(Type t, Type s) {

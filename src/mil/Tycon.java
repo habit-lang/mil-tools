@@ -324,9 +324,8 @@ public abstract class Tycon extends TypeName {
   }
 
   /**
-   * Worker function for funcFromTuple(). Tests to determine if this skeleton is an application of
-   * (->>) to a tuple of types, returning either the tuple components in an array or null if there
-   * is no match.
+   * Test to determine if this skeleton is an application of (->>) to a tuple of types, returning
+   * either the tuple components in an array or null if there is no match.
    */
   Type[] funcFromTuple1() {
     return null;

@@ -463,6 +463,14 @@ public class TopLevel extends TopDefn {
     }
   }
 
+  /**
+   * Rewrite this definition, replacing TopLevels that introduce curried function values with
+   * corresponding uncurried blocks. No changes are made to other forms of definition.
+   */
+  Defn makeEntryBlock() {
+    return (lhs.length == 1) ? lhs[0].makeEntryBlock(pos, this) : this;
+  }
+
   /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {
     tail = tail.repTransform(set, null);

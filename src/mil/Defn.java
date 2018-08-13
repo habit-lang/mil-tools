@@ -449,6 +449,14 @@ public abstract class Defn {
     /* do nothing */
   }
 
+  /**
+   * Rewrite this definition, replacing TopLevels that introduce curried function values with
+   * corresponding uncurried blocks. No changes are made to other forms of definition.
+   */
+  Defn makeEntryBlock() {
+    return this;
+  }
+
   /** Rewrite the components of this definition to account for changes in representation. */
   abstract void repTransform(Handler handler, RepTypeSet set);
 

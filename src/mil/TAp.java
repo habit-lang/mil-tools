@@ -291,9 +291,8 @@ public class TAp extends Type {
   }
 
   /**
-   * Worker function for funcFromTuple(). Tests to determine if this skeleton is an application of
-   * (->>) to a tuple of types, returning either the tuple components in an array or null if there
-   * is no match.
+   * Test to determine if this skeleton is an application of (->>) to a tuple of types, returning
+   * either the tuple components in an array or null if there is no match.
    */
   Type[] funcFromTuple1() {
     return fun.isMILArrow() ? arg.tupleComponents(0) : null;
@@ -311,6 +310,42 @@ public class TAp extends Type {
       ts[ts.length - (n + 1)] = arg;
     }
     return ts;
+  }
+
+  /**
+   * Generate a block whose code implements an uncurried version of the TopLevel f, whose type is
+   * the receiver. For this operation to succeed, the declared type must be a monomorphic type
+   * matching the grammar: et ::= [d1,...dm] ->> [et] | [d1,...dm] ->> t where di, t are types and
+   * we apply the first production as many times as possible. For example, if the declared type is
+   * [[X,Y] ->> [[Z] ->> [R]]], then the generated block will have type [X,Y,Z] >>= [R] and body
+   * b[x,y,z] = t <- f @ [x,y]; t @ [z].
+   */
+  Block liftToBlock0(Position pos, String id, TopLevel f) {
+    Type[] ds = fun.funcFromTuple1(); // Look for initial set of arguments
+    if (ds == null) {
+      return null; // If none found, then the transformation does not apply
+    }
+    Block b =
+        new Block(
+            pos, id, null,
+            null); // Otherwise, we can commit to building the result and filling in its Code
+    b.setCode(arg.liftToCode(b, Temp.noTemps, new TopDef(f, 0), Temp.makeTemps(ds.length)));
+    return b;
+  }
+
+  /**
+   * Helper function for liftToCode, used in the case where the receiver is the only component (in
+   * position 0, explaining the name of this method) in a tuple type that is known to be the range
+   * of a ->> function.
+   */
+  Code liftToCode0(Block b, Temp[] us, Atom f, Temp[] vs) {
+    Type[] ds1 = fun.funcFromTuple1();
+    if (ds1 == null) {
+      return null;
+    }
+    Temp v = new Temp();
+    return new Bind(
+        v, new Enter(f, vs), arg.liftToCode(b, Temp.append(us, vs), v, Temp.makeTemps(ds1.length)));
   }
 
   /**

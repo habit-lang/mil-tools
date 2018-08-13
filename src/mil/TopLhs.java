@@ -179,6 +179,21 @@ class TopLhs {
     return reps;
   }
 
+  /**
+   * Rewrite the given TopLevel with this as its only left hand side, to replace the definition of a
+   * (possibly curried) function value (involving ->>) with an (uncurried) MIL Block.
+   */
+  Defn makeEntryBlock(Position pos, TopLevel tl) {
+    Block b = declared.liftToBlock0(pos, id, tl);
+    if (b != null) {
+      b.isEntrypoint(true); // Mark the new block as an entrypoint ...
+      id = id + "_impl"; // ... rename the original entrypoint ...
+      tl.isEntrypoint(false); // ... and clear the flag for the original entrypoint.
+      return b;
+    }
+    return tl;
+  }
+
   /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {
     declared = declared.canonScheme(set);
