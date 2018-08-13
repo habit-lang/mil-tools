@@ -656,7 +656,9 @@ public class Block extends Defn {
    * arguments are used.
    */
   int countUnusedArgs(Temp[] dst) {
-    if (isEntrypoint) { // treat all arguments of entrypoints as used
+    if (isEntrypoint) { // treat all entrypoint arguments as used
+      // We don't have to set numUsedArgs and usedArgs because all uses are guarded by isEntrypoint
+      // tests
       return 0;
     } else {
       int unused = dst.length - numUsedArgs; // count # of unused args
@@ -710,7 +712,11 @@ public class Block extends Defn {
    * known to be used.
    */
   Temps usedVars(Atom[] args, Temps vs) {
-    if (usedArgs != null) { // ignore this call if no args are used
+    if (isEntrypoint) { // treat all entrypoint arguments as used
+      for (int i = 0; i < args.length; i++) {
+        vs = args[i].add(vs);
+      }
+    } else if (usedArgs != null) { // ignore this call if no args are used
       for (int i = 0; i < args.length; i++) {
         if (usedArgs[i]) { // ignore this argument if the flag is not set
           vs = args[i].add(vs);
@@ -727,7 +733,7 @@ public class Block extends Defn {
   Temp[] removeUnusedTemps(Temp[] dsts) {
     // ! System.out.println("In " + getId() + ": numUsedArgs=" + numUsedArgs + ", dsts.length=" +
     // dsts.length);
-    if (numUsedArgs < dsts.length) { // Found some new, unused args
+    if (!isEntrypoint && numUsedArgs < dsts.length) { // Found some new, unused args
       Temp[] newTemps = new Temp[numUsedArgs];
       int j = 0;
       for (int i = 0; i < dsts.length; i++) {
@@ -746,7 +752,8 @@ public class Block extends Defn {
    * Update an argument list by removing unused arguments, or return null if no change is required.
    */
   Atom[] removeUnusedArgs(Atom[] args) {
-    if (numUsedArgs < args.length) { // Only rewrite if we have found some new unused arguments
+    if (!isEntrypoint
+        && numUsedArgs < args.length) { // Only rewrite if we have found some new unused arguments
       Atom[] newArgs = new Atom[numUsedArgs];
       int j = 0;
       for (int i = 0; i < args.length; i++) {
@@ -761,7 +768,7 @@ public class Block extends Defn {
 
   /** Rewrite this program to remove unused arguments in block calls. */
   void removeUnusedArgs() {
-    if (numUsedArgs < params.length) {
+    if (!isEntrypoint && numUsedArgs < params.length) {
       MILProgram.report(
           "Rewrote block "
               + getId()
