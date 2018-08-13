@@ -308,11 +308,11 @@ public class TopLevel extends TopDefn {
     return false;
   }
 
-  /** Holds the most recently computed summary value for this item. */
+  /** Holds the most recently computed summary value for this definition. */
   private int summary;
 
   void findIn(TopLevels[] topLevels) {
-    if (tail.isPure()) {
+    if (!isEntrypoint && tail.isPure()) {
       summary = tail.summary();
       int idx = this.summary % topLevels.length;
       if (idx < 0) idx += topLevels.length;
@@ -320,8 +320,12 @@ public class TopLevel extends TopDefn {
         if (ts.head.summary == this.summary
             && this.tail.alphaTail(null, ts.head.tail, null)
             && this.lhs.length == ts.head.lhs.length) {
-          MILProgram.report("Identifying topdefn " + toString() + " with " + ts.head.toString());
-          this.tail = new Return(ts.head.tops());
+          if (ts.head.declared == null
+              || (this.declared != null && this.declared.alphaEquiv(ts.head.declared))) {
+            MILProgram.report("Identifying topdefn " + toString() + " with " + ts.head.toString());
+            this.tail = new Return(ts.head.tops());
+            return;
+          }
         }
       }
       topLevels[idx] = new TopLevels(this, topLevels[idx]);
@@ -333,7 +337,7 @@ public class TopLevel extends TopDefn {
    * previously encountered item with the same code in the given table. Return true if a duplicate
    * was found.
    */
-  boolean summarizeDefns(Blocks[] blocks, TopLevels[] topLevels) {
+  boolean summarizeDefns(Blocks[] blocks, TopLevels[] topLevels, ClosureDefns[] closures) {
     findIn(topLevels);
     return false;
   }

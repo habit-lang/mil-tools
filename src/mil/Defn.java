@@ -402,7 +402,7 @@ public abstract class Defn {
    * previously encountered item with the same code in the given table. Return true if a duplicate
    * was found.
    */
-  abstract boolean summarizeDefns(Blocks[] blocks, TopLevels[] topLevels);
+  abstract boolean summarizeDefns(Blocks[] blocks, TopLevels[] topLevels, ClosureDefns[] closures);
 
   abstract void eliminateDuplicates();
 

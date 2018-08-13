@@ -823,11 +823,9 @@ public class Block extends Defn {
 
     // Build lists of parameters:
     Temps thisvars = null;
+    Temps thatvars = null;
     for (int i = 0; i < this.params.length; i++) {
       thisvars = this.params[i].add(thisvars);
-    }
-    Temps thatvars = null;
-    for (int i = 0; i < that.params.length; i++) {
       thatvars = that.params[i].add(thatvars);
     }
 
@@ -835,12 +833,12 @@ public class Block extends Defn {
     return this.code.alphaCode(thisvars, that.code, thatvars);
   }
 
-  /** Holds the most recently computed summary value for this item. */
+  /** Holds the most recently computed summary value for this definition. */
   private int summary;
 
   /**
-   * Points to a different block with equivalent code, if one has been identified. A null value
-   * indicates that there is no replacement block.
+   * Points to a different definition with equivalent code, if one has been identified. A null value
+   * indicates that there is no replacement.
    */
   private Block replaceWith = null;
 
@@ -849,31 +847,32 @@ public class Block extends Defn {
   }
 
   /**
-   * Look for a previously summarized version of this block, returning true if a duplicate was
+   * Look for a previously summarized version of this definition, returning true iff a duplicate was
    * found.
    */
-  boolean findIn(Blocks[] blocks) {
+  boolean findIn(Blocks[] table) {
     summary = code.summary();
-    // !System.out.println("Block " + getId() + " has summary " + this.summary);
-    int idx = this.summary % blocks.length;
-    if (idx < 0) idx += blocks.length;
-
-    for (Blocks bs = blocks[idx]; bs != null; bs = bs.next) {
-      if (bs.head.summary == this.summary && bs.head.alphaBlock(this)) {
-        // !System.out.println("Matching summaries for " + bs.head.getId() + " and " +
-        // this.getId());
-        // !bs.head.displayDefn();
-        // !this.displayDefn();
-        MILProgram.report("Replacing " + this.getId() + " with " + bs.head.getId());
-        this.replaceWith = bs.head;
-        return true;
-      }
-      // !System.out.println("Did not match");
+    int idx = this.summary % table.length;
+    if (idx < 0) {
+      idx += table.length;
     }
-    // First sighting of this block, add to the table:
-    this.replaceWith = null; // There is no replacement for this block
-    blocks[idx] = new Blocks(this, blocks[idx]);
-    // TODO: why not just use a standard java.util.HashMap?
+
+    for (Blocks ds = table[idx]; ds != null; ds = ds.next) {
+      if (ds.head.summary == this.summary && ds.head.alphaBlock(this)) {
+        if (isEntrypoint) { // Cannot replace an entrypoint, even though a replacement is available
+          return false;
+        } else if (ds.head.declared == null
+            || (this.declared != null && ds.head.declared.alphaEquiv(this.declared))) {
+          MILProgram.report("Replacing " + this.getId() + " with " + ds.head.getId());
+          this.replaceWith = ds.head;
+          return true;
+        }
+      }
+    }
+
+    // First sighting of this definition, add to the table:
+    this.replaceWith = null; // There is no replacement for this definition (yet)
+    table[idx] = new Blocks(this, table[idx]);
     return false;
   }
 
@@ -882,20 +881,12 @@ public class Block extends Defn {
    * previously encountered item with the same code in the given table. Return true if a duplicate
    * was found.
    */
-  boolean summarizeDefns(Blocks[] blocks, TopLevels[] topLevels) {
+  boolean summarizeDefns(Blocks[] blocks, TopLevels[] topLevels, ClosureDefns[] closures) {
     return findIn(blocks);
   }
 
   void eliminateDuplicates() {
     code.eliminateDuplicates();
-  }
-
-  Atom[] replaceArgs(Block b, Atom[] args) {
-    Atom[] newArgs = new Atom[this.params.length];
-    for (int i = 0, j = 0; i < this.params.length; ) {
-      newArgs[i++] = args[j++];
-    }
-    return newArgs;
   }
 
   void collect() {

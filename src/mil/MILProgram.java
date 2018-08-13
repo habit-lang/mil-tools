@@ -317,12 +317,15 @@ public class MILProgram {
     final int SIZE = 251;
     Blocks[] blocks = new Blocks[SIZE];
     TopLevels[] topLevels = new TopLevels[SIZE];
+    ClosureDefns[] closures = new ClosureDefns[SIZE];
     boolean found = false;
 
     // Visit each block to compute summaries and populate the table:
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
+      // TODO: visit entrypoints first so that they can be used as replacements for non-entrypoints
+      // ...
       for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
-        found |= ds.head.summarizeDefns(blocks, topLevels);
+        found |= ds.head.summarizeDefns(blocks, topLevels, closures);
       }
     }
 

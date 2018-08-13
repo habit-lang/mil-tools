@@ -172,7 +172,7 @@ public class External extends TopDefn {
    * previously encountered item with the same code in the given table. Return true if a duplicate
    * was found.
    */
-  boolean summarizeDefns(Blocks[] blocks, TopLevels[] topLevels) {
+  boolean summarizeDefns(Blocks[] blocks, TopLevels[] topLevels, ClosureDefns[] closures) {
     return false;
   }
 

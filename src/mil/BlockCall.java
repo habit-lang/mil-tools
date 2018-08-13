@@ -371,10 +371,9 @@ public class BlockCall extends Call {
   }
 
   void eliminateDuplicates() {
-    Block c = b.getReplaceWith();
-    if (c != null) {
-      args = c.replaceArgs(b, args);
-      b = c;
+    Block b1 = b.getReplaceWith();
+    if (b1 != null) {
+      b = b1;
     }
   }
 

@@ -190,6 +190,13 @@ public class ClosAlloc extends Allocator {
     return this.k == that.k && this.alphaArgs(thisvars, that, thatvars);
   }
 
+  void eliminateDuplicates() {
+    ClosureDefn k1 = k.getReplaceWith();
+    if (k1 != null) {
+      k = k1;
+    }
+  }
+
   void collect(TypeSet set) {
     if (type != null) {
       type = type.canonAllocType(set);

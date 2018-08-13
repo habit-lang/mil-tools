@@ -506,13 +506,79 @@ public class ClosureDefn extends Defn {
     return id.hashCode();
   }
 
+  /** Test to see if two ClosureDefn values are alpha equivalent. */
+  boolean alphaClosureDefn(ClosureDefn that) {
+    // Check for same number of parameters:
+    if (this.params.length != that.params.length || this.args.length != that.args.length) {
+      return false;
+    }
+
+    // Build lists of parameters:
+    Temps thisvars = null;
+    Temps thatvars = null;
+    for (int i = 0; i < this.params.length; i++) {
+      thisvars = this.params[i].add(thisvars);
+      thatvars = that.params[i].add(thatvars);
+    }
+    for (int i = 0; i < this.args.length; i++) {
+      thisvars = this.args[i].add(thisvars);
+      thatvars = that.args[i].add(thatvars);
+    }
+
+    // Check bodies for alpha equivalence:
+    return this.tail.alphaTail(thisvars, that.tail, thatvars);
+  }
+
+  /** Holds the most recently computed summary value for this definition. */
+  private int summary;
+
+  /**
+   * Points to a different definition with equivalent code, if one has been identified. A null value
+   * indicates that there is no replacement.
+   */
+  private ClosureDefn replaceWith = null;
+
+  ClosureDefn getReplaceWith() {
+    return replaceWith;
+  }
+
+  /**
+   * Look for a previously summarized version of this definition, returning true iff a duplicate was
+   * found.
+   */
+  boolean findIn(ClosureDefns[] table) {
+    summary = tail.summary();
+    int idx = this.summary % table.length;
+    if (idx < 0) {
+      idx += table.length;
+    }
+
+    for (ClosureDefns ds = table[idx]; ds != null; ds = ds.next) {
+      if (ds.head.summary == this.summary && ds.head.alphaClosureDefn(this)) {
+        if (isEntrypoint) { // Cannot replace an entrypoint, even though a replacement is available
+          return false;
+        } else if (ds.head.declared == null
+            || (this.declared != null && ds.head.declared.alphaEquiv(this.declared))) {
+          MILProgram.report("Replacing " + this.getId() + " with " + ds.head.getId());
+          this.replaceWith = ds.head;
+          return true;
+        }
+      }
+    }
+
+    // First sighting of this definition, add to the table:
+    this.replaceWith = null; // There is no replacement for this definition (yet)
+    table[idx] = new ClosureDefns(this, table[idx]);
+    return false;
+  }
+
   /**
    * Compute a summary for this definition (if it is a block or top-level) and then look for a
    * previously encountered item with the same code in the given table. Return true if a duplicate
    * was found.
    */
-  boolean summarizeDefns(Blocks[] blocks, TopLevels[] topLevels) {
-    return false;
+  boolean summarizeDefns(Blocks[] blocks, TopLevels[] topLevels, ClosureDefns[] closures) {
+    return findIn(closures);
   }
 
   void eliminateDuplicates() {
