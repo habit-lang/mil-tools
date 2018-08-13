@@ -525,22 +525,22 @@ public class External extends TopDefn {
         "primGenIncIx",
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
-            // TODO: Use ts[0] to find representation (length) for n
-            BigInteger n = ts[1].getIxArg(); // Index modulus
-            if (n != null && n.compareTo(BigInteger.ZERO) > 0) {
-              // inc[j, i] = m <- add((i, 1)); j @ m
+            int nl = ts[0].repLen(); // Find number of words to represent values of type a
+            BigInteger m = ts[1].getIxArg(); // Index modulus
+            if (m != null && m.signum() > 0) {
+              // inc[j, i] = v <- add((i, 1)); j @ v
               Temp[] ji = Temp.makeTemps(2);
-              Temp m = new Temp();
+              Temp v = new Temp();
               Block inc =
                   new Block(
                       pos,
                       ji,
-                      new Bind(m, Prim.add.withArgs(ji[1], 1), new Done(new Enter(ji[0], m))));
+                      new Bind(v, Prim.add.withArgs(ji[1], 1), new Done(new Enter(ji[0], v))));
 
-              // b[n, j, i] = w <- ult((i, n-1)); if w then inc[j, i] else return n
-              Temp[] nji = Temp.makeTemps(3);
-              Block b = guardBlock(pos, nji, Prim.ult.withArgs(nji[2], n.intValue() - 1), inc);
-              return new BlockCall(b).makeTernaryFuncClosure(pos, 1, 1, 1);
+              // b[n,..., j, i] = w <- ult((i, m-1)); if w then inc[j, i] else return [n,...]
+              Temp[] nji = Temp.makeTemps(nl + 2);
+              Block b = guardBlock(pos, nji, Prim.ult.withArgs(nji[nl + 1], m.intValue() - 1), inc);
+              return new BlockCall(b).makeTernaryFuncClosure(pos, nl, 1, 1);
             }
             return null;
           }
@@ -551,22 +551,22 @@ public class External extends TopDefn {
         "primGenDecIx",
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
-            // TODO: Use ts[0] to find representation (length) for n
-            BigInteger n = ts[1].getIxArg(); // Index modulus
-            if (n != null && n.compareTo(BigInteger.ZERO) > 0) {
-              // dec[j, i] = m <- sub((i, 1)); j @ m
+            int nl = ts[0].repLen(); // Find number of words to represent values of type a
+            BigInteger m = ts[1].getIxArg(); // Index modulus
+            if (m != null && m.signum() > 0) {
+              // dec[j, i] = v <- sub((i, 1)); j @ v
               Temp[] ji = Temp.makeTemps(2);
-              Temp m = new Temp();
+              Temp v = new Temp();
               Block dec =
                   new Block(
                       pos,
                       ji,
-                      new Bind(m, Prim.sub.withArgs(ji[1], 1), new Done(new Enter(ji[0], m))));
+                      new Bind(v, Prim.sub.withArgs(ji[1], 1), new Done(new Enter(ji[0], v))));
 
-              // b[n, j, i] = w <- ugt((i, 0)); if w then dec[j, i] else return n
-              Temp[] nji = Temp.makeTemps(3);
-              Block b = guardBlock(pos, nji, Prim.ugt.withArgs(nji[2], 0), dec);
-              return new BlockCall(b).makeTernaryFuncClosure(pos, 1, 1, 1);
+              // b[n,..., j, i] = w <- ugt((i, 0)); if w then dec[j, i] else return [n,...]
+              Temp[] nji = Temp.makeTemps(nl + 2);
+              Block b = guardBlock(pos, nji, Prim.ugt.withArgs(nji[nl + 1], 0), dec);
+              return new BlockCall(b).makeTernaryFuncClosure(pos, nl, 1, 1);
             }
             return null;
           }
@@ -577,16 +577,16 @@ public class External extends TopDefn {
         "primGenMaybeIx",
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
-            // TODO: Use ts[0] to find representation (length) for n
-            BigInteger n = ts[1].getIxArg(); // Index modulus
-            if (n != null && n.compareTo(BigInteger.ZERO) > 0) {
+            int nl = ts[0].repLen(); // Find number of words to represent values of type a
+            BigInteger m = ts[1].getIxArg(); // Index modulus
+            if (m != null && m.signum() > 0) {
               Block yes = enterBlock(pos); // yes[j, i] = j @ i
-              // b[n, j, i] = w <- ule((i, n-1)); if w then yes[j, i] else return n
-              // NOTE: using (v <= N-1) rather than (v < N) is important for the case where
-              // N=(2^WORDSIZE)
-              Temp[] njv = Temp.makeTemps(3);
-              Block b = guardBlock(pos, njv, Prim.ule.withArgs(njv[2], n.intValue() - 1), yes);
-              return new BlockCall(b).makeTernaryFuncClosure(pos, 1, 1, 1);
+              // b[n,..., j, i] = w <- ule((i, m-1)); if w then yes[j, i] else return [n,...]
+              // NOTE: using (v <= m-1) rather than (v < m) is important for the case where
+              // m=(2^WORDSIZE)
+              Temp[] njv = Temp.makeTemps(nl + 2);
+              Block b = guardBlock(pos, njv, Prim.ule.withArgs(njv[nl + 1], m.intValue() - 1), yes);
+              return new BlockCall(b).makeTernaryFuncClosure(pos, nl, 1, 1);
             }
             return null;
           }
@@ -597,13 +597,17 @@ public class External extends TopDefn {
         "primGenLeqIx",
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
-            // TODO: Use ts[0] to find representation (length) for n
-            BigInteger n = ts[1].getIxArg(); // Index modulus
-            if (n != null && n.compareTo(BigInteger.ZERO) > 0) {
+            int nl = ts[0].repLen(); // Find number of words to represent values of type a
+            BigInteger m = ts[1].getIxArg(); // Index modulus
+            if (m != null && m.compareTo(BigInteger.ZERO) > 0) {
               Block yes = enterBlock(pos); // yes[j, i] = j @ i
-              Block no = returnBlock(pos); // no[thing] = return thing
-              // b[n, j, v, i] = w <- ule((v, i)); if w then yes[j, v] else return n
-              Temp[] njvi = Temp.makeTemps(4);
+              Block no = returnBlock(pos, nl); // no[thing] = return thing
+              // b[n,..., j, v, i] = w <- ule((v, i)); if w then yes[j, v] else return [n,...]
+              Temp[] njvi = Temp.makeTemps(nl + 3);
+              Atom[] ns = new Atom[nl];
+              for (int i = 0; i < nl; i++) {
+                ns[i] = njvi[i];
+              }
               Temp w = new Temp();
               Block b =
                   new Block(
@@ -611,12 +615,14 @@ public class External extends TopDefn {
                       njvi,
                       new Bind(
                           w,
-                          Prim.ule.withArgs(njvi[2], njvi[3]),
+                          Prim.ule.withArgs(njvi[nl + 1], njvi[nl + 2]),
                           new If(
                               w,
-                              new BlockCall(yes, new Atom[] {njvi[1], njvi[2]}),
-                              new BlockCall(no, new Atom[] {njvi[0]}))));
-              return new BlockCall(b).makeClosure(pos, 3, 1).makeTernaryFuncClosure(pos, 1, 1, 1);
+                              new BlockCall(yes, new Atom[] {njvi[nl], njvi[nl + 1]}),
+                              new BlockCall(no, ns))));
+              return new BlockCall(b)
+                  .makeClosure(pos, nl + 2, 1)
+                  .makeTernaryFuncClosure(pos, nl, 1, 1);
             }
             return null;
           }
@@ -632,20 +638,28 @@ public class External extends TopDefn {
     return new Block(pos, fx, new Done(new Enter(fx[0], fx[1])));
   }
 
-  /** Return a block that takes a single argument and immediately returns that argument. */
-  static Block returnBlock(Position pos) {
-    Temp[] vs = Temp.makeTemps(1);
+  /**
+   * Return a block that takes a single argument represented by n words and immediately returns that
+   * argument.
+   */
+  static Block returnBlock(Position pos, int n) {
+    Temp[] vs = Temp.makeTemps(n);
     return new Block(pos, vs, new Done(new Return(vs)));
   }
 
   /**
-   * Return a block of the form b[n, j, v] = w <- test; if w then yes[j,v] else return n. The njv
-   * argument is expected to provide the three temporaries that will be used as arguments to the
-   * block, and it is expected that the test will involve the variable v (i.e., njv[2]). The n and j
-   * parameters will typically be instantiated to Nothing and Just in practical uses, which may
-   * explain the choice of names ...
+   * Return a block of the form b[n,..., j, v] = w <- test; if w then yes[j,v] else return [n,...].
+   * The njv argument is expected to provide the temporaries that will be used as arguments to the
+   * block, and it is expected that the test will involve the variable v (i.e., njv[nl+1], where nl
+   * is the number of words needed to represent n). The n and j parameters will typically be
+   * instantiated to Nothing and Just in practical uses, which may explain the choice of names ...
    */
   static Block guardBlock(Position pos, Temp[] njv, Tail test, Block yes) {
+    int nl = njv.length - 2;
+    Atom[] ns = new Atom[nl];
+    for (int i = 0; i < nl; i++) {
+      ns[i] = njv[i];
+    }
     Temp w = new Temp();
     return new Block(
         pos,
@@ -655,8 +669,8 @@ public class External extends TopDefn {
             test,
             new If(
                 w,
-                new BlockCall(yes, new Atom[] {njv[1], njv[2]}),
-                new BlockCall(returnBlock(pos), new Atom[] {njv[0]}))));
+                new BlockCall(yes, new Atom[] {njv[nl], njv[nl + 1]}),
+                new BlockCall(returnBlock(pos, nl), ns))));
   }
 
   /**

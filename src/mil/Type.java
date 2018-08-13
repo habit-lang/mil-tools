@@ -756,6 +756,16 @@ public abstract class Type extends Scheme {
   }
 
   /**
+   * Find the number of words (parameter slots) that are needed to represent a value of this type.
+   * If there is a change of representation, then use the length of the associated representation
+   * vector; otherwise, one parameter maps to one word.
+   */
+  int repLen() {
+    Type[] r = repCalc();
+    return (r == null) ? 1 : r.length;
+  }
+
+  /**
    * Continue the work of generatePrim() in the special case where we have found a type of the form
    * [d1,...,dn] ->> rt. The type rt is the receiver here and the types d1,...,dn are in the array
    * ds.
