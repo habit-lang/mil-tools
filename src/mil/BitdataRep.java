@@ -60,7 +60,7 @@ class BitdataRep extends BitdataName {
       selBlocks = new Block[cfuns.length][];
     }
     if (selBlocks[num] == null) { // First time for this value of num?  Make a new (sub)array ...
-      selBlocks[num] = new Block[cfuns[num].getArity()];
+      selBlocks[num] = new Block[layouts[num].getArity()];
     }
     if (selBlocks[num][n] == null) { // First time for this n?  Make a new block ...
       return selBlocks[num][n] = layouts[num].makeSelBlock(cfuns[num], n);

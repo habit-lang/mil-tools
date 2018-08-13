@@ -237,7 +237,7 @@ public class MILSpec extends TypeSet {
     DataNames cands = null;
     for (Type t : specDataNames.keySet()) {
       DataName dn = specDataNames.get(t);
-      if (t != dn.asType() && dn.getArity() == 0 && !dn.isRecursive() && dn.bitSize() == null) {
+      if (t == dn.asType() && dn.getArity() == 0 && !dn.isRecursive() && dn.bitSize() == null) {
         Cfun[] cfuns = dn.getCfuns();
         if (cfuns != null && cfuns.length > 0) {
           debug.Log.println("DataName " + dn + " is a candidate for bitdata representation");

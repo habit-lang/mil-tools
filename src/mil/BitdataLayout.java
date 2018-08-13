@@ -70,7 +70,7 @@ public class BitdataLayout extends DataName {
       BigInteger tagbits,
       BitdataField[] fields,
       obdd.Pat pat) {
-    this(pos, id, KAtom.STAR, 0, bn, tagbits, fields, pat);
+    this(pos, id, KAtom.STAR, fields.length, bn, tagbits, fields, pat);
   }
 
   void write(TypeWriter tw, int prec, int args) {
