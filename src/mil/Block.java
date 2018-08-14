@@ -1141,10 +1141,19 @@ public class Block extends Defn {
   }
 
   /**
-   * Construct a function definition with the given formal parameters and code, picking up other
-   * details such as name, return type, and access (internal flag) from this object.
+   * Construct a function definition with the given formal parameters and code, filling in an
+   * appropriate code sequence for the entry block in cs[0], and setting the appropriate type and
+   * internal flag values.
    */
-  llvm.FuncDefn funcDefn(LLVMMap lm, llvm.Local[] formals, String[] ss, llvm.Code[] cs) {
+  llvm.FuncDefn toLLVMFuncDefn(
+      LLVMMap lm,
+      DefnVarMap dvm,
+      TempSubst s,
+      llvm.Local[] formals,
+      String[] ss,
+      llvm.Code[] cs,
+      Label[] succs) {
+    cs[0] = dvm.loadGlobals(new llvm.Goto(succs[0].label()));
     return new llvm.FuncDefn(!isEntrypoint, retType(lm), label(), formals, ss, cs);
   }
 

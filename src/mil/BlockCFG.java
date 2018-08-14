@@ -25,12 +25,12 @@ class BlockCFG extends CFG {
 
   private Block b;
 
-  Temp[] params;
+  Temp[] fparams;
 
   /** Default constructor. */
-  BlockCFG(Block b, Temp[] params) {
+  BlockCFG(Block b, Temp[] fparams) {
     this.b = b;
-    this.params = params;
+    this.fparams = fparams;
   }
 
   /** Return a string label that can be used to identify this node. */
@@ -45,23 +45,25 @@ class BlockCFG extends CFG {
 
   void initCFG() {
     includedBlocks = b.identifyBlocks();
-    succs = new Label[] {this.edge(this, b, params)};
+    succs = new Label[] {this.edge(this, b, fparams)};
     findSuccs();
   }
 
-  llvm.FuncDefn toLLVMFuncDefn(LLVMMap lm, DefnVarMap dvm, TempSubst s) {
-    llvm.Local[] formals = new llvm.Local[params.length];
-    for (int i = 0; i < params.length; i++) {
-      formals[i] = dvm.lookup(lm, params[i]);
+  /** Calculate an array of formal parameters for the associated LLVM function definition. */
+  llvm.Local[] formals(LLVMMap lm, DefnVarMap dvm) {
+    llvm.Local[] formals = new llvm.Local[fparams.length];
+    for (int i = 0; i < fparams.length; i++) {
+      formals[i] = dvm.lookup(lm, fparams[i]);
     }
-    return toLLVMBody(lm, dvm, s, formals, dvm.loadGlobals(new llvm.Goto(succs[0].label())));
+    return formals;
   }
 
   /**
-   * Construct a function definition with the given formal parameters and code, picking up other
-   * details such as name, return type, and access (internal flag) from this object.
+   * Helper function for constructing a function definition with the fiven formal parameters and
+   * code by connecting the the associated MIL Defn for additional details.
    */
-  llvm.FuncDefn funcDefn(LLVMMap lm, llvm.Local[] formals, String[] ss, llvm.Code[] cs) {
-    return b.funcDefn(lm, formals, ss, cs);
+  llvm.FuncDefn toLLVMFuncDefn(
+      LLVMMap lm, DefnVarMap dvm, TempSubst s, llvm.Local[] formals, String[] ss, llvm.Code[] cs) {
+    return b.toLLVMFuncDefn(lm, dvm, s, formals, ss, cs, succs);
   }
 }
