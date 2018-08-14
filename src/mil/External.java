@@ -320,20 +320,33 @@ public class External extends TopDefn {
    * representation transformation, for an external primitive.
    */
   Tail generateTail(Handler handler) {
-    if (ref != null && ts != null) { // Do not generate code if ref or ts is missing
+    if (ref == null) {
+      return declared.generatePrim(pos, id);
+    } else if (ts != null) {
       Generator gen = generators.get(ref);
-      if (gen != null && ts.length >= gen.needs) {
-        return gen.generate(pos, ts);
-      }
-      if (ts.length == 0) {
-        Tail t = declared.generatePrim(pos, ref);
-        if (t != null) {
-          return t;
+      if (gen != null) {
+        if (ts.length < gen.needs) {
+          handler.report(
+              new Failure(
+                  pos, "Generator for " + ref + " needs at least " + gen.needs + " arguments"));
+        } else {
+          Tail t = gen.generate(pos, ts);
+          if (t != null) {
+            return t;
+          }
+          handler.report(new Failure(pos, "No generated implementation"));
         }
+        return null;
+      } else if (ts.length > 0) {
+        handler.report(new Failure(pos, "No generator for " + ref));
+        return null;
       }
-      handler.report(new Failure(pos, "No generated implementation"));
     }
-    return null;
+    Tail t = declared.generatePrim(pos, ref);
+    if (t == null) {
+      id = ref;
+    }
+    return t;
   }
 
   static {
