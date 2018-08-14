@@ -494,7 +494,7 @@ public class Block extends Defn {
     // !System.out.println("Going to try inlining on " + getId());
     // !displayDefn();
     // !System.out.println();
-    if (isGotoBlock() == null) { // TODO: consider replacing with code.isDone()
+    if (isGotoBlock() == null || isEntrypoint) { // TODO: consider replacing with code.isDone()
       code = code.inlining(this);
       // !System.out.println("And the result is:");
       // !displayDefn();
