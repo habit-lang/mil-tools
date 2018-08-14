@@ -127,12 +127,7 @@ abstract class CFG extends Node {
    * Generate an LLVM function definition with the labeled blocks of Code in this CFG as its body.
    */
   llvm.FuncDefn toLLVMBody(
-      LLVMMap lm,
-      VarMap vm,
-      TempSubst s,
-      llvm.Type retType,
-      llvm.Local[] formals,
-      llvm.Code entryCode) {
+      LLVMMap lm, VarMap vm, TempSubst s, llvm.Local[] formals, llvm.Code entryCode) {
     int n = Labels.length(labels);
     String[] ss = new String[1 + n];
     llvm.Code[] cs = new llvm.Code[1 + n];
@@ -143,6 +138,12 @@ abstract class CFG extends Node {
       ss[i] = ls.head.label();
       cs[i++] = ls.head.toLLVMLabel(lm, vm, s);
     }
-    return new llvm.FuncDefn(retType, label(), formals, ss, cs);
+    return funcDefn(lm, formals, ss, cs);
   }
+
+  /**
+   * Construct a function definition with the given formal parameters and code, picking up other
+   * details such as name, return type, and access (internal flag) from this object.
+   */
+  abstract llvm.FuncDefn funcDefn(LLVMMap lm, llvm.Local[] formals, String[] ss, llvm.Code[] cs);
 }

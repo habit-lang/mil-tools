@@ -54,7 +54,14 @@ class BlockCFG extends CFG {
     for (int i = 0; i < params.length; i++) {
       formals[i] = dvm.lookup(lm, params[i]);
     }
-    return toLLVMBody(
-        lm, dvm, s, b.retType(lm), formals, dvm.loadGlobals(new llvm.Goto(succs[0].label())));
+    return toLLVMBody(lm, dvm, s, formals, dvm.loadGlobals(new llvm.Goto(succs[0].label())));
+  }
+
+  /**
+   * Construct a function definition with the given formal parameters and code, picking up other
+   * details such as name, return type, and access (internal flag) from this object.
+   */
+  llvm.FuncDefn funcDefn(LLVMMap lm, llvm.Local[] formals, String[] ss, llvm.Code[] cs) {
+    return b.funcDefn(lm, formals, ss, cs);
   }
 }

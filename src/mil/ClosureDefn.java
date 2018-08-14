@@ -801,4 +801,12 @@ public class ClosureDefn extends Defn {
           "load stored values from closure", new llvm.Op(ptr, new llvm.Bitcast(clo, ptrt), code));
     }
   }
+
+  /**
+   * Construct a function definition with the given formal parameters and code, picking up other
+   * details such as name, return type, and access (internal flag) from this object.
+   */
+  llvm.FuncDefn funcDefn(LLVMMap lm, llvm.Local[] formals, String[] ss, llvm.Code[] cs) {
+    return new llvm.FuncDefn(!isEntrypoint, retType(lm), label(), formals, ss, cs);
+  }
 }

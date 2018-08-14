@@ -23,6 +23,9 @@ import java.io.PrintWriter;
 /** Represents an LLVM function definition. */
 public class FuncDefn extends Defn {
 
+  /** Internal flag (true=>access only in this module). */
+  private boolean internal;
+
   /** The return type for the function. */
   private Type retType;
 
@@ -39,7 +42,14 @@ public class FuncDefn extends Defn {
   private Code[] bodies;
 
   /** Default constructor. */
-  public FuncDefn(Type retType, String name, Local[] formals, String[] labels, Code[] bodies) {
+  public FuncDefn(
+      boolean internal,
+      Type retType,
+      String name,
+      Local[] formals,
+      String[] labels,
+      Code[] bodies) {
+    this.internal = internal;
     this.retType = retType;
     this.name = name;
     this.formals = formals;
@@ -55,6 +65,9 @@ public class FuncDefn extends Defn {
 
   void print(PrintWriter out) {
     out.print("define ");
+    if (internal) {
+      out.print("internal ");
+    }
     out.print(retType.toString());
     out.print(" @" + name + "(");
     for (int i = 0; i < formals.length; i++) {

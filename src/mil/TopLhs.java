@@ -217,8 +217,8 @@ class TopLhs {
    * Create a global variable definition for a component of a TopLevel definition that is
    * initialized to the specified value.
    */
-  llvm.GlobalVarDefn globalVarDefn(LLVMMap lm, llvm.Value val) {
-    return new llvm.GlobalVarDefn(id, val);
+  llvm.GlobalVarDefn globalVarDefn(LLVMMap lm, boolean internal, llvm.Value val) {
+    return new llvm.GlobalVarDefn(internal, id, val);
   }
 
   /**
@@ -226,8 +226,8 @@ class TopLhs {
    * runtime; in this case, we set the initial value to a simple default that is appropriate to the
    * type of the variable.
    */
-  llvm.GlobalVarDefn globalVarDefn(LLVMMap lm) {
-    return globalVarDefn(lm, lm.toLLVM(defining).defaultValue());
+  llvm.GlobalVarDefn globalVarDefn(LLVMMap lm, boolean internal) {
+    return globalVarDefn(lm, internal, lm.toLLVM(defining).defaultValue());
   }
 
   Temp makeTemp() {

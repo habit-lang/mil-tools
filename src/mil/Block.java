@@ -1141,6 +1141,14 @@ public class Block extends Defn {
   }
 
   /**
+   * Construct a function definition with the given formal parameters and code, picking up other
+   * details such as name, return type, and access (internal flag) from this object.
+   */
+  llvm.FuncDefn funcDefn(LLVMMap lm, llvm.Local[] formals, String[] ss, llvm.Code[] cs) {
+    return new llvm.FuncDefn(!isEntrypoint, retType(lm), label(), formals, ss, cs);
+  }
+
+  /**
    * Generate LLVM code for this Block suitable for use as a labeled block inside a function
    * definition.
    */

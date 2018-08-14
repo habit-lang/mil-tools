@@ -539,9 +539,9 @@ public class TopLevel extends TopDefn {
     // Add global variable definitions for any lhs components without a static value:
     for (int i = 0; i < lhs.length; i++) {
       if (staticValue == null || staticValue[i] == null) {
-        prog.add(lhs[i].globalVarDefn(lm));
+        prog.add(lhs[i].globalVarDefn(lm, !isEntrypoint));
       } else if (isEntrypoint) {
-        prog.add(lhs[i].globalVarDefn(lm, staticValue[i]));
+        prog.add(lhs[i].globalVarDefn(lm, false, staticValue[i]));
       }
     }
   }

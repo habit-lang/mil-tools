@@ -591,6 +591,7 @@ public class MILProgram {
       }
     }
     return new llvm.FuncDefn(
+        false, // make sure this function is externally visible.  TODO: "false" is too generic
         llvm.Type.vd,
         llvm.FuncDefn.mainFunctionName,
         new llvm.Local[0],

@@ -23,6 +23,9 @@ import java.io.PrintWriter;
 /** Represents an LLVM global variable definition. */
 public class GlobalVarDefn extends Defn {
 
+  /** Internal flag (true=>access only in this module). */
+  private boolean internal;
+
   /** The name of the global variable. */
   private String name;
 
@@ -30,14 +33,14 @@ public class GlobalVarDefn extends Defn {
   private Value initial;
 
   /** Default constructor. */
-  public GlobalVarDefn(String name, Value initial) {
+  public GlobalVarDefn(boolean internal, String name, Value initial) {
+    this.internal = internal;
     this.name = name;
     this.initial = initial;
   }
 
   void print(PrintWriter out) {
-    out.println("@" + name + " = global " + initial);
-    // TODO: should this use "internal" (equiv to "static" in C)?
+    out.println("@" + name + " = " + (internal ? "internal " : "") + "global " + initial);
     out.println();
   }
 }
