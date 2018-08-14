@@ -1748,6 +1748,14 @@ public class External extends TopDefn {
     return null;
   }
 
+  /** Calculate a staticValue (which could be null) for each top level definition. */
+  void calcStaticValues(LLVMMap lm, llvm.Program prog) {
+    if (declared.isQuantified()) {
+      debug.Internal.error("external " + id + " has polymorphic type " + declared);
+    }
+    prog.add(new llvm.GlobalVarDecl(id, lm.toLLVM(declared.instantiate())));
+  }
+
   /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
   void countCalls() {
     /* Nothing to do here */
