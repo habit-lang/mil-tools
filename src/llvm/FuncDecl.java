@@ -20,7 +20,7 @@ package llvm;
 
 import java.io.PrintWriter;
 
-/** Represents an LLVM function declaration. */
+/** Represents an LLVM function declaration (to allow the use of a function defined elsewhere). */
 public class FuncDecl extends Defn {
 
   /** The name of the function. */
@@ -37,5 +37,6 @@ public class FuncDecl extends Defn {
 
   void print(PrintWriter out) {
     ftype.printFunDecl(out, name);
+    out.println();
   }
 }

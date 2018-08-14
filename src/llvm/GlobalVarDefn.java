@@ -38,5 +38,6 @@ public class GlobalVarDefn extends Defn {
   void print(PrintWriter out) {
     out.println("@" + name + " = global " + initial);
     // TODO: should this use "internal" (equiv to "static" in C)?
+    out.println();
   }
 }

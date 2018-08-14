@@ -783,7 +783,6 @@ public class ClosureDefn extends Defn {
     llvm.Code code =
         new llvm.CodeComment(
             "body of closure starts here", dvm.loadGlobals(tail.toLLVMDone(lm, dvm, null, succs)));
-
     if (params.length == 0) { // load closure parameters from memory
       return code;
     } else {

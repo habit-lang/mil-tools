@@ -82,7 +82,6 @@ public class Program {
     // TODO: write general headers here
     for (Defns ds = defns; ds != null; ds = ds.next) {
       ds.head.print(out);
-      out.println();
     }
   }
 

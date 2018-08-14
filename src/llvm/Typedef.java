@@ -33,5 +33,6 @@ public class Typedef extends Defn {
 
   void print(PrintWriter out) {
     out.println(def + " = type " + def.definition());
+    out.println();
   }
 }

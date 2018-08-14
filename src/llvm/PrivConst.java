@@ -37,5 +37,6 @@ public class PrivConst extends Defn {
 
   void print(PrintWriter out) {
     out.println("@" + name + " = private constant " + val);
+    out.println();
   }
 }

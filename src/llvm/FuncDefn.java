@@ -74,5 +74,6 @@ public class FuncDefn extends Defn {
 
     // Terminate the function definition:
     out.println("}");
+    out.println();
   }
 }
