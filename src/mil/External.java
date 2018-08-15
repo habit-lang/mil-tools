@@ -537,18 +537,15 @@ public class External extends TopDefn {
             return null;
           }
         });
-  }
 
-  static {
-
-    // primGenIncIx a n :: a -> (Ix n -> a) -> Ix n -> a
+    // primGenIncIx a m :: a -> (Ix m -> a) -> Ix m -> a
     generators.put(
         "primGenIncIx",
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
-            BigInteger m = ts[1].getIxArg(); // Index modulus
-            if (m != null && m.signum() > 0) {
+            BigInteger m = ts[1].getIxArg(); // Index modulus, will be > 0
+            if (m != null) {
               // inc[j, i] = v <- add((i, 1)); j @ v
               Temp[] ji = Temp.makeTemps(2);
               Temp v = new Temp();
@@ -567,14 +564,33 @@ public class External extends TopDefn {
           }
         });
 
+    // primIncIx m :: Ix m -> Maybe (Ix m)
+    // Special case: requires bitdataRepresentations, and m < 2^WORDSIZE
+    generators.put(
+        "primIncIx",
+        new Generator(1) {
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger m = ts[0].getIxArg(); // Index modulus, will be > 0
+            if (m != null
+                && bitdataRepresentations // ensures repr. of Maybe (Ix m) is the same as repr. of
+                                          // Ix (m+1)
+                && m.compareTo(BigInteger.ONE.shiftLeft(Type.WORDSIZE)) < 0) {
+              Temp[] vs = Temp.makeTemps(1);
+              Block b = new Block(pos, vs, new Done(Prim.add.withArgs(vs[0], 1)));
+              return new BlockCall(b).makeUnaryFuncClosure(pos, 1);
+            }
+            return null;
+          }
+        });
+
     // primGenDecIx n :: a -> (Ix n -> a) -> Ix n -> a
     generators.put(
         "primGenDecIx",
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
-            BigInteger m = ts[1].getIxArg(); // Index modulus
-            if (m != null && m.signum() > 0) {
+            BigInteger m = ts[1].getIxArg(); // Index modulus, will be > 0
+            if (m != null) {
               // dec[j, i] = v <- sub((i, 1)); j @ v
               Temp[] ji = Temp.makeTemps(2);
               Temp v = new Temp();
@@ -588,6 +604,38 @@ public class External extends TopDefn {
               Temp[] nji = Temp.makeTemps(nl + 2);
               Block b = guardBlock(pos, nji, Prim.ugt.withArgs(nji[nl + 1], 0), dec);
               return new BlockCall(b).makeTernaryFuncClosure(pos, nl, 1, 1);
+            }
+            return null;
+          }
+        });
+
+    // primDecIx m :: Ix m -> Maybe (Ix m)
+    // Special case: requires bitdataRepresentations, m is a power of 2, and m < 2^WORDSIZE
+    generators.put(
+        "primDecIx",
+        new Generator(1) {
+          Tail generate(Position pos, Type[] ts) {
+            BigInteger m = ts[0].getIxArg(); // Index modulus, will be > 0
+            if (m != null
+                && bitdataRepresentations // ensures repr. of Maybe (Ix m) is the same as repr. of
+                                          // Ix (m+1)
+                && m.compareTo(BigInteger.ONE.shiftLeft(Type.WORDSIZE)) < 0) {
+              int im = m.intValue();
+              if ((im & (im - 1)) == 0) { // test for a power of two
+                // In this special case, we can avoid a branching implementation by combining a
+                // decrement with a mask:
+                Temp[] vs = Temp.makeTemps(1);
+                Temp w = new Temp();
+                Block b =
+                    new Block(
+                        pos,
+                        vs,
+                        new Bind(
+                            w,
+                            Prim.sub.withArgs(vs[0], 1),
+                            new Done(Prim.and.withArgs(w, im - 1))));
+                return new BlockCall(b).makeUnaryFuncClosure(pos, 1);
+              }
             }
             return null;
           }
