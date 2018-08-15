@@ -349,6 +349,14 @@ public class External extends TopDefn {
     return t;
   }
 
+  /** Flag to indicate whether bitdata representations (e.g., for Maybe (Ix 15)) are in use. */
+  private static boolean bitdataRepresentations = false;
+
+  /** Set the bitdataRepresentations flag; intended to be called in the driver as appropriate. */
+  public static void setBitdataRepresentations() {
+    bitdataRepresentations = true;
+  }
+
   static {
 
     // primBitFromLiteral v w ... :: Proxy v -> Bit w
@@ -1553,11 +1561,11 @@ public class External extends TopDefn {
         new Generator(1) {
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].getBitArg(); // Width of bit vector
-            if (w != null
+            if (bitdataRepresentations // ensures repr. for Maybe (NZBit n) is Word (the same as
+                                       // repr. for Bit n).
+                && w != null
                 && w.signum() > 0
                 && w.compareTo(BigInteger.valueOf(Type.WORDSIZE)) <= 0) {
-              // This implementation will only work if we have switched to using Word as
-              // the representation for Maybe (NZBit w) ...
               return new Return().makeUnaryFuncClosure(pos, 1);
             }
             return null;

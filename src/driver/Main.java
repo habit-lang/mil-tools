@@ -229,6 +229,7 @@ class Main {
           }
           mil.bitdataRewrite(spec.bitdataCandidates());
           optimized = false;
+          External.setBitdataRepresentations();
           break;
 
         case 'r': // Representation transformation
