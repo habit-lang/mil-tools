@@ -884,7 +884,7 @@ public abstract class Type extends Scheme {
    * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.
    */
   llvm.Type toLLVMCalc(Type c, LLVMMap lm, int args) {
-    //  debug.Internal.error("toLLVM not defined for type " + this);
+    debug.Internal.error("toLLVM not defined for type " + this);
     return llvm.Type.vd; // not reached
   }
 
@@ -915,8 +915,8 @@ public abstract class Type extends Scheme {
    */
   llvm.Type[] closureArgs(LLVMMap lm, llvm.Type ptr, int args) {
     if (this != TupleCon.tuple(args).asType()) {
-      //    debug.Internal.error("closureArgs not defined for " + this);
-      //    return null; // not reached
+      debug.Internal.error("closureArgs not defined for " + this);
+      return null; // not reached
     }
     llvm.Type[] cargs = new llvm.Type[1 + args];
     cargs[0] = ptr;
