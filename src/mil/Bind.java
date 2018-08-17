@@ -500,6 +500,6 @@ public class Bind extends Code {
    * end of the code.
    */
   llvm.Code toLLVMCode(LLVMMap lm, VarMap vm, TempSubst s, Label[] succs) {
-    return t.toLLVMCont(lm, vm, s, vs, c.toLLVMCode(lm, vm, s, succs));
+    return t.toLLVMCont(lm, vm, s, Temp.nonUnits(vs), c.toLLVMCode(lm, vm, s, succs));
   }
 }

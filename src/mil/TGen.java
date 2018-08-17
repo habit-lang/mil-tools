@@ -304,4 +304,8 @@ public class TGen extends Type {
   Type apply(Type[] thisenv, TVarSubst s) {
     return thisenv[n].apply(null, s);
   }
+
+  boolean nonUnit(Type[] tenv) {
+    return tenv[n].nonUnit(null);
+  }
 }

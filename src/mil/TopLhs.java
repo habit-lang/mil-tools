@@ -214,6 +214,23 @@ class TopLhs {
   }
 
   /**
+   * Determine whether this item is for a non-Unit, corresponding to a value that requires a
+   * run-time representation in the generated LLVM.
+   */
+  boolean nonUnit() {
+    return defining.nonUnit();
+  }
+
+  static boolean hasNonUnits(TopLhs[] lhs) {
+    for (int i = 0; i < lhs.length; i++) {
+      if (lhs[i].nonUnit()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Create a global variable definition for a component of a TopLevel definition that is
    * initialized to the specified value.
    */

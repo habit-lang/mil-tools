@@ -445,7 +445,7 @@ public class BlockCall extends Call {
 
   /** Find the CFG successor for this item. */
   Label findSucc(CFG cfg, Node src) {
-    return cfg.edge(src, b, args);
+    return cfg.edge(src, b, Atom.nonUnits(args));
   }
 
   /** Generate LLVM code to execute this Tail in tail call position. */

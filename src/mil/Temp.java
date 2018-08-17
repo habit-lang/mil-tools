@@ -386,6 +386,37 @@ public class Temp extends Atom {
     return ys;
   }
 
+  /**
+   * Determine whether this item is for a non-Unit, corresponding to a value that requires a
+   * run-time representation in the generated LLVM.
+   */
+  boolean nonUnit() {
+    return type.nonUnit();
+  }
+
+  /**
+   * Filter all unit values from this array producing either a new (shorter) array, or just
+   * returning the original array if all of the elements are non-units.
+   */
+  static Temp[] nonUnits(Temp[] xs) {
+    int nonUnits = 0; // count number of non unit components
+    for (int i = 0; i < xs.length; i++) {
+      if (xs[i].nonUnit()) {
+        nonUnits++;
+      }
+    }
+    if (nonUnits >= xs.length) { // all components are non unit
+      return xs; // so there is no change
+    }
+    Temp[] nxs = new Temp[nonUnits]; // make array with just the non units
+    for (int i = 0, j = 0; j < nonUnits; i++) {
+      if (xs[i].nonUnit()) {
+        nxs[j++] = xs[i];
+      }
+    }
+    return nxs;
+  }
+
   /** Find the LLVM type for this Temp value. */
   llvm.Type lookupType(LLVMMap lm) {
     return lm.toLLVM(type);

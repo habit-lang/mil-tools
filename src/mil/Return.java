@@ -211,14 +211,15 @@ public class Return extends Call {
 
   /** Generate LLVM code to execute this Tail in tail call position. */
   llvm.Code toLLVMDone(LLVMMap lm, VarMap vm, TempSubst s, Label[] succs) {
-    if (args.length == 0) {
+    Atom[] nuargs = Atom.nonUnits(args);
+    if (nuargs.length == 0) {
       return new llvm.RetVoid();
-    } else if (args.length == 1) {
-      return new llvm.Ret(args[0].toLLVMAtom(lm, vm, s));
+    } else if (nuargs.length == 1) {
+      return new llvm.Ret(nuargs[0].toLLVMAtom(lm, vm, s));
     } else {
-      llvm.Value[] vals = new llvm.Value[args.length];
-      for (int i = 0; i < args.length; i++) {
-        vals[i] = args[i].toLLVMAtom(lm, vm, s);
+      llvm.Value[] vals = new llvm.Value[nuargs.length];
+      for (int i = 0; i < nuargs.length; i++) {
+        vals[i] = nuargs[i].toLLVMAtom(lm, vm, s);
       }
       return new llvm.Ret(new llvm.Struct(lm.toLLVM(outputs), vals));
     }

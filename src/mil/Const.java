@@ -93,4 +93,12 @@ public abstract class Const extends Atom {
       return as;
     }
   }
+
+  /**
+   * Determine whether this item is for a non-Unit, corresponding to a value that requires a
+   * run-time representation in the generated LLVM.
+   */
+  boolean nonUnit() {
+    return true;
+  }
 }

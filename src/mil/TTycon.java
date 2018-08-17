@@ -432,6 +432,11 @@ public class TTycon extends TConst {
     return name != DataName.aref && name != DataName.aptr;
   }
 
+  boolean nonUnit(Type[] tenv) {
+    Synonym s = name.isSynonym();
+    return (s != null) ? s.getExpansion().nonUnit(null) : name.nonUnit();
+  }
+
   /**
    * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full
    * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.

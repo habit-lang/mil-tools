@@ -95,7 +95,7 @@ class LLVMMap extends TypeSet {
     llvm.DefinedType fun = new llvm.DefinedType(); // %fun = type %rng (%clo*, %dom...)*
     llvm.DefinedType clo = new llvm.DefinedType(); // %clo = type { %fun }
     llvm.Type ptr = clo.ptr(); // %ptr = type %clo*
-    llvm.Type[] dom = stackArg(1).closureArgs(this, ptr, 0);
+    llvm.Type[] dom = stackArg(1).closureArgs(this, ptr, 0, 0);
     llvm.Type rng = toLLVM(stackArg(2));
     fun.define(new llvm.FunctionType(rng, dom).ptr());
     clo.define(new llvm.StructType(new llvm.Type[] {fun}));

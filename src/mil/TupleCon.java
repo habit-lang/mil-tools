@@ -129,14 +129,25 @@ public class TupleCon extends PrimTycon {
     if (arity != args) {
       debug.Internal.error("TupleCon toLLVM arity mismatch");
     }
-    if (arity == 0) {
+    int nonUnits = 0; // count the number of non unit types
+    int lastNon = 0; // position of last non unit
+    for (int i = 0; i < arity; i++) {
+      if (lm.stackArg(i + 1).nonUnit()) {
+        nonUnits++;
+        lastNon = i;
+      }
+    }
+    if (nonUnits == 0) {
       return llvm.Type.vd;
-    } else if (arity == 1) {
-      return lm.toLLVM(lm.stackArg(1));
+    } else if (nonUnits == 1) { // only one?  then lastNon gives its position
+      return lm.toLLVM(lm.stackArg(lastNon + 1));
     } else {
-      llvm.Type[] tys = new llvm.Type[arity];
-      for (int i = 0; i < arity; i++) {
-        tys[i] = lm.toLLVM(lm.stackArg(i + 1));
+      llvm.Type[] tys = new llvm.Type[nonUnits];
+      for (int i = 0, j = 0; j < nonUnits; i++) {
+        Type t = lm.stackArg(i + 1);
+        if (t.nonUnit()) {
+          tys[j++] = lm.toLLVM(t);
+        }
       }
       // Define a symbolic name for this type:
       llvm.DefinedType dt = new llvm.DefinedType(new llvm.StructType(tys));

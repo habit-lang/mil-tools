@@ -66,8 +66,8 @@ abstract class CFG extends Node {
   }
 
   /**
-   * Register a control flow edge between the specified source and destination with the given
-   * arguments.
+   * Register a control flow edge between the specified source and destination with the given (non
+   * unit) arguments.
    */
   Label edge(Node src, Block b, Atom[] args) {
     // If the target for this edge is a block that is not included in this CFG, then we need

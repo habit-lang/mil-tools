@@ -1125,7 +1125,7 @@ public class Block extends Defn {
       for (int i = 0; i < params.length; i++) {
         nparams[i] = params[i].newParam();
       }
-      BlockCFG cfg = new BlockCFG(this, nparams);
+      BlockCFG cfg = new BlockCFG(this, Temp.nonUnits(nparams));
       cfg.initCFG();
       return cfg;
     }
@@ -1137,7 +1137,7 @@ public class Block extends Defn {
   }
 
   TempSubst mapParams(Atom[] args, TempSubst s) {
-    return TempSubst.extend(params, TempSubst.apply(args, s), s);
+    return TempSubst.extend(Temp.nonUnits(params), TempSubst.apply(args, s), s);
   }
 
   /**

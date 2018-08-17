@@ -373,11 +373,19 @@ public class TAp extends Type {
     return arg;
   }
 
-  /** Calculate an array of llvm Types corresponding to the components of a given MIL Tuple type. */
-  llvm.Type[] tupleToArray(LLVMMap lm, int args) {
-    llvm.Type[] tys = fun.tupleToArray(lm, ++args);
-    tys[tys.length - args] = lm.toLLVM(arg);
-    return tys;
+  /**
+   * Calculate an array of llvm Types corresponding to the components of a given MIL Tuple type.
+   * Unit types are filtered out in the process, so the resulting array may not actually have as
+   * many components as the input tuple type.
+   */
+  llvm.Type[] tupleToArray(LLVMMap lm, int args, int nonUnits) {
+    if (arg.nonUnit()) {
+      llvm.Type[] tys = fun.tupleToArray(lm, args + 1, ++nonUnits);
+      tys[tys.length - nonUnits] = lm.toLLVM(arg);
+      return tys;
+    } else {
+      return fun.tupleToArray(lm, args + 1, nonUnits);
+    }
   }
 
   /**
@@ -385,9 +393,13 @@ public class TAp extends Type {
    * type as the first argument and adding an extra argument for each component in this type, which
    * must be a tuple.
    */
-  llvm.Type[] closureArgs(LLVMMap lm, llvm.Type ptr, int args) {
-    llvm.Type[] cargs = fun.closureArgs(lm, ptr, ++args);
-    cargs[cargs.length - args] = lm.toLLVM(arg);
-    return cargs;
+  llvm.Type[] closureArgs(LLVMMap lm, llvm.Type ptr, int args, int nonUnits) {
+    if (arg.nonUnit()) { // Include non units in the final array
+      llvm.Type[] cargs = fun.closureArgs(lm, ptr, args + 1, ++nonUnits);
+      cargs[cargs.length - nonUnits] = lm.toLLVM(arg);
+      return cargs;
+    } else { // Skip unit arguments
+      return fun.closureArgs(lm, ptr, args + 1, nonUnits);
+    }
   }
 }

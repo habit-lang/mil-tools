@@ -208,6 +208,14 @@ public class DataAlloc extends Allocator {
     return staticAlloc(prog, vals, lm.cfunLayoutType(cf), cf.dataPtrType(lm));
   }
 
+  /** Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. */
+  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, llvm.Code c) {
+    if (cf != Cfun.Unit) {
+      debug.Internal.error("DataAlloc does not return void");
+    }
+    return c;
+  }
+
   /**
    * Generate LLVM code to execute this Tail and return a result from the right hand side of a Bind.
    */

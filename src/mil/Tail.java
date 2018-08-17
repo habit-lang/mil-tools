@@ -460,18 +460,18 @@ public abstract class Tail {
    * variables in vs and then executes the specified code.
    */
   llvm.Code toLLVMCont(LLVMMap lm, VarMap vm, TempSubst s, Temp[] vs, llvm.Code code) {
-    Type rt = this.resultType(); // Find the type of the values that will be returned
-    if (rt.sameTTycon(null, Type.empty)) { // Tail does not return any results
-      return toLLVMContVoid(lm, vm, s, code); // ... so execute the tail, and then continue
+    Temp[] nuvs = Temp.nonUnits(vs);
+    if (nuvs.length == 0) { // Tail does not return any results
+      return toLLVMContVoid(lm, vm, s, code); // ... so just execute the tail, and then continue
     } else {
-      llvm.Local lhs; // Assuming type correctness, vs.length >= 1
-      if (vs.length == 1) { // Just one result?
-        lhs = vm.lookup(lm, vs[0]); // ... save result directly
+      llvm.Local lhs;
+      if (nuvs.length == 1) { // Just one result?
+        lhs = vm.lookup(lm, nuvs[0]); // ... save result directly
       } else { // Multiple results?
-        lhs = vm.reg(lm.toLLVM(rt)); // ... a register to hold the structure
-        for (int n = vs.length;
+        lhs = vm.reg(lm.toLLVM(resultType())); // ... a register to hold the structure
+        for (int n = nuvs.length;
             --n >= 0; ) { // ... and a sequence of extractvalues to access components
-          code = new llvm.Op(vm.lookup(lm, vs[n]), new llvm.ExtractValue(lhs, n), code);
+          code = new llvm.Op(vm.lookup(lm, nuvs[n]), new llvm.ExtractValue(lhs, n), code);
         }
       }
       return toLLVMContBind(lm, vm, s, lhs, code); // ... execute tail, capture result, and continue
@@ -480,15 +480,15 @@ public abstract class Tail {
 
   /** Generate LLVM code to execute this Tail in tail call position. */
   llvm.Code toLLVMDone(LLVMMap lm, VarMap vm, TempSubst s, Label[] succs) {
-    Type rt = this.resultType(); // Find the type of the values that will be returned
-    if (rt.sameTTycon(null, Type.empty)) { // Tail does not return any results
+    llvm.Type ty = lm.toLLVM(resultType()); // Find the type of the values that will be returned
+    if (ty == llvm.Type.vd) { // Tail does not return any results
       return this.toLLVMContVoid(
           lm,
           vm,
           s, // ... so execute the tail
           new llvm.RetVoid()); // ... and return without a result
     } else {
-      llvm.Local lhs = vm.reg(lm.toLLVM(rt));
+      llvm.Local lhs = vm.reg(ty);
       return this.toLLVMContBind(
           lm,
           vm,

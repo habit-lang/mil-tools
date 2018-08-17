@@ -333,10 +333,11 @@ public class AllocType {
    * type.
    */
   private llvm.StructType structLayoutCalc(LLVMMap lm, llvm.Type tag) {
-    llvm.Type[] tys = new llvm.Type[1 + stored.length];
+    Type[] nustored = Type.nonUnits(stored);
+    llvm.Type[] tys = new llvm.Type[1 + nustored.length];
     tys[0] = tag;
-    for (int i = 0; i < stored.length; i++) {
-      tys[i + 1] = lm.toLLVM(stored[i]);
+    for (int i = 0; i < nustored.length; i++) {
+      tys[i + 1] = lm.toLLVM(nustored[i]);
     }
     return new llvm.StructType(tys);
   }

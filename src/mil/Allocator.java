@@ -85,18 +85,19 @@ public abstract class Allocator extends Call {
    */
   llvm.Value[] calcStaticValue(LLVMMap lm, llvm.Program prog) {
     llvm.Value[] comps = null; // lazily allocated array of components
-    int n = args.length;
+    Atom[] nuargs = Atom.nonUnits(args);
+    int n = nuargs.length;
     if (n <= 0) {
       comps = new llvm.Value[1]; // leave space for the tag at index 0
     } else {
-      llvm.Value v = args[0].calcStaticValue();
+      llvm.Value v = nuargs[0].calcStaticValue();
       if (v == null) {
         return null; // if any component is unknown, then so is the full allocator
       }
       comps = new llvm.Value[1 + n]; // again, allow for tag at index 0
       comps[1] = v;
       for (int i = 1; i < n; i++) {
-        if ((comps[1 + i] = args[i].calcStaticValue()) == null) {
+        if ((comps[1 + i] = nuargs[i].calcStaticValue()) == null) {
           return null;
         }
       }
@@ -127,12 +128,6 @@ public abstract class Allocator extends Call {
     return new llvm.Global(genPtrType, valueName);
   }
 
-  /** Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. */
-  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, llvm.Code c) {
-    debug.Internal.error("Allocator does not return void");
-    return c;
-  }
-
   /**
    * Generate code to allocate space for an object of type objt, set obj to point to the start of
    * the (uninitialized) memory, fill in the tag and fields, and then continue with the code in c.
@@ -146,12 +141,13 @@ public abstract class Allocator extends Call {
       llvm.Value tag,
       llvm.Code c) {
     // NOTE: The following steps build up the desired code in reverse order of execution
+    Atom[] nuargs = Atom.nonUnits(args);
 
     // - Save the fields in the object allocated at the address in obj:
-    int n = args.length;
+    int n = nuargs.length;
     if (n > 0) {
       while (--n >= 0) {
-        c = storeField(vm, s, obj, n + 1, args[n].toLLVMAtom(lm, vm, s), c);
+        c = storeField(vm, s, obj, n + 1, nuargs[n].toLLVMAtom(lm, vm, s), c);
       }
       c = new llvm.CodeComment("initialize other fields", c);
     }

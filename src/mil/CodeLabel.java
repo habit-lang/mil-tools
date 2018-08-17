@@ -59,7 +59,7 @@ class CodeLabel extends Label {
   llvm.Code toLLVMLabel(LLVMMap lm, VarMap vm, TempSubst s) {
     llvm.Code code = b.toLLVMBlock(lm, vm, s, succs);
     if (preds.next != null) { // multiple predecessors: merge parameters using phi functions
-      Temp[] params = b.getParams();
+      Temp[] params = Temp.nonUnits(b.getParams());
       if (params.length > 0) {
         int numpreds = 2; // count the number of predecessor nodes
         for (PredNodes pns = preds.next.next; pns != null; pns = pns.next) {

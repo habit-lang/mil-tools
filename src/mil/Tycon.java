@@ -347,6 +347,14 @@ public abstract class Tycon extends TypeName {
   }
 
   /**
+   * Determine whether this item is for a non-Unit, corresponding to a value that requires a
+   * run-time representation in the generated LLVM.
+   */
+  boolean nonUnit() {
+    return true;
+  }
+
+  /**
    * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full
    * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.
    */

@@ -770,10 +770,11 @@ public class ClosureDefn extends Defn {
 
   /** Calculate an array of formal parameters for the associated LLVM function definition. */
   llvm.Local[] formals(LLVMMap lm, DefnVarMap dvm) {
-    llvm.Local[] formals = new llvm.Local[1 + args.length]; // Closure pointer + arguments
+    Temp[] nuargs = Temp.nonUnits(args);
+    llvm.Local[] formals = new llvm.Local[1 + nuargs.length]; // Closure pointer + arguments
     formals[0] = dvm.reg(closurePtrType(lm));
-    for (int i = 0; i < args.length; i++) {
-      formals[1 + i] = dvm.lookup(lm, args[i]);
+    for (int i = 0; i < nuargs.length; i++) {
+      formals[1 + i] = dvm.lookup(lm, nuargs[i]);
     }
     return formals;
   }
@@ -794,17 +795,18 @@ public class ClosureDefn extends Defn {
     cs[0] =
         new llvm.CodeComment(
             "body of closure starts here", dvm.loadGlobals(tail.toLLVMDone(lm, dvm, null, succs)));
-    if (params.length != 0) { // load closure parameters from memory
+    Temp[] nuparams = Temp.nonUnits(params); // identify non unit parameters
+    if (nuparams.length != 0) { // load closure parameters from memory
       llvm.Type ptrt = lm.closureLayoutType(this).ptr(); // type identifies components of closure
       llvm.Local ptr = dvm.reg(ptrt); // holds a pointer to the closure object
-      for (int n = params.length; --n >= 0; ) { // extract stored parameters
+      for (int n = nuparams.length; --n >= 0; ) { // extract stored parameters
         llvm.Local pptr =
-            dvm.reg(params[n].lookupType(lm).ptr()); // holds pointer to stored parameter
+            dvm.reg(nuparams[n].lookupType(lm).ptr()); // holds pointer to stored parameter
         cs[0] =
             new llvm.Op(
                 pptr,
                 new llvm.Getelementptr(ptr, new llvm.Int(0), new llvm.Int(n + 1)),
-                new llvm.Op(dvm.lookup(lm, params[n]), new llvm.Load(pptr), cs[0]));
+                new llvm.Op(dvm.lookup(lm, nuparams[n]), new llvm.Load(pptr), cs[0]));
       }
       cs[0] =
           new llvm.CodeComment(

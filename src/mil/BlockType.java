@@ -202,7 +202,7 @@ public class BlockType {
   llvm.FunctionType toLLVM(LLVMMap lm) {
     llvm.Type rt = lm.toLLVM(rng);
     // TODO: eliminate duplicated calls to canonType in line below and in tupleToArray ...
-    llvm.Type[] tys = dom.canonType(lm).tupleToArray(lm, 0);
+    llvm.Type[] tys = dom.canonType(lm).tupleToArray(lm, 0, 0);
     return new llvm.FunctionType(rt, tys);
   }
 }

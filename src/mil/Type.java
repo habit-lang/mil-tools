@@ -880,6 +880,41 @@ public abstract class Type extends Scheme {
   }
 
   /**
+   * Determine whether this item is for a non-Unit, corresponding to a value that requires a
+   * run-time representation in the generated LLVM.
+   */
+  boolean nonUnit() {
+    return nonUnit(null);
+  }
+
+  boolean nonUnit(Type[] tenv) {
+    return true;
+  }
+
+  /**
+   * Filter all unit values from this array producing either a new (shorter) array, or just
+   * returning the original array if all of the elements are non-units.
+   */
+  static Type[] nonUnits(Type[] xs) {
+    int nonUnits = 0; // count number of non unit components
+    for (int i = 0; i < xs.length; i++) {
+      if (xs[i].nonUnit()) {
+        nonUnits++;
+      }
+    }
+    if (nonUnits >= xs.length) { // all components are non unit
+      return xs; // so there is no change
+    }
+    Type[] nxs = new Type[nonUnits]; // make array with just the non units
+    for (int i = 0, j = 0; j < nonUnits; i++) {
+      if (xs[i].nonUnit()) {
+        nxs[j++] = xs[i];
+      }
+    }
+    return nxs;
+  }
+
+  /**
    * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full
    * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.
    */
@@ -898,14 +933,18 @@ public abstract class Type extends Scheme {
     return this;
   }
 
-  /** Calculate an array of llvm Types corresponding to the components of a given MIL Tuple type. */
-  llvm.Type[] tupleToArray(LLVMMap lm, int args) {
+  /**
+   * Calculate an array of llvm Types corresponding to the components of a given MIL Tuple type.
+   * Unit types are filtered out in the process, so the resulting array may not actually have as
+   * many components as the input tuple type.
+   */
+  llvm.Type[] tupleToArray(LLVMMap lm, int args, int nonUnits) {
     if (this != TupleCon.tuple(args).asType()) {
       // TODO: uncomment the following to trigger stricter error checking
       //    debug.Internal.error("tupleToArray not defined for " + this);
       //    return null; // not reached
     }
-    return new llvm.Type[args];
+    return new llvm.Type[nonUnits];
   }
 
   /**
@@ -913,12 +952,12 @@ public abstract class Type extends Scheme {
    * type as the first argument and adding an extra argument for each component in this type, which
    * must be a tuple.
    */
-  llvm.Type[] closureArgs(LLVMMap lm, llvm.Type ptr, int args) {
+  llvm.Type[] closureArgs(LLVMMap lm, llvm.Type ptr, int args, int nonUnits) {
     if (this != TupleCon.tuple(args).asType()) {
       debug.Internal.error("closureArgs not defined for " + this);
       return null; // not reached
     }
-    llvm.Type[] cargs = new llvm.Type[1 + args];
+    llvm.Type[] cargs = new llvm.Type[1 + nonUnits];
     cargs[0] = ptr;
     return cargs;
   }

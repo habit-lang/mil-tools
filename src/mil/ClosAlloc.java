@@ -231,6 +231,12 @@ public class ClosAlloc extends Allocator {
     return staticAlloc(prog, vals, lm.closureLayoutType(k), k.closurePtrType(lm));
   }
 
+  /** Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. */
+  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, llvm.Code c) {
+    debug.Internal.error("ClosAlloc does not return void");
+    return c;
+  }
+
   /**
    * Generate LLVM code to execute this Tail and return a result from the right hand side of a Bind.
    */

@@ -22,12 +22,9 @@ import compiler.*;
 import core.*;
 
 /**
- * Captures information about predecessors, including the predecessor node and the list of arguments
- * from that node. The latter can be used to determine where phi nodes are needed (or to determine
- * renamings that are needed for blocks with a single entry). TODO: we have enough information to
- * determine when there are multiple edges to a Label with the same predecessor; this will require
- * the creation of additional "goto blocks" to disambiguate, but how should we capture this for
- * input to later stages?
+ * Captures information about predecessors, including the predecessor node and the list of (non
+ * unit) arguments from that node. The latter can be used to determine where phi nodes are needed
+ * (or to determine renamings that are needed for blocks with a single entry).
  */
 class PredNodes {
 

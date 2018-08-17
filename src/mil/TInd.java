@@ -278,4 +278,8 @@ public class TInd extends Type {
   Type apply(Type[] thisenv, TVarSubst s) {
     return bound.apply(boundenv, s);
   }
+
+  boolean nonUnit(Type[] tenv) {
+    return bound.nonUnit(boundenv);
+  }
 }

@@ -86,6 +86,14 @@ public abstract class Top extends Atom {
             pos, "Cannot use type signature; \"" + getId() + "\" is not a top level variable"));
   }
 
+  /**
+   * Determine whether this item is for a non-Unit, corresponding to a value that requires a
+   * run-time representation in the generated LLVM.
+   */
+  boolean nonUnit() {
+    return type.nonUnit();
+  }
+
   public llvm.Value staticValue() {
     return null;
   }

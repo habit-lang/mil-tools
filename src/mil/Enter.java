@@ -269,10 +269,11 @@ public class Enter extends Call {
   }
 
   llvm.Value[] closureActuals(LLVMMap lm, VarMap vm, TempSubst s) {
-    llvm.Value[] acts = new llvm.Value[1 + args.length]; // make the argument list
+    Atom[] nuargs = Atom.nonUnits(args);
+    llvm.Value[] acts = new llvm.Value[1 + nuargs.length]; // make the argument list
     acts[0] = f.toLLVMAtom(lm, vm, s); // a pointer to the closure for f as an llvm value
-    for (int i = 0; i < args.length; i++) { // with llvm values for each of the function arguments
-      acts[i + 1] = args[i].toLLVMAtom(lm, vm, s);
+    for (int i = 0; i < nuargs.length; i++) { // with llvm values for each of the function arguments
+      acts[i + 1] = nuargs[i].toLLVMAtom(lm, vm, s);
     }
     return acts;
   }

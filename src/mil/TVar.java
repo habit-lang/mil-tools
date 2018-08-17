@@ -388,4 +388,11 @@ public final class TVar extends TInd {
     }
     return bound;
   }
+
+  boolean nonUnit(Type[] tenv) {
+    if (bound == null) {
+      debug.Internal.error("nonUnit for unbound TVar");
+    }
+    return bound.nonUnit(boundenv);
+  }
 }

@@ -1821,8 +1821,12 @@ public class External extends TopDefn {
   void calcStaticValues(LLVMMap lm, llvm.Program prog) {
     if (declared.isQuantified()) {
       debug.Internal.error("external " + id + " has polymorphic type " + declared);
+    } else {
+      Type t = declared.instantiate();
+      if (t.nonUnit()) {
+        prog.add(new llvm.GlobalVarDecl(id, lm.toLLVM(t)));
+      }
     }
-    prog.add(new llvm.GlobalVarDecl(id, lm.toLLVM(declared.instantiate())));
   }
 
   /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */

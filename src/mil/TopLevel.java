@@ -535,13 +535,17 @@ public class TopLevel extends TopDefn {
 
   /** Calculate a staticValue (which could be null) for each top level definition. */
   void calcStaticValues(LLVMMap lm, llvm.Program prog) {
-    staticValue = tail.calcStaticValue(lm, prog);
-    // Add global variable definitions for any lhs components without a static value:
-    for (int i = 0; i < lhs.length; i++) {
-      if (staticValue == null || staticValue[i] == null) {
-        prog.add(lhs[i].globalVarDefn(lm, !isEntrypoint));
-      } else if (isEntrypoint) {
-        prog.add(lhs[i].globalVarDefn(lm, false, staticValue[i]));
+    if (TopLhs.hasNonUnits(lhs)) {
+      staticValue = tail.calcStaticValue(lm, prog);
+      // Add global variable definitions for any (non unit) lhs components without a static value:
+      for (int i = 0; i < lhs.length; i++) {
+        if (lhs[i].nonUnit()) {
+          if (staticValue == null || staticValue[i] == null) {
+            prog.add(lhs[i].globalVarDefn(lm, !isEntrypoint));
+          } else if (isEntrypoint) {
+            prog.add(lhs[i].globalVarDefn(lm, false, staticValue[i]));
+          }
+        }
       }
     }
   }
@@ -582,12 +586,17 @@ public class TopLevel extends TopDefn {
     for (int i = 0; i < lhs.length; i++) {
       vs[i] = lhs[i].makeTemp();
     }
-    code = llvm.Code.reverseOnto(tail.toLLVMCont(lm, ivm, null, vs, null), code);
-    for (int i = 0; i < lhs.length; i++) {
-      if (staticValue == null || staticValue[i] == null) {
-        llvm.Local var = ivm.lookup(lm, vs[i]);
-        ivm.mapGlobal(this, i, var);
-        code = new llvm.Store(var, new llvm.Global(var.getType().ptr(), lhs[i].getId()), code);
+    Temp[] nuvs = Temp.nonUnits(vs);
+    if (nuvs.length == 0) {
+      code = llvm.Code.reverseOnto(tail.toLLVMContVoid(lm, ivm, null, null), code);
+    } else {
+      code = llvm.Code.reverseOnto(tail.toLLVMCont(lm, ivm, null, nuvs, null), code);
+      for (int i = 0; i < lhs.length; i++) {
+        if (lhs[i].nonUnit() && (staticValue == null || staticValue[i] == null)) {
+          llvm.Local var = ivm.lookup(lm, vs[i]);
+          ivm.mapGlobal(this, i, var);
+          code = new llvm.Store(var, new llvm.Global(var.getType().ptr(), lhs[i].getId()), code);
+        }
       }
     }
     return code;

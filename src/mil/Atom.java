@@ -443,6 +443,35 @@ public abstract class Atom {
   }
 
   /**
+   * Determine whether this item is for a non-Unit, corresponding to a value that requires a
+   * run-time representation in the generated LLVM.
+   */
+  abstract boolean nonUnit();
+
+  /**
+   * Filter all unit values from this array producing either a new (shorter) array, or just
+   * returning the original array if all of the elements are non-units.
+   */
+  static Atom[] nonUnits(Atom[] xs) {
+    int nonUnits = 0; // count number of non unit components
+    for (int i = 0; i < xs.length; i++) {
+      if (xs[i].nonUnit()) {
+        nonUnits++;
+      }
+    }
+    if (nonUnits >= xs.length) { // all components are non unit
+      return xs; // so there is no change
+    }
+    Atom[] nxs = new Atom[nonUnits]; // make array with just the non units
+    for (int i = 0, j = 0; j < nonUnits; i++) {
+      if (xs[i].nonUnit()) {
+        nxs[j++] = xs[i];
+      }
+    }
+    return nxs;
+  }
+
+  /**
    * Calculate a static value for this atom, or return null if the result must be determined at
    * runtime.
    */
@@ -452,6 +481,7 @@ public abstract class Atom {
 
   /** Calculate a sequence of LLVM values corresponding to an array of MIL arguments. */
   static llvm.Value[] toLLVMValues(LLVMMap lm, VarMap vm, TempSubst s, Atom[] args) {
+    Atom[] nuargs = Atom.nonUnits(args);
     llvm.Value[] vals = new llvm.Value[args.length];
     for (int i = 0; i < args.length; i++) {
       vals[i] = args[i].toLLVMAtom(lm, vm, s);
