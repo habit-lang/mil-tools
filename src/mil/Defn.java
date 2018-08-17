@@ -533,7 +533,7 @@ public abstract class Defn {
 
   /**
    * Generate code (in reverse) to initialize each TopLevel (unless all of the components are
-   * statically known). TODO: what if a TopLevel has an empty array of Lhs?
+   * statically known).
    */
   llvm.Code addRevInitCode(LLVMMap lm, InitVarMap ivm, llvm.Code code) {
     return code;

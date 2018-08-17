@@ -48,6 +48,10 @@ public class Op extends Code {
     next.print(out);
   }
 
+  /**
+   * Utility function for reverseOnto(): handle type specific manipulations for adjusting the
+   * pointers in this Code object when it is added to the front of the specified code sequence.
+   */
   Code rotateOnto(Code rest) {
     Code next = this.next;
     this.next = rest;

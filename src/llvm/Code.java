@@ -26,6 +26,10 @@ public abstract class Code {
   /** Print out this code sequence to the specified PrintWriter. */
   public abstract void print(PrintWriter out);
 
+  /**
+   * Reverse the elements of the first code sequence (viewed as a null-terminated linked list of
+   * CodeComment, Op, CallVoid, and Store instructions) onto the front of the second code sequence.
+   */
   public static Code reverseOnto(Code edoc, Code rest) {
     while (edoc != null) {
       Code next = edoc.rotateOnto(rest);
@@ -35,6 +39,10 @@ public abstract class Code {
     return rest;
   }
 
+  /**
+   * Utility function for reverseOnto(): handle type specific manipulations for adjusting the
+   * pointers in this Code object when it is added to the front of the specified code sequence.
+   */
   Code rotateOnto(Code rest) {
     debug.Internal.error("called rotateOnto for a terminator");
     return null;

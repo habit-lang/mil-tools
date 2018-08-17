@@ -230,6 +230,7 @@ class TopLhs {
     return globalVarDefn(lm, internal, lm.toLLVM(defining).defaultValue());
   }
 
+  /** Make a new temporary to hold a value for this left hand side. */
   Temp makeTemp() {
     return new Temp(defining);
   }
