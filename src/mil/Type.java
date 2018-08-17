@@ -940,9 +940,8 @@ public abstract class Type extends Scheme {
    */
   llvm.Type[] tupleToArray(LLVMMap lm, int args, int nonUnits) {
     if (this != TupleCon.tuple(args).asType()) {
-      // TODO: uncomment the following to trigger stricter error checking
-      //    debug.Internal.error("tupleToArray not defined for " + this);
-      //    return null; // not reached
+      debug.Internal.error("tupleToArray not defined for " + this);
+      return null; // not reached
     }
     return new llvm.Type[nonUnits];
   }
