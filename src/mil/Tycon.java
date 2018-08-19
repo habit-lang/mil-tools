@@ -116,11 +116,6 @@ public abstract class Tycon extends TypeName {
     return null;
   }
 
-  /** Find the name of the associated bitdata type, if any. */
-  public BitdataName bitdataName() {
-    return null;
-  }
-
   /**
    * Worker method for calculating the BitSize for a type of the form (this a) (i.e., this, applied
    * to the argument a). The specified type environment, tenv, is used for both this and a.
@@ -196,6 +191,11 @@ public abstract class Tycon extends TypeName {
       int w = a.arefWidth(tenv);
       return (w > 0) ? obdd.Pat.all(w) : null;
     }
+    return null;
+  }
+
+  /** Find the name of the associated bitdata type, if any. */
+  public BitdataName bitdataName() {
     return null;
   }
 

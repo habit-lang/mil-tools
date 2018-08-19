@@ -24,6 +24,6 @@ import mil.*;
 class InvalidWidthFailure extends Failure {
 
   public InvalidWidthFailure(Position pos, BitdataName bn, java.math.BigInteger size) {
-    super(pos, "BitSize(" + bn + ") = " + size + " is outside valid range 0 to " + Type.MAXWIDTH);
+    super(pos, "BitSize(" + bn + ") = " + size + " is outside valid range 0 to " + Type.MAX_INT);
   }
 }

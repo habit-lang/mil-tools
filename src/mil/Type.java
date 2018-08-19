@@ -401,17 +401,7 @@ public abstract class Type extends Scheme {
 
   public static final int WORDSIZE = 32;
 
-  public static final BigInteger BigWORDSIZE = BigInteger.valueOf(WORDSIZE);
-
-  public static final Type TypeWORDSIZE = new TNat(BigWORDSIZE);
-
-  public static final int MAXWIDTH = 4 * WORDSIZE;
-
-  public static final BigInteger BigMAXWIDTH = BigInteger.valueOf(MAXWIDTH);
-
-  public static final BigInteger BigMINIX = BigInteger.valueOf(2);
-
-  public static final BigInteger BigMAXIX = BigInteger.ONE.shiftLeft(WORDSIZE);
+  public static final Type TypeWORDSIZE = new TNat(BigInteger.valueOf(WORDSIZE));
 
   /** Return the number of words that are needed to hold a value with the specified bitsize. */
   public static int numWords(int numBits) {
@@ -419,28 +409,52 @@ public abstract class Type extends Scheme {
   }
 
   /**
-   * Determine whether this type is a valid argument for a Bit type (i.e., a TNat in the range 0 to
-   * BigMAXWIDTH inclusive).
+   * Determine whether this type is a natural number that falls within the specified range,
+   * inclusive of bounds.
    */
-  BigInteger getBitArg() {
-    BigInteger n = getNat();
-    return (n != null && (n.compareTo(BigInteger.ZERO) >= 0) && (n.compareTo(BigMAXWIDTH) <= 0))
-        ? n
-        : null;
+  BigInteger inRange(BigInteger lo, BigInteger hi) {
+    return null;
   }
 
   /**
-   * Determine whether this type is a valid argument for an Ix type (i.e., a TNat in the range
-   * BigMINIX to BigMAXIX inclusive).
+   * A BigInteger representation for the largest positive value that can be represented by a
+   * (signed) int.
    */
-  BigInteger getIxArg() {
-    BigInteger n = getNat();
-    return (n != null && (n.compareTo(BigMINIX) >= 0) && (n.compareTo(BigMAXIX) <= 0)) ? n : null;
+  public static final BigInteger MAX_INT = BigInteger.valueOf(Integer.MAX_VALUE);
+
+  /**
+   * Test whether this is a natural number type in the range [0..MAX_INT]. (If a value v passes this
+   * test, then an intValue() call on the resulting BigInteger will produce the correct int result
+   * with no loss of information.)
+   */
+  BigInteger isNonNegInt() {
+    return inRange(BigInteger.ZERO, MAX_INT);
   }
 
-  /** Find the name of the associated bitdata type, if any. */
-  public BitdataName bitdataName() {
-    return null;
+  /**
+   * Test whether this is a natural number type in the range [1..MAX_INT]. (If a value v passes this
+   * test, then an intValue() call on the resulting BigInteger will produce the correct int result
+   * with no loss of information.)
+   */
+  BigInteger isPosInt() {
+    return inRange(BigInteger.ONE, MAX_INT);
+  }
+
+  /**
+   * A BigInteger representation for the largest value that can be represented by an unsigned Word.
+   */
+  public static final BigInteger MAX_WORD =
+      BigInteger.ONE.shiftLeft(WORDSIZE).subtract(BigInteger.ONE);
+
+  /**
+   * Test whether this is a natural number type in the range [1..MAX_WORD], suitable for use as an
+   * argument to Ix. (This will ensure that all Ix values can be represented in a single word.) Note
+   * that we exclude Ix 0 because that would be an empty type. Technically, we could include
+   * MAX_WORD+1 (i.e., 1<<WORDSIZE) here but choose not to do that so that all Maybe (Ix n) types
+   * can also be represented within a single word.
+   */
+  BigInteger isIxWord() {
+    return inRange(BigInteger.ONE, MAX_WORD);
   }
 
   /**
@@ -503,18 +517,21 @@ public abstract class Type extends Scheme {
   }
 
   int bitWidth(Type[] tenv) {
-    BigInteger n = simplifyNatType(tenv).getNat();
-    if (n == null) {
+    BigInteger nat = simplifyNatType(tenv).getNat();
+    if (nat == null) {
       debug.Internal.error("Unresolved size parameter " + skeleton(tenv));
+    } else if (nat.signum() < 0 || nat.compareTo(MAX_INT) > 0) {
+      debug.Internal.error("Bit width " + nat + " is out of allowed range");
     }
-    int w = n.intValue();
-    if (w < 0 || w > Type.MAXWIDTH) {
-      debug.Internal.error("Bit width " + w + " is out of allowed range");
-    }
-    return w;
+    return nat.intValue();
   }
 
   Pat bitPat(Type[] tenv, Type a, Type b) {
+    return null;
+  }
+
+  /** Find the name of the associated bitdata type, if any. */
+  public BitdataName bitdataName() {
     return null;
   }
 

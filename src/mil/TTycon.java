@@ -218,11 +218,6 @@ public class TTycon extends TConst {
     return (t != null) ? t : this;
   }
 
-  /** Find the name of the associated bitdata type, if any. */
-  public BitdataName bitdataName() {
-    return name.bitdataName();
-  }
-
   /**
    * Return the natural number type that specifies the BitSize of this type (required to be of kind
    * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should
@@ -262,6 +257,11 @@ public class TTycon extends TConst {
 
   Pat bitPat(Type[] tenv, Type a, Type b) {
     return name.bitPat(tenv, a, b);
+  }
+
+  /** Find the name of the associated bitdata type, if any. */
+  public BitdataName bitdataName() {
+    return name.bitdataName();
   }
 
   /**

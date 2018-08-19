@@ -42,11 +42,6 @@ public class BitdataName extends DataName {
     TyconEnv.builtin.add(this);
   }
 
-  /** Find the name of the associated bitdata type, if any. */
-  public BitdataName bitdataName() {
-    return this;
-  }
-
   /** Return the nat that specifies the bit size of the type produced by this type constructor. */
   public Type bitSize() {
     return bitSize;
@@ -81,6 +76,11 @@ public class BitdataName extends DataName {
     for (int i = 0; i < layouts.length; i++) {
       layouts[i].calculateBitdataBlocks(cfuns[i]);
     }
+  }
+
+  /** Find the name of the associated bitdata type, if any. */
+  public BitdataName bitdataName() {
+    return this;
   }
 
   /** Return the bit pattern for this object. */
