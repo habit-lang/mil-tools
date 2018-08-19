@@ -74,7 +74,7 @@ public class BitConst extends Const {
   }
 
   public boolean sameBitConst(BitConst c) {
-    return this.val == c.val && this.width == c.width;
+    return this.width == c.width && this.val.equals(c.val);
   }
 
   /** Return a type for an instantiated version of this item when used as Atom (input operand). */
