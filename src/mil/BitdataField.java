@@ -224,7 +224,12 @@ public class BitdataField extends Name {
     }
     Type lt = layout.asType();
     BlockType bt = new BlockType(Type.tuple(lt, getType()), Type.tuple(lt));
-    updatePrim = new BlockPrim("update_" + id, 2, 1, Prim.PURE, bt, impl);
+    updatePrim =
+        new Prim("update_" + id, 2, 1, Prim.PURE, bt) {
+          Tail repTransformPrim(RepTypeSet set, Atom[] targs) {
+            return new BlockCall(impl, targs);
+          }
+        };
   }
 
   /**
