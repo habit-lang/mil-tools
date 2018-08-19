@@ -104,14 +104,6 @@ public class TopDef extends Top {
     return topLevel.lookForDataAlloc();
   }
 
-  /**
-   * Determine whether this src argument is a value base (i.e., a numeric or global/primitive
-   * constant) that is suitable for use in complex addressing modes.
-   */
-  boolean isBase() {
-    return topLevel.isBase();
-  }
-
   Atom specializeAtom(MILSpec spec, TVarSubst s, SpecEnv env) {
     // Find the type for this specific instance:
     Type inst = type.apply(s);

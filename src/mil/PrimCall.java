@@ -547,11 +547,6 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.load || p == Prim.store) {
-      Atom[] nargs = rewriteAddress(args, facts);
-      return (args == nargs) ? null : done(p, nargs);
-    }
-
     return null;
   }
 
@@ -1642,114 +1637,6 @@ public class PrimCall extends Call {
       return done(n);
     }
     return null;
-  }
-
-  /**
-   * Rewrite the components of an address, specified as the argument to a load or store operation
-   * for example, to introduce elements of more complex addressing modes (such as the use of
-   * offsets, index values, and offsets).
-   */
-  private static Atom[] rewriteAddress(Atom[] orig, Facts facts) {
-    Atom[] args = orig;
-
-    // We will assume, without attempting to validate it, that the args array has (at least five)
-    // components: S=args[0], b=args[1], o=args[2], i=args[3], and m=args[4].  Additional arguments
-    // may
-    // be provided (for example, to specify the value for use in a store operation) but they will be
-    // ignored here.
-
-    // Facts about the values of the o and i parameters (in other words, Tail values capturing the
-    // form
-    // of values in o and i, if known), are stored in fo and fi.  The values in fo and fi must be
-    // "refreshed" by further calls to lookupFact() if the values of o or i are changed by a
-    // rewrite.
-    Tail fo = args[2].lookupFact(facts);
-    Tail fi = args[3].isZero() ? null : args[3].lookupFact(facts);
-    Atom[] ps;
-
-    // 0)  ((S, _, B, i, m)) ---> ((S, B, _, i, m))
-    if (args[1].isZero() && args[2].isBase()) {
-      args = Atom.ensureFreshArgs(args);
-      args[1] = args[2];
-      args[2] = IntConst.Zero; // TODO: swap args 1 and 2?
-      MILProgram.report("rewrite: use offset as base address");
-    }
-
-    // 1)  ((S, _, B+o, i, m)) ---> ((S, B, o, i, m))
-    if (args[1].isZero() // no base set
-        && fo != null
-        && (ps = fo.isPrim(Prim.add)) != null) { // offset is a sum
-      if (ps[0].isBase()) { // left argument is a base
-        MILProgram.report("rewrite: base addressing using " + ps[0]);
-        args = Atom.ensureFreshArgs(args, orig);
-        args[1] = ps[0];
-        args[2] = ps[1];
-        fo = args[2].lookupFact(facts);
-      } else if (ps[1].isBase()) { // right argument is a base
-        MILProgram.report("rewrite: base addressing using " + ps[1]);
-        args = Atom.ensureFreshArgs(args, orig);
-        args[1] = ps[1];
-        args[2] = ps[0];
-        fo = args[2].lookupFact(facts);
-      }
-    }
-
-    // 2)  ((S, _, o, B+i, _)) ---> ((S, B, o, i, _))
-    if (args[1].isZero() // no base set
-        && args[4].isZero() // unit/no multiplier
-        && fi != null
-        && (ps = fi.isPrim(Prim.add)) != null) { // index is a sum
-      if (ps[0].isBase()) { // left argument is a base
-        MILProgram.report("rewrite: base addressing using " + ps[0]);
-        args = Atom.ensureFreshArgs(args, orig);
-        args[1] = ps[0];
-        args[3] = ps[1];
-        fi = args[3].lookupFact(facts);
-      } else if (ps[1].isBase()) { // right argument is a base
-        MILProgram.report("rewrite: base addressing using " + ps[1]);
-        args = Atom.ensureFreshArgs(args, orig);
-        args[1] = ps[1];
-        args[3] = ps[0];
-        fi = args[3].lookupFact(facts);
-      }
-    }
-
-    if (args[4].isZero()) { // no multiplier set
-      // Try to split the offset:
-      if (args[3].isZero() // no index set
-          && fo != null
-          && (ps = fo.isPrim(Prim.add)) != null) { // offset is a sum
-        // 3)  ((S, b, o+i, _, _)) ---> ((S, b, o, i, _))
-        MILProgram.report("rewrite: address is sum " + ps[0] + "+" + ps[1]);
-        args = Atom.ensureFreshArgs(args, orig);
-        args[2] = ps[0];
-        fo = args[2].lookupFact(facts);
-        args[3] = ps[1];
-        fi = args[3].lookupFact(facts);
-      }
-
-      // Look for opportunities for scaling:
-      if (fo != null
-          && (ps = fo.isPrim(Prim.mul)) != null // offset is a multiply
-          && ps[1].isMultiplier()) { // by a valid multiplier
-        // 4)  ((S, b, i*M, o, _)) ---> ((S, b, o, i, M))
-        MILProgram.report("rewrite: scaled address multiplier " + ps[1]);
-        args = Atom.ensureFreshArgs(args, orig);
-        args[2] = args[3]; // move original index into offset position
-        args[3] = ps[0]; // set new index
-        args[4] = ps[1]; // set multiplier
-      } else if (fi != null
-          && (ps = fi.isPrim(Prim.mul)) != null // index is a multiply
-          && ps[1].isMultiplier()) { // by a valid multiplier
-        // 5)  ((S, b, o, i*M, _)) ---> ((S, b, o, i, M))
-        MILProgram.report("rewrite: scaled address multiplier " + ps[1]);
-        args = Atom.ensureFreshArgs(args, orig);
-        args[3] = ps[0]; // set the index
-        args[4] = ps[1]; // set the multiplier
-      }
-    }
-
-    return args;
   }
 
   /**

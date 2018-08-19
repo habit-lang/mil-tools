@@ -300,14 +300,6 @@ public class TopLevel extends TopDefn {
     return tail.lookForDataAlloc();
   }
 
-  /**
-   * Determine whether this src argument is a value base (i.e., a numeric or global/primitive
-   * constant) that is suitable for use in complex addressing modes.
-   */
-  boolean isBase() {
-    return false;
-  }
-
   /** Holds the most recently computed summary value for this definition. */
   private int summary;
 

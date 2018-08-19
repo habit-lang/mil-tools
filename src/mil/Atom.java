@@ -296,41 +296,6 @@ public abstract class Atom {
   }
 
   /**
-   * Determine whether this src argument is a value base (i.e., a numeric or global/primitive
-   * constant) that is suitable for use in complex addressing modes.
-   */
-  boolean isBase() {
-    return false;
-  }
-
-  /** Determine whether this Atom argument is a zero value. */
-  boolean isZero() {
-    return false;
-  }
-
-  /**
-   * Determine whether this Atom argument is a value multiplier (i.e., a constant 2, 4, or, 8) for
-   * use in complex addressing modes.
-   */
-  boolean isMultiplier() {
-    return false;
-  }
-
-  /** Make a fresh copy of an argument list if we are still working with the original. */
-  public static Atom[] ensureFreshArgs(Atom[] args, Atom[] orig) {
-    return (args == orig) ? ensureFreshArgs(args) : args;
-  }
-
-  /** Make a fresh copy of an argument list. */
-  public static Atom[] ensureFreshArgs(Atom[] args) {
-    Atom[] nargs = new Atom[args.length];
-    for (int i = 0; i < nargs.length; i++) {
-      nargs[i] = args[i];
-    }
-    return nargs;
-  }
-
-  /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
    * equivalent program fragments have the same summary value.
    */

@@ -70,27 +70,6 @@ public class IntConst extends Const {
   }
 
   /**
-   * Determine whether this src argument is a value base (i.e., a numeric or global/primitive
-   * constant) that is suitable for use in complex addressing modes.
-   */
-  boolean isBase() {
-    return true;
-  }
-
-  /** Determine whether this Atom argument is a zero value. */
-  boolean isZero() {
-    return val == 0;
-  }
-
-  /**
-   * Determine whether this Atom argument is a value multiplier (i.e., a constant 2, 4, or, 8) for
-   * use in complex addressing modes.
-   */
-  boolean isMultiplier() {
-    return (val == 2 || val == 4 || val == 8);
-  }
-
-  /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
    * equivalent program fragments have the same summary value.
    */

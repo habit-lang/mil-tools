@@ -1209,49 +1209,6 @@ public class Prim {
     return null;
   }
 
-  private static final BlockType loadType =
-      new BlockType(
-          Type.tuple(
-              new Type[] {
-                DataName.word.asType(), // size
-                DataName.word.asType(), // base
-                DataName.word.asType(), // addr
-                DataName.word.asType(), // index
-                DataName.word.asType() // multiplier
-              }),
-          Type.tuple(DataName.word.asType()));
-
-  private static final BlockType storeType =
-      new BlockType(
-          Type.tuple(
-              new Type[] {
-                DataName.word.asType(), // size
-                DataName.word.asType(), // base
-                DataName.word.asType(), // addr
-                DataName.word.asType(), // index
-                DataName.word.asType(), // multiplier
-                DataName.word.asType() // value
-              }),
-          Type.empty);
-
-  public static final Prim load = new load();
-
-  private static class load extends Prim {
-
-    private load() {
-      super("load", 5, 1, OBSERVER, loadType);
-    }
-  }
-
-  public static final Prim store = new store();
-
-  private static class store extends Prim {
-
-    private store() {
-      super("store", 6, 0, IMPURE, storeType);
-    }
-  }
-
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
    * equivalent program fragments have the same summary value.

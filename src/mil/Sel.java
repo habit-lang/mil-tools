@@ -188,17 +188,6 @@ public class Sel extends Tail {
         return new Return(a1);
       }
     }
-    /*
-    // Possible way to rewrite a selector as a memory lookup, except that doing so
-    // disables other optimizations :-(
-    //
-        return Prim.load
-               .withArgs(new Atom[] { new IntConst(32),     // 32 bit pointer
-                                      new IntConst(4*(n+1)),// offset, skipping tag
-                                      a,                    // address of object
-                                      0,                    // no index
-                                      0 });                 // or multiplier
-    */
     return null;
   }
 

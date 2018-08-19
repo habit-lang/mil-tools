@@ -63,14 +63,6 @@ public class TopExt extends Top {
     builder.gload(external);
   }
 
-  /**
-   * Determine whether this src argument is a value base (i.e., a numeric or global/primitive
-   * constant) that is suitable for use in complex addressing modes.
-   */
-  boolean isBase() {
-    return true;
-  }
-
   Atom specializeAtom(MILSpec spec, TVarSubst s, SpecEnv env) {
     Type inst = type.apply(s);
     return new TopExt(inst, spec.specializedExternal(external, inst));
