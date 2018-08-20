@@ -65,7 +65,7 @@ class PrimDefnExp extends DefnExp {
    */
   void addTo(MILEnv milenv) throws Failure {
     BlockType bt = BlockType.validate(milenv.getTyconEnv(), domtuple, rngtuple);
-    prim = new Prim(id, domtuple.width(), rngtuple.width(), purity, bt);
+    prim = new Prim(id, purity, bt);
     debug.Log.println("primitive " + id + " :: " + bt);
     if (milenv.addPrim(prim) != null) {
       MILEnv.multipleDefns(pos, "primitive", id);

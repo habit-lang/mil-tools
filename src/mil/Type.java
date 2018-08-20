@@ -374,6 +374,15 @@ public abstract class Type extends Scheme {
     return t;
   }
 
+  /**
+   * Find the arity of this tuple type (i.e., the number of components) or return (-1) if it is not
+   * a tuple type. Parameter n specifies the number of arguments that have already been found; it
+   * should be 0 for the initial call.
+   */
+  int tupleArity(Type[] tenv, int n) {
+    return (-1);
+  }
+
   public static Type procOf(Type res) {
     return new TAp(DataName.proc.asType(), res);
   }
@@ -798,7 +807,7 @@ public abstract class Type extends Scheme {
       }
     }
     BlockType bt = new BlockType(Type.tuple(ds), Type.tuple(rs));
-    return new PrimCall(new Prim(id, ds.length, rs.length, Prim.IMPURE, bt));
+    return new PrimCall(new Prim(id, Prim.IMPURE, bt));
   }
 
   /**

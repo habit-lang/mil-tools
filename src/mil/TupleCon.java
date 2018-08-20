@@ -44,6 +44,15 @@ public class TupleCon extends PrimTycon {
     return tupleCache[n] = new TupleCon(n);
   }
 
+  /**
+   * Find the arity of this tuple type (i.e., the number of components) or return (-1) if it is not
+   * a tuple type. Parameter n specifies the number of arguments that have already been found; it
+   * should be 0 for the initial call.
+   */
+  int tupleArity(Type[] tenv, int n) {
+    return (n == arity) ? n : (-1);
+  }
+
   void write(TypeWriter tw, int prec, int args) {
     if (args == arity) {
       tw.write("[");

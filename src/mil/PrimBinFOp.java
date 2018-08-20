@@ -25,8 +25,8 @@ import core.*;
 public abstract class PrimBinFOp extends Prim {
 
   /** Default constructor. */
-  public PrimBinFOp(String id, int arity, int outity, int purity, BlockType blockType) {
-    super(id, arity, outity, purity, blockType);
+  public PrimBinFOp(String id, int purity, BlockType blockType) {
+    super(id, purity, blockType);
   }
 
   abstract boolean op(boolean n, boolean m);

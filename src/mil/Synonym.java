@@ -74,6 +74,15 @@ public class Synonym extends Tycon {
   }
 
   /**
+   * Find the arity of this tuple type (i.e., the number of components) or return (-1) if it is not
+   * a tuple type. Parameter n specifies the number of arguments that have already been found; it
+   * should be 0 for the initial call.
+   */
+  int tupleArity(Type[] tenv, int n) {
+    return expansion.tupleArity(null, n);
+  }
+
+  /**
    * Worker method for calculating the BitSize for a type of the form (this a) (i.e., this, applied
    * to the argument a). The specified type environment, tenv, is used for both this and a.
    */

@@ -27,8 +27,8 @@ import java.io.PrintWriter;
 public abstract class PrimBinOp extends Prim {
 
   /** Default constructor. */
-  public PrimBinOp(String id, int arity, int outity, int purity, BlockType blockType) {
-    super(id, arity, outity, purity, blockType);
+  public PrimBinOp(String id, int purity, BlockType blockType) {
+    super(id, purity, blockType);
   }
 
   abstract int op(int n, int m);

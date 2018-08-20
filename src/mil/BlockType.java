@@ -75,8 +75,24 @@ public class BlockType {
     return rngType();
   }
 
+  /** Return the domain type of this block type. */
+  Type domType() {
+    return dom;
+  }
+
+  /** Return the range type of this block type. */
   Type rngType() {
     return rng;
+  }
+
+  /** Return the arity (number of inputs) for this block type. */
+  int getArity() {
+    return dom.tupleArity(null, 0);
+  }
+
+  /** Return the outity (number of outputs) for this block type. */
+  int getOutity() {
+    return rng.tupleArity(null, 0);
   }
 
   /** Find the list of unbound type variables in this (monomorphic) BlockType. */

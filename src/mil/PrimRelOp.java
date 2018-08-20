@@ -27,8 +27,8 @@ import java.io.PrintWriter;
 public abstract class PrimRelOp extends Prim {
 
   /** Default constructor. */
-  public PrimRelOp(String id, int arity, int outity, int purity, BlockType blockType) {
-    super(id, arity, outity, purity, blockType);
+  public PrimRelOp(String id, int purity, BlockType blockType) {
+    super(id, purity, blockType);
   }
 
   abstract boolean op(int n, int m);

@@ -27,8 +27,8 @@ import java.io.PrintWriter;
 public abstract class PrimUnFOp extends Prim {
 
   /** Default constructor. */
-  public PrimUnFOp(String id, int arity, int outity, int purity, BlockType blockType) {
-    super(id, arity, outity, purity, blockType);
+  public PrimUnFOp(String id, int purity, BlockType blockType) {
+    super(id, purity, blockType);
   }
 
   abstract boolean op(boolean b);

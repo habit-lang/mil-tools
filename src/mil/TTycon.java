@@ -219,6 +219,15 @@ public class TTycon extends TConst {
   }
 
   /**
+   * Find the arity of this tuple type (i.e., the number of components) or return (-1) if it is not
+   * a tuple type. Parameter n specifies the number of arguments that have already been found; it
+   * should be 0 for the initial call.
+   */
+  int tupleArity(Type[] tenv, int n) {
+    return name.tupleArity(null, n);
+  }
+
+  /**
    * Return the natural number type that specifies the BitSize of this type (required to be of kind
    * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should
    * only be used with a limited collection of classes (we only expect to use it with top-level,

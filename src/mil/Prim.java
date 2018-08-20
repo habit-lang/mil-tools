@@ -29,12 +29,6 @@ public class Prim {
   /** The name that will be used for this primitive. */
   protected String id;
 
-  /** The arity/number of arguments for this primitive. */
-  protected int arity;
-
-  /** The number of results for this primitive. */
-  protected int outity;
-
   /**
    * Purity code for this primitive. This can be used to describe the extent to which a given
    * primitive call may depend on or cause side effects.
@@ -45,24 +39,15 @@ public class Prim {
   protected BlockType blockType;
 
   /** Default constructor. */
-  public Prim(String id, int arity, int outity, int purity, BlockType blockType) {
+  public Prim(String id, int purity, BlockType blockType) {
     this.id = id;
-    this.arity = arity;
-    this.outity = outity;
     this.purity = purity;
     this.blockType = blockType;
-
-    index = addToPrimTable(this); // TODO: could this be done with a static initializer?
   }
 
   /** Return the name of this primitive. */
   public String getId() {
     return id;
-  }
-
-  /** Return the arity for this primitive. */
-  public int getArity() {
-    return arity;
   }
 
   /** Return the block type for this primitive. */
@@ -161,12 +146,25 @@ public class Prim {
 
   protected static final BlockType relopType = new BlockType(wordWordTuple, flagTuple);
 
+  /** Make a clone of this Prim with a (possibly) new type. */
+  public Prim clone(BlockType bt) {
+    return new Prim(id, purity, bt);
+  }
+
   public static final PrimUnOp not = new not();
 
   private static class not extends PrimUnOp {
 
     private not() {
-      super("not", 1, 1, PURE, unaryWordType);
+      this(unaryWordType);
+    }
+
+    private not(BlockType bt) {
+      super("not", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new not(bt);
     }
 
     public int op(int n) {
@@ -196,7 +194,15 @@ public class Prim {
   private static class and extends PrimBinOp {
 
     private and() {
-      super("and", 2, 1, PURE, binaryWordType);
+      this(binaryWordType);
+    }
+
+    private and(BlockType bt) {
+      super("and", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new and(bt);
     }
 
     public int op(int n, int m) {
@@ -217,7 +223,15 @@ public class Prim {
   private static class or extends PrimBinOp {
 
     private or() {
-      super("or", 2, 1, PURE, binaryWordType);
+      this(binaryWordType);
+    }
+
+    private or(BlockType bt) {
+      super("or", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new or(bt);
     }
 
     public int op(int n, int m) {
@@ -238,7 +252,15 @@ public class Prim {
   private static class xor extends PrimBinOp {
 
     private xor() {
-      super("xor", 2, 1, PURE, binaryWordType);
+      this(binaryWordType);
+    }
+
+    private xor(BlockType bt) {
+      super("xor", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new xor(bt);
     }
 
     public int op(int n, int m) {
@@ -259,7 +281,15 @@ public class Prim {
   private static class bnot extends PrimUnFOp {
 
     private bnot() {
-      super("bnot", 1, 1, PURE, unaryFlagType);
+      this(unaryFlagType);
+    }
+
+    private bnot(BlockType bt) {
+      super("bnot", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new bnot(bt);
     }
 
     public boolean op(boolean b) {
@@ -289,7 +319,15 @@ public class Prim {
   private static class band extends PrimBinFOp {
 
     private band() {
-      super("band", 2, 1, PURE, binaryFlagType);
+      this(binaryFlagType);
+    }
+
+    private band(BlockType bt) {
+      super("band", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new band(bt);
     }
 
     public boolean op(boolean n, boolean m) {
@@ -310,7 +348,15 @@ public class Prim {
   private static class bor extends PrimBinFOp {
 
     private bor() {
-      super("bor", 2, 1, PURE, binaryFlagType);
+      this(binaryFlagType);
+    }
+
+    private bor(BlockType bt) {
+      super("bor", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new bor(bt);
     }
 
     public boolean op(boolean n, boolean m) {
@@ -331,7 +377,15 @@ public class Prim {
   private static class bxor extends PrimBinFOp {
 
     private bxor() {
-      super("bxor", 2, 1, PURE, binaryFlagType);
+      this(binaryFlagType);
+    }
+
+    private bxor(BlockType bt) {
+      super("bxor", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new bxor(bt);
     }
 
     public boolean op(boolean n, boolean m) {
@@ -360,7 +414,15 @@ public class Prim {
   private static class beq extends PrimBinFOp {
 
     private beq() {
-      super("beq", 2, 1, PURE, binaryFlagType);
+      this(binaryFlagType);
+    }
+
+    private beq(BlockType bt) {
+      super("beq", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new beq(bt);
     }
 
     public boolean op(boolean n, boolean m) {
@@ -389,7 +451,15 @@ public class Prim {
   private static class blt extends PrimBinFOp {
 
     private blt() {
-      super("blt", 2, 1, PURE, binaryFlagType);
+      this(binaryFlagType);
+    }
+
+    private blt(BlockType bt) {
+      super("blt", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new blt(bt);
     }
 
     public boolean op(boolean n, boolean m) {
@@ -418,7 +488,15 @@ public class Prim {
   private static class ble extends PrimBinFOp {
 
     private ble() {
-      super("ble", 2, 1, PURE, binaryFlagType);
+      this(binaryFlagType);
+    }
+
+    private ble(BlockType bt) {
+      super("ble", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new ble(bt);
     }
 
     public boolean op(boolean n, boolean m) {
@@ -447,7 +525,15 @@ public class Prim {
   private static class bgt extends PrimBinFOp {
 
     private bgt() {
-      super("bgt", 2, 1, PURE, binaryFlagType);
+      this(binaryFlagType);
+    }
+
+    private bgt(BlockType bt) {
+      super("bgt", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new bgt(bt);
     }
 
     public boolean op(boolean n, boolean m) {
@@ -476,7 +562,15 @@ public class Prim {
   private static class bge extends PrimBinFOp {
 
     private bge() {
-      super("bge", 2, 1, PURE, binaryFlagType);
+      this(binaryFlagType);
+    }
+
+    private bge(BlockType bt) {
+      super("bge", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new bge(bt);
     }
 
     public boolean op(boolean n, boolean m) {
@@ -505,7 +599,15 @@ public class Prim {
   private static class shl extends PrimBinOp {
 
     private shl() {
-      super("shl", 2, 1, PURE, binaryWordType);
+      this(binaryWordType);
+    }
+
+    private shl(BlockType bt) {
+      super("shl", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new shl(bt);
     }
 
     public int op(int n, int m) {
@@ -526,7 +628,15 @@ public class Prim {
   private static class lshr extends PrimBinOp {
 
     private lshr() {
-      super("lshr", 2, 1, PURE, binaryWordType);
+      this(binaryWordType);
+    }
+
+    private lshr(BlockType bt) {
+      super("lshr", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new lshr(bt);
     }
 
     public int op(int n, int m) {
@@ -547,7 +657,15 @@ public class Prim {
   private static class ashr extends PrimBinOp {
 
     private ashr() {
-      super("ashr", 2, 1, PURE, binaryWordType);
+      this(binaryWordType);
+    }
+
+    private ashr(BlockType bt) {
+      super("ashr", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new ashr(bt);
     }
 
     public int op(int n, int m) {
@@ -568,7 +686,15 @@ public class Prim {
   private static class neg extends PrimUnOp {
 
     private neg() {
-      super("neg", 1, 1, PURE, unaryWordType);
+      this(unaryWordType);
+    }
+
+    private neg(BlockType bt) {
+      super("neg", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new neg(bt);
     }
 
     public int op(int n) {
@@ -598,7 +724,15 @@ public class Prim {
   private static class add extends PrimBinOp {
 
     private add() {
-      super("add", 2, 1, PURE, binaryWordType);
+      this(binaryWordType);
+    }
+
+    private add(BlockType bt) {
+      super("add", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new add(bt);
     }
 
     public int op(int n, int m) {
@@ -619,7 +753,15 @@ public class Prim {
   private static class sub extends PrimBinOp {
 
     private sub() {
-      super("sub", 2, 1, PURE, binaryWordType);
+      this(binaryWordType);
+    }
+
+    private sub(BlockType bt) {
+      super("sub", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new sub(bt);
     }
 
     public int op(int n, int m) {
@@ -640,7 +782,15 @@ public class Prim {
   private static class mul extends PrimBinOp {
 
     private mul() {
-      super("mul", 2, 1, PURE, binaryWordType);
+      this(binaryWordType);
+    }
+
+    private mul(BlockType bt) {
+      super("mul", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new mul(bt);
     }
 
     public int op(int n, int m) {
@@ -661,7 +811,15 @@ public class Prim {
   private static class div extends Prim {
 
     private div() {
-      super("div", 2, 1, IMPURE, binaryWordType);
+      this(binaryWordType);
+    }
+
+    private div(BlockType bt) {
+      super("div", IMPURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new div(bt);
     }
 
     void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
@@ -710,7 +868,15 @@ public class Prim {
   private static class rem extends Prim {
 
     private rem() {
-      super("rem", 2, 1, IMPURE, binaryWordType);
+      this(binaryWordType);
+    }
+
+    private rem(BlockType bt) {
+      super("rem", IMPURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new rem(bt);
     }
 
     void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
@@ -759,7 +925,15 @@ public class Prim {
   private static class nzdiv extends Prim {
 
     private nzdiv() {
-      super("nzdiv", 2, 1, PURE, nzdivType);
+      this(nzdivType);
+    }
+
+    private nzdiv(BlockType bt) {
+      super("nzdiv", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new nzdiv(bt);
     }
 
     /**
@@ -799,7 +973,15 @@ public class Prim {
   private static class eq extends PrimRelOp {
 
     private eq() {
-      super("primEq", 2, 1, PURE, relopType);
+      this(relopType);
+    }
+
+    private eq(BlockType bt) {
+      super("primEq", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new eq(bt);
     }
 
     public boolean op(int n, int m) {
@@ -828,7 +1010,15 @@ public class Prim {
   private static class neq extends PrimRelOp {
 
     private neq() {
-      super("primNeq", 2, 1, PURE, relopType);
+      this(relopType);
+    }
+
+    private neq(BlockType bt) {
+      super("primNeq", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new neq(bt);
     }
 
     public boolean op(int n, int m) {
@@ -857,7 +1047,15 @@ public class Prim {
   private static class slt extends PrimRelOp {
 
     private slt() {
-      super("primSlt", 2, 1, PURE, relopType);
+      this(relopType);
+    }
+
+    private slt(BlockType bt) {
+      super("primSlt", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new slt(bt);
     }
 
     public boolean op(int n, int m) {
@@ -886,7 +1084,15 @@ public class Prim {
   private static class sle extends PrimRelOp {
 
     private sle() {
-      super("primSle", 2, 1, PURE, relopType);
+      this(relopType);
+    }
+
+    private sle(BlockType bt) {
+      super("primSle", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new sle(bt);
     }
 
     public boolean op(int n, int m) {
@@ -915,7 +1121,15 @@ public class Prim {
   private static class sgt extends PrimRelOp {
 
     private sgt() {
-      super("primSgt", 2, 1, PURE, relopType);
+      this(relopType);
+    }
+
+    private sgt(BlockType bt) {
+      super("primSgt", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new sgt(bt);
     }
 
     public boolean op(int n, int m) {
@@ -944,7 +1158,15 @@ public class Prim {
   private static class sge extends PrimRelOp {
 
     private sge() {
-      super("primSge", 2, 1, PURE, relopType);
+      this(relopType);
+    }
+
+    private sge(BlockType bt) {
+      super("primSge", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new sge(bt);
     }
 
     public boolean op(int n, int m) {
@@ -973,7 +1195,15 @@ public class Prim {
   private static class ult extends PrimRelOp {
 
     private ult() {
-      super("primUlt", 2, 1, PURE, relopType);
+      this(relopType);
+    }
+
+    private ult(BlockType bt) {
+      super("primUlt", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new ult(bt);
     }
 
     public boolean op(int n, int m) {
@@ -1002,7 +1232,15 @@ public class Prim {
   private static class ule extends PrimRelOp {
 
     private ule() {
-      super("primUle", 2, 1, PURE, relopType);
+      this(relopType);
+    }
+
+    private ule(BlockType bt) {
+      super("primUle", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new ule(bt);
     }
 
     public boolean op(int n, int m) {
@@ -1031,7 +1269,15 @@ public class Prim {
   private static class ugt extends PrimRelOp {
 
     private ugt() {
-      super("primUgt", 2, 1, PURE, relopType);
+      this(relopType);
+    }
+
+    private ugt(BlockType bt) {
+      super("primUgt", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new ugt(bt);
     }
 
     public boolean op(int n, int m) {
@@ -1060,7 +1306,15 @@ public class Prim {
   private static class uge extends PrimRelOp {
 
     private uge() {
-      super("primUge", 2, 1, PURE, relopType);
+      this(relopType);
+    }
+
+    private uge(BlockType bt) {
+      super("primUge", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new uge(bt);
     }
 
     public boolean op(int n, int m) {
@@ -1089,7 +1343,15 @@ public class Prim {
   private static class flagToWord extends PrimFtoW {
 
     private flagToWord() {
-      super("flagToWord", 1, 1, PURE, flagToWordType);
+      this(flagToWordType);
+    }
+
+    private flagToWord(BlockType bt) {
+      super("flagToWord", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new flagToWord(bt);
     }
 
     public int op(boolean b) {
@@ -1119,7 +1381,15 @@ public class Prim {
   private static class halt extends Prim {
 
     private halt() {
-      super("halt", 0, 0, DOESNTRETURN, haltType);
+      this(haltType);
+    }
+
+    private halt(BlockType bt) {
+      super("halt", DOESNTRETURN, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new halt(bt);
     }
 
     void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
@@ -1155,6 +1425,10 @@ public class Prim {
     return count++;
   }
 
+  Prim(String id, int arity, int outity, int purity, BlockType blockType) {
+    index = addToPrimTable(this); // TODO: could this be done with a static initializer?
+  }
+
   static void exec(PrintWriter out, int prim, int fp, Value[] stack) throws Failure {
     if (prim < 0 || prim >= count) {
       throw new Failure("primitive number " + prim + " is not defined");
@@ -1168,7 +1442,7 @@ public class Prim {
 
   public static void printTable() {
     for (int i = 0; i < count; i++) {
-      System.out.println(i + ") " + table[i].getId() + "/" + table[i].getArity());
+      System.out.println(i + ") " + table[i].getId() + " :: " + table[i].getBlockType());
     }
     System.out.println("[total: " + count + " primitives]");
   }
@@ -1180,7 +1454,15 @@ public class Prim {
   private static class printWord extends Prim {
 
     private printWord() {
-      super("printWord", 1, 0, IMPURE, wordToUnitType);
+      this(wordToUnitType);
+    }
+
+    private printWord(BlockType bt) {
+      super("printWord", IMPURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new printWord(bt);
     }
 
     void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
@@ -1197,7 +1479,15 @@ public class Prim {
   private static class loop extends Prim {
 
     private loop() {
-      super("loop", 0, 0, DOESNTRETURN, haltType);
+      this(haltType);
+    }
+
+    private loop(BlockType bt) {
+      super("loop", DOESNTRETURN, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new loop(bt);
     }
   }
 
@@ -1221,9 +1511,10 @@ public class Prim {
     Prim newP = set.getPrim(this);
     if (newP == null) {
       BlockType bt = blockType.canonBlockType(set);
-      // TODO: should we include a pointer back to the Prim from which newP is derived?
-      newP = bt.alphaEquiv(blockType) ? this : new Prim(id, arity, outity, purity, bt);
-      if (newP != this) {
+      if (bt.alphaEquiv(blockType)) {
+        newP = this;
+      } else {
+        newP = this.clone(bt);
         debug.Log.println("new version of primitive " + id + " :: " + bt);
         debug.Log.println("         old version was " + id + " :: " + blockType);
       }
@@ -1245,7 +1536,7 @@ public class Prim {
       }
       // TODO: should the new primitive include a pointer back to the Prim from which it was
       // derived?
-      Prim newP = new Prim(id, arity, outity, purity, inst);
+      Prim newP = this.clone(inst);
       debug.Log.println("specialized version of primitive " + id + " :: " + inst);
       debug.Log.println("            original version was " + id + " :: " + blockType);
       spec.putPrims(this, new Prims(newP, ps));
@@ -1259,8 +1550,9 @@ public class Prim {
 
   Tail maker(Position pos, boolean thunk) {
     Call call = new PrimCall(this);
+    int arity = blockType.getArity();
     if (thunk) {
-      if (outity == 0) {
+      if (blockType.getOutity() == 0) {
         call = call.returnUnit(pos, arity);
       }
       call = call.thunk(pos, arity);

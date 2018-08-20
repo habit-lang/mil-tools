@@ -27,8 +27,8 @@ import java.io.PrintWriter;
 public abstract class PrimFtoW extends Prim {
 
   /** Default constructor. */
-  public PrimFtoW(String id, int arity, int outity, int purity, BlockType blockType) {
-    super(id, arity, outity, purity, blockType);
+  public PrimFtoW(String id, int purity, BlockType blockType) {
+    super(id, purity, blockType);
   }
 
   abstract int op(boolean b);

@@ -41,8 +41,24 @@ class TIndBlockType extends BlockType {
     dom.unify(pos, tenv, type, null);
   }
 
+  /** Return the domain type of this block type. */
+  Type domType() {
+    return dom.with(tenv);
+  }
+
+  /** Return the range type of this block type. */
   Type rngType() {
     return rng.with(tenv);
+  }
+
+  /** Return the arity (number of inputs) for this block type. */
+  int getArity() {
+    return dom.tupleArity(tenv, 0);
+  }
+
+  /** Return the outity (number of outputs) for this block type. */
+  int getOutity() {
+    return rng.tupleArity(tenv, 0);
   }
 
   TVars tvars(TVars tvs) {
