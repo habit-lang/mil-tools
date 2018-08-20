@@ -303,8 +303,7 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
         lexemeText = line.substring(start, col);
         return token = NATLIT;
       } else if (Character.digit((char) c, 10) < 0) { // just a zero
-        smallNat = 0;
-        bigNat = bigD[0];
+        nat = bigD[0];
         lexemeText = line.substring(start, col);
         return token = NATLIT;
       }
@@ -314,19 +313,33 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
     return token = NATLIT;
   }
 
-  private int smallNat;
+  private BigInteger nat;
 
-  public int getSmallNat() {
-    if (smallNat < 0) {
-      report(new Failure(getPos(), "Numeric constant out of range (too large)"));
-    }
-    return smallNat;
+  /** Return the most recently recognized numeric literal value as a BigInteger. */
+  public BigInteger getNat() {
+    return nat;
   }
 
-  private BigInteger bigNat;
+  /**
+   * Return the most recently recognized literal as an int, or throw an exception if the value is
+   * out of range.
+   */
+  public int getInt() throws Failure {
+    if (nat.compareTo(Type.MAX_INT) > 0) {
+      throw new Failure(getPos(), "A small integer constant is required");
+    }
+    return nat.intValue();
+  }
 
-  public BigInteger getBigNat() {
-    return bigNat;
+  /**
+   * Return the most recently recognized literal as a Word, or throw an exception if the value is
+   * out of range.
+   */
+  public long getWord() throws Failure {
+    if (nat.compareTo(Type.MAX_WORD) > 0) {
+      throw new Failure(getPos(), "Numeric constant " + nat + " is out of Word range (too large)");
+    }
+    return nat.longValue();
   }
 
   private static BigInteger[] bigD = new BigInteger[17];
@@ -374,23 +387,19 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
   }
 
   /**
-   * Recognize a sequence of one or more digits of a particular radix, setting bigNat to the
-   * corresponding numeric value. A (-1) in smallNat indicates overflow.
+   * Recognize a sequence of one or more digits of a particular radix, setting nat to the
+   * corresponding numeric value.
    */
   private void digits(String where, int radix) {
     int count = 0;
-    smallNat = 0;
-    bigNat = bigD[0];
+    nat = bigD[0];
 
     // Read main digit sequence:
     for (; ; ) {
       int d = Character.digit((char) c, radix);
       if (d >= 0) { // valid digit?
         count++;
-        if (smallNat >= 0) {
-          smallNat = (smallNat > ((Integer.MAX_VALUE - d) / radix)) ? (-1) : (d + smallNat * radix);
-        }
-        bigNat = bigNat.multiply(bigD[radix]).add(bigD[d]);
+        nat = nat.multiply(bigD[radix]).add(bigD[d]);
       } else if (c != '_') { // skip underscore inside an integer literal
         break;
       }
@@ -421,23 +430,19 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
     int bits = 0;
     if (c == 'K') {
       bits = 10;
-      bigNat = bigNat.multiply(kb);
+      nat = nat.multiply(kb);
     } else if (c == 'M') {
       bits = 20;
-      bigNat = bigNat.multiply(mb);
+      nat = nat.multiply(mb);
     } else if (c == 'G') {
       bits = 30;
-      bigNat = bigNat.multiply(gb);
+      nat = nat.multiply(gb);
     } else if (c == 'T') {
       bits = 40;
-      bigNat = bigNat.multiply(tb);
+      nat = nat.multiply(tb);
     } else {
       return;
     }
-    smallNat =
-        (bits >= Integer.SIZE || smallNat < 0 || smallNat > (Integer.MAX_VALUE >> bits))
-            ? (-1)
-            : (smallNat << bits);
     nextChar();
   }
 
@@ -506,7 +511,7 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
   /**
    * Test to determine whether a given identifier represents a bit vector literal. If the result is
    * true, then the width (total number of bits) is placed in numBits and the value is placed in
-   * bigNat.
+   * nat.
    */
   private boolean isBitLiteral(String s) {
     int width;
@@ -526,14 +531,14 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
 
     int radix = 1 << width;
     numBits = 0;
-    bigNat = bigD[0];
+    nat = bigD[0];
     int l = s.length();
     for (int i = 1; i < l; i++) {
       char c = s.charAt(i);
       int d = Character.digit(c, radix);
       if (d >= 0) {
         numBits += width;
-        bigNat = bigNat.multiply(bigD[radix]).add(bigD[d]);
+        nat = nat.multiply(bigD[radix]).add(bigD[d]);
       } else if (c != '_') {
         return false;
       }

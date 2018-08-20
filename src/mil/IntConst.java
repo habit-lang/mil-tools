@@ -23,14 +23,25 @@ import core.*;
 
 public class IntConst extends Const {
 
-  private int val;
+  private long val;
 
-  /** Default constructor. */
-  public IntConst(int val) {
-    this.val = val;
+  public IntConst(long val) {
+    this.val = fromLong(val);
   }
 
-  public int getVal() {
+  /**
+   * Truncate the given long value to be within the range allowed by a Word of width Type.WORDSIZE.
+   * (The latter should be either 32 or 64.) This allows us to store use long values in IntConst
+   * objects (so that we can represent Word constants when Type.WORDSIZE==64), but to limit the
+   * range to that of an int object (when necessary, so that we can represent Word constants when
+   * Type.WORDSIZE==32).
+   */
+  public static long fromLong(long val) {
+    int offset = 64 - Type.WORDSIZE;
+    return (val << offset) >> offset;
+  }
+
+  public long getVal() {
     return val;
   }
 
@@ -74,7 +85,7 @@ public class IntConst extends Const {
    * equivalent program fragments have the same summary value.
    */
   int summary() {
-    return val;
+    return (int) val;
   }
 
   /**

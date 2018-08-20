@@ -292,7 +292,7 @@ public class PrimCall extends Call {
         Atom x = args[0];
         IntConst a = x.isIntConst();
         if (a != null) {
-          int n = a.getVal(); // Look for a constant numerator
+          long n = a.getVal(); // Look for a constant numerator
           if (n > 0) { // To be cautious, only consider positive values
             MILProgram.report("constant folding for nzdiv");
             return done(new IntConst(n / d));
@@ -558,7 +558,7 @@ public class PrimCall extends Call {
     return done(new Return(a));
   }
 
-  static Code done(int n) {
+  static Code done(long n) {
     return done(new IntConst(n));
   }
 
@@ -578,11 +578,11 @@ public class PrimCall extends Call {
     return done(p.withArgs(a, b));
   }
 
-  static Code done(Prim p, Atom a, int n) {
+  static Code done(Prim p, Atom a, long n) {
     return done(p.withArgs(a, n));
   }
 
-  static Code done(Prim p, int n, Atom b) {
+  static Code done(Prim p, long n, Atom b) {
     return done(p.withArgs(n, b));
   }
 
@@ -713,7 +713,7 @@ public class PrimCall extends Call {
    * Create code for (a ! b) ! n where ! is a primitive p; a and b are variables; and n is a known
    * constant.
    */
-  private static Code varVarConst(Prim p, Atom a, Atom b, Prim q, int n) {
+  private static Code varVarConst(Prim p, Atom a, Atom b, Prim q, long n) {
     Temp v = new Temp();
     return new Bind(v, p.withArgs(a, b), done(q, v, n));
   }
@@ -760,7 +760,7 @@ public class PrimCall extends Call {
     return distAddAnyAny(x, y);
   }
 
-  private static Code addVarConst(Atom x, int m, Facts facts) {
+  private static Code addVarConst(Atom x, long m, Facts facts) {
     if (m == 0) { // x + 0 == x
       MILProgram.report("rewrite: x + 0 ==> x");
       return done(x);
@@ -848,7 +848,7 @@ public class PrimCall extends Call {
     return distAddAnyAny(x, y);
   }
 
-  private static Code distAddCMul(Atom x, Atom u, int c, Atom y, Tail b) {
+  private static Code distAddCMul(Atom x, Atom u, long c, Atom y, Tail b) {
     if (b != null) {
       Atom[] bp;
       IntConst n;
@@ -890,7 +890,7 @@ public class PrimCall extends Call {
     return distSubAnyAny(x, y);
   }
 
-  private static Code distSubCMul(Atom x, Atom u, int c, Atom y, Tail b) {
+  private static Code distSubCMul(Atom x, Atom u, long c, Atom y, Tail b) {
     if (b != null) {
       Atom[] bp;
       IntConst n;
@@ -905,7 +905,7 @@ public class PrimCall extends Call {
   }
 
   private static Code distCC(
-      Atom u, Prim m, int c, PrimBinOp a, Atom v, int d) { // (u `m` c) `a` (v `m` d) = ...
+      Atom u, Prim m, long c, PrimBinOp a, Atom v, long d) { // (u `m` c) `a` (v `m` d) = ...
     if (u == v) {
       MILProgram.report("rewrite: (u `m` c) `a` (u `m` d) ==> u `m` (c `a` d)");
       return done(m, u, a.op(c, d));
@@ -944,7 +944,7 @@ public class PrimCall extends Call {
     return done(Prim.sub, v, u);
   }
 
-  private static Code distAddCMulNeg(Atom x, Atom u, int c, Atom v) { // x@(u * c) + (-v) = ...
+  private static Code distAddCMulNeg(Atom x, Atom u, long c, Atom v) { // x@(u * c) + (-v) = ...
     if (u == v) {
       MILProgram.report("rewrite: (u * c) + (-u) ==> u * (c - 1)");
       return done(Prim.mul, u, c - 1);
@@ -952,7 +952,7 @@ public class PrimCall extends Call {
     return distAddAnyNeg(x, v);
   }
 
-  private static Code distAddNegCMul(Atom u, Atom y, Atom v, int d) { // (-u) + y@(v * d) = ...
+  private static Code distAddNegCMul(Atom u, Atom y, Atom v, long d) { // (-u) + y@(v * d) = ...
     if (u == v) {
       MILProgram.report("rewrite: (-u) + (u * d)  ==>  u * (d - 1)");
       return done(Prim.mul, u, d - 1);
@@ -960,7 +960,7 @@ public class PrimCall extends Call {
     return distAddNegAny(u, y);
   }
 
-  private static Code distSubCMulNeg(Atom x, Atom u, int c, Atom v) { // x@(u * c) - (-v) = ...
+  private static Code distSubCMulNeg(Atom x, Atom u, long c, Atom v) { // x@(u * c) - (-v) = ...
     if (u == v) {
       MILProgram.report("rewrite: (u * c) - (-u) ==> u * (c + 1)");
       return done(Prim.mul, u, c + 1);
@@ -968,7 +968,7 @@ public class PrimCall extends Call {
     return distAddAnyNeg(x, v);
   }
 
-  private static Code distSubNegCMul(Atom u, Atom y, Atom v, int d) { // (-u) - y@(v * d) = ...
+  private static Code distSubNegCMul(Atom u, Atom y, Atom v, long d) { // (-u) - y@(v * d) = ...
     if (u == v) {
       MILProgram.report("rewrite: (-u) - (u * d)  ==>  u * (-(1 + d))");
       return done(Prim.mul, u, -(1 + d));
@@ -976,7 +976,7 @@ public class PrimCall extends Call {
     return distAddNegAny(u, y);
   }
 
-  private static Code distAddCMulAny(Atom u, int c, Atom y) { // (u * c) + y = ...
+  private static Code distAddCMulAny(Atom u, long c, Atom y) { // (u * c) + y = ...
     if (u == y) {
       MILProgram.report("rewrite: (u * c) + u ==> u * (c + 1)");
       return done(Prim.mul, u, c + 1);
@@ -984,7 +984,7 @@ public class PrimCall extends Call {
     return null;
   }
 
-  private static Code distAddAnyCMul(Atom x, Atom v, int d) { // x + (v * d) = ...
+  private static Code distAddAnyCMul(Atom x, Atom v, long d) { // x + (v * d) = ...
     if (x == v) {
       MILProgram.report("rewrite: v + (v * d)  ==>  v * (1 + d)");
       return done(Prim.mul, v, 1 + d);
@@ -992,7 +992,7 @@ public class PrimCall extends Call {
     return null;
   }
 
-  private static Code distSubCMulAny(Atom u, int c, Atom y) { // (u * c) - y = ...
+  private static Code distSubCMulAny(Atom u, long c, Atom y) { // (u * c) - y = ...
     if (u == y) {
       MILProgram.report("rewrite: (u * c) - u ==> u * (c - 1)");
       return done(Prim.mul, u, c - 1);
@@ -1000,7 +1000,7 @@ public class PrimCall extends Call {
     return null;
   }
 
-  private static Code distSubAnyCMul(Atom x, Atom v, int d) { // x - (v * d) = ...
+  private static Code distSubAnyCMul(Atom x, Atom v, long d) { // x - (v * d) = ...
     if (x == v) {
       MILProgram.report("rewrite: v - (v * d)  ==>  v * (1 - d)");
       return done(Prim.mul, v, 1 - d);
@@ -1049,7 +1049,7 @@ public class PrimCall extends Call {
     return commuteRearrange(Prim.mul, x, x.lookupFact(facts), y, y.lookupFact(facts));
   }
 
-  private static Code mulVarConst(Atom x, int m, Facts facts) {
+  private static Code mulVarConst(Atom x, long m, Facts facts) {
     if (m == 0) { // x * 0 == 0
       MILProgram.report("rewrite: x * 0 ==> 0");
       return done(0);
@@ -1064,7 +1064,7 @@ public class PrimCall extends Call {
     }
     if (m > 2 && (m & (m - 1)) == 0) { // x * (1 << n) == x << n
       int n = 0;
-      int m0 = m;
+      long m0 = m;
       while ((m >>= 1) > 0) {
         n++;
       } // calculate n
@@ -1104,7 +1104,7 @@ public class PrimCall extends Call {
     return nc;
   }
 
-  private static Code orVarConst(Atom x, int m, Facts facts) {
+  private static Code orVarConst(Atom x, long m, Facts facts) {
     if (m == 0) {
       MILProgram.report("rewrite: x | 0 ==> x");
       return done(x);
@@ -1137,7 +1137,7 @@ public class PrimCall extends Call {
               if (d != null) {
                 MILProgram.report("rewrite: ((u | d) & c) | m ==> (u & c) | ((d & c) | m)");
                 Temp v = new Temp();
-                int n = (d.getVal() & c.getVal()) | m;
+                long n = (d.getVal() & c.getVal()) | m;
                 return new Bind(v, Prim.and.withArgs(bp[0], c), done(Prim.or.withArgs(v, n)));
               }
             }
@@ -1162,7 +1162,7 @@ public class PrimCall extends Call {
     return nc;
   }
 
-  private static Code andVarConst(Atom x, int m, Facts facts) {
+  private static Code andVarConst(Atom x, long m, Facts facts) {
     if (m == 0) {
       MILProgram.report("rewrite: x & 0 ==> 0");
       return done(0);
@@ -1199,19 +1199,13 @@ public class PrimCall extends Call {
         // Q2: does this interfere with rewrites for (x & m) << c?  May need to remove those ...
         IntConst c = ap[1].isIntConst(); // (_ << c) & m
         if (c != null) {
-          int w = c.getVal();
+          long w = c.getVal();
           if (w > 0 && w < Type.WORDSIZE) {
             // left shifting by w bits performs an effective mask by em on the result:
             int em = ~((1 << w) - 1);
             if ((m & em) == em) { // if specified mask doesn't do more than effective mask ...
               MILProgram.report(
-                  "rewrite: (x << "
-                      + w
-                      + ") & 0x"
-                      + Integer.toHexString(m)
-                      + " ==> (x << "
-                      + w
-                      + ")");
+                  "rewrite: (x << " + w + ") & 0x" + Long.toHexString(m) + " ==> (x << " + w + ")");
               return done(x);
             }
           }
@@ -1219,19 +1213,13 @@ public class PrimCall extends Call {
       } else if ((ap = a.isPrim(Prim.lshr)) != null) {
         IntConst c = ap[1].isIntConst(); // (_ >> c) & m
         if (c != null) {
-          int w = c.getVal();
+          long w = c.getVal();
           if (w > 0 && w < Type.WORDSIZE) {
             // right shifting by w bits performs an effective mask by em on the result:
             int em = (1 << (Type.WORDSIZE - w)) - 1;
             if ((m & em) == em) { // if specified mask doesn't do more than effective mask ...
               MILProgram.report(
-                  "rewrite: (x >> "
-                      + w
-                      + ") & 0x"
-                      + Integer.toHexString(m)
-                      + " ==> (x >> "
-                      + w
-                      + ")");
+                  "rewrite: (x >> " + w + ") & 0x" + Long.toHexString(m) + " ==> (x >> " + w + ")");
               return done(x);
             }
           }
@@ -1247,11 +1235,11 @@ public class PrimCall extends Call {
             if (c != null && modarith(c.getVal(), m)) { // ((u & m) + y) & m
               MILProgram.report(
                   "rewrite: ((x & 0x"
-                      + Integer.toHexString(c.getVal())
+                      + Long.toHexString(c.getVal())
                       + ") + y) & 0x"
-                      + Integer.toHexString(m)
+                      + Long.toHexString(m)
                       + " ==> (x + y) & 0x"
-                      + Integer.toHexString(m));
+                      + Long.toHexString(m));
               Temp v = new Temp();
               return new Bind(v, Prim.add.withArgs(bp[0], ap[1]), done(Prim.and.withArgs(v, m)));
             }
@@ -1263,17 +1251,17 @@ public class PrimCall extends Call {
   }
 
   /** Return true if ((x & m1) + y) & m2 == (x + y) & m2. */
-  private static boolean modarith(int m1, int m2) {
+  private static boolean modarith(long m1, long m2) {
     // if m is a run of bits, then  m | ~(m-1)  has  the same run of bits
     // with all more significant bits set to 1
     return bitrun(m1) && bitrun(m2) && ((m1 & (m2 | ~(m2 - 1))) == m1);
   }
 
   /** Return true if value m is a single run of 1 bits (no zero bits between 1s). */
-  private static boolean bitrun(int m) {
+  private static boolean bitrun(long m) {
     // If m is a run of bits, then m | (m-1) will be a run of bits with the
     // same most significant bit and all lower bits set to 1.
-    int v = (m | (m - 1));
+    long v = (m | (m - 1));
     // In which case, that value plus one will be a power of two:
     return (v & (v + 1)) == 0;
   }
@@ -1288,7 +1276,7 @@ public class PrimCall extends Call {
     return commuteRearrange(Prim.xor, x, x.lookupFact(facts), y, y.lookupFact(facts));
   }
 
-  private static Code xorVarConst(Atom x, int m, Facts facts) {
+  private static Code xorVarConst(Atom x, long m, Facts facts) {
     if (m == 0) { // x ^ 0 == x
       MILProgram.report("rewrite: x ^ 0 ==> x");
       return done(x);
@@ -1317,7 +1305,7 @@ public class PrimCall extends Call {
     return distSubAnyAny(x, y);
   }
 
-  private static Code subVarConst(Atom x, int m, Facts facts) {
+  private static Code subVarConst(Atom x, long m, Facts facts) {
     if (m == 0) { // x - 0 == x
       MILProgram.report("rewrite: x - 0 ==> x");
       return done(x);
@@ -1361,7 +1349,7 @@ public class PrimCall extends Call {
     return done(Prim.add, x, (-m)); // x - n == x + (-n)
   }
 
-  private static Code subConstVar(int n, Atom y, Facts facts) {
+  private static Code subConstVar(long n, Atom y, Facts facts) {
     if (n == 0) { // 0 - y == -y
       MILProgram.report("rewrite: 0 - y ==> -y");
       return done(Prim.neg, y);
@@ -1397,12 +1385,12 @@ public class PrimCall extends Call {
     return null;
   }
 
-  private static Code shlVarConst(Atom x, int m, Facts facts) {
+  private static Code shlVarConst(Atom x, long m, Facts facts) {
     if (m == 0) { // x << 0 == x
       MILProgram.report("rewrite: x << 0 ==> x");
       return done(x);
     } else if (m < 0 || m >= Type.WORDSIZE) { // x << m == x << (m % WORDSIZE)
-      int n = m % Type.WORDSIZE;
+      long n = m % Type.WORDSIZE;
       // TODO: Is this architecture dependent?
       MILProgram.report("rewrite: x << " + m + " ==> x << " + n);
       return done(Prim.shl, x, n);
@@ -1413,7 +1401,7 @@ public class PrimCall extends Call {
       if ((ap = a.isPrim(Prim.shl)) != null) {
         IntConst b = ap[1].isIntConst();
         if (b != null) {
-          int n = b.getVal();
+          long n = b.getVal();
           if (n >= 0 && n < Type.WORDSIZE && m >= 0 && m < Type.WORDSIZE) {
             if (n + m >= Type.WORDSIZE) {
               MILProgram.report("rewrite: (x << " + n + ") << " + m + " ==> 0");
@@ -1427,11 +1415,11 @@ public class PrimCall extends Call {
       } else if ((ap = a.isPrim(Prim.lshr)) != null) {
         IntConst b = ap[1].isIntConst();
         if (b != null) {
-          int n = b.getVal();
+          long n = b.getVal();
           if (n == m && n > 0 && n < Type.WORDSIZE) {
-            int mask = (-1) << m;
+            long mask = (-1) << m;
             MILProgram.report(
-                "rewrite: (x >>> " + m + ") << " + m + " ==>  x & 0x" + Integer.toHexString(mask));
+                "rewrite: (x >>> " + m + ") << " + m + " ==>  x & 0x" + Long.toHexString(mask));
             return done(Prim.and, ap[0], mask);
           }
         }
@@ -1440,7 +1428,7 @@ public class PrimCall extends Call {
         if (b != null) {
           // TODO: is this a good idea?  Unless n << m == 0, this makes the mask bigger ...
           MILProgram.report("rewrite: (x & n) << m  ==  (x<<m) & (n<<m)");
-          int n = b.getVal();
+          long n = b.getVal();
           Temp v = new Temp();
           return new Bind(v, Prim.shl.withArgs(ap[0], m), done(Prim.and, v, n << m));
         }
@@ -1451,7 +1439,7 @@ public class PrimCall extends Call {
           // (But it might reduce the need for a shift if the shift on x can be combined with
           // another shift (i.e., if x = (y << p), say) ... which can happen in practice ...
           MILProgram.report("rewrite: (x | n) << m  ==  (x<<m) | (n<<m)");
-          int n = b.getVal();
+          long n = b.getVal();
           Temp v = new Temp();
           return new Bind(v, Prim.shl.withArgs(ap[0], m), done(Prim.or, v, n << m));
         }
@@ -1459,7 +1447,7 @@ public class PrimCall extends Call {
         IntConst b = ap[1].isIntConst();
         if (b != null) {
           MILProgram.report("rewrite: (x ^ n) << m  ==  (x<<m) ^ (n<<m)");
-          int n = b.getVal();
+          long n = b.getVal();
           Temp v = new Temp();
           return new Bind(v, Prim.shl.withArgs(ap[0], m), done(Prim.xor, v, n << m));
         }
@@ -1469,7 +1457,7 @@ public class PrimCall extends Call {
         IntConst b = ap[1].isIntConst();
         if (b != null) {
           MILProgram.report("rewrite: (x + n) << m  ==  (x<<m) + (n<<m)");
-          int n = b.getVal();
+          long n = b.getVal();
           Temp v = new Temp();
           return new Bind(v, Prim.shl.withArgs(ap[0], m), done(Prim.add, v, n << m));
         }
@@ -1478,7 +1466,7 @@ public class PrimCall extends Call {
     return null;
   }
 
-  private static Code shlConstVar(int n, Atom y, Facts facts) {
+  private static Code shlConstVar(long n, Atom y, Facts facts) {
     if (n == 0) { // 0 << y == 0
       MILProgram.report("rewrite: 0 << y ==> 0");
       return done(0);
@@ -1490,12 +1478,12 @@ public class PrimCall extends Call {
     return null;
   }
 
-  private static Code lshrVarConst(Atom x, int m, Facts facts) {
+  private static Code lshrVarConst(Atom x, long m, Facts facts) {
     if (m == 0) { // x >>> 0 == x
       MILProgram.report("rewrite: lshr((x, 0)) ==> x");
       return done(x);
     } else if (m < 0 || m >= Type.WORDSIZE) { // x >>> m == x >>> (m % WORDSIZE)
-      int n = m % Type.WORDSIZE;
+      long n = m % Type.WORDSIZE;
       // TODO: Is this architecture dependent?
       MILProgram.report("rewrite: x >>> " + m + " ==> x >>> " + n);
       return done(Prim.lshr, x, n);
@@ -1506,7 +1494,7 @@ public class PrimCall extends Call {
       if ((ap = a.isPrim(Prim.lshr)) != null) {
         IntConst b = ap[1].isIntConst();
         if (b != null) {
-          int n = b.getVal();
+          long n = b.getVal();
           if (n >= 0 && n < Type.WORDSIZE && m >= 0 && m < Type.WORDSIZE) {
             if (n + m >= Type.WORDSIZE) {
               MILProgram.report("rewrite: (x >>> " + n + ") >>> " + m + " ==> 0");
@@ -1520,11 +1508,11 @@ public class PrimCall extends Call {
       } else if ((ap = a.isPrim(Prim.shl)) != null) {
         IntConst b = ap[1].isIntConst();
         if (b != null) {
-          int n = b.getVal();
+          long n = b.getVal();
           if (n == m && n > 0 && n < Type.WORDSIZE) {
-            int mask = (-1) >>> m;
+            long mask = (-1) >>> m;
             MILProgram.report(
-                "rewrite: (x << " + m + ") >>> " + m + " ==>  x & 0x" + Integer.toHexString(mask));
+                "rewrite: (x << " + m + ") >>> " + m + " ==>  x & 0x" + Long.toHexString(mask));
             return done(Prim.and, ap[0], mask);
           }
         }
@@ -1532,7 +1520,7 @@ public class PrimCall extends Call {
         IntConst b = ap[1].isIntConst();
         if (b != null) {
           MILProgram.report("rewrite: (x & n) >>> m  ==  (x>>>m) & (n>>>m)");
-          int n = b.getVal();
+          long n = b.getVal();
           Temp v = new Temp();
           return new Bind(v, Prim.lshr.withArgs(ap[0], m), done(Prim.and, v, n >>> m));
         }
@@ -1540,7 +1528,7 @@ public class PrimCall extends Call {
         IntConst b = ap[1].isIntConst();
         if (b != null) {
           MILProgram.report("rewrite: (x | n) >>> m  ==  (x>>>m) | (n>>>m)");
-          int n = b.getVal();
+          long n = b.getVal();
           Temp v = new Temp();
           return new Bind(v, Prim.lshr.withArgs(ap[0], m), done(Prim.or, v, n >>> m));
         }
@@ -1548,7 +1536,7 @@ public class PrimCall extends Call {
         IntConst b = ap[1].isIntConst();
         if (b != null) {
           MILProgram.report("rewrite: (x ^ n) >>> m  ==  (x>>>m) ^ (n>>>m)");
-          int n = b.getVal();
+          long n = b.getVal();
           Temp v = new Temp();
           return new Bind(v, Prim.lshr.withArgs(ap[0], m), done(Prim.xor, v, n >>> m));
         }
@@ -1557,7 +1545,7 @@ public class PrimCall extends Call {
     return null;
   }
 
-  private static Code lshrConstVar(int n, Atom y, Facts facts) {
+  private static Code lshrConstVar(long n, Atom y, Facts facts) {
     if (n == 0) { // 0 >>> y == 0
       MILProgram.report("rewrite: lshr((0, y)) ==> 0");
       return done(0);
@@ -1569,12 +1557,12 @@ public class PrimCall extends Call {
     return null;
   }
 
-  private static Code ashrVarConst(Atom x, int m, Facts facts) {
+  private static Code ashrVarConst(Atom x, long m, Facts facts) {
     if (m == 0) { // x >> 0 == x
       MILProgram.report("rewrite: ashr((x, 0)) ==> x");
       return done(x);
     } else if (m < 0 || m >= Type.WORDSIZE) { // x >>> m == x >>> (m % WORDSIZE)
-      int n = m % Type.WORDSIZE;
+      long n = m % Type.WORDSIZE;
       // TODO: Is this architecture dependent?
       MILProgram.report("rewrite: x >> " + m + " ==> x >> " + n);
       return done(Prim.ashr, x, n);
@@ -1585,7 +1573,7 @@ public class PrimCall extends Call {
       if ((ap = a.isPrim(Prim.ashr)) != null) {
         IntConst b = ap[1].isIntConst();
         if (b != null) {
-          int n = b.getVal();
+          long n = b.getVal();
           if (n >= 0 && n < Type.WORDSIZE && m >= 0 && m < Type.WORDSIZE) {
             if (n + m >= Type.WORDSIZE) {
               MILProgram.report(
@@ -1603,7 +1591,7 @@ public class PrimCall extends Call {
         IntConst b = ap[1].isIntConst();
         if (b != null) {
           MILProgram.report("rewrite: (x & n) >> m  ==  (x>>m) & (n>>m)");
-          int n = b.getVal();
+          long n = b.getVal();
           Temp v = new Temp();
           return new Bind(v, Prim.ashr.withArgs(ap[0], m), done(Prim.and, v, n >> m));
         }
@@ -1611,7 +1599,7 @@ public class PrimCall extends Call {
         IntConst b = ap[1].isIntConst();
         if (b != null) {
           MILProgram.report("rewrite: (x | n) >> m  ==  (x>>m) | (n>>m)");
-          int n = b.getVal();
+          long n = b.getVal();
           Temp v = new Temp();
           return new Bind(v, Prim.ashr.withArgs(ap[0], m), done(Prim.or, v, n >> m));
         }
@@ -1619,7 +1607,7 @@ public class PrimCall extends Call {
         IntConst b = ap[1].isIntConst();
         if (b != null) {
           MILProgram.report("rewrite: (x ^ n) >> m  ==  (x>>m) ^ (n>>m)");
-          int n = b.getVal();
+          long n = b.getVal();
           Temp v = new Temp();
           return new Bind(v, Prim.ashr.withArgs(ap[0], m), done(Prim.xor, v, n >> m));
         }
@@ -1628,7 +1616,7 @@ public class PrimCall extends Call {
     return null;
   }
 
-  private static Code ashrConstVar(int n, Atom y, Facts facts) {
+  private static Code ashrConstVar(long n, Atom y, Facts facts) {
     if (n == 0) { // 0 >> y == 0
       MILProgram.report("rewrite: ashr((0, y)) ==> 0");
       return done(0);

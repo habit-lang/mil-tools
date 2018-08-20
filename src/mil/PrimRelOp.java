@@ -31,13 +31,13 @@ public abstract class PrimRelOp extends Prim {
     super(id, purity, blockType);
   }
 
-  abstract boolean op(int n, int m);
+  abstract boolean op(long n, long m);
 
   void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
     stack[fp] = BoolValue.make(op(stack[fp].getInt(), stack[fp + 1].getInt()));
   }
 
-  Code fold(int n, int m) {
+  Code fold(long n, long m) {
     MILProgram.report("constant folding for " + getId());
     return new Done(new Return(FlagConst.fromBool(op(n, m))));
   }

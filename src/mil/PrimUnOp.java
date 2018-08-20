@@ -31,13 +31,13 @@ public abstract class PrimUnOp extends Prim {
     super(id, purity, blockType);
   }
 
-  abstract int op(int n);
+  abstract long op(long n);
 
   void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
     stack[fp] = new IntValue(op(stack[fp].getInt()));
   }
 
-  Code fold(int n) {
+  Code fold(long n) {
     MILProgram.report("constant folding for " + getId());
     return PrimCall.done(op(n));
   }

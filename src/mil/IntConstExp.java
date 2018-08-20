@@ -24,10 +24,10 @@ import core.*;
 
 class IntConstExp extends AtomExp {
 
-  private int n;
+  private long n;
 
   /** Default constructor. */
-  IntConstExp(int n) {
+  IntConstExp(long n) {
     this.n = n;
   }
 

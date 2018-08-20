@@ -24,18 +24,18 @@ import core.*;
 
 class IntValue extends Value {
 
-  private int num;
+  private long num;
 
   /** Default constructor. */
-  IntValue(int num) {
+  IntValue(long num) {
     this.num = num;
   }
 
   public String toString() {
-    return Integer.toString(num);
+    return Long.toString(num);
   }
 
-  int getInt() throws Failure {
+  long getInt() throws Failure {
     return num;
   }
 }

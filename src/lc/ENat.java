@@ -21,21 +21,20 @@ package lc;
 import compiler.*;
 import core.*;
 import debug.Screen;
-import java.math.BigInteger;
 import mil.*;
 
 class ENat extends ELit {
 
-  private BigInteger nat;
+  private long num;
 
   /** Default constructor. */
-  ENat(Position pos, BigInteger nat) {
+  ENat(Position pos, long num) {
     super(pos);
-    this.nat = nat;
+    this.num = num;
   }
 
   void display(Screen s) {
-    s.print(nat.toString());
+    s.print(Long.toString(num));
   }
 
   /**
@@ -44,7 +43,7 @@ class ENat extends ELit {
    * child nodes.
    */
   void indent(IndentOutput out, int n) {
-    indent(out, n, "ENat: " + nat);
+    indent(out, n, "ENat: " + num);
   }
 
   /**
@@ -52,17 +51,16 @@ class ENat extends ELit {
    * type variables that appear in an assumption.
    */
   Type inferType(TVarsInScope tis) throws Failure { // nat
-    // TODO: check that numeric value will fit in a word ...
     return type = DataName.word.asType();
   }
 
   /** Compile an expression into an Atom. */
   Code compAtom(final CGEnv env, final AtomCont ka) {
-    return ka.with(new IntConst(nat.intValue()));
+    return ka.with(new IntConst(num));
   }
 
   /** Compile an expression into a Tail. */
   Code compTail(final CGEnv env, final Block abort, final TailCont kt) { //  integer literal
-    return kt.with(new Return(new IntConst(nat.intValue())));
+    return kt.with(new Return(new IntConst(num)));
   }
 }

@@ -31,7 +31,7 @@ public abstract class PrimFtoW extends Prim {
     super(id, purity, blockType);
   }
 
-  abstract int op(boolean b);
+  abstract long op(boolean b);
 
   void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
     stack[fp] = new IntValue(op(stack[fp].getBool()));

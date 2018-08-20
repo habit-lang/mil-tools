@@ -114,11 +114,11 @@ public class Prim {
     return withArgs(new Atom[] {a, b});
   }
 
-  public Call withArgs(Atom a, int n) {
+  public Call withArgs(Atom a, long n) {
     return withArgs(new Atom[] {a, new IntConst(n)});
   }
 
-  public Call withArgs(int n, Atom b) {
+  public Call withArgs(long n, Atom b) {
     return withArgs(new Atom[] {new IntConst(n), b});
   }
 
@@ -168,7 +168,7 @@ public class Prim {
       return new not(bt);
     }
 
-    public int op(int n) {
+    public long op(long n) {
       return (~n);
     }
 
@@ -206,7 +206,7 @@ public class Prim {
       return new and(bt);
     }
 
-    public int op(int n, int m) {
+    public long op(long n, long m) {
       return n & m;
     }
 
@@ -235,7 +235,7 @@ public class Prim {
       return new or(bt);
     }
 
-    public int op(int n, int m) {
+    public long op(long n, long m) {
       return n | m;
     }
 
@@ -264,7 +264,7 @@ public class Prim {
       return new xor(bt);
     }
 
-    public int op(int n, int m) {
+    public long op(long n, long m) {
       return n ^ m;
     }
 
@@ -611,7 +611,7 @@ public class Prim {
       return new shl(bt);
     }
 
-    public int op(int n, int m) {
+    public long op(long n, long m) {
       return n << m;
     }
 
@@ -640,7 +640,7 @@ public class Prim {
       return new lshr(bt);
     }
 
-    public int op(int n, int m) {
+    public long op(long n, long m) {
       return n >>> m;
     }
 
@@ -669,7 +669,7 @@ public class Prim {
       return new ashr(bt);
     }
 
-    public int op(int n, int m) {
+    public long op(long n, long m) {
       return n >> m;
     }
 
@@ -698,7 +698,7 @@ public class Prim {
       return new neg(bt);
     }
 
-    public int op(int n) {
+    public long op(long n) {
       return (-n);
     }
 
@@ -736,7 +736,7 @@ public class Prim {
       return new add(bt);
     }
 
-    public int op(int n, int m) {
+    public long op(long n, long m) {
       return n + m;
     }
 
@@ -765,7 +765,7 @@ public class Prim {
       return new sub(bt);
     }
 
-    public int op(int n, int m) {
+    public long op(long n, long m) {
       return n - m;
     }
 
@@ -794,7 +794,7 @@ public class Prim {
       return new mul(bt);
     }
 
-    public int op(int n, int m) {
+    public long op(long n, long m) {
       return n * m;
     }
 
@@ -824,8 +824,8 @@ public class Prim {
     }
 
     void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
-      int n = stack[fp].getInt();
-      int d = stack[fp + 1].getInt();
+      long n = stack[fp].getInt();
+      long d = stack[fp + 1].getInt();
       if (d == 0) {
         throw new Failure("divide by zero error");
       }
@@ -881,8 +881,8 @@ public class Prim {
     }
 
     void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
-      int n = stack[fp].getInt();
-      int d = stack[fp + 1].getInt();
+      long n = stack[fp].getInt();
+      long d = stack[fp + 1].getInt();
       if (d == 0) {
         throw new Failure("divide by zero error (for mod)");
       }
@@ -985,7 +985,7 @@ public class Prim {
       return new eq(bt);
     }
 
-    public boolean op(int n, int m) {
+    public boolean op(long n, long m) {
       return n == m;
     }
 
@@ -1022,7 +1022,7 @@ public class Prim {
       return new neq(bt);
     }
 
-    public boolean op(int n, int m) {
+    public boolean op(long n, long m) {
       return n != m;
     }
 
@@ -1059,7 +1059,7 @@ public class Prim {
       return new slt(bt);
     }
 
-    public boolean op(int n, int m) {
+    public boolean op(long n, long m) {
       return n < m;
     }
 
@@ -1096,7 +1096,7 @@ public class Prim {
       return new sle(bt);
     }
 
-    public boolean op(int n, int m) {
+    public boolean op(long n, long m) {
       return n <= m;
     }
 
@@ -1133,7 +1133,7 @@ public class Prim {
       return new sgt(bt);
     }
 
-    public boolean op(int n, int m) {
+    public boolean op(long n, long m) {
       return n > m;
     }
 
@@ -1170,7 +1170,7 @@ public class Prim {
       return new sge(bt);
     }
 
-    public boolean op(int n, int m) {
+    public boolean op(long n, long m) {
       return n >= m;
     }
 
@@ -1207,7 +1207,7 @@ public class Prim {
       return new ult(bt);
     }
 
-    public boolean op(int n, int m) {
+    public boolean op(long n, long m) {
       return (n < m) ^ (n < 0) ^ (m < 0);
     }
 
@@ -1244,7 +1244,7 @@ public class Prim {
       return new ule(bt);
     }
 
-    public boolean op(int n, int m) {
+    public boolean op(long n, long m) {
       return (n <= m) ^ (n < 0) ^ (m < 0);
     }
 
@@ -1281,7 +1281,7 @@ public class Prim {
       return new ugt(bt);
     }
 
-    public boolean op(int n, int m) {
+    public boolean op(long n, long m) {
       return (n > m) ^ (n < 0) ^ (m < 0);
     }
 
@@ -1318,7 +1318,7 @@ public class Prim {
       return new uge(bt);
     }
 
-    public boolean op(int n, int m) {
+    public boolean op(long n, long m) {
       return (n >= m) ^ (n < 0) ^ (m < 0);
     }
 
@@ -1355,7 +1355,7 @@ public class Prim {
       return new flagToWord(bt);
     }
 
-    public int op(boolean b) {
+    public long op(boolean b) {
       return b ? 1 : 0;
     }
 

@@ -30,7 +30,7 @@ abstract class Value {
 
   public abstract String toString();
 
-  int getInt() throws Failure {
+  long getInt() throws Failure {
     throw new Failure("value is not an integer");
   }
 

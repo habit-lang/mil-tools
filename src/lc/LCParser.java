@@ -504,14 +504,14 @@ public class LCParser extends CoreParser implements LCTokens {
 
       case NATLIT:
         {
-          e = new ENat(lexer.getPos(), lexer.getBigNat());
+          e = new ENat(lexer.getPos(), lexer.getWord());
           lexer.nextToken(/* NATLIT */ );
           return e;
         }
 
       case BITLIT:
         {
-          e = new EBit(lexer.getPos(), lexer.getBigNat(), lexer.getNumBits());
+          e = new EBit(lexer.getPos(), lexer.getNat(), lexer.getNumBits());
           lexer.nextToken(/* BITLIT */ );
           return e;
         }

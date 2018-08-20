@@ -23,10 +23,10 @@ package llvm;
 public class Int extends Value {
 
   /** The numeric value associated with this Int. */
-  private int num;
+  private long num;
 
   /** Default constructor. */
-  public Int(int num) {
+  public Int(long num) {
     this.num = num;
   }
 

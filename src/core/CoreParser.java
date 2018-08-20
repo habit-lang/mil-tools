@@ -264,7 +264,7 @@ public class CoreParser extends Phase implements CoreTokens {
 
       case NATLIT:
         {
-          TypeExp t = new NatTypeExp(lexer.getPos(), lexer.getBigNat());
+          TypeExp t = new NatTypeExp(lexer.getPos(), lexer.getNat());
           lexer.nextToken(/* NATLIT */ );
           return t;
         }
@@ -601,7 +601,7 @@ public class CoreParser extends Phase implements CoreTokens {
 
       case NATLIT:
         {
-          BitdataRegionExp reg = new BitdataTagbitsExp(lexer.getPos(), lexer.getBigNat(), (-1));
+          BitdataRegionExp reg = new BitdataTagbitsExp(lexer.getPos(), lexer.getNat(), (-1));
           lexer.nextToken(/* NATLIT */ );
           return reg;
         }
@@ -609,7 +609,7 @@ public class CoreParser extends Phase implements CoreTokens {
       case BITLIT:
         {
           BitdataRegionExp reg =
-              new BitdataTagbitsExp(lexer.getPos(), lexer.getBigNat(), lexer.getNumBits());
+              new BitdataTagbitsExp(lexer.getPos(), lexer.getNat(), lexer.getNumBits());
           lexer.nextToken(/* BITLIT */ );
           return reg;
         }
@@ -847,7 +847,7 @@ public class CoreParser extends Phase implements CoreTokens {
     }
     int arity = Integer.MAX_VALUE; // Advisory, not required
     if (lexer.getToken() == NATLIT) {
-      arity = lexer.getSmallNat();
+      arity = lexer.getInt();
       lexer.nextToken(/* NATLIT */ );
     }
     KindExp kexp;

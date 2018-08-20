@@ -56,11 +56,11 @@ public abstract class Call extends Tail {
     return withArgs(new Atom[] {a, b});
   }
 
-  public Call withArgs(Atom a, int n) {
+  public Call withArgs(Atom a, long n) {
     return withArgs(new Atom[] {a, new IntConst(n)});
   }
 
-  public Call withArgs(int n, Atom b) {
+  public Call withArgs(long n, Atom b) {
     return withArgs(new Atom[] {new IntConst(n), b});
   }
 
