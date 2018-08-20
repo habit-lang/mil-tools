@@ -95,6 +95,8 @@ public class DataName extends Tycon {
 
   public static final DataName nzword = new DataName("NZWord", Kind.simple(0), 0);
 
+  public static final DataName addr = new DataName("Addr", Kind.simple(0), 0);
+
   public static final DataName flag = new DataName("Flag", Kind.simple(0), 0);
 
   public static final DataName bit = new DataName("Bit", natToStar, 1);
@@ -544,7 +546,7 @@ public class DataName extends Tycon {
 
   /** Return the representation vector for values of this type. */
   Type[] repCalc() { // Singleton types are all represented by the Unit type
-    return isSingleton() ? DataName.unitRep : null;
+    return (this == addr) ? DataName.wordRep : isSingleton() ? DataName.unitRep : null;
   }
 
   /**

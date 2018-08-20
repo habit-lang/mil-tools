@@ -55,10 +55,16 @@ public abstract class Type {
   public static final Type i1 = new Basic("i1", Bool.FALSE);
 
   /** Represents the type of 8 bit signed integer values. */
-  public static final Type i8 = new Basic("i8", Int.ONES);
+  public static final Type i8 = new Basic("i8", Int.ZERO);
+
+  /** Represents the type of 16 bit signed integer values. */
+  public static final Type i16 = new Basic("i16", Int.ZERO);
 
   /** Represents the type of 32 bit signed integer values. */
   public static final Type i32 = new Basic("i32", Int.ZERO);
+
+  /** Represents the type of 64 bit signed integer values. */
+  public static final Type i64 = new Basic("i64", Int.ZERO);
 
   /** Get the type of the ith component in this (assumed) structure type. */
   public Type at(int i) {

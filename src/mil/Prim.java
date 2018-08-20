@@ -19,6 +19,7 @@
 package mil;
 
 import compiler.*;
+import compiler.BuiltinPosition;
 import compiler.Failure;
 import compiler.Position;
 import core.*;
@@ -1548,6 +1549,322 @@ public class Prim {
     return canonPrim(set).withArgs(targs);
   }
 
+  public static final Type bit8 = Type.bit(8);
+
+  public static final Type bit16 = Type.bit(16);
+
+  public static final Type bit32 = Type.bit(32);
+
+  public static final Type bit64 = Type.bit(64);
+
+  public static final Type addrType = DataName.addr.asType();
+
+  public static final Type addrTuple = Type.tuple(addrType);
+
+  public static final BlockType load8type = new BlockType(addrTuple, Type.tuple(bit8));
+
+  public static final BlockType load16type = new BlockType(addrTuple, Type.tuple(bit16));
+
+  public static final BlockType load32type = new BlockType(addrTuple, Type.tuple(bit32));
+
+  public static final BlockType load64type = new BlockType(addrTuple, Type.tuple(bit64));
+
+  public static final BlockType store8type = new BlockType(Type.tuple(addrType, bit8), Type.empty);
+
+  public static final BlockType store16type =
+      new BlockType(Type.tuple(addrType, bit16), Type.empty);
+
+  public static final BlockType store32type =
+      new BlockType(Type.tuple(addrType, bit32), Type.empty);
+
+  public static final BlockType store64type =
+      new BlockType(Type.tuple(addrType, bit64), Type.empty);
+
+  public static final Prim load8 = new load8();
+
+  private static class load8 extends Prim {
+
+    private load8() {
+      this(load8type);
+    }
+
+    private load8(BlockType bt) {
+      super("load8", IMPURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new load8(bt);
+    }
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is expected to return a result (that should be captured in the specified lhs), and
+     * then execution is expected to continue on to the specified code, c.
+     */
+    llvm.Code toLLVMPrimCont(
+        LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
+      return loadLLVM(lm, vm, s, args, llvm.Type.i8, lhs, c);
+    }
+  }
+
+  public static final Prim load16 = new load16();
+
+  private static class load16 extends Prim {
+
+    private load16() {
+      this(load16type);
+    }
+
+    private load16(BlockType bt) {
+      super("load16", IMPURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new load16(bt);
+    }
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is expected to return a result (that should be captured in the specified lhs), and
+     * then execution is expected to continue on to the specified code, c.
+     */
+    llvm.Code toLLVMPrimCont(
+        LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
+      return loadLLVM(lm, vm, s, args, llvm.Type.i16, lhs, c);
+    }
+  }
+
+  public static final Prim load32 = new load32();
+
+  private static class load32 extends Prim {
+
+    private load32() {
+      this(load32type);
+    }
+
+    private load32(BlockType bt) {
+      super("load32", IMPURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new load32(bt);
+    }
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is expected to return a result (that should be captured in the specified lhs), and
+     * then execution is expected to continue on to the specified code, c.
+     */
+    llvm.Code toLLVMPrimCont(
+        LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
+      return loadLLVM(lm, vm, s, args, llvm.Type.i32, lhs, c);
+    }
+  }
+
+  public static final Prim load64 = new load64();
+
+  private static class load64 extends Prim {
+
+    private load64() {
+      this(load64type);
+    }
+
+    private load64(BlockType bt) {
+      super("load64", IMPURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new load64(bt);
+    }
+
+    /**
+     * Representation transformation for memory accesses: Generates an implementation of a 64 bit
+     * memory access by using a pair of 32 bit memory accesses, if WORDSIZE==32. Assumes little
+     * endian memory layout.
+     */
+    Tail repTransformPrim(RepTypeSet set, Atom[] targs) {
+      if (Type.WORDSIZE == 64) {
+        return super.repTransformPrim(set, targs);
+      } else if (Type.WORDSIZE == 32) {
+        if (impl == null) {
+          Temp[] vs = Temp.makeTemps(1);
+          Temp a = new Temp();
+          Temp lsw = new Temp();
+          Temp msw = new Temp();
+          Prim p = Prim.load32.canonPrim(set);
+          impl =
+              new Block(
+                  BuiltinPosition.position,
+                  vs,
+                  new Bind(
+                      lsw,
+                      p.withArgs(vs[0]),
+                      new Bind(
+                          a,
+                          Prim.add.withArgs(vs[0], 4),
+                          new Bind(
+                              msw, p.withArgs(a), new Done(new Return(new Atom[] {lsw, msw}))))));
+        }
+        return new BlockCall(impl, targs);
+      } else {
+        debug.Internal.error(
+            "Unrecognized wordsize " + Type.WORDSIZE + " in repTransformPrim for load64");
+        return null; /* not reached */
+      }
+    }
+
+    private static Block impl = null;
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is expected to return a result (that should be captured in the specified lhs), and
+     * then execution is expected to continue on to the specified code, c.
+     */
+    llvm.Code toLLVMPrimCont(
+        LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
+      return loadLLVM(lm, vm, s, args, llvm.Type.i64, lhs, c);
+    }
+  }
+
+  public static final Prim store8 = new store8();
+
+  private static class store8 extends Prim {
+
+    private store8() {
+      this(store8type);
+    }
+
+    private store8(BlockType bt) {
+      super("store8", IMPURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new store8(bt);
+    }
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is not expected to produce any results, but execution is expected to continue with
+     * the given code.
+     */
+    llvm.Code toLLVMPrimVoid(LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
+      return storeLLVM(lm, vm, s, args, llvm.Type.i8, c);
+    }
+  }
+
+  public static final Prim store16 = new store16();
+
+  private static class store16 extends Prim {
+
+    private store16() {
+      this(store16type);
+    }
+
+    private store16(BlockType bt) {
+      super("store16", IMPURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new store16(bt);
+    }
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is not expected to produce any results, but execution is expected to continue with
+     * the given code.
+     */
+    llvm.Code toLLVMPrimVoid(LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
+      return storeLLVM(lm, vm, s, args, llvm.Type.i16, c);
+    }
+  }
+
+  public static final Prim store32 = new store32();
+
+  private static class store32 extends Prim {
+
+    private store32() {
+      this(store32type);
+    }
+
+    private store32(BlockType bt) {
+      super("store32", IMPURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new store32(bt);
+    }
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is not expected to produce any results, but execution is expected to continue with
+     * the given code.
+     */
+    llvm.Code toLLVMPrimVoid(LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
+      return storeLLVM(lm, vm, s, args, llvm.Type.i32, c);
+    }
+  }
+
+  public static final Prim store64 = new store64();
+
+  private static class store64 extends Prim {
+
+    private store64() {
+      this(store64type);
+    }
+
+    private store64(BlockType bt) {
+      super("store64", IMPURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new store64(bt);
+    }
+
+    /**
+     * Representation transformation for memory accesses: Generates an implementation of a 64 bit
+     * memory access by using a pair of 32 bit memory accesses, if WORDSIZE==32. Assumes little
+     * endian memory layout.
+     */
+    Tail repTransformPrim(RepTypeSet set, Atom[] targs) {
+      if (Type.WORDSIZE == 64) {
+        return super.repTransformPrim(set, targs);
+      } else if (Type.WORDSIZE == 32) {
+        if (impl == null) {
+          Temp[] vs = Temp.makeTemps(3);
+          Temp a = new Temp();
+          Prim p = Prim.store32.canonPrim(set);
+          impl =
+              new Block(
+                  BuiltinPosition.position,
+                  vs, // store64[addr, lsw, msw]
+                  new Bind(
+                      Temp.noTemps,
+                      p.withArgs(vs[0], vs[1]), //   = [] <- store32(addr, lsw)
+                      new Bind(
+                          a,
+                          Prim.add.withArgs(vs[0], 4), //     a  <- add((addr, 4))
+                          new Done(p.withArgs(a, vs[2]))))); //     store32((a, msw))
+        }
+        return new BlockCall(impl, targs);
+      } else {
+        debug.Internal.error(
+            "Unrecognized wordsize " + Type.WORDSIZE + " in repTransformPrim for load64");
+        return null; /* not reached */
+      }
+    }
+
+    private static Block impl = null;
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is not expected to produce any results, but execution is expected to continue with
+     * the given code.
+     */
+    llvm.Code toLLVMPrimVoid(LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
+      return storeLLVM(lm, vm, s, args, llvm.Type.i64, c);
+    }
+  }
+
   Tail maker(Position pos, boolean thunk) {
     Call call = new PrimCall(this);
     int arity = blockType.getArity();
@@ -1593,5 +1910,42 @@ public class Prim {
         lhs,
         new llvm.Call(lhs.getType(), lm.globalFor(this), Atom.toLLVMValues(lm, vm, s, args)),
         c);
+  }
+
+  /**
+   * Generate an LLVM code sequence to store (a portion of) a given Word value at a specified
+   * address.
+   */
+  static llvm.Code storeLLVM(
+      LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Type ty, llvm.Code c) {
+    llvm.Type pt = ty.ptr(); // pointer type
+    llvm.Local p = vm.reg(pt); // register to hold pointer
+    llvm.Value v = args[1].toLLVMAtom(lm, vm, s); // value to store
+    if (ty == v.getType()) { // store v directly if types match
+      c = new llvm.Store(v, p, c);
+    } else { // truncate and store if types do not match
+      llvm.Local r = vm.reg(ty); // register to hold truncated value
+      c = new llvm.Op(r, new llvm.Trunc(v, ty), new llvm.Store(r, p, c));
+    }
+    return new llvm.Op(p, new llvm.IntToPtr(args[0].toLLVMAtom(lm, vm, s), pt), c);
+  }
+
+  /**
+   * Generate an LLVM code sequence to load a value of the given type from a specified address. We
+   * assume that the data that is being loaded will be either the same size or else smaller than a
+   * single machine word: for example, we may load an i8, i16, or i32 in to an i32, but we should
+   * not attempt to load an i64 into an i32.
+   */
+  static llvm.Code loadLLVM(
+      LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Type ty, llvm.Local lhs, llvm.Code c) {
+    llvm.Type pt = ty.ptr(); // pointer type
+    llvm.Local p = vm.reg(pt); // register to hold pointer
+    if (ty == lhs.getType()) { // load directly into lhs if types match
+      c = new llvm.Op(lhs, new llvm.Load(p), c);
+    } else { // zero extend loaded value if types do not match (assumes lhs type is wider than ty)
+      llvm.Local v = vm.reg(ty); // register to hold value
+      c = new llvm.Op(v, new llvm.Load(p), new llvm.Op(lhs, new llvm.Zext(v, lhs.getType()), c));
+    }
+    return new llvm.Op(p, new llvm.IntToPtr(args[0].toLLVMAtom(lm, vm, s), pt), c);
   }
 }
