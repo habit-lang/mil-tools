@@ -33,6 +33,6 @@ public abstract class PrimBinFOp extends Prim {
 
   Code fold(boolean n, boolean m) {
     MILProgram.report("constant folding for " + getId());
-    return new Done(new Return(FlagConst.fromBool(op(n, m))));
+    return new Done(new Return(Flag.fromBool(op(n, m))));
   }
 }

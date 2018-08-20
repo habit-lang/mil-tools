@@ -113,7 +113,7 @@ public class BitdataField extends Name {
       return new Bind(
           a,
           Prim.and.withArgs(params[j], 1 << o),
-          new Bind(ws[0], Prim.neq.withArgs(a, IntConst.Zero), code));
+          new Bind(ws[0], Prim.neq.withArgs(a, Word.Zero), code));
     }
   }
 
@@ -126,7 +126,7 @@ public class BitdataField extends Name {
     int j = offset / wordsize; // starting word offset in params
 
     if (width + offset < total && 0 < w) { // add mask on msw, if needed
-      code = prim(ws, n - 1, Prim.and, new IntConst((1 << (wordsize - w)) - 1), code);
+      code = prim(ws, n - 1, Prim.and, new Word((1 << (wordsize - w)) - 1), code);
     }
 
     for (int i = n - 1; i >= 0; i--) { // extract each word of the result
@@ -162,7 +162,7 @@ public class BitdataField extends Name {
     int j = (width + offset - 1) / wordsize - (n - 1); // offset from output to input
 
     if (0 < w) { // add mask on lsw, if needed
-      code = prim(ws, 0, Prim.and, new IntConst((~0) << w), code);
+      code = prim(ws, 0, Prim.and, new Word((~0) << w), code);
     }
 
     for (int i = n - 1; i >= 0; i--) { // extract each word of the result
@@ -375,18 +375,18 @@ public class BitdataField extends Name {
       if (j == k) {
         // !System.out.println("hi and lo mask words coincide");
         // !System.out.println("combined mask is 0x" + Integer.toHexString(lomask | himask));
-        code = prim(ws, j, Prim.and, new IntConst(lomask | himask), code);
+        code = prim(ws, j, Prim.and, new Word(lomask | himask), code);
       } else {
         if (o != 0) {
           // !System.out.println("lo mask for word " + j + " is 0x" + Integer.toHexString(lomask));
-          code = prim(ws, j, Prim.and, new IntConst(lomask), code);
+          code = prim(ws, j, Prim.and, new Word(lomask), code);
         }
         for (int i = j + 1; i < k; i++) {
-          code = copy(ws, i, IntConst.Zero, code);
+          code = copy(ws, i, Word.Zero, code);
         }
         if (p != 0) {
           // !System.out.println("hi mask for word " + k + " is 0x" + Integer.toHexString(himask));
-          code = prim(ws, k, Prim.and, new IntConst(himask), code);
+          code = prim(ws, k, Prim.and, new Word(himask), code);
         }
       }
     }

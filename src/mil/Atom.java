@@ -55,7 +55,7 @@ public abstract class Atom {
   }
 
   /**
-   * Test to see if two atoms are the same. For a pair of IntConst objects, this means that the two
+   * Test to see if two atoms are the same. For a pair of Word objects, this means that the two
    * objects have the same val. For any other pair of Atoms, we expect the objects themselves to be
    * the same.
    */
@@ -63,19 +63,19 @@ public abstract class Atom {
     return this == that;
   }
 
-  public boolean sameIntConst(IntConst c) {
+  public boolean sameWord(Word c) {
     return false;
   }
 
-  public boolean sameNZConst(NZConst c) {
+  public boolean sameNonZero(NonZero c) {
     return false;
   }
 
-  public boolean sameBitConst(BitConst c) {
+  public boolean sameBits(Bits c) {
     return false;
   }
 
-  public boolean sameFlagConst(FlagConst c) {
+  public boolean sameFlag(Flag c) {
     return false;
   }
 
@@ -92,12 +92,12 @@ public abstract class Atom {
   }
 
   /** Test to determine whether this Atom is an integer constant (or not). */
-  public IntConst isIntConst() {
+  public Word isWord() {
     return null;
   }
 
   /** Test to determine whether this Atom is a flag constant (or not). */
-  public FlagConst isFlagConst() {
+  public Flag isFlag() {
     return null;
   }
 
@@ -244,10 +244,10 @@ public abstract class Atom {
   }
 
   /**
-   * A simple test for MIL code fragments that return a known FlagConst, returning either the
-   * constant or null.
+   * A simple test for MIL code fragments that return a known Flag, returning either the constant or
+   * null.
    */
-  FlagConst returnsFlagConst() {
+  Flag returnsFlag() {
     return null;
   }
 
@@ -289,9 +289,9 @@ public abstract class Atom {
 
   /**
    * Return the nonzero value associated with this atom; a return of zero indicates that the atom
-   * was not an NZConst.
+   * was not an NonZero.
    */
-  int getNZConst() {
+  int getNonZero() {
     return 0;
   }
 

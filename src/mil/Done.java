@@ -225,11 +225,11 @@ public class Done extends Code {
   }
 
   /**
-   * A simple test for MIL code fragments that return a known FlagConst, returning either the
-   * constant or null.
+   * A simple test for MIL code fragments that return a known Flag, returning either the constant or
+   * null.
    */
-  FlagConst returnsFlagConst() {
-    return t.returnsFlagConst();
+  Flag returnsFlag() {
+    return t.returnsFlag();
   }
 
   public Code andThen(Temp[] vs, Code rest) {

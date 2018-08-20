@@ -57,11 +57,11 @@ public abstract class Call extends Tail {
   }
 
   public Call withArgs(Atom a, long n) {
-    return withArgs(new Atom[] {a, new IntConst(n)});
+    return withArgs(new Atom[] {a, new Word(n)});
   }
 
   public Call withArgs(long n, Atom b) {
-    return withArgs(new Atom[] {new IntConst(n), b});
+    return withArgs(new Atom[] {new Word(n), b});
   }
 
   /** Test to see if this Tail expression includes a free occurrence of a particular variable. */

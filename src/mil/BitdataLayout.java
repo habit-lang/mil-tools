@@ -317,11 +317,11 @@ public class BitdataLayout extends DataName {
       Temp[] vs = Temp.makeTemps(1);
       Tail t =
           total == 0 // width 0 case
-              ? new Return(FlagConst.True)
+              ? new Return(Flag.True)
               : maskNat.testBit(0) // nonzero mask ==> depends on vs[0]
                   ? ((eq != bitsNat.testBit(0)) ? new Return(vs) : Prim.bnot.withArgs(vs[0]))
                   : new Return(
-                      FlagConst.fromBool(eq == bitsNat.testBit(0))); // zero mask ==> const function
+                      Flag.fromBool(eq == bitsNat.testBit(0))); // zero mask ==> const function
       maskTestBlock = new Block(cf.getPos(), "masktest_" + cf, vs, new Done(t));
     } else {
       int n = Type.numWords(total); // number of words in output

@@ -405,7 +405,7 @@ public class External extends TopDefn {
             BigInteger v = ts[0].isNonNegInt(); // Value of literal
             BigInteger m = ts[1].isIxWord(); // Modulus for index type
             if (v != null && m != null && v.compareTo(m) < 0) {
-              return new Return(new IntConst(v.intValue())).constClosure(pos, 1);
+              return new Return(new Word(v.intValue())).constClosure(pos, 1);
             }
             return null;
           }
@@ -418,7 +418,7 @@ public class External extends TopDefn {
           Tail generate(Position pos, Type[] ts) {
             BigInteger w = ts[0].isIxWord(); // Modulus for index type
             if (w != null) {
-              return new Return(new IntConst(w.subtract(BigInteger.ONE).intValue()));
+              return new Return(new Word(w.subtract(BigInteger.ONE).intValue()));
             }
             return null;
           }
@@ -439,7 +439,7 @@ public class External extends TopDefn {
               Atom[] as = new Atom[n];
               as[0] = vs[0];
               for (int i = 1; i < n; i++) { // In general, could return multiple words
-                as[i] = IntConst.Zero;
+                as[i] = Word.Zero;
               }
               ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, vs, new Return(as));
               return new ClosAlloc(k).withArgs();
@@ -1266,7 +1266,7 @@ public class External extends TopDefn {
           Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
             Atom[] as = new Atom[n];
             for (int i = 0; i < n; i++) {
-              as[i] = (i == lo) ? mask : IntConst.Zero;
+              as[i] = (i == lo) ? mask : Word.Zero;
             }
             return new Done(new Return(as));
           }
@@ -1318,7 +1318,7 @@ public class External extends TopDefn {
           Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
             Temp w = new Temp();
             return new Bind(
-                w, Prim.and.withArgs(mask, vs[lo]), new Done(Prim.neq.withArgs(w, IntConst.Zero)));
+                w, Prim.and.withArgs(mask, vs[lo]), new Done(Prim.neq.withArgs(w, Word.Zero)));
           }
         });
 
@@ -1330,7 +1330,7 @@ public class External extends TopDefn {
             if (w != null) {
               int width = w.intValue();
               int n = Type.numWords(width);
-              Tail t = new Return(new IntConst(width - 1));
+              Tail t = new Return(new Word(width - 1));
               // TODO: The Temp.makeTemps(n) call in the following creates the proxy argument of
               // type Bit w that is required as an input
               // for this function (to avoid ambiguity).  Because it is not actually used, however,
@@ -1394,7 +1394,7 @@ public class External extends TopDefn {
             Temp[] vs = Temp.makeTemps(n + 1); // [v0,...,shift]
             Atom[] as = new Atom[n];
             for (int i = 0; i < lo; i++) { // words below lo in the result are zero
-              as[i] = IntConst.Zero;
+              as[i] = Word.Zero;
             }
             for (int i = lo; i < n; i++) { // words at or above lo are shifted up from lower indices
               as[i] = vs[i - lo];
@@ -1422,7 +1422,7 @@ public class External extends TopDefn {
 
             // Zero out least significant words of result:
             for (int i = 0; i < lo; i++) {
-              as[i] = IntConst.Zero;
+              as[i] = Word.Zero;
             }
 
             // Create new temporaries for the remaining words:
@@ -1518,7 +1518,7 @@ public class External extends TopDefn {
               as[i] = vs[i + lo];
             }
             for (; i < n; i++) {
-              as[i] = IntConst.Zero;
+              as[i] = Word.Zero;
             }
             return new Block(pos, vs, new Done(new Return(as)));
           }
@@ -1556,7 +1556,7 @@ public class External extends TopDefn {
 
             // Zero any remaining parts of result:
             for (; i < n; i++) {
-              as[i] = IntConst.Zero;
+              as[i] = Word.Zero;
             }
             return new Block(
                 pos,
@@ -1583,7 +1583,7 @@ public class External extends TopDefn {
                 && w.compareTo(BigInteger.valueOf(Type.WORDSIZE))
                     <= 0 // Bit w must fit in a single word
                 && BigInteger.ONE.shiftLeft(w.intValue()).compareTo(v) > 0) { // v must be < 2^w
-              Tail t = new Return(new NZConst(v.intValue()));
+              Tail t = new Return(new NonZero(v.intValue()));
               ClosureDefn k =
                   new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(1), t); //  k{} _ = return [v]
               return new ClosAlloc(k).withArgs();
@@ -1718,7 +1718,7 @@ public class External extends TopDefn {
     Temp[] f = Temp.makeTemps(1);
     Temp[] r = Temp.makeTemps(1);
     ClosureDefn k1 =
-        new ClosureDefn(pos, f, r, new BlockCall(loop, new Atom[] {f[0], r[0], IntConst.Zero}));
+        new ClosureDefn(pos, f, r, new BlockCall(loop, new Atom[] {f[0], r[0], Word.Zero}));
     return new ClosAlloc(k1).makeUnaryFuncClosure(pos, 1);
   }
 
@@ -1739,8 +1739,7 @@ public class External extends TopDefn {
       int i = len - 1;
       for (; ; ) {
         Temp g = new Temp();
-        code =
-            new Bind(g, new Enter(f, new IntConst(i)), new Bind(new Temp(), new Enter(g, r), code));
+        code = new Bind(g, new Enter(f, new Word(i)), new Bind(new Temp(), new Enter(g, r), code));
         if (i > 0) {
           Temp r1 = new Temp();
           code = new Bind(r, Prim.add.withArgs(r1, size), code);

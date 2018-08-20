@@ -38,7 +38,7 @@ class EBit extends ELit {
   }
 
   void display(Screen s) {
-    s.print(BitConst.toString(nat, width));
+    s.print(Bits.toString(nat, width));
   }
 
   /**
@@ -61,11 +61,11 @@ class EBit extends ELit {
 
   /** Compile an expression into an Atom. */
   Code compAtom(final CGEnv env, final AtomCont ka) {
-    return ka.with(new BitConst(nat, width));
+    return ka.with(new Bits(nat, width));
   }
 
   /** Compile an expression into a Tail. */
   Code compTail(final CGEnv env, final Block abort, final TailCont kt) { //  bit literal
-    return kt.with(new Return(new BitConst(nat, width)));
+    return kt.with(new Return(new Bits(nat, width)));
   }
 }

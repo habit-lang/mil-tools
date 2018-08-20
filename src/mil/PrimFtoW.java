@@ -34,7 +34,7 @@ public abstract class PrimFtoW extends Prim {
   abstract long op(boolean b);
 
   void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
-    stack[fp] = new IntValue(op(stack[fp].getBool()));
+    stack[fp] = new WordValue(op(stack[fp].getBool()));
   }
 
   Code fold(boolean n) {

@@ -522,14 +522,14 @@ public class MILParser extends CoreParser implements MILTokens {
 
       case NATLIT:
         {
-          IntConstExp e = new IntConstExp(lexer.getWord());
+          WordExp e = new WordExp(lexer.getWord());
           lexer.nextToken(/* NATLIT */ );
           return e;
         }
 
       case BITLIT:
         {
-          BitConstExp e = new BitConstExp(lexer.getNat(), lexer.getNumBits());
+          BitsExp e = new BitsExp(lexer.getNat(), lexer.getNumBits());
           lexer.nextToken(/* BITLIT */ );
           return e;
         }

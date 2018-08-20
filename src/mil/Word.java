@@ -21,19 +21,19 @@ package mil;
 import compiler.*;
 import core.*;
 
-public class IntConst extends Const {
+public class Word extends Const {
 
   private long val;
 
-  public IntConst(long val) {
+  public Word(long val) {
     this.val = fromLong(val);
   }
 
   /**
    * Truncate the given long value to be within the range allowed by a Word of width Type.WORDSIZE.
-   * (The latter should be either 32 or 64.) This allows us to store use long values in IntConst
-   * objects (so that we can represent Word constants when Type.WORDSIZE==64), but to limit the
-   * range to that of an int object (when necessary, so that we can represent Word constants when
+   * (The latter should be either 32 or 64.) This allows us to store use long values in Word objects
+   * (so that we can represent Word constants when Type.WORDSIZE==64), but to limit the range to
+   * that of an int object (when necessary, so that we can represent Word constants when
    * Type.WORDSIZE==32).
    */
   public static long fromLong(long val) {
@@ -45,7 +45,7 @@ public class IntConst extends Const {
     return val;
   }
 
-  public static final IntConst Zero = new IntConst(0);
+  public static final Word Zero = new Word(0);
 
   /** Generate a printable description of this atom. */
   public String toString() {
@@ -53,20 +53,20 @@ public class IntConst extends Const {
   }
 
   /**
-   * Test to see if two atoms are the same. For a pair of IntConst objects, this means that the two
+   * Test to see if two atoms are the same. For a pair of Word objects, this means that the two
    * objects have the same val. For any other pair of Atoms, we expect the objects themselves to be
    * the same.
    */
   public boolean sameAtom(Atom that) {
-    return that.sameIntConst(this);
+    return that.sameWord(this);
   }
 
-  public boolean sameIntConst(IntConst c) {
+  public boolean sameWord(Word c) {
     return this.val == c.val;
   }
 
   /** Test to determine whether this Atom is an integer constant (or not). */
-  public IntConst isIntConst() {
+  public Word isWord() {
     return this;
   }
 
@@ -77,7 +77,7 @@ public class IntConst extends Const {
 
   /** Find the Value for a given mil constant. */
   Value constValue() {
-    return new IntValue(val);
+    return new WordValue(val);
   }
 
   /**
@@ -93,11 +93,11 @@ public class IntConst extends Const {
    * runtime.
    */
   llvm.Value calcStaticValue() {
-    return new llvm.Int(val);
+    return new llvm.Word(val);
   }
 
   /** Calculate an LLVM Value corresponding to a given MIL argument. */
   llvm.Value toLLVMAtom(LLVMMap lm, VarMap vm) {
-    return new llvm.Int(val);
+    return new llvm.Word(val);
   }
 }

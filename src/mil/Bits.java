@@ -22,14 +22,14 @@ import compiler.*;
 import core.*;
 import java.math.BigInteger;
 
-public class BitConst extends Const {
+public class Bits extends Const {
 
   private BigInteger val;
 
   private int width;
 
   /** Default constructor. */
-  public BitConst(BigInteger val, int width) {
+  public Bits(BigInteger val, int width) {
     this.val = val;
     this.width = width;
   }
@@ -65,15 +65,15 @@ public class BitConst extends Const {
   }
 
   /**
-   * Test to see if two atoms are the same. For a pair of IntConst objects, this means that the two
+   * Test to see if two atoms are the same. For a pair of Word objects, this means that the two
    * objects have the same val. For any other pair of Atoms, we expect the objects themselves to be
    * the same.
    */
   public boolean sameAtom(Atom that) {
-    return that.sameBitConst(this);
+    return that.sameBits(this);
   }
 
-  public boolean sameBitConst(BitConst c) {
+  public boolean sameBits(Bits c) {
     return this.width == c.width && this.val.equals(c.val);
   }
 
@@ -84,7 +84,7 @@ public class BitConst extends Const {
 
   /** Find the Value for a given mil constant. */
   Value constValue() {
-    return new IntValue(val.intValue());
+    return new WordValue(val.longValue());
   }
 
   /**
@@ -106,6 +106,6 @@ public class BitConst extends Const {
 
   /** Calculate an LLVM Value corresponding to a given MIL argument. */
   llvm.Value toLLVMAtom(LLVMMap lm, VarMap vm) {
-    return new llvm.Int(val.intValue());
+    return new llvm.Word(val.longValue());
   }
 }

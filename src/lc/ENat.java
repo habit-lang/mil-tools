@@ -56,11 +56,11 @@ class ENat extends ELit {
 
   /** Compile an expression into an Atom. */
   Code compAtom(final CGEnv env, final AtomCont ka) {
-    return ka.with(new IntConst(num));
+    return ka.with(new Word(num));
   }
 
   /** Compile an expression into a Tail. */
   Code compTail(final CGEnv env, final Block abort, final TailCont kt) { //  integer literal
-    return kt.with(new Return(new IntConst(num)));
+    return kt.with(new Return(new Word(num)));
   }
 }

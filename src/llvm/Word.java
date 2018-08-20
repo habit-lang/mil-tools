@@ -20,21 +20,21 @@ package llvm;
 
 
 /** Represents an LLVM integer constant value. */
-public class Int extends Value {
+public class Word extends Value {
 
-  /** The numeric value associated with this Int. */
+  /** The numeric value associated with this Word. */
   private long num;
 
   /** Default constructor. */
-  public Int(long num) {
+  public Word(long num) {
     this.num = num;
   }
 
   /** The integer constant with all bits zero. */
-  public static final Int ZERO = new Int(0);
+  public static final Word ZERO = new Word(0);
 
   /** The integer constant with all bits one. */
-  public static final Int ONES = new Int(~0);
+  public static final Word ONES = new Word(~0);
 
   /** Return the LLVM type of this value. */
   public Type getType() {

@@ -34,7 +34,7 @@ public abstract class PrimUnOp extends Prim {
   abstract long op(long n);
 
   void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
-    stack[fp] = new IntValue(op(stack[fp].getInt()));
+    stack[fp] = new WordValue(op(stack[fp].getInt()));
   }
 
   Code fold(long n) {

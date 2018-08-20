@@ -281,11 +281,11 @@ public class BlockCall extends Call {
   }
 
   /**
-   * A simple test for MIL code fragments that return a known FlagConst, returning either the
-   * constant or null.
+   * A simple test for MIL code fragments that return a known Flag, returning either the constant or
+   * null.
    */
-  FlagConst returnsFlagConst() {
-    return args.length == 0 ? b.returnsFlagConst() : null;
+  Flag returnsFlag() {
+    return args.length == 0 ? b.returnsFlag() : null;
   }
 
   public Code rewrite(Facts facts) {

@@ -169,7 +169,7 @@ public abstract class Allocator extends Call {
         "calculate the number of bytes that we need to allocate",
         new llvm.Op(
             past,
-            new llvm.Getelementptr(new llvm.Null(objt), new llvm.Int(1)),
+            new llvm.Getelementptr(new llvm.Null(objt), new llvm.Word(1)),
             new llvm.Op(
                 size,
                 new llvm.PtrToInt(past, size.getType()),
@@ -184,7 +184,7 @@ public abstract class Allocator extends Call {
     llvm.Local addr = vm.reg(v.getType().ptr());
     return new llvm.Op(
         addr,
-        new llvm.Getelementptr(lhs, llvm.Int.ZERO, new llvm.Int(n)),
+        new llvm.Getelementptr(lhs, llvm.Word.ZERO, new llvm.Word(n)),
         new llvm.Store(v, addr, c));
   }
 }

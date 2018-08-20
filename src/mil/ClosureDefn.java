@@ -805,7 +805,7 @@ public class ClosureDefn extends Defn {
         cs[0] =
             new llvm.Op(
                 pptr,
-                new llvm.Getelementptr(ptr, new llvm.Int(0), new llvm.Int(n + 1)),
+                new llvm.Getelementptr(ptr, new llvm.Word(0), new llvm.Word(n + 1)),
                 new llvm.Op(dvm.lookup(lm, nuparams[n]), new llvm.Load(pptr), cs[0]));
       }
       cs[0] =

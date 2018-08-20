@@ -204,7 +204,7 @@ public class DataAlloc extends Allocator {
    * having already established that all of the components (if any) are statically known.
    */
   llvm.Value staticAlloc(LLVMMap lm, llvm.Program prog, llvm.Value[] vals) {
-    vals[0] = new llvm.Int(cf.getNum()); // add tag at front of object
+    vals[0] = new llvm.Word(cf.getNum()); // add tag at front of object
     return staticAlloc(prog, vals, lm.cfunLayoutType(cf), cf.dataPtrType(lm));
   }
 
@@ -228,7 +228,7 @@ public class DataAlloc extends Allocator {
         s,
         objt,
         obj,
-        new llvm.Int(cf.getNum()),
+        new llvm.Word(cf.getNum()),
         new llvm.Op(lhs, new llvm.Bitcast(obj, cf.retType(lm)), c));
   }
 }

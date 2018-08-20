@@ -256,10 +256,10 @@ public abstract class Tail {
   }
 
   /**
-   * A simple test for MIL code fragments that return a known FlagConst, returning either the
-   * constant or null.
+   * A simple test for MIL code fragments that return a known Flag, returning either the constant or
+   * null.
    */
-  FlagConst returnsFlagConst() {
+  Flag returnsFlag() {
     return null;
   }
 

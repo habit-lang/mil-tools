@@ -135,11 +135,11 @@ public class Cfun extends Name {
   }
 
   public Call withArgs(Atom a, long n) {
-    return withArgs(new Atom[] {a, new IntConst(n)});
+    return withArgs(new Atom[] {a, new Word(n)});
   }
 
   public Call withArgs(long n, Atom b) {
-    return withArgs(new Atom[] {new IntConst(n), b});
+    return withArgs(new Atom[] {new Word(n), b});
   }
 
   /** Points to a top level definition corresponding to an LC function for this constructor. */

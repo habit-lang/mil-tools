@@ -789,11 +789,11 @@ public class Block extends Defn {
   }
 
   /**
-   * A simple test for MIL code fragments that return a known FlagConst, returning either the
-   * constant or null.
+   * A simple test for MIL code fragments that return a known Flag, returning either the constant or
+   * null.
    */
-  FlagConst returnsFlagConst() {
-    return code.returnsFlagConst();
+  Flag returnsFlag() {
+    return code.returnsFlag();
   }
 
   /**
@@ -1006,14 +1006,13 @@ public class Block extends Defn {
     declared = declared.canonBlockType(set);
   }
 
-  public static Block returnTrue = atomBlock("returnTrue", FlagConst.True);
+  public static Block returnTrue = atomBlock("returnTrue", Flag.True);
 
-  public static Block returnFalse = atomBlock("returnFalse", FlagConst.False);
+  public static Block returnFalse = atomBlock("returnFalse", Flag.False);
 
   /**
-   * Make a block of the following form that immediately returns the atom a, which could be an
-   * IntConst or a Top, but not a Temp (because that would be out of scope). b :: [] >>= [t] b[] =
-   * return a
+   * Make a block of the following form that immediately returns the atom a, which could be an Word
+   * or a Top, but not a Temp (because that would be out of scope). b :: [] >>= [t] b[] = return a
    */
   public static Block atomBlock(String name, Atom a) {
     return new Block(BuiltinPosition.position, name, Temp.noTemps, new Done(new Return(a)));

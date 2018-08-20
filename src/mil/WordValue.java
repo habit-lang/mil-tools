@@ -22,12 +22,12 @@ import compiler.*;
 import compiler.Failure;
 import core.*;
 
-class IntValue extends Value {
+class WordValue extends Value {
 
   private long num;
 
   /** Default constructor. */
-  IntValue(long num) {
+  WordValue(long num) {
     this.num = num;
   }
 

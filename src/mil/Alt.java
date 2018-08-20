@@ -345,7 +345,7 @@ public class Alt {
       llvm.Value[] nums = new llvm.Value[nalts];
       String[] bs = new String[nalts];
       for (int i = 0; i < nalts; i++) {
-        nums[i] = new llvm.Int(alts[i].cf.getNum());
+        nums[i] = new llvm.Word(alts[i].cf.getNum());
         bs[i] = succs[i].label();
       }
       llvm.Type dt = LLVMMap.tagType; // the type of the tag
@@ -355,7 +355,7 @@ public class Alt {
           "read the tag for a data object",
           new llvm.Op(
               addr,
-              new llvm.Getelementptr(v, llvm.Int.ZERO, llvm.Int.ZERO),
+              new llvm.Getelementptr(v, llvm.Word.ZERO, llvm.Word.ZERO),
               new llvm.Op(
                   tag,
                   new llvm.Load(addr),

@@ -21,18 +21,14 @@ package mil;
 import compiler.*;
 import compiler.Handler;
 import core.*;
-import java.math.BigInteger;
 
-class BitConstExp extends AtomExp {
+class WordExp extends AtomExp {
 
-  private BigInteger n;
-
-  private int w;
+  private long n;
 
   /** Default constructor. */
-  BitConstExp(BigInteger n, int w) {
+  WordExp(long n) {
     this.n = n;
-    this.w = w;
   }
 
   /**
@@ -40,6 +36,6 @@ class BitConstExp extends AtomExp {
    * and returning a corresponding MIL Atom.
    */
   Atom inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
-    return new BitConst(n, w);
+    return new Word(n);
   }
 }

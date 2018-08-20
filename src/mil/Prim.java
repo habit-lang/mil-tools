@@ -115,11 +115,11 @@ public class Prim {
   }
 
   public Call withArgs(Atom a, long n) {
-    return withArgs(new Atom[] {a, new IntConst(n)});
+    return withArgs(new Atom[] {a, new Word(n)});
   }
 
   public Call withArgs(long n, Atom b) {
-    return withArgs(new Atom[] {new IntConst(n), b});
+    return withArgs(new Atom[] {new Word(n), b});
   }
 
   protected static final Type flagTuple = Type.tuple(DataName.flag.asType());
@@ -186,7 +186,7 @@ public class Prim {
      * Generate an LLVM right hand side for this unary MIL primitive with the given value as input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value v) {
-      return new llvm.Xor(ty, llvm.Int.ONES, v);
+      return new llvm.Xor(ty, llvm.Word.ONES, v);
     }
   }
 
@@ -311,7 +311,7 @@ public class Prim {
      * Generate an LLVM right hand side for this unary MIL primitive with the given value as input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value v) {
-      return new llvm.Xor(ty, new llvm.Int(1), v);
+      return new llvm.Xor(ty, new llvm.Word(1), v);
     }
   }
 
@@ -716,7 +716,7 @@ public class Prim {
      * Generate an LLVM right hand side for this unary MIL primitive with the given value as input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value v) {
-      return new llvm.Sub(ty, new llvm.Int(0), v);
+      return new llvm.Sub(ty, new llvm.Word(0), v);
     }
   }
 
@@ -829,7 +829,7 @@ public class Prim {
       if (d == 0) {
         throw new Failure("divide by zero error");
       }
-      stack[fp] = new IntValue(n / d);
+      stack[fp] = new WordValue(n / d);
     }
 
     /**
@@ -886,7 +886,7 @@ public class Prim {
       if (d == 0) {
         throw new Failure("divide by zero error (for mod)");
       }
-      stack[fp] = new IntValue(n % d);
+      stack[fp] = new WordValue(n % d);
     }
 
     /**

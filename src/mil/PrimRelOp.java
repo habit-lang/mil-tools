@@ -39,7 +39,7 @@ public abstract class PrimRelOp extends Prim {
 
   Code fold(long n, long m) {
     MILProgram.report("constant folding for " + getId());
-    return new Done(new Return(FlagConst.fromBool(op(n, m))));
+    return new Done(new Return(Flag.fromBool(op(n, m))));
   }
 
   /**

@@ -21,57 +21,74 @@ package mil;
 import compiler.*;
 import core.*;
 
-public class NZConst extends Const {
+public class Flag extends Const {
 
-  private int val;
+  private boolean val;
 
   /** Default constructor. */
-  public NZConst(int val) {
+  public Flag(boolean val) {
     this.val = val;
-
-    if (val == 0) {
-      debug.Internal.error("NZConst with zero value");
-    }
   }
 
-  public int getVal() {
+  public boolean getVal() {
     return val;
+  }
+
+  public static final Flag True = new Flag(true);
+
+  public static final Flag False = new Flag(false);
+
+  public static Flag fromBool(boolean b) {
+    return b ? True : False;
   }
 
   /** Generate a printable description of this atom. */
   public String toString() {
-    return val + "nz";
+    return val ? "flag1" : "flag0";
   }
 
   /**
-   * Test to see if two atoms are the same. For a pair of IntConst objects, this means that the two
+   * Test to see if two atoms are the same. For a pair of Word objects, this means that the two
    * objects have the same val. For any other pair of Atoms, we expect the objects themselves to be
    * the same.
    */
   public boolean sameAtom(Atom that) {
-    return that.sameNZConst(this);
+    return that.sameFlag(this);
   }
 
-  public boolean sameNZConst(NZConst c) {
+  public boolean sameFlag(Flag c) {
     return this.val == c.val;
+  }
+
+  /** Test to determine whether this Atom is a flag constant (or not). */
+  public Flag isFlag() {
+    return this;
   }
 
   /** Return a type for an instantiated version of this item when used as Atom (input operand). */
   public Type instantiate() {
-    return DataName.nzword.asType();
+    return DataName.flag.asType();
   }
 
   /** Find the Value for a given mil constant. */
   Value constValue() {
-    return new IntValue(val);
+    return BoolValue.make(val);
   }
 
   /**
-   * Return the nonzero value associated with this atom; a return of zero indicates that the atom
-   * was not an NZConst.
+   * A simple test for MIL code fragments that return a known Flag, returning either the constant or
+   * null.
    */
-  int getNZConst() {
-    return val;
+  Flag returnsFlag() {
+    return this;
+  }
+
+  /**
+   * Compute an integer summary for a fragment of MIL code with the key property that alpha
+   * equivalent program fragments have the same summary value.
+   */
+  int summary() {
+    return val ? 71 : -11;
   }
 
   /**
@@ -79,11 +96,11 @@ public class NZConst extends Const {
    * runtime.
    */
   llvm.Value calcStaticValue() {
-    return new llvm.Int(val);
+    return new llvm.Bool(val);
   }
 
   /** Calculate an LLVM Value corresponding to a given MIL argument. */
   llvm.Value toLLVMAtom(LLVMMap lm, VarMap vm) {
-    return new llvm.Int(val);
+    return val ? llvm.Bool.TRUE : llvm.Bool.FALSE;
   }
 }

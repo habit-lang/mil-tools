@@ -139,11 +139,11 @@ public class Return extends Call {
   }
 
   /**
-   * A simple test for MIL code fragments that return a known FlagConst, returning either the
-   * constant or null.
+   * A simple test for MIL code fragments that return a known Flag, returning either the constant or
+   * null.
    */
-  FlagConst returnsFlagConst() {
-    return args.length == 1 ? args[0].returnsFlagConst() : null;
+  Flag returnsFlag() {
+    return args.length == 1 ? args[0].returnsFlag() : null;
   }
 
   Atom[] returnsAtom() {

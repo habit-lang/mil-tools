@@ -287,7 +287,7 @@ public class Sel extends Tail {
         new llvm.Bitcast(a.toLLVMAtom(lm, vm, s), objt),
         new llvm.Op(
             addr,
-            new llvm.Getelementptr(base, llvm.Int.ZERO, new llvm.Int(n + 1)),
+            new llvm.Getelementptr(base, llvm.Word.ZERO, new llvm.Word(n + 1)),
             new llvm.Op(lhs, new llvm.Load(addr), c)));
   }
 }
