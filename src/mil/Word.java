@@ -20,6 +20,7 @@ package mil;
 
 import compiler.*;
 import core.*;
+import java.math.BigInteger;
 
 public class Word extends Const {
 
@@ -86,6 +87,17 @@ public class Word extends Const {
    */
   int summary() {
     return (int) val;
+  }
+
+  public static long fromBig(BigInteger v) {
+    if (Type.WORDSIZE == 32) {
+      return (long) v.intValue();
+    } else if (Type.WORDSIZE == 64) {
+      return v.longValue();
+    } else {
+      debug.Internal.error("Unrecognized WORDSIZE in fromBig");
+      return 0; /* not reached */
+    }
   }
 
   /**

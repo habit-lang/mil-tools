@@ -456,13 +456,21 @@ public abstract class Type extends Scheme {
       BigInteger.ONE.shiftLeft(WORDSIZE).subtract(BigInteger.ONE);
 
   /**
+   * Test whether this is a natural number that can fit in a Word (i.e., a value in the range
+   * [0..MAX_WORD]).
+   */
+  BigInteger isNonNegWord() {
+    return inRange(BigInteger.ZERO, MAX_WORD);
+  }
+
+  /**
    * Test whether this is a natural number type in the range [1..MAX_WORD], suitable for use as an
    * argument to Ix. (This will ensure that all Ix values can be represented in a single word.) Note
    * that we exclude Ix 0 because that would be an empty type. Technically, we could include
    * MAX_WORD+1 (i.e., 1<<WORDSIZE) here but choose not to do that so that all Maybe (Ix n) types
    * can also be represented within a single word.
    */
-  BigInteger isIxWord() {
+  BigInteger isPosWord() {
     return inRange(BigInteger.ONE, MAX_WORD);
   }
 

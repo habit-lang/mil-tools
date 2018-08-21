@@ -289,9 +289,9 @@ public abstract class Atom {
 
   /**
    * Return the nonzero value associated with this atom; a return of zero indicates that the atom
-   * was not an NonZero.
+   * was not a NonZero.
    */
-  int getNonZero() {
+  long getNonZero() {
     return 0;
   }
 

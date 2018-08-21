@@ -287,7 +287,7 @@ public class PrimCall extends Call {
 
     if (p == Prim.nzdiv) {
       Atom y = args[1];
-      int d = args[1].getNonZero();
+      long d = args[1].getNonZero();
       if (d > 0) { // Look for a constant denominator
         Atom x = args[0];
         Word a = x.isWord();
@@ -303,7 +303,7 @@ public class PrimCall extends Call {
         }
         if ((d & (d - 1)) == 0) { // Look for division by a power of two, d=(1<<n)
           int n = 1; // Calculate the value of n
-          for (int i = (d >>> 1); (i >>>= 1) > 0; n++) {
+          for (long i = (d >>> 1); (i >>>= 1) > 0; n++) {
             /* no extra work here */
           }
           MILProgram.report("rewrite: nzdiv((x, " + d + ")) ==> lshr((x, " + n + "))");

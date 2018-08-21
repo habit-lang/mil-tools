@@ -23,18 +23,16 @@ import core.*;
 
 public class NonZero extends Const {
 
-  private int val;
+  private long val;
 
-  /** Default constructor. */
-  public NonZero(int val) {
-    this.val = val;
-
-    if (val == 0) {
+  public NonZero(long val) {
+    this.val = Word.fromLong(val);
+    if (this.val == 0) {
       debug.Internal.error("NonZero with zero value");
     }
   }
 
-  public int getVal() {
+  public long getVal() {
     return val;
   }
 
@@ -68,9 +66,9 @@ public class NonZero extends Const {
 
   /**
    * Return the nonzero value associated with this atom; a return of zero indicates that the atom
-   * was not an NonZero.
+   * was not a NonZero.
    */
-  int getNonZero() {
+  long getNonZero() {
     return val;
   }
 

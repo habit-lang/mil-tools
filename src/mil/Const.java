@@ -83,9 +83,9 @@ public abstract class Const extends Atom {
       Word[] as = new Word[Type.numWords(w)];
       int i = 0; // index into array as (least significant word first)
       while (w > 0) { // while there are still bits to write
-        int bits = v.intValue(); // get least significant bits
+        long bits = Word.fromBig(v); // get least significant bits
         if ((w -= Type.WORDSIZE) < 0) { // truncate if necessary
-          bits &= (1 << (Type.WORDSIZE + w)) - 1;
+          bits &= (1L << (Type.WORDSIZE + w)) - 1;
         }
         as[i++] = new Word(bits); // save word value
         v = v.shiftRight(Type.WORDSIZE); // discard least significant bits

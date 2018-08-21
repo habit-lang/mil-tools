@@ -361,16 +361,16 @@ public class BitdataField extends Name {
       int p = e % Type.WORDSIZE; // offset to highest bit of field within highest word
       int k = (e - 1) / Type.WORDSIZE; // index of highest word of ws containing field bits
 
-      int lomask = (o == 0) ? 0 : ((1 << o) - 1); // mask to preserve low bits
-      int himask = (p == 0) ? 0 : ((-1) << p); // mask to preserve high bits
+      long lomask = (o == 0) ? 0 : ((1L << o) - 1); // mask to preserve low bits
+      long himask = (p == 0) ? 0 : ((-1L) << p); // mask to preserve high bits
       int q = total - k * Type.WORDSIZE;
       if (q < Type.WORDSIZE) {
-        himask &= (1 << q) - 1;
+        himask &= (1L << q) - 1;
       }
       // !System.out.println("field " + id + ", j=" + j + ", o=" + o + ", e=" + e +
       // !                   ", k=" + k + ", p=" + p + ", q=" + q +
-      // !                   ", lomask=0x" + Integer.toHexString(lomask) +
-      // !                   ", himask=0x" + Integer.toHexString(himask));
+      // !                   ", lomask=0x" + Long.toHexString(lomask) +
+      // !                   ", himask=0x" + Long.toHexString(himask));
 
       if (j == k) {
         // !System.out.println("hi and lo mask words coincide");

@@ -366,11 +366,11 @@ public class External extends TopDefn {
           Tail generate(Position pos, Type[] ts) {
             BigInteger v = ts[0].getNat(); // Value of literal
             BigInteger w = ts[1].isPosInt(); // Width of bit vector
-            if (v != null
-                && w != null
-                && v.signum() >= 0
-                && BigInteger.ONE.shiftLeft(w.intValue()).compareTo(v) > 0) {
-              return new Return(Const.atoms(v, w.intValue())).constClosure(pos, 1);
+            if (v != null && w != null && v.signum() >= 0) {
+              int width = w.intValue();
+              if (BigInteger.ONE.shiftLeft(width).compareTo(v) > 0) {
+                return new Return(Const.atoms(v, width)).constClosure(pos, 1);
+              }
             }
             return null;
           }
@@ -402,10 +402,10 @@ public class External extends TopDefn {
         "primIxFromLiteral",
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
-            BigInteger v = ts[0].isNonNegInt(); // Value of literal
-            BigInteger m = ts[1].isIxWord(); // Modulus for index type
+            BigInteger v = ts[0].isNonNegWord(); // Value of literal
+            BigInteger m = ts[1].isPosWord(); // Modulus for index type
             if (v != null && m != null && v.compareTo(m) < 0) {
-              return new Return(new Word(v.intValue())).constClosure(pos, 1);
+              return new Return(new Word(v.longValue())).constClosure(pos, 1);
             }
             return null;
           }
@@ -416,9 +416,9 @@ public class External extends TopDefn {
         "primIxMaxBound",
         new Generator(1) {
           Tail generate(Position pos, Type[] ts) {
-            BigInteger w = ts[0].isIxWord(); // Modulus for index type
+            BigInteger w = ts[0].isPosWord(); // Modulus for index type
             if (w != null) {
-              return new Return(new Word(w.subtract(BigInteger.ONE).intValue()));
+              return new Return(new Word(w.subtract(BigInteger.ONE).longValue()));
             }
             return null;
           }
@@ -429,7 +429,7 @@ public class External extends TopDefn {
         "primIxToBits",
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
-            BigInteger m = ts[0].isIxWord(); // Modulus for index type
+            BigInteger m = ts[0].isPosWord(); // Modulus for index type
             BigInteger w = ts[1].isPosInt(); // Width of bitdata type
             if (m != null
                 && w != null
@@ -448,34 +448,36 @@ public class External extends TopDefn {
           }
         });
 
-    // primIxShiftL w p :: Ix n -> Ix p -> Ix n,  where w=2^p
+    // primIxShiftL n p :: Ix n -> Ix p -> Ix n,  where n=2^p
     generators.put(
         "primIxShiftL",
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
-            BigInteger w = ts[0].isIxWord(); // Modulus for index type
-            BigInteger p = ts[1].isIxWord(); // Modulus for shift amount
-            if (w != null
+            BigInteger n = ts[0].isPosWord(); // Modulus for index type
+            BigInteger p = ts[1].isPosInt(); // Modulus for shift amount
+            if (n != null
                 && p != null
-                && BigInteger.ONE.shiftLeft(p.intValue()).compareTo(w) == 0) {
+                && p.compareTo(BigInteger.valueOf(Type.WORDSIZE)) <= 0
+                && BigInteger.ONE.shiftLeft(p.intValue()).compareTo(n) == 0) {
               Temp[] vs = Temp.makeTemps(2); // One word for each Ix argument
-              Block b = new Block(pos, vs, maskTail(Prim.shl.withArgs(vs[0], vs[1]), w.intValue()));
+              Block b = new Block(pos, vs, maskTail(Prim.shl.withArgs(vs[0], vs[1]), p.intValue()));
               return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
             }
             return null;
           }
         });
 
-    // primIxShiftR w p :: Ix n -> Ix p -> Ix n,  where w=2^p
+    // primIxShiftR n p :: Ix n -> Ix p -> Ix n,  where n=2^p
     generators.put(
         "primIxShiftR",
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
-            BigInteger w = ts[0].isIxWord(); // Modulus for index type
-            BigInteger p = ts[1].isIxWord(); // Modulus for shift amount
-            if (w != null
+            BigInteger n = ts[0].isPosWord(); // Modulus for index type
+            BigInteger p = ts[1].isPosInt(); // Modulus for shift amount
+            if (n != null
                 && p != null
-                && BigInteger.ONE.shiftLeft(p.intValue()).compareTo(w) == 0) {
+                && p.compareTo(BigInteger.valueOf(Type.WORDSIZE)) <= 0
+                && BigInteger.ONE.shiftLeft(p.intValue()).compareTo(n) == 0) {
               return new PrimCall(Prim.lshr).makeBinaryFuncClosure(pos, 1, 1);
             }
             return null;
@@ -514,8 +516,8 @@ public class External extends TopDefn {
         "primRelaxIx",
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
-            BigInteger n = ts[0].isIxWord(); // Smaller index modulus
-            BigInteger m = ts[1].isIxWord(); // Larger index modulus
+            BigInteger n = ts[0].isPosWord(); // Smaller index modulus
+            BigInteger m = ts[1].isPosWord(); // Larger index modulus
             if (n != null && m != null && n.compareTo(m) <= 0) {
               // We implement relaxIx as the identity function (Ix n and Ix m values are both
               // represented as Word values).
@@ -536,7 +538,7 @@ public class External extends TopDefn {
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
-            BigInteger m = ts[1].isIxWord(); // Index modulus, will be > 0
+            BigInteger m = ts[1].isPosWord(); // Index modulus, will be > 0
             if (m != null) {
               // inc[j, i] = v <- add((i, 1)); j @ v
               Temp[] ji = Temp.makeTemps(2);
@@ -562,7 +564,7 @@ public class External extends TopDefn {
         "primIncIx",
         new Generator(1) {
           Tail generate(Position pos, Type[] ts) {
-            BigInteger m = ts[0].isIxWord(); // Index modulus, must be > 0
+            BigInteger m = ts[0].isPosWord(); // Index modulus, must be > 0
             if (m != null
                 && bitdataRepresentations) { // ensure Maybe (Ix m) and Ix (m+1) have same
                                              // representation
@@ -580,7 +582,7 @@ public class External extends TopDefn {
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
-            BigInteger m = ts[1].isIxWord(); // Index modulus, must be > 0
+            BigInteger m = ts[1].isPosWord(); // Index modulus, must be > 0
             if (m != null) {
               // dec[j, i] = v <- sub((i, 1)); j @ v
               Temp[] ji = Temp.makeTemps(2);
@@ -606,7 +608,7 @@ public class External extends TopDefn {
         "primDecIx",
         new Generator(1) {
           Tail generate(Position pos, Type[] ts) {
-            BigInteger m = ts[0].isIxWord(); // Index modulus, must be > 0
+            BigInteger m = ts[0].isPosWord(); // Index modulus, must be > 0
             if (m != null
                 && bitdataRepresentations) { // ensure Maybe (Ix m) and Ix (m+1) have same
                                              // representation
@@ -637,7 +639,7 @@ public class External extends TopDefn {
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
-            BigInteger m = ts[1].isIxWord(); // Index modulus
+            BigInteger m = ts[1].isPosWord(); // Index modulus
             if (m != null && m.signum() > 0) {
               Block yes = enterBlock(pos); // yes[j, i] = j @ i
               // b[n,..., j, i] = w <- ule((i, m-1)); if w then yes[j, i] else return [n,...]
@@ -657,7 +659,7 @@ public class External extends TopDefn {
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
-            BigInteger m = ts[1].isIxWord(); // Index modulus
+            BigInteger m = ts[1].isPosWord(); // Index modulus
             if (m != null && m.compareTo(BigInteger.ZERO) > 0) {
               Block yes = enterBlock(pos); // yes[j, i] = j @ i
               Block no = returnBlock(pos, nl); // no[thing] = return thing
@@ -743,7 +745,7 @@ public class External extends TopDefn {
         ref,
         new Generator(1) {
           Tail generate(Position pos, Type[] ts) {
-            BigInteger m = ts[0].isIxWord(); // Index upper bound
+            BigInteger m = ts[0].isPosWord(); // Index upper bound
             if (m != null) {
               return new PrimCall(cmp).makeBinaryFuncClosure(pos, 1, 1);
             }
@@ -1576,14 +1578,14 @@ public class External extends TopDefn {
         "primNZBitFromLiteral",
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
-            BigInteger v = ts[0].isPosInt(); // Value of literal (must be nonzero!)
+            BigInteger v = ts[0].isPosWord(); // Value of literal (must be nonzero!)
             BigInteger w = ts[1].isPosInt(); // Width of bit vector
             if (v != null
                 && w != null
                 && w.compareTo(BigInteger.valueOf(Type.WORDSIZE))
                     <= 0 // Bit w must fit in a single word
                 && BigInteger.ONE.shiftLeft(w.intValue()).compareTo(v) > 0) { // v must be < 2^w
-              Tail t = new Return(new NonZero(v.intValue()));
+              Tail t = new Return(new NonZero(v.longValue()));
               ClosureDefn k =
                   new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(1), t); //  k{} _ = return [v]
               return new ClosAlloc(k).withArgs();
@@ -1658,7 +1660,7 @@ public class External extends TopDefn {
         "primInitArray",
         new Generator(2) {
           Tail generate(Position pos, Type[] ts) {
-            BigInteger n = ts[0].isIxWord(); // Array length
+            BigInteger n = ts[0].isPosWord(); // Array length
             Type bs = ts[1].byteSize(null); // Size of array elements
             BigInteger s;
             if (n != null && bs != null && (s = bs.getNat()) != null) {
