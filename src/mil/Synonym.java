@@ -151,6 +151,15 @@ public class Synonym extends Tycon {
     return expansion.byteSizeStoredRef(tenv, a, b);
   }
 
+  /**
+   * Find a canonical version of this type in the given set, using the specified environment to
+   * interpret TGens, and assuming that we have already pushed a certain number of args for this
+   * type on the stack.
+   */
+  Type canonType(Type[] env, TypeSet set, int args) {
+    return expansion.canonType(null, set, args);
+  }
+
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     return expansion.repCalc();
@@ -171,5 +180,75 @@ public class Synonym extends Tycon {
    */
   Type[] bitdataTyconRep2(Type a, Type b) {
     return expansion.bitdataTyconRep2(a, b);
+  }
+
+  /**
+   * Generate a call to a new primitive, wrapped in an appropriate chain of closure definitions, if
+   * this type can be derived from pt in the following grammar: pt ::= [d1,...,dn] ->> rt ; rt ::=
+   * [pt] | [r1,...,rm] .
+   */
+  Tail generatePrim(Position pos, String id) {
+    return expansion.generatePrim(pos, id);
+  }
+
+  /**
+   * Test to see whether the receiver matches the grammar for pt, but with the additional
+   * information that it appears in the context of an enclosing type of the form [d1,...,dn] ->>
+   * [this].
+   */
+  Call generatePrimNested(Position pos, String id, Type[] ds) {
+    return expansion.generatePrimNested(pos, id, ds);
+  }
+
+  /**
+   * Test to determine if this skeleton is an application of (->>) to a tuple of types, returning
+   * either the tuple components in an array or null if there is no match.
+   */
+  Type[] funcFromTuple1() {
+    return expansion.funcFromTuple1();
+  }
+
+  /** Test to determine if this type is the MILArrow, ->>, without any arguments. */
+  boolean isMILArrow() {
+    return expansion.isMILArrow();
+  }
+
+  /**
+   * Test to determine if this type is a tuple of the form [t1,...,tn], returning either the
+   * components of the tuple in an array, or null if there is no match. The argument is the number
+   * of potential tuple components that have already been seen; the initial call should use 0 for
+   * this argument.
+   */
+  Type[] tupleComponents(int n) {
+    return expansion.tupleComponents(n);
+  }
+
+  /**
+   * Generate a block whose code implements an uncurried version of the TopLevel f, whose type is
+   * the receiver. For this operation to succeed, the declared type must be a monomorphic type
+   * matching the grammar: et ::= [d1,...dm] ->> [et] | [d1,...dm] ->> t where di, t are types and
+   * we apply the first production as many times as possible. For example, if the declared type is
+   * [[X,Y] ->> [[Z] ->> [R]]], then the generated block will have type [X,Y,Z] >>= [R] and body
+   * b[x,y,z] = t <- f @ [x,y]; t @ [z].
+   */
+  Block liftToBlock0(Position pos, String id, TopLevel f) {
+    return expansion.liftToBlock0(pos, id, f);
+  }
+
+  /**
+   * Helper function for liftToCode, used in the case where the receiver is the only component (in
+   * position 0, explaining the name of this method) in a tuple type that is known to be the range
+   * of a ->> function.
+   */
+  Code liftToCode0(Block b, Temp[] us, Atom f, Temp[] vs) {
+    return expansion.liftToCode0(b, us, f, vs);
+  }
+
+  /**
+   * Determine whether this item is for a non-Unit, corresponding to a value that requires a
+   * run-time representation in the generated LLVM.
+   */
+  boolean nonUnit() {
+    return expansion.nonUnit(null);
   }
 }

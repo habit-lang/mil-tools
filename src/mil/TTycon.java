@@ -338,8 +338,7 @@ public class TTycon extends TConst {
    * type on the stack.
    */
   Type canonType(Type[] env, TypeSet set, int args) {
-    Synonym s = name.isSynonym();
-    return (s != null) ? s.getExpansion().canonType(null, set, args) : set.canon(name, args);
+    return name.canonType(env, set, args);
   }
 
   DataName isDataName() {
@@ -374,8 +373,7 @@ public class TTycon extends TConst {
    * [pt] | [r1,...,rm] .
    */
   Tail generatePrim(Position pos, String id) {
-    Synonym s = name.isSynonym();
-    return (s != null) ? s.getExpansion().generatePrim(pos, id) : null;
+    return name.generatePrim(pos, id);
   }
 
   /**
@@ -384,8 +382,7 @@ public class TTycon extends TConst {
    * [this].
    */
   Call generatePrimNested(Position pos, String id, Type[] ds) {
-    Synonym s = name.isSynonym();
-    return (s != null) ? s.getExpansion().generatePrimNested(pos, id, ds) : null;
+    return name.generatePrimNested(pos, id, ds);
   }
 
   /**
@@ -393,14 +390,12 @@ public class TTycon extends TConst {
    * either the tuple components in an array or null if there is no match.
    */
   Type[] funcFromTuple1() {
-    Synonym s = name.isSynonym();
-    return (s != null) ? s.getExpansion().funcFromTuple1() : null;
+    return name.funcFromTuple1();
   }
 
   /** Test to determine if this type is the MILArrow, ->>, without any arguments. */
   boolean isMILArrow() {
-    Synonym s = name.isSynonym();
-    return (s != null) ? s.getExpansion().isMILArrow() : name.isMILArrow();
+    return name.isMILArrow();
   }
 
   /**
@@ -410,8 +405,7 @@ public class TTycon extends TConst {
    * this argument.
    */
   Type[] tupleComponents(int n) {
-    Synonym s = name.isSynonym();
-    return (s != null) ? s.getExpansion().tupleComponents(n) : name.tupleComponents(n);
+    return name.tupleComponents(n);
   }
 
   /**
@@ -423,8 +417,7 @@ public class TTycon extends TConst {
    * b[x,y,z] = t <- f @ [x,y]; t @ [z].
    */
   Block liftToBlock0(Position pos, String id, TopLevel f) {
-    Synonym s = name.isSynonym();
-    return (s != null) ? s.getExpansion().liftToBlock0(pos, id, f) : null;
+    return name.liftToBlock0(pos, id, f);
   }
 
   /**
@@ -433,8 +426,7 @@ public class TTycon extends TConst {
    * of a ->> function.
    */
   Code liftToCode0(Block b, Temp[] us, Atom f, Temp[] vs) {
-    Synonym s = name.isSynonym();
-    return (s != null) ? s.getExpansion().liftToCode0(b, us, f, vs) : null;
+    return name.liftToCode0(b, us, f, vs);
   }
 
   boolean useBitdataLo(Type t, Type s) {
@@ -442,8 +434,7 @@ public class TTycon extends TConst {
   }
 
   boolean nonUnit(Type[] tenv) {
-    Synonym s = name.isSynonym();
-    return (s != null) ? s.getExpansion().nonUnit(null) : name.nonUnit();
+    return name.nonUnit();
   }
 
   /**

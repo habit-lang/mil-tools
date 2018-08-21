@@ -271,6 +271,15 @@ public abstract class Tycon extends TypeName {
         : null;
   }
 
+  /**
+   * Find a canonical version of this type in the given set, using the specified environment to
+   * interpret TGens, and assuming that we have already pushed a certain number of args for this
+   * type on the stack.
+   */
+  Type canonType(Type[] env, TypeSet set, int args) {
+    return set.canon(this, args);
+  }
+
   Tycon canonTycon(TypeSet set) {
     return this;
   }
@@ -333,6 +342,24 @@ public abstract class Tycon extends TypeName {
   }
 
   /**
+   * Generate a call to a new primitive, wrapped in an appropriate chain of closure definitions, if
+   * this type can be derived from pt in the following grammar: pt ::= [d1,...,dn] ->> rt ; rt ::=
+   * [pt] | [r1,...,rm] .
+   */
+  Tail generatePrim(Position pos, String id) {
+    return null;
+  }
+
+  /**
+   * Test to see whether the receiver matches the grammar for pt, but with the additional
+   * information that it appears in the context of an enclosing type of the form [d1,...,dn] ->>
+   * [this].
+   */
+  Call generatePrimNested(Position pos, String id, Type[] ds) {
+    return null;
+  }
+
+  /**
    * Test to determine if this skeleton is an application of (->>) to a tuple of types, returning
    * either the tuple components in an array or null if there is no match.
    */
@@ -352,6 +379,27 @@ public abstract class Tycon extends TypeName {
    * this argument.
    */
   Type[] tupleComponents(int n) {
+    return null;
+  }
+
+  /**
+   * Generate a block whose code implements an uncurried version of the TopLevel f, whose type is
+   * the receiver. For this operation to succeed, the declared type must be a monomorphic type
+   * matching the grammar: et ::= [d1,...dm] ->> [et] | [d1,...dm] ->> t where di, t are types and
+   * we apply the first production as many times as possible. For example, if the declared type is
+   * [[X,Y] ->> [[Z] ->> [R]]], then the generated block will have type [X,Y,Z] >>= [R] and body
+   * b[x,y,z] = t <- f @ [x,y]; t @ [z].
+   */
+  Block liftToBlock0(Position pos, String id, TopLevel f) {
+    return null;
+  }
+
+  /**
+   * Helper function for liftToCode, used in the case where the receiver is the only component (in
+   * position 0, explaining the name of this method) in a tuple type that is known to be the range
+   * of a ->> function.
+   */
+  Code liftToCode0(Block b, Temp[] us, Atom f, Temp[] vs) {
     return null;
   }
 
