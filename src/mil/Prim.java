@@ -1848,7 +1848,7 @@ public class Prim {
         return new BlockCall(impl, targs);
       } else {
         debug.Internal.error(
-            "Unrecognized wordsize " + Type.WORDSIZE + " in repTransformPrim for load64");
+            "Unrecognized wordsize " + Type.WORDSIZE + " in repTransformPrim for store64");
         return null; /* not reached */
       }
     }
