@@ -23,6 +23,9 @@ import java.io.PrintWriter;
 /** Call a void function and then continue with the rest of the code in this block. */
 public class CallVoid extends Code {
 
+  /** Option settings. Current use limited to true ==> insert "tail" marker. */
+  private boolean options;
+
   /** The function value to be called. */
   private Value func;
 
@@ -33,15 +36,24 @@ public class CallVoid extends Code {
   private Code next;
 
   /** Default constructor. */
-  public CallVoid(Value func, Value[] args, Code next) {
+  public CallVoid(boolean options, Value func, Value[] args, Code next) {
+    this.options = options;
     this.func = func;
     this.args = args;
     this.next = next;
   }
 
+  public CallVoid(Value func, Value[] args, Code next) {
+    this(false, func, args, next);
+  }
+
   /** Print out this code sequence to the specified PrintWriter. */
   public void print(PrintWriter out) {
-    out.println("  call void " + func.getName() + Value.toString(args));
+    out.print("  ");
+    if (options) {
+      out.print("tail ");
+    }
+    out.println("call void " + func.getName() + Value.toString(args));
     next.print(out);
   }
 

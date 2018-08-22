@@ -47,7 +47,8 @@ public abstract class PrimBinOp extends Prim {
    * is not expected to produce any results, but execution is expected to continue with the given
    * code.
    */
-  llvm.Code toLLVMPrimVoid(LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Code c) {
+  llvm.Code toLLVMPrimVoid(
+      LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, boolean isTail, llvm.Code c) {
     debug.Internal.error(id + " is not a void primitive");
     return c;
   }
@@ -58,7 +59,13 @@ public abstract class PrimBinOp extends Prim {
    * execution is expected to continue on to the specified code, c.
    */
   llvm.Code toLLVMPrimCont(
-      LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Local lhs, llvm.Code c) {
+      LLVMMap lm,
+      VarMap vm,
+      TempSubst s,
+      Atom[] args,
+      boolean isTail,
+      llvm.Local lhs,
+      llvm.Code c) {
     return new llvm.Op(
         lhs,
         this.op(llvm.Type.i32, args[0].toLLVMAtom(lm, vm, s), args[1].toLLVMAtom(lm, vm, s)),

@@ -457,12 +457,15 @@ public abstract class Tail {
 
   /**
    * Generate LLVM code to evaluate this Tail with a continuation that binds the results to the
-   * variables in vs and then executes the specified code.
+   * variables in vs and then executes the specified code. The isTail parameter should only be true
+   * the code is an immediate return.
    */
-  llvm.Code toLLVMCont(LLVMMap lm, VarMap vm, TempSubst s, Temp[] vs, llvm.Code code) {
+  llvm.Code toLLVMCont(
+      LLVMMap lm, VarMap vm, TempSubst s, Temp[] vs, boolean isTail, llvm.Code code) {
     Temp[] nuvs = Temp.nonUnits(vs);
     if (nuvs.length == 0) { // Tail does not return any results
-      return toLLVMContVoid(lm, vm, s, code); // ... so just execute the tail, and then continue
+      return toLLVMContVoid(
+          lm, vm, s, isTail, code); // ... so just execute the tail, and then continue
     } else {
       llvm.Local lhs;
       if (nuvs.length == 1) { // Just one result?
@@ -474,7 +477,8 @@ public abstract class Tail {
           code = new llvm.Op(vm.lookup(lm, nuvs[n]), new llvm.ExtractValue(lhs, n), code);
         }
       }
-      return toLLVMContBind(lm, vm, s, lhs, code); // ... execute tail, capture result, and continue
+      return toLLVMContBind(
+          lm, vm, s, false, lhs, code); // ... execute tail, capture result, and continue
     }
   }
 
@@ -485,7 +489,8 @@ public abstract class Tail {
       return this.toLLVMContVoid(
           lm,
           vm,
-          s, // ... so execute the tail
+          s,
+          true, // ... so execute the tail
           new llvm.RetVoid()); // ... and return without a result
     } else {
       llvm.Local lhs = vm.reg(ty);
@@ -493,17 +498,24 @@ public abstract class Tail {
           lm,
           vm,
           s,
+          true,
           lhs, // ... execute tail, capture result in lhs
           new llvm.Ret(lhs)); // ... and then return that result
     }
   }
 
-  /** Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. */
-  abstract llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, llvm.Code c);
+  /**
+   * Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. Set
+   * isTail to true if the code sequence c is an immediate ret void instruction.
+   */
+  abstract llvm.Code toLLVMContVoid(
+      LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Code c);
 
   /**
    * Generate LLVM code to execute this Tail and return a result from the right hand side of a Bind.
+   * Set isTail to true if the code sequence c will immediately return the value in the specified
+   * lhs.
    */
   abstract llvm.Code toLLVMContBind(
-      LLVMMap lm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c);
+      LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Local lhs, llvm.Code c);
 }

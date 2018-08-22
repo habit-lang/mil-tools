@@ -580,9 +580,9 @@ public class TopLevel extends TopDefn {
     }
     Temp[] nuvs = Temp.nonUnits(vs);
     if (nuvs.length == 0) {
-      code = llvm.Code.reverseOnto(tail.toLLVMContVoid(lm, ivm, null, null), code);
+      code = llvm.Code.reverseOnto(tail.toLLVMContVoid(lm, ivm, null, false, null), code);
     } else {
-      code = llvm.Code.reverseOnto(tail.toLLVMCont(lm, ivm, null, nuvs, null), code);
+      code = llvm.Code.reverseOnto(tail.toLLVMCont(lm, ivm, null, nuvs, false, null), code);
       for (int i = 0; i < lhs.length; i++) {
         if (lhs[i].nonUnit() && (staticValue == null || staticValue[i] == null)) {
           llvm.Local var = ivm.lookup(lm, vs[i]);

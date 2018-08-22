@@ -54,10 +54,11 @@ class CallLabel extends Label {
         Atom.toLLVMValues(lm, vm, s, preds.args); // TODO: repeated nonUnits test on preds.args :-(
     llvm.Type rt = b.retType(lm);
     if (rt == llvm.Type.vd) { // use CallVoid if block does not produce a value
-      return new llvm.CallVoid(lm.globalFor(b), vals, new llvm.RetVoid());
+      return new llvm.CallVoid(true, lm.globalFor(b), vals, new llvm.RetVoid());
     } else { // otherwise use Call
       llvm.Local v = vm.reg(rt); // and allocate a register to hold the result
-      return new llvm.Op(v, new llvm.Call(v.getType(), lm.globalFor(b), vals), new llvm.Ret(v));
+      return new llvm.Op(
+          v, new llvm.Call(true, v.getType(), lm.globalFor(b), vals), new llvm.Ret(v));
     }
   }
 }

@@ -251,21 +251,30 @@ public class Enter extends Call {
     return new Enter(f).withArgs(nargs);
   }
 
-  /** Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. */
-  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, llvm.Code c) {
+  /**
+   * Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. Set
+   * isTail to true if the code sequence c is an immediate ret void instruction.
+   */
+  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Code c) {
     llvm.Value[] acts = closureActuals(lm, vm, s); // actual parameters
     llvm.Local cptr = vm.reg(lm.toLLVM(ftype)); // a register to hold the code pointer
-    return enterCode(vm, acts[0], cptr, new llvm.CallVoid(cptr, acts, c));
+    return enterCode(vm, acts[0], cptr, new llvm.CallVoid(isTail, cptr, acts, c));
   }
 
   /**
    * Generate LLVM code to execute this Tail and return a result from the right hand side of a Bind.
+   * Set isTail to true if the code sequence c will immediately return the value in the specified
+   * lhs.
    */
-  llvm.Code toLLVMContBind(LLVMMap lm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) {
+  llvm.Code toLLVMContBind(
+      LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Local lhs, llvm.Code c) {
     llvm.Value[] acts = closureActuals(lm, vm, s); // actual parameters
     llvm.Local cptr = vm.reg(lm.codePtrType(ftype)); // a register to hold the code pointer
     return enterCode(
-        vm, acts[0], cptr, new llvm.Op(lhs, new llvm.Call(ftype.retType(lm), cptr, acts), c));
+        vm,
+        acts[0],
+        cptr,
+        new llvm.Op(lhs, new llvm.Call(isTail, ftype.retType(lm), cptr, acts), c));
   }
 
   llvm.Value[] closureActuals(LLVMMap lm, VarMap vm, TempSubst s) {

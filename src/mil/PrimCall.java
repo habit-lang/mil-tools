@@ -1662,15 +1662,21 @@ public class PrimCall extends Call {
     return p.repTransformPrim(set, Atom.repArgs(set, env, args));
   }
 
-  /** Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. */
-  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, llvm.Code c) {
-    return p.toLLVMPrimVoid(lm, vm, s, args, c);
+  /**
+   * Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. Set
+   * isTail to true if the code sequence c is an immediate ret void instruction.
+   */
+  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Code c) {
+    return p.toLLVMPrimVoid(lm, vm, s, args, isTail, c);
   }
 
   /**
    * Generate LLVM code to execute this Tail and return a result from the right hand side of a Bind.
+   * Set isTail to true if the code sequence c will immediately return the value in the specified
+   * lhs.
    */
-  llvm.Code toLLVMContBind(LLVMMap lm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) {
-    return p.toLLVMPrimCont(lm, vm, s, args, lhs, c);
+  llvm.Code toLLVMContBind(
+      LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Local lhs, llvm.Code c) {
+    return p.toLLVMPrimCont(lm, vm, s, args, isTail, lhs, c);
   }
 }

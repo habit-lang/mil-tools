@@ -22,6 +22,9 @@ package llvm;
 /** Function calls. */
 public class Call extends Rhs {
 
+  /** Option settings. Current use limited to true ==> insert "tail" marker. */
+  private boolean options;
+
   /** The type of value that will be returned. */
   private Type ty;
 
@@ -32,14 +35,22 @@ public class Call extends Rhs {
   private Value[] args;
 
   /** Default constructor. */
-  public Call(Type ty, Value func, Value[] args) {
+  public Call(boolean options, Type ty, Value func, Value[] args) {
+    this.options = options;
     this.ty = ty;
     this.func = func;
     this.args = args;
   }
 
+  public Call(Type ty, Value func, Value[] args) {
+    this(false, ty, func, args);
+  }
+
   /** Append a printable string for this instruction to the specified buffer. */
   public void append(StringBuilder buf) {
+    if (options) {
+      buf.append("tail ");
+    }
     buf.append("call ");
     ty.append(buf);
     buf.append(" ");

@@ -453,16 +453,24 @@ public class BlockCall extends Call {
     return new llvm.Goto(succs[0].label());
   }
 
-  /** Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. */
-  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, llvm.Code c) {
-    return new llvm.CallVoid(lm.globalFor(b), Atom.toLLVMValues(lm, vm, s, args), c);
+  /**
+   * Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. Set
+   * isTail to true if the code sequence c is an immediate ret void instruction.
+   */
+  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Code c) {
+    return new llvm.CallVoid(isTail, lm.globalFor(b), Atom.toLLVMValues(lm, vm, s, args), c);
   }
 
   /**
    * Generate LLVM code to execute this Tail and return a result from the right hand side of a Bind.
+   * Set isTail to true if the code sequence c will immediately return the value in the specified
+   * lhs.
    */
-  llvm.Code toLLVMContBind(LLVMMap lm, VarMap vm, TempSubst s, llvm.Local lhs, llvm.Code c) {
+  llvm.Code toLLVMContBind(
+      LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Local lhs, llvm.Code c) {
     return new llvm.Op(
-        lhs, new llvm.Call(lhs.getType(), lm.globalFor(b), Atom.toLLVMValues(lm, vm, s, args)), c);
+        lhs,
+        new llvm.Call(isTail, lhs.getType(), lm.globalFor(b), Atom.toLLVMValues(lm, vm, s, args)),
+        c);
   }
 }
