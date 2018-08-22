@@ -44,6 +44,7 @@ public class Prim {
     this.id = id;
     this.purity = purity;
     this.blockType = blockType;
+    index = addToPrimTable(this);
   }
 
   /** Return the name of this primitive. */
@@ -1424,10 +1425,6 @@ public class Prim {
     }
     table[count] = val;
     return count++;
-  }
-
-  Prim(String id, int arity, int outity, int purity, BlockType blockType) {
-    index = addToPrimTable(this); // TODO: could this be done with a static initializer?
   }
 
   static void exec(PrintWriter out, int prim, int fp, Value[] stack) throws Failure {
