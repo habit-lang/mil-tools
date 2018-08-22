@@ -25,7 +25,7 @@ the following commands (this time assuming that you have a
 suitable installation of LLVM):
 
     # Use mil-tools to compile fib.lc into LLVM:
-    java -jar mil-tools.jar demo/fib.lc -ltmp/fib.ll
+    java -jar mil-tools.jar demo/fib.lc -ltmp/fib.ll --llvm-main=main
 
     # Build an executable from the generated LLVM code:
     clang -o tmp/fib tmp/fib.ll demo/runtime.c

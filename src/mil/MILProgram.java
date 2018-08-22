@@ -543,7 +543,7 @@ public class MILProgram {
   }
 
   /** Generate an LLVM implementation of this MIL program. */
-  public llvm.Program toLLVM() {
+  public llvm.Program toLLVM() throws Failure {
     analyzeCalls();
     CFGs cfgs = null;
     llvm.Program prog = new llvm.Program();
@@ -574,7 +574,7 @@ public class MILProgram {
         }
       }
     }
-    prog.add(generateInitFunction(lm));
+    generateInitFunction(lm, prog);
     //  CFGs.toDot("cfgs.dot", cfgs);       // TODO: should not generate this unless requested
     return prog;
   }
@@ -582,7 +582,7 @@ public class MILProgram {
   /**
    * Generate LLVM code to initialize all TopLevels in this program that do not have static values.
    */
-  llvm.FuncDefn generateInitFunction(LLVMMap lm) {
+  void generateInitFunction(LLVMMap lm, llvm.Program prog) throws Failure {
     llvm.Code code = null;
     InitVarMap ivm = new InitVarMap();
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
@@ -590,12 +590,18 @@ public class MILProgram {
         code = ds.head.addRevInitCode(lm, ivm, code);
       }
     }
-    return new llvm.FuncDefn(
-        false, // make sure this function is externally visible.  TODO: "false" is too generic
-        llvm.Type.vd,
-        llvm.FuncDefn.mainFunctionName,
-        new llvm.Local[0],
-        new String[] {"entry"},
-        new llvm.Code[] {llvm.Code.reverseOnto(code, new llvm.RetVoid())});
+    if (!llvm.FuncDefn.mainFunctionName.equals("")) {
+      prog.add(
+          new llvm.FuncDefn(
+              false, // make sure this function is externally visible.  TODO: "false" is too generic
+              llvm.Type.vd,
+              llvm.FuncDefn.mainFunctionName,
+              new llvm.Local[0],
+              new String[] {"entry"},
+              new llvm.Code[] {llvm.Code.reverseOnto(code, new llvm.RetVoid())}));
+    } else if (code != null) {
+      throw new Failure(
+          "LLVM program requires initialization function (set using --llvm-main=NAME)");
+    }
   }
 }

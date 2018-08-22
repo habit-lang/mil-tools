@@ -58,10 +58,11 @@ public class FuncDefn extends Defn {
   }
 
   /**
-   * Default name for the main function. Made public so that it can be changed by a command line
-   * option.
+   * Default name for the main/initialization function. Made public so that it can be changed by a
+   * command line option. If the name is empty, then, we will either report an error (if there is
+   * initialization code) or else just not generate an initialization function at all.
    */
-  public static String mainFunctionName = "main";
+  public static String mainFunctionName = "";
 
   void print(PrintWriter out) {
     out.print("define ");
