@@ -59,8 +59,8 @@ public class BitdataLayout extends DataName {
     for (int i = 0; i < fields.length; i++) {
       stored[i] = fields[i].getType();
     }
-    // TODO: use a different id?
-    cfuns = new Cfun[] {new Cfun(pos, id, this, 0, new AllocType(stored, this.asType()))};
+    cfuns =
+        new Cfun[] {new Cfun(pos, bn + "." + id, this, 0, new AllocType(stored, this.asType()))};
   }
 
   public BitdataLayout(
