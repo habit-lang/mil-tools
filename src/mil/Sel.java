@@ -281,7 +281,7 @@ public class Sel extends Tail {
     llvm.Type objt = lm.cfunLayoutType(this.cf).ptr();
     llvm.Local base = vm.reg(objt); // register to hold a pointer to a structure for cfun this.cf
     llvm.Local addr =
-        vm.reg(lhs.getType()); // register to hold pointer to the nth component of this.c
+        vm.reg(lhs.getType().ptr()); // register to hold pointer to the nth component of this.c
     return new llvm.Op(
         base,
         new llvm.Bitcast(a.toLLVMAtom(lm, vm, s), objt),
