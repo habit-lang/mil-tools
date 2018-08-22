@@ -107,8 +107,9 @@ public class BitdataField extends Name {
     if (total == 1) { // special case if whole object is just a single bit
       return copy(ws, 0, params[0], code);
     } else {
-      int j = offset / Type.WORDSIZE; // number of word containing the bit we're interested in
-      int o = offset % Type.WORDSIZE; // offset of the bit we're interested in ...
+      int wordsize = Type.WORDSIZE;
+      int j = offset / wordsize; // number of word containing the bit we're interested in
+      int o = offset % wordsize; // offset of the bit we're interested in ...
       Temp a = new Temp();
       return new Bind(
           a,
@@ -254,8 +255,9 @@ public class BitdataField extends Name {
     if (total == 1) { // special case if whole object is just a single bit
       return copy(ws, 0, as[0], code);
     } else {
-      int j = offset / Type.WORDSIZE; // number of word containing the bit we're interested in
-      int o = offset % Type.WORDSIZE; // offset of the bit we're interested in ...
+      int wordsize = Type.WORDSIZE;
+      int j = offset / wordsize; // number of word containing the bit we're interested in
+      int o = offset % wordsize; // offset of the bit we're interested in ...
       Temp a = new Temp();
       Temp b = new Temp();
       return new Bind(
@@ -355,16 +357,17 @@ public class BitdataField extends Name {
    */
   Code genMaskField(int total, Temp[] ws, Code code) {
     if (width > 0) {
-      int o = offset % Type.WORDSIZE; // offset to lowest bit of field within lowest word
-      int j = offset / Type.WORDSIZE; // index of lowest word of ws containing field bits
+      int wordsize = Type.WORDSIZE;
+      int o = offset % wordsize; // offset to lowest bit of field within lowest word
+      int j = offset / wordsize; // index of lowest word of ws containing field bits
       int e = offset + width; // index of high bit after field
-      int p = e % Type.WORDSIZE; // offset to highest bit of field within highest word
-      int k = (e - 1) / Type.WORDSIZE; // index of highest word of ws containing field bits
+      int p = e % wordsize; // offset to highest bit of field within highest word
+      int k = (e - 1) / wordsize; // index of highest word of ws containing field bits
 
       long lomask = (o == 0) ? 0 : ((1L << o) - 1); // mask to preserve low bits
       long himask = (p == 0) ? 0 : ((-1L) << p); // mask to preserve high bits
-      int q = total - k * Type.WORDSIZE;
-      if (q < Type.WORDSIZE) {
+      int q = total - k * wordsize;
+      if (q < wordsize) {
         himask &= (1L << q) - 1;
       }
       // !System.out.println("field " + id + ", j=" + j + ", o=" + o + ", e=" + e +
