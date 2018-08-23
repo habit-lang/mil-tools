@@ -22,6 +22,7 @@ import compiler.*;
 import compiler.BuiltinPosition;
 import compiler.Position;
 import core.*;
+import java.io.PrintWriter;
 import java.math.BigInteger;
 
 /** Represents the type constructor for a specific bitdata layout. */
@@ -145,6 +146,30 @@ public class BitdataLayout extends DataName {
    */
   public BitdataLayout bitdataLayout() {
     return this;
+  }
+
+  /** Print a definition for this bitdata type using source level syntax. */
+  void dumpTypeDefinition(PrintWriter out) {
+    /* Do not show BitdataLayouts as separate types. */
+  }
+
+  void dumpBitdataLayout(PrintWriter out) {
+    out.print(id);
+    out.print(" [ ");
+    int offset = pat.getWidth();
+    for (int i = 0; i < fields.length; i++) {
+      offset = fields[i].dumpBitdataField(out, tagbits, offset);
+      if (offset > 0) { // still bits/fields to show ?
+        out.print(" | ");
+      }
+    }
+    if (offset > 0) { // low order tagbits
+      out.print(Bits.toString(tagbits, offset));
+    }
+    out.println(" ]");
+    out.print("    -- ");
+    out.print(maskTest.toString(id));
+    out.println();
   }
 
   DataName canonDataName(TypeSet set) {

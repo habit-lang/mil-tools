@@ -24,6 +24,7 @@ import compiler.Failure;
 import compiler.Handler;
 import compiler.Position;
 import core.*;
+import java.io.PrintWriter;
 import java.math.BigInteger;
 import obdd.MaskTestPat;
 import obdd.Pat;
@@ -137,6 +138,24 @@ public class DataName extends Tycon {
   public obdd.Pat getPat(int num) {
     debug.Internal.error("DataName does not have a bit pattern");
     return null;
+  }
+
+  /**
+   * Print a definition for this type constructor using source level syntax. TODO: Find a more
+   * appropriate place for this code ...
+   */
+  void dumpTypeDefinition(PrintWriter out) {
+    if (cfuns != null) {
+      out.print("data ");
+      out.print(id);
+      Type head = kind.makeHead(pos, out, 0, asType());
+      out.println();
+      for (int i = 0; i < cfuns.length; i++) {
+        out.print((i == 0) ? "  = " : "  | ");
+        cfuns[i].dump(out, head);
+      }
+      out.println();
+    }
   }
 
   Tycon canonTycon(TypeSet set) {

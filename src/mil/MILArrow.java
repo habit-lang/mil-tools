@@ -21,6 +21,7 @@ package mil;
 import compiler.*;
 import compiler.BuiltinPosition;
 import core.*;
+import java.io.PrintWriter;
 
 public class MILArrow extends PrimTycon {
 
@@ -33,6 +34,14 @@ public class MILArrow extends PrimTycon {
   }
 
   public static final Tycon milArrow = new MILArrow();
+
+  /**
+   * Print a definition for this type constructor using source level syntax. TODO: Find a more
+   * appropriate place for this code ...
+   */
+  void dumpTypeDefinition(PrintWriter out) {
+    /* do nothing */
+  }
 
   /** Test to determine if this type is the MILArrow, ->>, without any arguments. */
   boolean isMILArrow() {

@@ -19,7 +19,9 @@
 package mil;
 
 import compiler.*;
+import compiler.Position;
 import core.*;
+import java.io.PrintWriter;
 
 public class KFun extends Kind {
 
@@ -89,5 +91,16 @@ public class KFun extends Kind {
 
   Kind getRng() {
     return rng;
+  }
+
+  Type makeHead(Position pos, PrintWriter out, int i, Type h) {
+    int suffix = (i / 26);
+    String id = ((char) ('a' + (i % 26))) + ((suffix > 0) ? Integer.toString(suffix) : "");
+    out.print(" (");
+    out.print(id);
+    out.print("::");
+    out.print(dom.toString());
+    out.print(")");
+    return rng.makeHead(pos, out, i + 1, new TAp(h, new TTycon(new PrimTycon(pos, id, dom, 0))));
   }
 }

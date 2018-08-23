@@ -21,6 +21,7 @@ package mil;
 import compiler.*;
 import compiler.Position;
 import core.*;
+import java.io.PrintWriter;
 
 /** Represents a single field of a struct type. */
 public class StructField extends Name {
@@ -56,5 +57,12 @@ public class StructField extends Name {
 
   public void debugDump() {
     debug.Log.println(id + " :: " + type + " -- offset=" + offset + ", width=" + width);
+  }
+
+  /** Print a definition for this structure type using source level syntax. */
+  void dumpTypeDefinition(PrintWriter out) {
+    out.print(id);
+    out.print(" :: ");
+    out.print(type.toString());
   }
 }

@@ -21,6 +21,7 @@ package mil;
 import compiler.*;
 import compiler.Position;
 import core.*;
+import java.io.PrintWriter;
 
 /** Represents a type constructor that is introduced as a memory structure type. */
 public class StructName extends Tycon {
@@ -63,5 +64,25 @@ public class StructName extends Tycon {
       debug.Log.print("  " + i + ": ");
       fields[i].debugDump();
     }
+  }
+
+  /** Print a definition for this structure type using source level syntax. */
+  void dumpTypeDefinition(PrintWriter out) {
+    out.print("struct ");
+    out.print(id);
+    out.print(" /");
+    out.println(byteSize.toString());
+    if (fields.length == 0) {
+      out.println("[ ]");
+    } else {
+      out.print(" [ ");
+      fields[0].dumpTypeDefinition(out);
+      for (int i = 1; i < fields.length; i++) {
+        out.print(" | ");
+        fields[i].dumpTypeDefinition(out);
+      }
+      out.println(" ]");
+    }
+    out.println();
   }
 }

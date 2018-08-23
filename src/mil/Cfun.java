@@ -23,6 +23,7 @@ import compiler.BuiltinPosition;
 import compiler.Failure;
 import compiler.Position;
 import core.*;
+import java.io.PrintWriter;
 import java.math.BigInteger;
 import obdd.MaskTestPat;
 import obdd.Pat;
@@ -108,6 +109,12 @@ public class Cfun extends Name {
   /** Return the bit pattern for this object. */
   public obdd.Pat getPat() {
     return dn.getPat(num);
+  }
+
+  void dump(PrintWriter out, Type head) {
+    out.print(id);
+    allocType.instantiate().dump(out, head);
+    out.println();
   }
 
   public Top getTop() {

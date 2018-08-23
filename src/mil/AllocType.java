@@ -22,6 +22,7 @@ import compiler.*;
 import compiler.Failure;
 import compiler.Position;
 import core.*;
+import java.io.PrintWriter;
 import obdd.Pat;
 
 /**
@@ -229,6 +230,18 @@ public class AllocType {
   /** Return the bit pattern for the ith stored component of this AllocType. */
   Pat bitPat(int i) {
     return stored[i].bitPat(null);
+  }
+
+  void dump(PrintWriter out, Type head) {
+    Type[] tenv = tenv();
+    if (result.match(tenv, head, null)) {
+      for (int i = 0; i < stored.length; i++) {
+        out.print(" ");
+        out.print(stored[i].skeleton(tenv).toString(TypeWriter.ALWAYS));
+      }
+    } else {
+      debug.Internal.error("result type does not match " + head);
+    }
   }
 
   /**

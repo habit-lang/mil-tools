@@ -22,6 +22,7 @@ import compiler.*;
 import compiler.BuiltinPosition;
 import compiler.Position;
 import core.*;
+import java.io.PrintWriter;
 import obdd.Pat;
 
 /**
@@ -99,6 +100,19 @@ public class BitdataName extends DataName {
       debug.Log.print("  " + i + ": ");
       layouts[i].debugDump();
     }
+  }
+
+  /** Print a definition for this bitdata type using source level syntax. */
+  void dumpTypeDefinition(PrintWriter out) {
+    out.print("bitdata ");
+    out.print(id);
+    out.print(" /");
+    out.println(bitSize.toString());
+    for (int i = 0; i < layouts.length; i++) {
+      out.print((i == 0) ? "  = " : "  | ");
+      layouts[i].dumpBitdataLayout(out);
+    }
+    out.println();
   }
 
   DataName canonDataName(TypeSet set) {

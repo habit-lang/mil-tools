@@ -21,6 +21,7 @@ package mil;
 import compiler.*;
 import compiler.Position;
 import core.*;
+import java.io.PrintWriter;
 
 /** Represents a type constructor that is introduced as a primitive with no other definition. */
 public class PrimTycon extends Tycon {
@@ -35,5 +36,17 @@ public class PrimTycon extends Tycon {
 
   public int getArity() {
     return arity;
+  }
+
+  /**
+   * Print a definition for this type constructor using source level syntax. TODO: Find a more
+   * appropriate place for this code ...
+   */
+  void dumpTypeDefinition(PrintWriter out) {
+    out.print("primitive type ");
+    out.print(id);
+    out.print(" :: ");
+    out.println(kind.toString());
+    out.println();
   }
 }

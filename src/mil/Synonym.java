@@ -22,6 +22,7 @@ import compiler.*;
 import compiler.Failure;
 import compiler.Position;
 import core.*;
+import java.io.PrintWriter;
 import obdd.Pat;
 
 public class Synonym extends Tycon {
@@ -149,6 +150,18 @@ public class Synonym extends Tycon {
 
   Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
     return expansion.byteSizeStoredRef(tenv, a, b);
+  }
+
+  /**
+   * Print a definition for this type constructor using source level syntax. TODO: Find a more
+   * appropriate place for this code ...
+   */
+  void dumpTypeDefinition(PrintWriter out) {
+    out.print("type ");
+    out.print(id);
+    out.print(" = ");
+    out.println(expansion.toString());
+    out.println();
   }
 
   /**

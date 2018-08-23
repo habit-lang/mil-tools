@@ -22,6 +22,7 @@ import compiler.*;
 import compiler.Failure;
 import compiler.Position;
 import core.*;
+import java.io.PrintWriter;
 import java.math.BigInteger;
 import obdd.Pat;
 
@@ -270,6 +271,12 @@ public abstract class Tycon extends TypeName {
         ? new TNat(Type.numBytes(Type.WORDSIZE))
         : null;
   }
+
+  /**
+   * Print a definition for this type constructor using source level syntax. TODO: Find a more
+   * appropriate place for this code ...
+   */
+  abstract void dumpTypeDefinition(PrintWriter out);
 
   /**
    * Find a canonical version of this type in the given set, using the specified environment to

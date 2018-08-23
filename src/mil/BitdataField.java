@@ -21,6 +21,8 @@ package mil;
 import compiler.*;
 import compiler.Position;
 import core.*;
+import java.io.PrintWriter;
+import java.math.BigInteger;
 
 /** Represents a single field of a particular bitdata type that can be accessed using its name. */
 public class BitdataField extends Name {
@@ -56,6 +58,18 @@ public class BitdataField extends Name {
 
   public void debugDump() {
     debug.Log.println(id + " :: " + type + " -- offset=" + offset + ", width=" + width);
+  }
+
+  int dumpBitdataField(PrintWriter out, BigInteger tagbits, int lastOffset) {
+    int end = offset + width; // bit position where this field ends
+    if (lastOffset > end) { // display any leading tagbits
+      out.print(Bits.toString(tagbits.shiftRight(end), lastOffset - end));
+      out.print(" | ");
+    }
+    out.print(id);
+    out.print(" :: ");
+    out.print(type.toString());
+    return offset;
   }
 
   Tail repTransformSel(RepTypeSet set, RepEnv env, Atom a) {

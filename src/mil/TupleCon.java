@@ -21,6 +21,7 @@ package mil;
 import compiler.*;
 import compiler.BuiltinPosition;
 import core.*;
+import java.io.PrintWriter;
 
 public class TupleCon extends PrimTycon {
 
@@ -69,6 +70,14 @@ public class TupleCon extends PrimTycon {
     } else {
       applic(tw, prec, args, 0);
     }
+  }
+
+  /**
+   * Print a definition for this type constructor using source level syntax. TODO: Find a more
+   * appropriate place for this code ...
+   */
+  void dumpTypeDefinition(PrintWriter out) {
+    /* do nothing */
   }
 
   /**

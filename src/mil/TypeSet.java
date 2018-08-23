@@ -107,6 +107,36 @@ public class TypeSet {
   }
 
   /**
+   * Write definitions of all the types in this TypeSet on standard output (intended for debugging).
+   */
+  public void dumpTypeDefinitions() {
+    PrintWriter out = new PrintWriter(System.out);
+    dumpTypeDefinitions(out);
+    out.flush();
+  }
+
+  /** Write definitions of all the types in this TypeSet to a named file. */
+  public void dumpTypeDefinitions(String name) {
+    try {
+      PrintWriter out = new PrintWriter(name);
+      dumpTypeDefinitions(out);
+      out.close();
+    } catch (IOException e) {
+      System.out.println("Attempt to create TypeSet output in \"" + name + "\" failed");
+    }
+  }
+
+  /**
+   * Worker method for preceding dumpTypeDefinitions() methods: write definitions of all the types
+   * defined in this TypeSet to a PrintWriter.
+   */
+  public void dumpTypeDefinitions(PrintWriter out) {
+    for (Tycon tycon : tyconInstances.keySet()) {
+      tycon.dumpTypeDefinition(out);
+    }
+  }
+
+  /**
    * A stack of Type values, used to record type constructor arguments while traversing the Type
    * spines.
    */

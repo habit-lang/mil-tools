@@ -19,7 +19,9 @@
 package mil;
 
 import compiler.*;
+import compiler.Position;
 import core.*;
+import java.io.PrintWriter;
 
 public abstract class Kind {
 
@@ -112,5 +114,9 @@ public abstract class Kind {
 
   Kind getRng() {
     return null;
+  }
+
+  Type makeHead(Position pos, PrintWriter out, int i, Type h) {
+    return h;
   }
 }

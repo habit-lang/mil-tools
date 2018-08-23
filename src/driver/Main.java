@@ -302,6 +302,9 @@ class Main {
     milOutput.run(
         new Action() {
           void run(PrintWriter out) {
+            TypeSet set = new TypeSet(); // TODO: can we reuse the set from typesetOutput?
+            mil.collect(set);
+            set.dumpTypeDefinitions(out);
             mil.dump(out);
           }
         });
