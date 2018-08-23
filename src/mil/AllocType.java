@@ -111,8 +111,12 @@ public class AllocType {
     return this;
   }
 
+  Type[] tenv() {
+    return null;
+  }
+
   void storedUnifiesWith(Position pos, Type[] inputs) throws Failure {
-    storedUnifiesWith(pos, null, inputs);
+    storedUnifiesWith(pos, tenv(), inputs);
   }
 
   void storedUnifiesWith(Position pos, Type[] tenv, Type[] inputs) throws Failure {
@@ -131,7 +135,7 @@ public class AllocType {
   }
 
   void resultUnifiesWith(Position pos, Type type) throws Failure {
-    result.unify(pos, null, type, null);
+    result.unify(pos, tenv(), type, null);
   }
 
   Type alloc(Position pos, Type[] inputs) throws Failure {
@@ -145,7 +149,7 @@ public class AllocType {
   }
 
   TVars tvars(TVars tvs) {
-    return tvars(null, tvs);
+    return tvars(tenv(), tvs);
   }
 
   protected TVars tvars(Type[] tenv, TVars tvs) {
@@ -160,7 +164,7 @@ public class AllocType {
    * variables.
    */
   public AllocType generalize(TVar[] generics) {
-    return generalize(generics, null);
+    return generalize(generics, tenv());
   }
 
   /**
