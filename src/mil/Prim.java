@@ -1934,6 +1934,58 @@ public class Prim {
     }
   }
 
+  public static final Type init0Type = Type.init(Type.gen(0));
+
+  public static final BlockType initSeqType =
+      new PolyBlockType(
+          Type.tuple(init0Type, init0Type),
+          Type.tuple(init0Type),
+          new Prefix(new Tyvar[] {Tyvar.area}));
+
+  public static final Prim initSeq = new initSeq();
+
+  private static class initSeq extends Prim {
+
+    private initSeq() {
+      this(initSeqType);
+    }
+
+    private initSeq(BlockType bt) {
+      super("primInitSeq", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new initSeq(bt);
+    }
+
+    private ClosureDefn impl = null;
+
+    Tail repTransformPrim(RepTypeSet set, Atom[] targs) {
+      if (impl == null) {
+        Temp[] ijr = Temp.makeTemps(3);
+        Block b =
+            new Block(
+                BuiltinPosition.position,
+                ijr, //  b[i, j, r]
+                new Bind(
+                    new Temp(),
+                    new Enter(ijr[0], ijr[2]), //    =  _ <- i @ r
+                    new Done(new Enter(ijr[1], ijr[2])))); //       j @ r
+        Temp[] ij = Temp.makeTemps(2);
+        Temp[] r = Temp.makeTemps(1);
+        impl =
+            new ClosureDefn(
+                BuiltinPosition.position,
+                ij,
+                r, //  impl{i, j} r = b[i, j, r]
+                new BlockCall(b).withArgs(Temp.append(ij, r)));
+      }
+      return new ClosAlloc(impl).withArgs(targs);
+    }
+  }
+
+
+
   Tail maker(Position pos, boolean thunk) {
     Call call = new PrimCall(this);
     int arity = blockType.getArity();

@@ -143,9 +143,9 @@ class EField extends Name {
           mid,
           new TailCont() {
             Code with(final Tail t1) {
-              final Temp v1 = new Temp();
+              final Temp i1 = new Temp();
               return new Bind(
-                  v1,
+                  i1,
                   t1,
                   compInit(
                       env,
@@ -155,15 +155,8 @@ class EField extends Name {
                       hi,
                       new TailCont() {
                         Code with(final Tail t2) {
-                          final Temp v2 = new Temp();
-                          final Temp f = new Temp();
-                          return new Bind(
-                              v2,
-                              t2,
-                              new Bind(
-                                  f,
-                                  new Enter(new TopExt(EStructInit.initSeq), v1),
-                                  kt.with(new Enter(f, v2))));
+                          final Temp i2 = new Temp();
+                          return new Bind(i2, t2, kt.with(Prim.initSeq.withArgs(i1, i2)));
                         }
                       }));
             }

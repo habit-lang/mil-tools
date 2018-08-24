@@ -108,16 +108,6 @@ class EStructInit extends EConstruct {
     return EField.compInit(env, abort, fields, 0, fields.length - 1, kt);
   }
 
-  private static final Type inita = Type.tuple(Type.init(Type.gen(0)));
-
-  private static final Scheme initSeqScheme =
-      new Forall(
-          new Prefix(new Tyvar[] {Tyvar.area}),
-          Type.milfun(inita, Type.tuple(Type.milfun(inita, inita))));
-
-  public static final mil.External initSeq =
-      new mil.External(BuiltinPosition.position, "initSeq", initSeqScheme, "initSeq", Type.noTypes);
-
   /** Compile a monadic expression into a Tail. */
   Code compTailM(
       final CGEnv env,
