@@ -1603,6 +1603,8 @@ public class Prim {
 
   public static final Type addrTuple = Type.tuple(addrType);
 
+  public static final Type unitTuple = Type.tuple(DataName.unit.asType());
+
   public static final BlockType load8type = new BlockType(addrTuple, Type.tuple(bit8));
 
   public static final BlockType load16type = new BlockType(addrTuple, Type.tuple(bit16));
@@ -1611,16 +1613,13 @@ public class Prim {
 
   public static final BlockType load64type = new BlockType(addrTuple, Type.tuple(bit64));
 
-  public static final BlockType store8type = new BlockType(Type.tuple(addrType, bit8), Type.empty);
+  public static final BlockType store8type = new BlockType(Type.tuple(addrType, bit8), unitTuple);
 
-  public static final BlockType store16type =
-      new BlockType(Type.tuple(addrType, bit16), Type.empty);
+  public static final BlockType store16type = new BlockType(Type.tuple(addrType, bit16), unitTuple);
 
-  public static final BlockType store32type =
-      new BlockType(Type.tuple(addrType, bit32), Type.empty);
+  public static final BlockType store32type = new BlockType(Type.tuple(addrType, bit32), unitTuple);
 
-  public static final BlockType store64type =
-      new BlockType(Type.tuple(addrType, bit64), Type.empty);
+  public static final BlockType store64type = new BlockType(Type.tuple(addrType, bit64), unitTuple);
 
   public static final Prim load8 = new load8();
 
@@ -1907,8 +1906,8 @@ public class Prim {
                   BuiltinPosition.position,
                   vs, // store64[addr, lsw, msw]
                   new Bind(
-                      Temp.noTemps,
-                      p.withArgs(vs[0], vs[1]), //   = [] <- store32(addr, lsw)
+                      new Temp(),
+                      p.withArgs(vs[0], vs[1]), //   = _  <- store32(addr, lsw)
                       new Bind(
                           a,
                           Prim.add.withArgs(vs[0], 4), //     a  <- add((addr, 4))

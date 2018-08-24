@@ -563,6 +563,12 @@ public class DataName extends Tycon {
   /** Representation vector for NZBit types that fit in a single word. */
   public static final Type[] nzwordRep = new Type[] {nzword.asType()};
 
+  /** Representation vector for Init a types as functions of type [Word] ->> [Unit]. */
+  public static final Type[] initRep =
+      new Type[] {
+        Type.milfun(Type.tuple(DataName.word.asType()), Type.tuple(DataName.unit.asType()))
+      };
+
   /** Return the representation vector for values of this type. */
   Type[] repCalc() { // Singleton types are all represented by the Unit type
     return (this == addr) ? DataName.wordRep : isSingleton() ? DataName.unitRep : null;
@@ -578,7 +584,9 @@ public class DataName extends Tycon {
         ? a.simplifyNatType(null).bitvectorRep()
         : (this == DataName.nzbit)
             ? a.simplifyNatType(null).nzbitvectorRep()
-            : (this == DataName.ix) ? DataName.wordRep : null;
+            : (this == DataName.ix)
+                ? DataName.wordRep
+                : (this == DataName.init) ? DataName.initRep : null;
   }
 
   /**
