@@ -1591,6 +1591,29 @@ public class Prim {
     return canonPrim(set).withArgs(targs);
   }
 
+  /**
+   * A class for primitives whose implementation will be provided by the specified implementation
+   * Block, substituted in for the primitive during representation transformation.
+   */
+  public static class blockImpl extends Prim {
+
+    private Block impl;
+
+    /** Default constructor. */
+    public blockImpl(String id, int purity, BlockType blockType, Block impl) {
+      super(id, purity, blockType);
+      this.impl = impl;
+    }
+
+    public Prim clone(BlockType bt) {
+      return new blockImpl(id, purity, bt, impl);
+    }
+
+    Tail repTransformPrim(RepTypeSet set, Atom[] targs) {
+      return new BlockCall(impl, targs);
+    }
+  }
+
   public static final Type bit8 = Type.bit(8);
 
   public static final Type bit16 = Type.bit(16);
