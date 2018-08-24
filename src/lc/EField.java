@@ -114,6 +114,7 @@ class EField extends Name {
   static Code compInit(
       final CGEnv env,
       final Block abort,
+      final StructName sn,
       final EField[] fields,
       final int lo,
       final int hi,
@@ -132,12 +133,21 @@ class EField extends Name {
       // O is the offset for f in S.  But we will need to add abstract syntax for #f types to be
       // able to
       // use this ...
-      return fields[lo].e.compTail(env, abort, kt);
+      return fields[lo].e.compTail(
+          env,
+          abort,
+          new TailCont() {
+            Code with(final Tail init) {
+              Temp i = new Temp();
+              return new Bind(i, init, kt.with(sn.initStructFieldPrim(lo).withArgs(i)));
+            }
+          });
     } else {
       final int mid = (lo + hi) / 2;
       return compInit(
           env,
           abort,
+          sn,
           fields,
           lo,
           mid,
@@ -150,6 +160,7 @@ class EField extends Name {
                   compInit(
                       env,
                       abort,
+                      sn,
                       fields,
                       mid + 1,
                       hi,

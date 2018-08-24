@@ -65,4 +65,22 @@ public class StructField extends Name {
     out.print(" :: ");
     out.print(type.toString());
   }
+
+  /**
+   * Stores a field initializer primitive of type [Init T] >>= [Init S] for this field (of type T)
+   * in a structure (of type S).
+   */
+  private Prim initStructField = null;
+
+  /**
+   * Return the initializer primitive for this field, calculating a definition for the primitive on
+   * the first call.
+   */
+  Prim initStructFieldPrim(StructName sn) {
+    if (initStructField == null) {
+      BlockType bt = new BlockType(Type.tuple(Type.init(type)), Type.tuple(Type.init(sn.asType())));
+      initStructField = new Prim.initStructField("init_" + id, Prim.PURE, bt, offset);
+    }
+    return initStructField;
+  }
 }

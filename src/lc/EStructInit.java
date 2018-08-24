@@ -83,7 +83,6 @@ class EStructInit extends EConstruct {
     }
 
     // Check that all fields are defined:
-    // TODO: do we need to store an invmap, as we do for EBitdata?
     for (int p = 0; p < sfields.length; p++) {
       if (map[p] == 0) {
         throw new Failure(
@@ -105,7 +104,7 @@ class EStructInit extends EConstruct {
     if (fields.length == 0) {
       debug.Internal.error("code generation for structure initializers with no fields");
     }
-    return EField.compInit(env, abort, fields, 0, fields.length - 1, kt);
+    return EField.compInit(env, abort, sn, fields, 0, fields.length - 1, kt);
   }
 
   /** Compile a monadic expression into a Tail. */

@@ -1984,7 +1984,67 @@ public class Prim {
     }
   }
 
+  /**
+   * Representation for structure field initializers that map initializers for single fields in to
+   * initializers for full structures. Used individually, these primitives would not guarantee full
+   * initialization of a structure; instead, they should be used in combination when compiling a
+   * structure with one initializer for every field.
+   */
+  public static class initStructField extends Prim {
 
+    private int offset;
+
+    /** Default constructor. */
+    public initStructField(String id, int purity, BlockType blockType, int offset) {
+      super(id, purity, blockType);
+      this.offset = offset;
+    }
+
+    public Prim clone(BlockType bt) {
+      return new initStructField(id, purity, bt, offset);
+    }
+
+    /**
+     * A closure for representing structure field initializer functions with types of the form Init
+     * T -> Init S, where T is the type of a field within structure S at offset O. The
+     * initStructFieldClos has two stored fields, one for the Init T initializer and one for the
+     * offset O; when entered with a reference to a structure, it calculates a reference to the
+     * field (by adding O to the incoming reference) and then runs the initializer using the
+     * resulting address.
+     */
+    private static ClosureDefn initStructFieldClos = null;
+
+    static {
+
+      // Initialize initStructFieldClos:
+      Temp[] ior = Temp.makeTemps(3);
+      Temp a = new Temp();
+      Block b =
+          new Block(
+              BuiltinPosition.position,
+              ior, // b[i, o, r]
+              new Bind(
+                  a,
+                  Prim.add.withArgs(ior[2], ior[1]), //   = a <- add((r, o))
+                  new Done(new Enter(ior[0], a)))); //     i @ a
+      Temp[] io = Temp.makeTemps(2);
+      Temp[] r = Temp.makeTemps(1);
+      initStructFieldClos =
+          new ClosureDefn(
+              BuiltinPosition.position,
+              io,
+              r, // initStructFieldClos{i, o} r
+              new BlockCall(b).withArgs(Temp.append(io, r))); //   = b[i, o, r]
+    }
+
+    /**
+     * Rewrite this call init_x((i)) with a closure allocation (function value) of the form
+     * initStructFieldClos(i, o), for the associated field offset o.
+     */
+    Tail repTransformPrim(RepTypeSet set, Atom[] targs) {
+      return new ClosAlloc(initStructFieldClos).withArgs(targs[0], offset);
+    }
+  }
 
   Tail maker(Position pos, boolean thunk) {
     Call call = new PrimCall(this);
