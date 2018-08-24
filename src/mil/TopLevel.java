@@ -178,11 +178,6 @@ public class TopLevel extends TopDefn {
   /** Lists the generic type variables for this definition. */
   protected TVar[] generics = TVar.noTVars;
 
-  /** Produce a printable description of the generic variables for this definition. */
-  public String showGenerics() {
-    return TVar.show(generics);
-  }
-
   /**
    * Calculate a generalized type for this binding, adding universal quantifiers for any unbound
    * type variable in the inferred type. (There are no "fixed" type variables here because all mil
@@ -190,15 +185,16 @@ public class TopLevel extends TopDefn {
    */
   void generalizeType(Handler handler) throws Failure {
     if (defining != null) {
-      for (int i = 0; i < lhs.length; i++) {
-        lhs[i].generalizeType(handler);
-      }
       TVars gens = defining.tvars();
       generics = TVar.generics(gens, null);
-      // !   debug.Log.println("generics: " + showGenerics());
+      debug.Log.println(
+          "generics for " + this + ": " + TVar.show(generics) + " in type " + defining.skeleton());
       declared = defining.generalize(generics);
-      // !   debug.Log.println("TopLevel group inferred " + toString() + " :: " + declared);
+      debug.Log.println("TopLevel group inferred " + toString() + " :: " + declared);
       findAmbigTVars(handler, gens); // search for ambiguous type variables ...
+      for (int i = 0; i < lhs.length; i++) {
+        lhs[i].generalizeLhsType(handler, gens, generics);
+      }
     }
   }
 
@@ -386,7 +382,7 @@ public class TopLevel extends TopDefn {
             + " :: "
             + this.declared
             + ", generics="
-            + torig.showGenerics()
+            + TVar.show(torig.generics)
             + ", substitution="
             + s);
     this.tail = torig.tail.specializeTail(spec, s, null);
@@ -397,7 +393,7 @@ public class TopLevel extends TopDefn {
    * given type.
    */
   TopLevel specializedTopLevel(MILSpec spec, Type inst, int i) {
-    return spec.specializedTopLevel(this, defining.apply(lhs[i].specializingSubst(inst)));
+    return spec.specializedTopLevel(this, defining.apply(lhs[i].specializingSubst(generics, inst)));
   }
 
   /**

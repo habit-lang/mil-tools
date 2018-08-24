@@ -177,22 +177,15 @@ public class ClosureDefn extends Defn {
   /** Lists the generic type variables for this definition. */
   protected TVar[] generics = TVar.noTVars;
 
-  /** Produce a printable description of the generic variables for this definition. */
-  public String showGenerics() {
-    return TVar.show(generics);
-  }
-
   void generalizeType(Handler handler) throws Failure {
     // !   debug.Log.println("Generalizing definition for: " + getId());
     if (defining != null) {
       TVars gens = defining.tvars();
       generics = TVar.generics(gens, null);
-      // !     debug.Log.println("generics: " + showGenerics());
+      // !     debug.Log.println("generics: " + TVar.show(generics));
       AllocType inferred = defining.generalize(generics);
       debug.Log.println("Inferred " + id + " :: " + inferred);
-      if (declared == null) {
-        declared = inferred;
-      } else if (!declared.alphaEquiv(inferred)) {
+      if (declared != null && !declared.alphaEquiv(inferred)) {
         throw new Failure(
             "Declared type \""
                 + declared
@@ -201,6 +194,8 @@ public class ClosureDefn extends Defn {
                 + "\" is more general than inferred type \""
                 + inferred
                 + "\"");
+      } else {
+        declared = inferred;
       }
       findAmbigTVars(handler, gens); // search for ambiguous type variables ...
     }
@@ -634,7 +629,7 @@ public class ClosureDefn extends Defn {
             + " :: "
             + this.declared
             + ", generics="
-            + korig.showGenerics()
+            + TVar.show(korig.generics)
             + ", substitution="
             + s);
     this.params = Temp.specialize(s, korig.params);

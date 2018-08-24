@@ -93,7 +93,8 @@ public class Forall extends Scheme {
   }
 
   public Scheme generalize(TVar[] generics) {
-    return this;
+    debug.Internal.error("Attempt to generalize a Forall");
+    return this; // should not be called
   }
 
   /**
