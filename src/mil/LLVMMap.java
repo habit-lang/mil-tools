@@ -162,4 +162,27 @@ class LLVMMap extends TypeSet {
     }
     return g;
   }
+
+  /**
+   * A global reference to the allocator function, initialized on first use, at which point we emit
+   * an external declaration.
+   */
+  private llvm.Global allocFuncGlobal = null;
+
+  /** The type of value that is returned by a call to the alloc function. */
+  public static final llvm.Type allocRetType = llvm.Type.i8.ptr();
+
+  /**
+   * Return a Global reference to the alloc function, generating an appropriate LLVM declaration for
+   * the first use.
+   */
+  llvm.Global allocFuncGlobal() {
+    if (allocFuncGlobal == null) {
+      String id = "alloc";
+      llvm.FunctionType ft = new llvm.FunctionType(allocRetType, new llvm.Type[] {llvm.Type.i32});
+      allocFuncGlobal = new llvm.Global(ft, id);
+      declare(id, ft);
+    }
+    return allocFuncGlobal;
+  }
 }

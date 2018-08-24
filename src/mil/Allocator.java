@@ -158,12 +158,8 @@ public abstract class Allocator extends Call {
     // - Allocate space for a new object:
     llvm.Local past = vm.reg(objt); // pointer to first address past a c object starting at 0
     llvm.Local size = vm.reg(llvm.Type.i32); // integer holding the size of a c object
-    llvm.Local raw = vm.reg(llvm.Type.i8.ptr()); // raw pointer to allocated object
-    llvm.Rhs call =
-        new llvm.Call(
-            raw.getType(), // a call to allocate memory
-            new llvm.Global(llvm.Type.i8, "alloc"), // TODO: fix this Global reference!
-            new llvm.Value[] {size});
+    llvm.Local raw = vm.reg(lm.allocRetType); // raw pointer to allocated object
+    llvm.Rhs call = new llvm.Call(lm.allocRetType, lm.allocFuncGlobal(), new llvm.Value[] {size});
 
     return new llvm.CodeComment(
         "calculate the number of bytes that we need to allocate",
