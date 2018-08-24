@@ -1626,6 +1626,124 @@ public class External extends TopDefn {
 
   static {
 
+    // primReadRefStored l t :: ARef l (Stored t) -> Proc t
+    generators.put(
+        "primReadRefStored",
+        new Generator(2) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
+            BigInteger l = ts[0].getNat(); // Alignment of reference
+            Type t = ts[1].byteSizeStored(null); // Type of stored value
+            if (l != null && t != null) {
+              BigInteger bytes = t.isNonNegInt();
+              if (bytes != null) {
+                Prim load;
+                switch (bytes.intValue()) { // select the appropriate load primitive
+                  case 1:
+                    load = Prim.load8;
+                    break;
+                  case 2:
+                    load = Prim.load16;
+                    break;
+                  case 4:
+                    load = Prim.load32;
+                    break;
+                  case 8:
+                    load = Prim.load64;
+                    break;
+                  default:
+                    return null;
+                }
+                Temp[] vs = Temp.makeTemps(1);
+                ClosureDefn k =
+                    new ClosureDefn(pos, vs, Temp.noTemps, load.repTransformPrim(set, vs));
+                return new ClosAlloc(k).makeUnaryFuncClosure(pos, 1);
+              }
+            }
+            return null;
+          }
+        });
+
+    // primWriteRefStored l t :: ARef l (Stored t) -> t -> Proc Unit
+    generators.put(
+        "primWriteRefStored",
+        new Generator(2) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
+            BigInteger l = ts[0].getNat(); // Alignment of reference
+            Type bs = ts[1].byteSizeStored(null); // Type of stored value
+            if (l != null && bs != null) {
+              BigInteger bytes = bs.isNonNegInt();
+              if (bytes != null) {
+                Prim store;
+                switch (bytes.intValue()) { // select the appropriate store primitive
+                  case 1:
+                    store = Prim.store8;
+                    break;
+                  case 2:
+                    store = Prim.store16;
+                    break;
+                  case 4:
+                    store = Prim.store32;
+                    break;
+                  case 8:
+                    store = Prim.store64;
+                    break;
+                  default:
+                    return null;
+                }
+                int n = ts[1].repLen();
+                Temp[] vs = Temp.makeTemps(1 + n); // Temps to hold the address and value
+                ClosureDefn k =
+                    new ClosureDefn(pos, vs, Temp.noTemps, store.repTransformPrim(set, vs));
+                return new ClosAlloc(k).makeBinaryFuncClosure(pos, 1, n);
+              }
+            }
+            return null;
+          }
+        });
+
+    // primInitStored t :: t -> Init t (loosely equiv to: [t] ->> [[Word] ->> [Unit]]
+    generators.put(
+        "primInitStored",
+        new Generator(1) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
+            Type bs = ts[0].byteSizeStored(null); // Type of stored value
+            if (bs != null) {
+              BigInteger bytes = bs.isNonNegInt();
+              if (bytes != null) {
+                Prim store;
+                // TODO: abstract logic for calculating store primitive into sep function and use
+                // for both write and init.
+                switch (bytes.intValue()) { // select the appropriate store primitive
+                  case 1:
+                    store = Prim.store8;
+                    break;
+                  case 2:
+                    store = Prim.store16;
+                    break;
+                  case 4:
+                    store = Prim.store32;
+                    break;
+                  case 8:
+                    store = Prim.store64;
+                    break;
+                  default:
+                    return null;
+                }
+                int n = ts[0].repLen();
+                Temp[] vs = Temp.makeTemps(n); // Temps to hold the initial value
+                Temp[] a = Temp.makeTemps(1); // Temp to hold the address/reference
+                ClosureDefn k =
+                    new ClosureDefn(pos, vs, a, store.repTransformPrim(set, Temp.append(a, vs)));
+                return new ClosAlloc(k).makeUnaryFuncClosure(pos, n);
+              }
+            }
+            return null;
+          }
+        });
+  }
+
+  static {
+
     // (@) n a :: Ref (Array n a) -> Ix n -> Ref a
     generators.put(
         "@",
