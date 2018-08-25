@@ -50,6 +50,15 @@ public class Temp extends Atom {
     return id;
   }
 
+  /**
+   * Test to see if two atoms are the same. For Temp values, we use pointer equality to determine
+   * object equality. For all other types of Atom, we use double dispatch to compare component
+   * values.
+   */
+  public boolean sameAtom(Atom that) {
+    return this == that;
+  }
+
   /** Test for an occurrence of this variable in the given array of atoms. */
   public boolean occursIn(Atom[] as) {
     for (int i = 0; i < as.length; i++) {

@@ -66,7 +66,7 @@ class DefnVarMap extends VarMap {
       return sv;
     }
     for (GlobalLoadList gs = globalLoads; gs != null; gs = gs.next) {
-      if (t.sameTop(gs.t)) { // Or test to see if this item was already loaded
+      if (t.sameAtom(gs.t)) { // Or test to see if this item was already loaded
         return gs.v;
       }
     }

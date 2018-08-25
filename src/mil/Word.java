@@ -54,14 +54,15 @@ public class Word extends Const {
   }
 
   /**
-   * Test to see if two atoms are the same. For a pair of Word objects, this means that the two
-   * objects have the same val. For any other pair of Atoms, we expect the objects themselves to be
-   * the same.
+   * Test to see if two atoms are the same. For Temp values, we use pointer equality to determine
+   * object equality. For all other types of Atom, we use double dispatch to compare component
+   * values.
    */
   public boolean sameAtom(Atom that) {
     return that.sameWord(this);
   }
 
+  /** Test to determine whether this Atom refers to the given Word value. */
   public boolean sameWord(Word c) {
     return this.val == c.val;
   }

@@ -43,6 +43,20 @@ public class TopExt extends Top {
     return external.getId();
   }
 
+  /**
+   * Test to see if two atoms are the same. For Temp values, we use pointer equality to determine
+   * object equality. For all other types of Atom, we use double dispatch to compare component
+   * values.
+   */
+  public boolean sameAtom(Atom that) {
+    return that.sameTopExt(external);
+  }
+
+  /** Test to determine whether this Atom refers to the specified External. */
+  boolean sameTopExt(External external) {
+    return this.external == external;
+  }
+
   /** Find the dependencies of this AST fragment. */
   public Defns dependencies(Defns ds) {
     return external.dependencies(ds);
@@ -74,18 +88,5 @@ public class TopExt extends Top {
 
   Defn getDefn() {
     return external;
-  }
-
-  /**
-   * Test to determine whether two Top values refer to the same item. Implemented using double
-   * dispatch.
-   */
-  boolean sameTop(Top that) {
-    return that.sameTopExt(external);
-  }
-
-  /** Test to determine whether this Top refers to the specified External. */
-  boolean sameTopExt(External external) {
-    return this.external == external;
   }
 }

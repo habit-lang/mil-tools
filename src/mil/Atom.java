@@ -55,27 +55,39 @@ public abstract class Atom {
   }
 
   /**
-   * Test to see if two atoms are the same. For a pair of Word objects, this means that the two
-   * objects have the same val. For any other pair of Atoms, we expect the objects themselves to be
-   * the same.
+   * Test to see if two atoms are the same. For Temp values, we use pointer equality to determine
+   * object equality. For all other types of Atom, we use double dispatch to compare component
+   * values.
    */
-  public boolean sameAtom(Atom that) {
-    return this == that;
-  }
+  public abstract boolean sameAtom(Atom that);
 
+  /** Test to determine whether this Atom refers to the given Word value. */
   public boolean sameWord(Word c) {
     return false;
   }
 
+  /** Test to determine whether this Atom refers to the given non zero word value. */
   public boolean sameNonZero(NonZero c) {
     return false;
   }
 
+  /** Test to determine whether this Atom refers to the specified bit vector constant. */
   public boolean sameBits(Bits c) {
     return false;
   }
 
+  /** Test to determine whether this Atom refers to the given flag constant. */
   public boolean sameFlag(Flag c) {
+    return false;
+  }
+
+  /** Test to determine whether this Atom refers to the ith TopLhs in the given TopLevel. */
+  boolean sameTopDef(TopLevel topLevel, int i) {
+    return false;
+  }
+
+  /** Test to determine whether this Atom refers to the specified External. */
+  boolean sameTopExt(External external) {
     return false;
   }
 
