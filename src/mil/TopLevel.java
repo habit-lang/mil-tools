@@ -402,12 +402,13 @@ public class TopLevel extends TopDefn {
    * version to share the same name as the original).
    */
   Defn specializeEntry(MILSpec spec) throws Failure {
-    if (declared.isQuantified()) {
-      throw new PolymorphicEntrypointFailure("top-level", this);
+    Type t = declared.isMonomorphic();
+    if (t != null) {
+      TopLevel tl = spec.specializedTopLevel(this, t);
+      TopLhs.copyIds(tl.lhs, this.lhs); // use the same names as in the original program
+      return tl;
     }
-    TopLevel tl = spec.specializedTopLevel(this, declared);
-    TopLhs.copyIds(tl.lhs, this.lhs); // use the same names as in the original program
-    return tl;
+    throw new PolymorphicEntrypointFailure("top-level", this);
   }
 
   /** Update all declared types with canonical versions. */

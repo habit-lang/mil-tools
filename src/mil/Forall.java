@@ -34,9 +34,9 @@ public class Forall extends Scheme {
     this.type = type;
   }
 
-  /** Test to see if this type scheme is polymorphic. */
-  public boolean isQuantified() {
-    return true;
+  /** Test to see if this type scheme is monomorphic. */
+  public Type isMonomorphic() {
+    return null;
   }
 
   /** Test to determine whether two type schemes are alpha equivalent. */

@@ -82,9 +82,9 @@ class PolyAllocType extends AllocType {
     return at.alphaAllocType(this, prefix.isEmpty() ? null : new TGenCorresp());
   }
 
-  /** Test to see if this allocator type is polymorphic. */
-  public boolean isQuantified() {
-    return true;
+  /** Test to see if this allocator type is monomorphic. */
+  public AllocType isMonomorphic() {
+    return null;
   }
 
   /** Instantiate this AllocType, ensuring that the result is a newly allocated object. */

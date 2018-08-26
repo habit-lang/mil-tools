@@ -209,9 +209,9 @@ public class AllocType {
     return this.result.alphaType(left.result, corresp);
   }
 
-  /** Test to see if this allocator type is polymorphic. */
-  public boolean isQuantified() {
-    return false;
+  /** Test to see if this allocator type is monomorphic. */
+  public AllocType isMonomorphic() {
+    return this;
   }
 
   /** Determine if two allocator types can be matched. */

@@ -362,7 +362,7 @@ class Binding extends DefVar {
   /** Test to see if any of the bindings in this list have polymorphic types. */
   static boolean anyQuantified(Bindings bs) {
     for (; bs != null; bs = bs.next) {
-      if (bs.head.declared.isQuantified()) {
+      if (bs.head.declared.isMonomorphic() == null) {
         return true;
       }
     }

@@ -44,9 +44,9 @@ public abstract class Type extends Scheme {
     return null;
   }
 
-  /** Test to see if this type scheme is polymorphic. */
-  public boolean isQuantified() {
-    return false;
+  /** Test to see if this type scheme is monomorphic. */
+  public Type isMonomorphic() {
+    return this;
   }
 
   private static TGen[] genCache = new TGen[10];

@@ -28,8 +28,8 @@ import core.*;
  */
 public abstract class Scheme {
 
-  /** Test to see if this type scheme is polymorphic. */
-  public abstract boolean isQuantified();
+  /** Test to see if this type scheme is monomorphic. */
+  public abstract Type isMonomorphic();
 
   /** Test to determine whether two type schemes are alpha equivalent. */
   public abstract boolean alphaEquiv(Scheme right);

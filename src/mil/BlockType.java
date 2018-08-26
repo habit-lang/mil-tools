@@ -142,9 +142,9 @@ public class BlockType {
     return this.dom.alphaType(left.dom, corresp) && this.rng.alphaType(left.rng, corresp);
   }
 
-  /** Test to see if this block type is polymorphic. */
-  public boolean isQuantified() {
-    return false;
+  /** Test to see if this block type is monomorphic. */
+  public BlockType isMonomorphic() {
+    return this;
   }
 
   /** Determine if two block types can be matched. */

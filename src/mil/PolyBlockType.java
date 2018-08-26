@@ -73,9 +73,9 @@ class PolyBlockType extends BlockType {
     return bt.alphaBlockType(this, prefix.isEmpty() ? null : new TGenCorresp());
   }
 
-  /** Test to see if this block type is polymorphic. */
-  public boolean isQuantified() {
-    return true;
+  /** Test to see if this block type is monomorphic. */
+  public BlockType isMonomorphic() {
+    return null;
   }
 
   /**

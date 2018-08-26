@@ -1924,13 +1924,11 @@ public class External extends TopDefn {
 
   /** Calculate a staticValue (which could be null) for each top level definition. */
   void calcStaticValues(LLVMMap lm, llvm.Program prog) {
-    if (declared.isQuantified()) {
+    Type t = declared.isMonomorphic();
+    if (t == null) {
       debug.Internal.error("external " + id + " has polymorphic type " + declared);
-    } else {
-      Type t = declared.instantiate();
-      if (t.nonUnit()) {
-        prog.add(new llvm.GlobalVarDecl(id, lm.toLLVM(t)));
-      }
+    } else if (t.nonUnit()) {
+      prog.add(new llvm.GlobalVarDecl(id, lm.toLLVM(t)));
     }
   }
 
