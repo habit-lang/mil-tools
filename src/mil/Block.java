@@ -178,6 +178,7 @@ public class Block extends Defn {
       debug.Log.println("Inferred " + id + " :: " + inferred);
       if (declared != null && !declared.alphaEquiv(inferred)) {
         throw new Failure(
+            pos,
             "Declared type \""
                 + declared
                 + "\" for \""

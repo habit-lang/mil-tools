@@ -82,7 +82,8 @@ class TopLhs {
     return declared != null;
   }
 
-  void generalizeLhsType(Handler handler, TVars gens, TVar[] generics) throws Failure {
+  void generalizeLhsType(Position pos, Handler handler, TVars gens, TVar[] generics)
+      throws Failure {
     if (defining != null) {
       debug.Log.println(
           "Generalizing definition for: " + getId() + " with generics " + TVar.show(generics));
@@ -90,6 +91,7 @@ class TopLhs {
       debug.Log.println("Inferred " + id + " :: " + inferred);
       if (declared != null && !declared.alphaEquiv(inferred)) {
         throw new Failure(
+            pos,
             "Declared type \""
                 + declared
                 + "\" for \""
