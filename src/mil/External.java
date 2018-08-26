@@ -89,6 +89,9 @@ public class External extends TopDefn {
   }
 
   void displayDefn(PrintWriter out, boolean isEntrypoint) {
+    if (isEntrypoint) {
+      out.print("export ");
+    }
     out.print("external " + id);
     if (ref != null) {
       out.print(" {" + ref);

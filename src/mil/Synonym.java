@@ -63,6 +63,10 @@ public class Synonym extends Tycon {
     return level;
   }
 
+  boolean sameTLit(TLit t) {
+    return expansion.sameTLit(null, t);
+  }
+
   /**
    * Simplify this natural number type, using the specified type environment if needed, returning
    * either an unbound TVar, or else a TNat literal. TODO: This could be used more generally as a

@@ -242,6 +242,11 @@ public class CoreParser extends Phase implements CoreTokens {
     return t;
   }
 
+  /** Parse an atomic type expression, triggering an error if no type expression is found. */
+  protected TypeExp typeAtomExp() {
+    return notMissing(maybeTypeAtomExp());
+  }
+
   /**
    * Try to parse an atomic type expression, returning null if unsuccessful. TODO: document the idea
    * that this method can be overriden to expand the syntax for atomic types.

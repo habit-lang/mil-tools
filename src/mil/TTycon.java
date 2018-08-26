@@ -111,8 +111,7 @@ public class TTycon extends TConst {
 
   /** Test to determine whether this type is equal to a specified type literal. */
   boolean sameTLit(Type[] thisenv, TLit t) {
-    Synonym s = name.isSynonym();
-    return (s != null) && s.getExpansion().sameTLit(null, t);
+    return name.sameTLit(t);
   }
 
   /**

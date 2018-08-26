@@ -397,6 +397,17 @@ public abstract class Type extends Scheme {
     return Type.bit(new TNat(w));
   }
 
+  /**
+   * Convenience method for making a type of the form ARef l a for some alignment l and area type a.
+   */
+  public static Type aref(Type alignment, Type areaType) {
+    return new TAp(new TAp(DataName.aref.asType(), alignment), areaType);
+  }
+
+  public static Type aref(long alignment, Type areaType) {
+    return aref(new TNat(alignment), areaType);
+  }
+
   /** Convenience method for making a type of the form Init a for some area type a. */
   public static Type init(Type a) {
     return new TAp(DataName.init.asType(), a);

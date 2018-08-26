@@ -106,6 +106,10 @@ public abstract class Tycon extends TypeName {
     return 0;
   }
 
+  boolean sameTLit(TLit t) {
+    return false;
+  }
+
   /**
    * Simplify this natural number type, using the specified type environment if needed, returning
    * either an unbound TVar, or else a TNat literal. TODO: This could be used more generally as a

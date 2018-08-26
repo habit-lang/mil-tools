@@ -1416,10 +1416,7 @@ public class Prim {
     }
   }
 
-  /**
-   * Represents the polymorphic block type forall (r::tuple). [] >>= r. TODO: should this be [] >>=
-   * Void ?
-   */
+  /** Represents the polymorphic block type forall (r::tuple). [] >>= r. */
   public static final BlockType haltType =
       new PolyBlockType(Type.empty, Type.gen(0), new Prefix(new Tyvar[] {Tyvar.tuple}));
 
