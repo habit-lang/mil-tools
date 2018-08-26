@@ -648,8 +648,4 @@ public class LCParser extends CoreParser implements LCTokens {
         ? new InitStructFieldExp(pos, id, parseInfixExpr())
         : super.structField(pos, id);
   }
-
-  protected AreaVar areaVar(Position pos, String id) throws Failure {
-    return lexer.match(FROM) ? new InitAreaVar(pos, id, parseInfixExpr()) : super.areaVar(pos, id);
-  }
 }

@@ -383,13 +383,6 @@ public class CoreParser extends Phase implements CoreTokens {
           return d;
         }
 
-      case AREA:
-        {
-          CoreDefn d = areaDefn();
-          lexer.itemEnd("area definition");
-          return d;
-        }
-
       case TYPE:
         {
           CoreDefn d = typeDefn();
@@ -768,52 +761,6 @@ public class CoreParser extends Phase implements CoreTokens {
    */
   protected StructFieldExp structField(Position pos, String id) throws Failure {
     return new StructFieldExp(pos, id);
-  }
-
-  /**
-   * Parse an area definition, having just found (but not yet skipped) the initial AREA token that
-   * begins the definition.
-   */
-  private AreaDefn areaDefn() throws Failure {
-    Position pos = lexer.getPos();
-    lexer.nextToken(/* AREA */ );
-    AreaVar[] areas = areaVars(0);
-    require(COCO);
-    return new AreaDefn(pos, areas, typeExp());
-  }
-
-  /**
-   * Parse a comma separated list of (one or more) area variables. Following the pattern used
-   * elsewhere, the parameter i specifies how many area variables have already been read as part of
-   * this definition so that we can allocate an array of the appropriate size.
-   */
-  private AreaVar[] areaVars(int i) throws Failure {
-    AreaVar area = areaVar();
-    AreaVar[] areas = lexer.match(COMMA) ? areaVars(i + 1) : new AreaVar[i + 1];
-    areas[i] = area;
-    return areas;
-  }
-
-  /**
-   * Read an area variable specification, providing a name and an optional initializer for a new
-   * memory area.
-   */
-  private AreaVar areaVar() throws Failure {
-    if (lexer.getToken() != VARID) {
-      throw missing("area name");
-    }
-    Position pos = lexer.getPos();
-    String id = lexer.getLexeme();
-    lexer.nextToken(/* VARID */ );
-    return areaVar(pos, id);
-  }
-
-  /**
-   * Create an AreaVar with given position and identifier. Can be overridden in subclasses to parse
-   * an additional initializer expression.
-   */
-  protected AreaVar areaVar(Position pos, String id) throws Failure {
-    return new AreaVar(pos, id);
   }
 
   /**

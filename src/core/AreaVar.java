@@ -19,8 +19,6 @@
 package core;
 
 import compiler.*;
-import lc.Env;
-import lc.LiftEnv;
 import mil.*;
 
 public class AreaVar extends Name {
@@ -28,29 +26,5 @@ public class AreaVar extends Name {
   /** Default constructor. */
   public AreaVar(Position pos, String id) {
     super(pos, id);
-  }
-
-  void addArea(Handler handler, MILEnv milenv, Type type) {
-    if (milenv.findTop(id) == null) {
-      // TODO: The final code generator will need a strategy for allocating the areas that
-      // are declared here as externals ...
-      milenv.addTop(id, new TopExt(type, new External(pos, id, type, null, null)));
-    } else {
-      handler.report(
-          new Failure(
-              pos, "area definition conflicts with previous definition for \"" + id + "\""));
-    }
-  }
-
-  public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {
-    /* default is to do nothing */
-  }
-
-  public void inferTypes(Handler handler, Type type) throws Failure {
-    /* default is to do nothing */
-  }
-
-  public void lift(LiftEnv lenv) {
-    /* default is to do nothing */
   }
 }
