@@ -173,17 +173,34 @@ public class MILParser extends CoreParser implements MILTokens {
     return false;
   }
 
-  private TopLevelExp parseTopLevel(Position pos, String[] ids) throws Failure {
-    String[] args;
-    if (lexer.match(BOPEN)) {
-      args = parseIds();
-      require(BCLOSE);
+  private DefnExp parseTopLevel(Position pos, String[] ids) throws Failure {
+    if (lexer.match(AREA)) {
+      if (ids.length != 1) {
+        throw new Failure(lexer.getPos(), "Area definition must bind a single identifier");
+      }
+      long alignment; // Read alignment (or assume 1, if alignment missing)
+      if (lexer.getToken() == NATLIT) {
+        alignment = lexer.getWord();
+        lexer.nextToken(/* NATLIT */ );
+      } else {
+        alignment = 1L;
+      }
+      TypeExp areaType = typeAtomExp(); // Read expression describing area type
+      AtomExp init = parseAtom(); // Read initializer expression
+      lexer.itemEnd("area definition");
+      return new AreaDefnExp(pos, ids[0], alignment, areaType, init);
     } else {
-      args = new String[0];
+      String[] args;
+      if (lexer.match(BOPEN)) {
+        args = parseIds();
+        require(BCLOSE);
+      } else {
+        args = new String[0];
+      }
+      TopLevelExp tle = new TopLevelExp(pos, ids, args, parseCode());
+      lexer.itemEnd("top-level definition");
+      return tle;
     }
-    TopLevelExp tle = new TopLevelExp(pos, ids, args, parseCode());
-    lexer.itemEnd("top-level definition");
-    return tle;
   }
 
   /**

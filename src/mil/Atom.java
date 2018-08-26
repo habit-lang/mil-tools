@@ -91,6 +91,11 @@ public abstract class Atom {
     return false;
   }
 
+  /** Test to determine whether this Atom refers to the specified Area. */
+  boolean sameTopArea(Area area) {
+    return false;
+  }
+
   static boolean sameAtoms(Atom[] as, Atom[] bs) {
     if (as.length != bs.length) {
       return false;

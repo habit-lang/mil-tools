@@ -218,8 +218,12 @@ public class MachineBuilder {
     patchAddr(machine.gload(0), t, i);
   }
 
-  void gload(External t) {
-    patchAddr(machine.gload(0), t, 0);
+  void gload(External e) {
+    patchAddr(machine.gload(0), e, 0);
+  }
+
+  void gload(Area a) {
+    patchAddr(machine.gload(0), a, 0);
   }
 
   void gload(Value v) {
@@ -238,8 +242,12 @@ public class MachineBuilder {
     patchAddr(machine.gcopy(0, dst), t, i);
   }
 
-  void gcopy(External t, int dst) {
-    patchAddr(machine.gcopy(0, dst), t, 0);
+  void gcopy(External e, int dst) {
+    patchAddr(machine.gcopy(0, dst), e, 0);
+  }
+
+  void gcopy(Area a, int dst) {
+    patchAddr(machine.gcopy(0, dst), a, 0);
   }
 
   void gcopy(Value v, int dst) {
