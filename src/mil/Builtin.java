@@ -90,6 +90,7 @@ public class Builtin extends MILEnvHash {
       addNewPrim(Prim.store32);
       addNewPrim(Prim.store64);
       addNewPrim(Prim.initSeq);
+      addNewPrim(Prim.initSelf);
 
     } catch (Exception e) { // Should this be a more specific exception?
       debug.Internal.error("Failed to initialize primitives");

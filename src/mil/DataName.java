@@ -565,9 +565,7 @@ public class DataName extends Tycon {
 
   /** Representation vector for Init a types as functions of type [Word] ->> [Unit]. */
   public static final Type[] initRep =
-      new Type[] {
-        Type.milfun(Type.tuple(DataName.word.asType()), Type.tuple(DataName.unit.asType()))
-      };
+      new Type[] {Type.milfun(Type.tuple(word.asType()), Type.tuple(unit.asType()))};
 
   /** Return the representation vector for values of this type. */
   Type[] repCalc() { // Singleton types are all represented by the Unit type

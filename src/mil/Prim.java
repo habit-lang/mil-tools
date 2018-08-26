@@ -1978,6 +1978,7 @@ public class Prim {
       return new initSeq(bt);
     }
 
+    /** Records the closure structure that is used to implement this primitive. */
     private ClosureDefn impl = null;
 
     Tail repTransformPrim(RepTypeSet set, Atom[] targs) {
@@ -1999,6 +2000,60 @@ public class Prim {
                 ij,
                 r, //  impl{i, j} r = b[i, j, r]
                 new BlockCall(b).withArgs(Temp.append(ij, r)));
+      }
+      return new ClosAlloc(impl).withArgs(targs);
+    }
+  }
+
+  public static final Type init1Type = Type.init(Type.gen(1));
+
+  public static final Type aref01Type = Type.aref(Type.gen(0), Type.gen(1));
+
+  public static final BlockType initSelfType =
+      new PolyBlockType(
+          Type.tuple(Type.milfun(aref01Type, init1Type)),
+          Type.tuple(init1Type),
+          new Prefix(new Tyvar[] {Tyvar.nat, Tyvar.area}));
+
+  public static final Prim initSelf = new initSelf();
+
+  private static class initSelf extends Prim {
+
+    private initSelf() {
+      this(initSelfType);
+    }
+
+    private initSelf(BlockType bt) {
+      super("primInitSelf", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new initSelf(bt);
+    }
+
+    /** Records the closure structure that is used to implement this primitive. */
+    private ClosureDefn impl = null;
+
+    Tail repTransformPrim(RepTypeSet set, Atom[] targs) {
+      if (impl == null) {
+        Temp[] fr = Temp.makeTemps(2);
+        Temp g = new Temp();
+        Block b =
+            new Block(
+                BuiltinPosition.position,
+                fr, // b[f, r]
+                new Bind(
+                    g,
+                    new Enter(fr[0], fr[1]), //   = g <- f @ r
+                    new Done(new Enter(g, fr[1])))); //     g @ r
+        Temp[] f = Temp.makeTemps(1);
+        Temp[] r = Temp.makeTemps(1);
+        impl =
+            new ClosureDefn(
+                BuiltinPosition.position,
+                f,
+                r, //  impl{f} r = b[f, r]
+                new BlockCall(b).withArgs(Temp.append(f, r)));
       }
       return new ClosAlloc(impl).withArgs(targs);
     }
