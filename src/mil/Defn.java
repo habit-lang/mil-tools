@@ -49,8 +49,13 @@ public abstract class Defn {
    */
   protected boolean isEntrypoint = false;
 
+  /** Return the flag to indicate whether this definition is considered to be an entrypoint. */
+  public boolean isEntrypoint() {
+    return isEntrypoint;
+  }
+
   /** Set the flag to indicate whether this definition is considered to be an entrypoint. */
-  public void isEntrypoint(boolean b) {
+  public void setIsEntrypoint(boolean b) {
     isEntrypoint = b;
   }
 

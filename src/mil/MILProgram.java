@@ -37,7 +37,7 @@ public class MILProgram {
     // !System.out.println("Adding entry for " + defn.getId());
     if (!Defns.isIn(defn, entries)) {
       entries = new Defns(defn, entries);
-      defn.isEntrypoint(true);
+      defn.setIsEntrypoint(true);
     }
   }
 
@@ -320,12 +320,19 @@ public class MILProgram {
     ClosureDefns[] closures = new ClosureDefns[SIZE];
     boolean found = false;
 
-    // Visit each block to compute summaries and populate the table:
+    // Visit each definition to compute summaries and populate the tables:
+
+    // Start with entrypoints so that they are available to use as replacements for non-entrypoints.
+    for (Defns ds = entries; ds != null; ds = ds.next) {
+      found |= ds.head.summarizeDefns(blocks, topLevels, closures);
+    }
+
+    // Visit definitions that are not entrypoints:
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
-      // TODO: visit entrypoints first so that they can be used as replacements for non-entrypoints
-      // ...
       for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
-        found |= ds.head.summarizeDefns(blocks, topLevels, closures);
+        if (!ds.head.isEntrypoint()) {
+          found |= ds.head.summarizeDefns(blocks, topLevels, closures);
+        }
       }
     }
 

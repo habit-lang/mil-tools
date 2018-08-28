@@ -181,9 +181,9 @@ class TopLhs {
   Defn makeEntryBlock(Position pos, TopLevel tl) {
     Block b = declared.liftToBlock0(pos, id, tl);
     if (b != null) {
-      b.isEntrypoint(true); // Mark the new block as an entrypoint ...
+      b.setIsEntrypoint(true); // Mark the new block as an entrypoint ...
       id = id + "_impl"; // ... rename the original entrypoint ...
-      tl.isEntrypoint(false); // ... and clear the flag for the original entrypoint.
+      tl.setIsEntrypoint(false); // ... and clear the flag for the original entrypoint.
       return b;
     }
     return tl;
