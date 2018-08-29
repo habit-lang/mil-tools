@@ -46,6 +46,8 @@ public class Area extends TopDefn {
 
   private Scheme declared;
 
+  private Type size;
+
   /**
    * Return references to all components of this top level definition in an array of
    * atoms/arguments.
@@ -118,21 +120,25 @@ public class Area extends TopDefn {
    * definitions are at the top level.)
    */
   void generalizeType(Handler handler) throws Failure {
-    // Check for a valid alignment value:
     if (alignment < 0
         || alignment > (1L << (Type.WORDSIZE - 1))
         || (alignment & (alignment - 1)) != 0) {
       handler.report(new Failure(pos, "Invalid alignment value " + alignment));
     }
 
-    // Check that areaSize has a known ByteSize:
-    if (areaType.byteSize(null) == null) {
-      throw new Failure(
-          pos, "Cannot determine size in bytes for values of type \"" + areaType + "\"");
+    Type inferred;
+    if (init == null) {
+      inferred = DataName.word.asType(); // Raw area produces a Word (address) result
+    } else {
+      size = areaType.byteSize(null); // Check that area has a known ByteSize
+      if (size == null || size.getNat() == null) {
+        throw new Failure(
+            pos, "Cannot determine size in bytes for values of type \"" + areaType + "\"");
+      }
+      inferred = Type.aref(alignment, areaType);
     }
 
-    // Calculate/validate declared type:
-    Type inferred = (init == null) ? DataName.word.asType() : Type.aref(alignment, areaType);
+    // Validate declared type:
     if (declared != null && !declared.alphaEquiv(inferred)) {
       throw new Failure(
           pos,
