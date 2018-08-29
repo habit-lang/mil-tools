@@ -25,12 +25,12 @@ import compiler.Position;
 import core.*;
 import java.io.PrintWriter;
 
-class TopLhs {
+public class TopLhs {
 
   private String id;
 
   /** Default constructor. */
-  TopLhs(String id) {
+  public TopLhs(String id) {
     this.id = id;
   }
 
@@ -194,7 +194,7 @@ class TopLhs {
     declared = declared.canonScheme(set);
   }
 
-  void setDeclared(Handler handler, Position pos, Scheme scheme) {
+  public void setDeclared(Handler handler, Position pos, Scheme scheme) {
     if (declared != null) {
       handler.report(new Failure(pos, "Multiple type annotations for \"" + id + "\""));
     }

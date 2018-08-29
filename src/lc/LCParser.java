@@ -74,6 +74,17 @@ public class LCParser extends CoreParser implements LCTokens {
           return true;
         }
 
+      case AREA:
+        {
+          Position pos = lexer.getPos();
+          lexer.nextToken(/* AREA */ );
+          AreaVar[] areas = areaVars(0);
+          require(COCO);
+          prog.add(new AreaDefn(pos, areas, typeExp()));
+          lexer.itemEnd("area declaration");
+          return true;
+        }
+
         // TODO: consolidate EXPORT and ENTRYPOINT with similar code in milasm
       case EXPORT:
         {
@@ -104,6 +115,32 @@ public class LCParser extends CoreParser implements LCTokens {
       default:
         return false;
     }
+  }
+
+  /**
+   * Parse a comma separated list of (one or more) area variables. Following the pattern used
+   * elsewhere, the parameter i specifies how many area variables have already been read as part of
+   * this definition so that we can allocate an array of the appropriate size.
+   */
+  private AreaVar[] areaVars(int i) throws Failure {
+    AreaVar area = areaVar();
+    AreaVar[] areas = lexer.match(COMMA) ? areaVars(i + 1) : new AreaVar[i + 1];
+    areas[i] = area;
+    return areas;
+  }
+
+  /**
+   * Read an area variable specification, providing a name and an initializer for a new memory area.
+   */
+  private AreaVar areaVar() throws Failure {
+    if (lexer.getToken() != VARID) {
+      throw missing("area name");
+    }
+    Position pos = lexer.getPos();
+    String id = lexer.getLexeme();
+    lexer.nextToken(/* VARID */ );
+    require(FROM);
+    return new AreaVar(pos, id, parseInfixExpr());
   }
 
   /** Parse a non-empty list of definitions. */

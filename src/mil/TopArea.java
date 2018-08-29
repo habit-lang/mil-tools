@@ -91,7 +91,7 @@ public class TopArea extends Top {
     return area;
   }
 
-  void setDeclared(Handler handler, Position pos, Scheme scheme) {
+  public void setDeclared(Handler handler, Position pos, Scheme scheme) {
     area.setDeclared(handler, pos, scheme);
   }
 }

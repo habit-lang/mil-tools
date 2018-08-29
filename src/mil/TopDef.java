@@ -133,7 +133,7 @@ public class TopDef extends Top {
     return topLevel;
   }
 
-  void setDeclared(Handler handler, Position pos, Scheme scheme) {
+  public void setDeclared(Handler handler, Position pos, Scheme scheme) {
     topLevel.setDeclared(handler, pos, i, scheme);
   }
 

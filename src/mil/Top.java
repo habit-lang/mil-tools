@@ -80,7 +80,7 @@ public abstract class Top extends Atom {
 
   abstract Defn getDefn();
 
-  void setDeclared(Handler handler, Position pos, Scheme scheme) {
+  public void setDeclared(Handler handler, Position pos, Scheme scheme) {
     handler.report(
         new Failure(
             pos, "Cannot use type signature; \"" + getId() + "\" is not a top level variable"));

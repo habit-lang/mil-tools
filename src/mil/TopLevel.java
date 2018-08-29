@@ -472,7 +472,7 @@ public class TopLevel extends TopDefn {
     }
   }
 
-  void setDeclared(Handler handler, Position pos, int i, Scheme scheme) {
+  public void setDeclared(Handler handler, Position pos, int i, Scheme scheme) {
     lhs[i].setDeclared(handler, pos, scheme);
   }
 

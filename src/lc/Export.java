@@ -48,6 +48,11 @@ class Export extends TopDefn {
   /** List of variables corresponding to the identifiers in this declaration. */
   protected DefVar[] vars;
 
+  /** Check types of expressions appearing in top-level definitions. */
+  void inferTypes(Handler handler) throws Failure {
+    /* Do nothing */
+  }
+
   void liftTopDefn(LiftEnv lenv) {
     topLevels = new TopLevel[vars.length];
     for (int i = 0; i < vars.length; i++) {

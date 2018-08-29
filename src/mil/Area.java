@@ -246,7 +246,7 @@ public class Area extends TopDefn {
     declared = declared.canonScheme(set);
   }
 
-  void setDeclared(Handler handler, Position pos, Scheme scheme) {
+  public void setDeclared(Handler handler, Position pos, Scheme scheme) {
     if (declared != null) {
       handler.report(new Failure(pos, "Multiple type annotations for \"" + id + "\""));
     }
@@ -260,6 +260,10 @@ public class Area extends TopDefn {
   /** Add this exported definition to the specified MIL environment. */
   void addExport(MILEnv exports) {
     exports.addTop(id, new TopArea(this));
+  }
+
+  public void setInit(Atom init) {
+    this.init = init;
   }
 
   /**

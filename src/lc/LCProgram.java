@@ -105,9 +105,9 @@ public class LCProgram extends CoreProgram {
     // Build an environment with entries for a list of top-level bindings:
     Env env = new BindingsEnv(null, bindings);
 
-    // Check that exports and entrypoints are in scope:
+    // Add environment entries for symbols introduced in top-level definitions:
     for (TopDefns tds = topDefns; tds != null; tds = tds.next) {
-      tds.head.scopeTopDefn(handler, milenv, env);
+      tds.head.addToEnv(handler, milenv);
     }
 
     // Visit each binding in the list of top-level bindings:
@@ -115,6 +115,12 @@ public class LCProgram extends CoreProgram {
       // We can ignore the list of "free variables" that are returned by the following call, which
       // should only contain references to other top-level values defined in earlier binding groups.
       bs.head.inScopeOf(handler, milenv, bindings, env);
+    }
+
+    // Scope analysis on expressions in top-level definitions and check that exports and entrypoints
+    // are in scope:
+    for (TopDefns tds = topDefns; tds != null; tds = tds.next) {
+      tds.head.scopeTopDefn(handler, milenv, env);
     }
 
     // Check every expression that appears in a core definition:
@@ -128,6 +134,9 @@ public class LCProgram extends CoreProgram {
 
   public void typeAnalysis(Handler handler) throws Failure {
     BindingSCCs.inferTypes(handler, null, sccs);
+    for (TopDefns tds = topDefns; tds != null; tds = tds.next) {
+      tds.head.inferTypes(handler);
+    }
     super.inferTypes(handler);
   }
 
@@ -269,6 +278,9 @@ public class LCProgram extends CoreProgram {
     addExports(mil, milenv); // Process exports and entry points
     for (; tbs != null; tbs = tbs.next) { // Generate MIL code from LC
       tbs.head.compile();
+    }
+    for (TopDefns tds = topDefns; tds != null; tds = tds.next) {
+      tds.head.compileTopDefn();
     }
   }
 

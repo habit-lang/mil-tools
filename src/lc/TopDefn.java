@@ -31,14 +31,25 @@ public abstract class TopDefn {
     this.pos = pos;
   }
 
+  /** Add entries from this top-level definition to the environment, if necessary. */
+  void addToEnv(Handler handler, MILEnv milenv) throws Failure {
+    /* Default behavior is to do nothing */
+  }
+
   /**
    * Run scope analysis on a top level lc definition to ensure that all the items identified as
    * exports or entrypoints are in scope.
    */
   abstract void scopeTopDefn(Handler handler, MILEnv milenv, Env env) throws Failure;
 
-  void liftTopDefn(LiftEnv lenv) {
-    /* nothing to do here! */
+  /** Check types of expressions appearing in top-level definitions. */
+  abstract void inferTypes(Handler handler) throws Failure;
+
+  abstract void liftTopDefn(LiftEnv lenv);
+
+  /** Generate code, if necessary, for top-level definitions. */
+  void compileTopDefn() {
+    /* Default is to do nothing */
   }
 
   abstract void addExports(MILProgram mil, MILEnv milenv);
