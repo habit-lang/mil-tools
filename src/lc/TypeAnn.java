@@ -72,10 +72,10 @@ public class TypeAnn extends LCDefn {
       }
       buf.append(ids[i]);
     }
-    //    if (declared!=null) {
-    //        buf.append(" :: ");
-    //        buf.append(declared.toString());
-    //    }
+    //  if (declared!=null) {
+    //    buf.append(" :: ");
+    //    buf.append(declared.toString());
+    //  }
     buf.append(" :: <can't display type exp>"); // TODO: fix this!
     out.indent(n, buf.toString());
   }

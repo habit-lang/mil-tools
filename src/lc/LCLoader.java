@@ -100,7 +100,7 @@ public class LCLoader {
   public MILProgram load(Handler handler) throws Failure {
     // Load all of the required LCProgram objects:
     LCProgramSCCs sccs = LCPrograms.scc(syntaxAnalysis(handler));
-    // !   LCProgramSCCs.display("LCPrograms", sccs);
+    // ! LCProgramSCCs.display("LCPrograms", sccs);
 
     // Load all of the required MIL files:
     MILProgram mil = new MILProgram(); // Construct an empty MIL program

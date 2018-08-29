@@ -99,7 +99,7 @@ public class LCProgram extends CoreProgram {
   public void scopeAnalysis(Handler handler, MILEnv milenv) throws Failure {
     // Extract the bindings from the definitions in this program:
     bindings = LCDefns.toBindings(handler, milenv.getTyconEnv(), defns);
-    // !   display(new Screen());
+    // ! display(new Screen());
     defns = null; // not needed beyond this point
 
     // Build an environment with entries for a list of top-level bindings:
@@ -147,7 +147,7 @@ public class LCProgram extends CoreProgram {
     // TODO: is the following line necessary?
     // sccs = null; // Invalidate sccs now that new bindings have been added:
     liftTopDefns(lenv);
-    // !   lenv.dump();
+    // ! lenv.dump();
     return lenv.getLifted();
   }
 
@@ -246,21 +246,21 @@ public class LCProgram extends CoreProgram {
 
     // Build a new MILEnv for this program:
     milenv = this.newmil(handler, tenv, milenv);
-    // !   milenv.print();
+    // ! milenv.print();
 
     // Run scope analysis on the LC program:
     this.scopeAnalysis(handler, milenv);
     handler.abortOnFailures();
     // !
-    // !   System.out.println("BEFORE type checking:");
-    // !   new IndentOutput(System.out).indent(this);
+    // ! System.out.println("BEFORE type checking:");
+    // ! new IndentOutput(System.out).indent(this);
 
     // Run type analysis on the LC program:
     this.typeAnalysis(handler);
     handler.abortOnFailures();
     // !
-    // !   System.out.println("AFTER type checking:");
-    // !   new IndentOutput(System.out).indent(this);
+    // ! System.out.println("AFTER type checking:");
+    // ! new IndentOutput(System.out).indent(this);
 
     return milenv;
   }
@@ -270,11 +270,11 @@ public class LCProgram extends CoreProgram {
    * but that can wait until all files have been loaded.
    */
   void compile(MILProgram mil, MILEnv milenv) {
-    // !   this.display(new Screen());        // Show the result of static analysis
+    // ! this.display(new Screen());        // Show the result of static analysis
     TopBindings tbs = lambdaLift(); // Lift out definitions of recursive functions
-    // !   System.out.println("AFTER lambda lifting:");
-    // !   this.display(new Screen());        // Show the result of lambda lifting
-    // !   new IndentOutput(System.out).indent(this);
+    // ! System.out.println("AFTER lambda lifting:");
+    // ! this.display(new Screen());        // Show the result of lambda lifting
+    // ! new IndentOutput(System.out).indent(this);
     addExports(mil, milenv); // Process exports and entry points
     for (; tbs != null; tbs = tbs.next) { // Generate MIL code from LC
       tbs.head.compile();
