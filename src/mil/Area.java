@@ -19,6 +19,7 @@
 package mil;
 
 import compiler.*;
+import compiler.BuiltinPosition;
 import compiler.Failure;
 import compiler.Handler;
 import compiler.Position;
@@ -67,7 +68,7 @@ public class Area extends TopDefn {
 
   /** Find the list of Defns that this Defn depends on. */
   public Defns dependencies() {
-    return init.dependencies(null);
+    return (init == null) ? null : init.dependencies(null);
   }
 
   void displayDefn(PrintWriter out, boolean isEntrypoint) {
@@ -239,11 +240,36 @@ public class Area extends TopDefn {
     /* Nothing to do here */
   }
 
-  void topLevelrepTransform(Handler handler, RepTypeSet set) {
-    // TODO: complete this implementation, something along the following lines:
-    // Rewrite   id <- area l a init
-    // As        r <- area l a noInit; id <- init @ r
+  Atom repArea() {
+    if (init == null) {
+      return new TopArea(this);
+    } else if (impl == null) {
+      // Rewrite:   id  <- area l a init
+      // As:        id  <- runInit[init, r]  // replace original area defn with TopLevel to run
+      // initializer
+      //            raw <- area l size       // introduce a new definition for the underlying raw
+      // area
+      if (runInit == null) {
+        Temp[] vs = Temp.makeTemps(2);
+        Temp v = new Temp();
+        runInit =
+            new Block(
+                BuiltinPosition.position,
+                vs, // runInit[init, a]
+                new Bind(
+                    v,
+                    new Enter(vs[0], vs[1]), //    = _ <- init @ a
+                    new Done(new Return(vs[1])))); //      return a
+      }
+      Atom raw = new TopArea(new Area(pos, id, alignment, size, null));
+      impl = new TopLevel(pos, new TopLhs(), new BlockCall(runInit).withArgs(init, raw));
+    }
+    return new TopDef(impl, 0);
   }
+
+  private TopLevel impl;
+
+  private static Block runInit;
 
   /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {

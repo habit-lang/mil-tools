@@ -84,7 +84,7 @@ public class TopArea extends Top {
   }
 
   Atom[] repArg(RepTypeSet set, RepEnv env) {
-    return null;
+    return new Atom[] {area.repArea()};
   }
 
   Defn getDefn() {
