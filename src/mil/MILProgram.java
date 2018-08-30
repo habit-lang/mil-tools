@@ -46,6 +46,16 @@ public class MILProgram {
     return (entries == null);
   }
 
+  private Block initialize = null;
+
+  public void addInitializer(Tail tail) {
+    if (initialize == null) {
+      initialize = new Block(BuiltinPosition.position, "initialize", Temp.noTemps, new Done(tail));
+    } else {
+      initialize.addInitializer(tail);
+    }
+  }
+
   /** Record the list of strongly connected components in this program. */
   private DefnSCCs sccs;
 
@@ -55,6 +65,9 @@ public class MILProgram {
     Defns defns = null; // Compute a list of reachable Defns
     for (Defns ds = entries; ds != null; ds = ds.next) {
       defns = ds.head.visitDepends(defns);
+    }
+    if (initialize != null) {
+      defns = initialize.visitDepends(defns);
     }
     // ! if (defns==null) {
     // !   System.out.println("No definitions remain");

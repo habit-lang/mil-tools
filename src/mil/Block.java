@@ -84,6 +84,10 @@ public class Block extends Defn {
     return id;
   }
 
+  public void addInitializer(Tail tail) {
+    code = new Bind(new Temp(), tail, code);
+  }
+
   /** Find the list of Defns that this Defn depends on. */
   public Defns dependencies() {
     return code.dependencies(null);
