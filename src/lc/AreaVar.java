@@ -81,6 +81,6 @@ public class AreaVar extends Name {
             ipos,
             new TopLhs(),
             init.compTail(null, MILProgram.abort, TailCont.done).forceTail(ipos));
-    area.initWith(new TopDef(initType, tl, 0));
+    area.setInit(new TopDef(initType, tl, 0));
   }
 }

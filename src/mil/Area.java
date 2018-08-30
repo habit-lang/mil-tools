@@ -45,156 +45,7 @@ public class Area extends TopDefn {
 
   private Type size;
 
-  private Init init;
-
-  private abstract static class Init {
-
-    /** Find the list of Defns that this Defn depends on. */
-    public abstract Defns dependencies();
-
-    abstract void dump(PrintWriter out);
-
-    abstract void checkAreaInit(Position pos, Type areaType) throws Failure;
-
-    abstract Type inferType(long alignment, Type areaType);
-
-    /** Apply inlining. */
-    public void inlining() {
-      /* Nothing to do here */
-    }
-
-    /** Rewrite this program to remove unused arguments in block calls. */
-    void removeUnusedArgs() {
-      /* Nothing to do here */
-    }
-
-    public void flow() {
-      /* Nothing to do here */
-    }
-
-    void eliminateDuplicates() {
-      /* Nothing to do here */
-    }
-
-    void collect() {
-      /* Nothing to do here */
-    }
-
-    abstract void collect(TypeSet set);
-
-    /** Apply constructor function simplifications to this program. */
-    void cfunSimplify() {
-      /* Nothing to do here */
-    }
-
-    void bitdataRewrite(BitdataMap m) {
-      /* Nothing to do here */
-    }
-
-    abstract Area.InitTail repTransform(RepTypeSet set, Area area);
-  }
-
-  private class InitAtom extends Init {
-
-    private Atom a;
-
-    /** Default constructor. */
-    private InitAtom(Atom a) {
-      this.a = a;
-    }
-
-    /** Find the list of Defns that this Defn depends on. */
-    public Defns dependencies() {
-      return a.dependencies(null);
-    }
-
-    void dump(PrintWriter out) {
-      out.println(a.toString());
-    }
-
-    void checkAreaInit(Position pos, Type areaType) throws Failure {
-      a.instantiate().unify(pos, Type.init(areaType));
-    }
-
-    Type inferType(long alignment, Type areaType) {
-      return Type.aref(alignment, areaType);
-    }
-
-    void collect(TypeSet set) {
-      a.collect(set);
-    }
-
-    Area.InitTail repTransform(RepTypeSet set, Area area) {
-      return new InitTail(new Enter(a.repArg(set, null)[0], new TopArea(area)));
-    }
-  }
-
-  private class InitTail extends Init {
-
-    private Tail tail;
-
-    /** Default constructor. */
-    private InitTail(Tail tail) {
-      this.tail = tail;
-    }
-
-    /** Find the list of Defns that this Defn depends on. */
-    public Defns dependencies() {
-      return tail.dependencies(null);
-    }
-
-    void dump(PrintWriter out) {
-      tail.displayln(out);
-    }
-
-    void checkAreaInit(Position pos, Type areaType) throws Failure {
-      tail.inferType(pos).unify(pos, Type.tuple(DataName.unit.asType()));
-    }
-
-    Type inferType(long alignment, Type areaType) {
-      return DataName.word.asType();
-    }
-
-    /** Apply inlining. */
-    public void inlining() {
-      tail = tail.inlineTail();
-    }
-
-    /** Rewrite this program to remove unused arguments in block calls. */
-    void removeUnusedArgs() {
-      tail = tail.removeUnusedArgs();
-    }
-
-    public void flow() {
-      tail = tail.rewriteTail(null);
-      tail.liveness(null);
-    }
-
-    void eliminateDuplicates() {
-      tail.eliminateDuplicates();
-    }
-
-    void collect() {
-      tail.collect();
-    }
-
-    void collect(TypeSet set) {
-      tail.collect(set);
-    }
-
-    /** Apply constructor function simplifications to this program. */
-    void cfunSimplify() {
-      tail = tail.removeNewtypeCfun();
-    }
-
-    void bitdataRewrite(BitdataMap m) {
-      tail = tail.bitdataRewrite(m);
-    }
-
-    Area.InitTail repTransform(RepTypeSet set, Area area) {
-      return this;
-    }
-  }
+  private Atom init;
 
   /**
    * Return references to all components of this top level definition in an array of
@@ -215,7 +66,7 @@ public class Area extends TopDefn {
 
   /** Find the list of Defns that this Defn depends on. */
   public Defns dependencies() {
-    return init.dependencies();
+    return (init == null) ? null : init.dependencies(null);
   }
 
   String dotAttrs() {
@@ -230,8 +81,11 @@ public class Area extends TopDefn {
       out.println(id + " :: " + declared);
     }
 
-    out.print(id + " <- area " + alignment + " " + areaType.toString(TypeWriter.ALWAYS) + ", ");
-    init.dump(out);
+    out.print(id + " <- area " + alignment + " " + areaType.toString(TypeWriter.ALWAYS));
+    if (init != null) {
+      out.print(" " + init);
+    }
+    out.println();
   }
 
   /** Return a type for an instantiated version of this item when used as Atom (input operand). */
@@ -252,7 +106,9 @@ public class Area extends TopDefn {
    * if the given handler is not null.
    */
   void checkBody(Handler handler) throws Failure {
-    init.checkAreaInit(pos, areaType);
+    if (init != null) {
+      init.instantiate().unify(pos, Type.init(areaType));
+    }
   }
 
   /** Type check the body of this definition, throwing an exception if there is an error. */
@@ -280,7 +136,7 @@ public class Area extends TopDefn {
     }
 
     // Validate declared type:
-    Type inferred = init.inferType(alignment, areaType);
+    Type inferred = (init == null) ? DataName.word.asType() : Type.aref(alignment, areaType);
     if (declared != null && !declared.alphaEquiv(inferred)) {
       throw new Failure(
           pos,
@@ -306,7 +162,7 @@ public class Area extends TopDefn {
 
   /** Apply inlining. */
   public void inlining() {
-    init.inlining();
+    /* Nothing to do here */
   }
 
   /**
@@ -319,11 +175,11 @@ public class Area extends TopDefn {
 
   /** Rewrite this program to remove unused arguments in block calls. */
   void removeUnusedArgs() {
-    init.removeUnusedArgs();
+    /* Nothing to do here */
   }
 
   public void flow() {
-    init.flow();
+    /* Nothing to do here */
   }
 
   /**
@@ -336,11 +192,11 @@ public class Area extends TopDefn {
   }
 
   void eliminateDuplicates() {
-    init.eliminateDuplicates();
+    /* Nothing to do here */
   }
 
   void collect() {
-    init.collect();
+    /* Nothing to do here */
   }
 
   void collect(TypeSet set) {
@@ -348,12 +204,14 @@ public class Area extends TopDefn {
     if (declared != null) {
       declared = declared.canonScheme(set);
     }
-    init.collect(set);
+    if (init != null) {
+      init.collect(set);
+    }
   }
 
   /** Apply constructor function simplifications to this program. */
   void cfunSimplify() {
-    init.cfunSimplify();
+    /* Nothing to do here */
   }
 
   void printlnSig(PrintWriter out) {
@@ -376,7 +234,7 @@ public class Area extends TopDefn {
   }
 
   void bitdataRewrite(BitdataMap m) {
-    init.bitdataRewrite(m);
+    /* Nothing to do here */
   }
 
   void topLevelrepTransform(Handler handler, RepTypeSet set) {
@@ -387,7 +245,11 @@ public class Area extends TopDefn {
   void repTransform(Handler handler, RepTypeSet set) {
     areaType = areaType.canonType(set);
     declared = declared.canonScheme(set);
-    init = init.repTransform(set, this);
+    if (init != null) {
+      set.addInitializer(new Enter(init.repArg(set, null)[0], new TopArea(this)));
+      init = null; // Clear away initializer
+      declared = null; // Reset "declared" type due to change in representation
+    }
   }
 
   public void setDeclared(Handler handler, Position pos, Scheme scheme) {
@@ -398,7 +260,7 @@ public class Area extends TopDefn {
   }
 
   public void inScopeOf(Handler handler, MILEnv milenv, AtomExp init) throws Failure {
-    this.init = new InitAtom(init.inScopeOf(handler, milenv, null));
+    this.init = init.inScopeOf(handler, milenv, null);
   }
 
   /** Add this exported definition to the specified MIL environment. */
@@ -406,9 +268,8 @@ public class Area extends TopDefn {
     exports.addTop(id, new TopArea(this));
   }
 
-  public void initWith(Atom a) {
-    init = new InitAtom(a);
-    declared = null;
+  public void setInit(Atom init) {
+    this.init = init;
   }
 
   /**

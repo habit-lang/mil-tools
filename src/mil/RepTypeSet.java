@@ -24,6 +24,13 @@ import java.util.HashMap;
 
 public class RepTypeSet extends TypeSet {
 
+  private MILProgram prog;
+
+  /** Default constructor. */
+  public RepTypeSet(MILProgram prog) {
+    this.prog = prog;
+  }
+
   /**
    * Return a canonical version of a type with a given head, h, and the specified number of
    * (canonical) arguments on the TypeSet stack. Overrides implementation in TypeSet, but defaults
@@ -117,5 +124,9 @@ public class RepTypeSet extends TypeSet {
       }
       return as;
     }
+  }
+
+  public void addInitializer(Tail tail) {
+    prog.addInitializer(tail);
   }
 }

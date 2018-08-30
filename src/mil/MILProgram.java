@@ -464,7 +464,7 @@ public class MILProgram {
   }
 
   public RepTypeSet repTransform(Handler handler) throws Failure {
-    RepTypeSet set = new RepTypeSet();
+    RepTypeSet set = new RepTypeSet(this);
     collect(set);
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       // Rewrite the left hand side of any top level definitions in this SCC:
