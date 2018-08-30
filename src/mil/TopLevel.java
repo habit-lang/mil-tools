@@ -321,9 +321,9 @@ public class TopLevel extends TopDefn {
   }
 
   /**
-   * Compute a summary for this definition (if it is a block or top-level) and then look for a
-   * previously encountered item with the same code in the given table. Return true if a duplicate
-   * was found.
+   * Compute a summary for this definition (if it is a block, top-level, or closure) and then look
+   * for a previously encountered item with the same code in the given table. Return true if a
+   * duplicate was found.
    */
   boolean summarizeDefns(Blocks[] blocks, TopLevels[] topLevels, ClosureDefns[] closures) {
     findIn(topLevels);

@@ -44,8 +44,8 @@ public class AreaVar extends Name {
     } else {
       area =
           new Area(
-              pos, id, alignment, areaType,
-              null); // Create new area with an initializer to be filled in later ...
+              pos, id, alignment,
+              areaType); // Create new area with an initializer to be filled in later ...
       area.setDeclared(handler, pos, refType);
       milenv.addTop(id, new TopArea(refType, area)); // ... and add it to the MIL environment
     }
@@ -81,6 +81,6 @@ public class AreaVar extends Name {
             ipos,
             new TopLhs(),
             init.compTail(null, MILProgram.abort, TailCont.done).forceTail(ipos));
-    area.setInit(new TopDef(initType, tl, 0));
+    area.initWith(new TopDef(initType, tl, 0));
   }
 }

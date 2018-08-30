@@ -55,7 +55,7 @@ class AreaDefnExp extends DefnExp {
     if (at == null) {
       throw new Failure(pos, "Definition for area " + id + " specifies a polymorphic type");
     }
-    a = new Area(pos, id, alignment, at, null);
+    a = new Area(pos, id, alignment, at);
     if (milenv.addTop(id, new TopArea(a)) != null) {
       MILEnv.multipleDefns(pos, "top level/area symbol", id);
     }
