@@ -518,4 +518,30 @@ public abstract class Tail {
    */
   abstract llvm.Code toLLVMContBind(
       LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Local lhs, llvm.Code c);
+
+  /**
+   * Worker function for generateRevInitCode, called when we have established that this tail
+   * expression, for the given TopLevel, should be executed during program initialization.
+   */
+  llvm.Code revInitTail(LLVMMap lm, InitVarMap ivm, TopLevel tl, TopLhs[] lhs, llvm.Code code) {
+    // This is the general case for any form of Tail other than a Return.
+    Temp[] vs = new Temp[lhs.length];
+    for (int i = 0; i < lhs.length; i++) {
+      vs[i] = lhs[i].makeTemp();
+    }
+    Temp[] nuvs = Temp.nonUnits(vs);
+    if (nuvs.length == 0) {
+      code = llvm.Code.reverseOnto(this.toLLVMContVoid(lm, ivm, null, false, null), code);
+    } else {
+      code = llvm.Code.reverseOnto(this.toLLVMCont(lm, ivm, null, nuvs, false, null), code);
+      for (int i = 0; i < lhs.length; i++) {
+        if (lhs[i].nonUnit() && tl.staticValue(i) == null) {
+          llvm.Local var = ivm.lookup(lm, vs[i]);
+          ivm.mapGlobal(tl, i, var);
+          code = new llvm.Store(var, new llvm.Global(var.getType().ptr(), lhs[i].getId()), code);
+        }
+      }
+    }
+    return code;
+  }
 }

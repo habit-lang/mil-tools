@@ -554,40 +554,15 @@ public class TopLevel extends TopDefn {
    * statically known).
    */
   llvm.Code addRevInitCode(LLVMMap lm, InitVarMap ivm, llvm.Code code) {
-    if (staticValue == null || staticValue.length == 0) {
-      return this.revInitCode(lm, ivm, code); // no static values
+    if (staticValue == null) {
+      return tail.revInitTail(lm, ivm, this, lhs, code); // no static values
     } else {
       for (int i = 0; i < staticValue.length; i++) {
         if (staticValue[i] == null) {
-          return this.revInitCode(lm, ivm, code); // some static values
+          return tail.revInitTail(lm, ivm, this, lhs, code); // some static values
         }
       }
       return code; // all components have static values, no new code required
     }
-  }
-
-  /**
-   * Worker function for generateRevInitCode, called when we have established that the tail
-   * expression for this TopLevel should be executed during program initialization.
-   */
-  private llvm.Code revInitCode(LLVMMap lm, InitVarMap ivm, llvm.Code code) {
-    Temp[] vs = new Temp[lhs.length];
-    for (int i = 0; i < lhs.length; i++) {
-      vs[i] = lhs[i].makeTemp();
-    }
-    Temp[] nuvs = Temp.nonUnits(vs);
-    if (nuvs.length == 0) {
-      code = llvm.Code.reverseOnto(tail.toLLVMContVoid(lm, ivm, null, false, null), code);
-    } else {
-      code = llvm.Code.reverseOnto(tail.toLLVMCont(lm, ivm, null, nuvs, false, null), code);
-      for (int i = 0; i < lhs.length; i++) {
-        if (lhs[i].nonUnit() && (staticValue == null || staticValue[i] == null)) {
-          llvm.Local var = ivm.lookup(lm, vs[i]);
-          ivm.mapGlobal(this, i, var);
-          code = new llvm.Store(var, new llvm.Global(var.getType().ptr(), lhs[i].getId()), code);
-        }
-      }
-    }
-    return code;
   }
 }

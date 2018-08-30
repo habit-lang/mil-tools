@@ -244,4 +244,23 @@ public class Return extends Call {
     debug.Internal.error("Return should have been eliminated");
     return c;
   }
+
+  /**
+   * Worker function for generateRevInitCode, called when we have established that this tail
+   * expression, for the given TopLevel, should be executed during program initialization.
+   */
+  llvm.Code revInitTail(LLVMMap lm, InitVarMap ivm, TopLevel tl, TopLhs[] lhs, llvm.Code code) {
+    // This is a special case for TopLevels that have a return expression for their tail
+    // (essentially copying another
+    // value that is defined at the top-level); we cannot use toLLVMContVoid() or toLLVMCont() in
+    // this case.
+    for (int i = 0; i < lhs.length; i++) {
+      if (lhs[i].nonUnit() && tl.staticValue(i) == null) {
+        llvm.Value val = args[i].toLLVMAtom(lm, ivm);
+        ivm.mapGlobal(tl, i, val);
+        code = new llvm.Store(val, new llvm.Global(val.getType().ptr(), lhs[i].getId()), code);
+      }
+    }
+    return code;
+  }
 }

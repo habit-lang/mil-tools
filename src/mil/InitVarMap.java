@@ -37,12 +37,12 @@ class InitVarMap extends VarMap {
 
     int i;
 
-    llvm.Local v;
+    llvm.Value v;
 
     GlobalInitList next;
 
     /** Default constructor. */
-    private GlobalInitList(TopLevel topLevel, int i, llvm.Local v, GlobalInitList next) {
+    private GlobalInitList(TopLevel topLevel, int i, llvm.Value v, GlobalInitList next) {
       this.topLevel = topLevel;
       this.i = i;
       this.v = v;
@@ -72,10 +72,10 @@ class InitVarMap extends VarMap {
   }
 
   /**
-   * Add an item to the GlobalInitList, indicating that the specified Top has been initialized and
-   * that its value can be accessed from the specified Local.
+   * Add an item to the GlobalInitList, indicating that the specified Top has been initialized to
+   * the specified value.
    */
-  void mapGlobal(TopLevel tl, int i, llvm.Local v) {
+  void mapGlobal(TopLevel tl, int i, llvm.Value v) {
     globalInits = new GlobalInitList(tl, i, v, globalInits);
   }
 }
