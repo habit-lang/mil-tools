@@ -573,9 +573,7 @@ public class TopLevel extends TopDefn {
   llvm.Code initLLVMTopLhs(LLVMMap lm, InitVarMap ivm, Atom[] as, llvm.Code code) {
     for (int i = 0; i < lhs.length; i++) {
       if (lhs[i].nonUnit() && staticValue(i) == null) {
-        llvm.Value val = as[i].toLLVMAtom(lm, ivm);
-        ivm.mapGlobal(this, i, val);
-        code = new llvm.Store(val, new llvm.Global(val.getType().ptr(), lhs[i].getId()), code);
+        code = as[i].initAtom(lm, ivm, new TopDef(this, i), code);
       }
     }
     return code;

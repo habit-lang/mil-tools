@@ -28,23 +28,20 @@ import core.*;
 class InitVarMap extends VarMap {
 
   /**
-   * Represents a list of values to be loaded from global variables at the start of the generated
-   * LLVM initialization function.
+   * Records the mapping from top level definitions to local variables holding those values in the
+   * initialization function.
    */
   private static class GlobalInitList {
 
-    TopLevel topLevel;
-
-    int i;
+    Top top;
 
     llvm.Value v;
 
     GlobalInitList next;
 
     /** Default constructor. */
-    private GlobalInitList(TopLevel topLevel, int i, llvm.Value v, GlobalInitList next) {
-      this.topLevel = topLevel;
-      this.i = i;
+    private GlobalInitList(Top top, llvm.Value v, GlobalInitList next) {
+      this.top = top;
       this.v = v;
       this.next = next;
     }
@@ -57,17 +54,30 @@ class InitVarMap extends VarMap {
    * remaining mappings from a globalInits list that is built up by calls to mapGlobal as initial
    * values are calculated.
    */
-  llvm.Value lookupGlobal(LLVMMap lm, Top t) {
-    llvm.Value sv = t.staticValue();
+  llvm.Value lookupGlobal(LLVMMap lm, Top top) {
+    llvm.Value sv = top.staticValue();
     if (sv != null) {
       return sv;
     }
     for (GlobalInitList gs = globalInits; gs != null; gs = gs.next) {
-      if (t.sameTopDef(gs.topLevel, gs.i)) {
+      if (top.sameAtom(gs.top)) {
         return gs.v;
       }
     }
-    debug.Internal.error("Failed to find initial value for \"" + t + "\"");
+    debug.Internal.error("Failed to find initial value for \"" + top + "\"");
+    return null;
+  }
+
+  /**
+   * Find an LLVM value corresponding to the given External in the GlobalInitList, or return null,
+   * indicating that it will be necessary to use a load to read the external.
+   */
+  llvm.Value lookupExternal(External external) {
+    for (GlobalInitList gs = globalInits; gs != null; gs = gs.next) {
+      if (gs.top.sameTopExt(external)) {
+        return gs.v;
+      }
+    }
     return null;
   }
 
@@ -75,7 +85,7 @@ class InitVarMap extends VarMap {
    * Add an item to the GlobalInitList, indicating that the specified Top has been initialized to
    * the specified value.
    */
-  void mapGlobal(TopLevel tl, int i, llvm.Value v) {
-    globalInits = new GlobalInitList(tl, i, v, globalInits);
+  void mapGlobal(Top top, llvm.Value v) {
+    globalInits = new GlobalInitList(top, v, globalInits);
   }
 }

@@ -89,4 +89,22 @@ public class TopExt extends Top {
   Defn getDefn() {
     return external;
   }
+
+  /**
+   * Generate code to initialize the specified Top value from this atom, inserting a load if the
+   * atom is a TopExt whose value has not been read earlier in the initialization function.
+   */
+  llvm.Code initAtom(LLVMMap lm, InitVarMap ivm, TopDef top, llvm.Code code) {
+    llvm.Value val =
+        ivm.lookupExternal(external); // Has the value of this external already been loaded?
+    if (val == null) { // If not, then:
+      llvm.Type gt = lm.toLLVM(getType()); // - find the type of this value
+      llvm.Global g = new llvm.Global(gt.ptr(), getId()); // - find the global where it is stored
+      llvm.Local l = ivm.reg(gt); // - find a local to hold the value
+      code = new llvm.Op(l, new llvm.Load(g), code); // - load the value
+      ivm.mapGlobal(this, val = l); // - record the load in the var map
+    }
+    ivm.mapGlobal(top, val); // Record the value assigned to this top
+    return new llvm.Store(val, new llvm.Global(val.getType().ptr(), top.getId()), code);
+  }
 }
