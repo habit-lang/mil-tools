@@ -254,13 +254,6 @@ public class Return extends Call {
     // (essentially copying another
     // value that is defined at the top-level); we cannot use toLLVMContVoid() or toLLVMCont() in
     // this case.
-    for (int i = 0; i < lhs.length; i++) {
-      if (lhs[i].nonUnit() && tl.staticValue(i) == null) {
-        llvm.Value val = args[i].toLLVMAtom(lm, ivm);
-        ivm.mapGlobal(tl, i, val);
-        code = new llvm.Store(val, new llvm.Global(val.getType().ptr(), lhs[i].getId()), code);
-      }
-    }
-    return code;
+    return tl.initLLVMTopLhs(lm, ivm, args, code);
   }
 }

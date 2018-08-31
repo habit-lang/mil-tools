@@ -531,17 +531,10 @@ public abstract class Tail {
     }
     Temp[] nuvs = Temp.nonUnits(vs);
     if (nuvs.length == 0) {
-      code = llvm.Code.reverseOnto(this.toLLVMContVoid(lm, ivm, null, false, null), code);
+      return llvm.Code.reverseOnto(this.toLLVMContVoid(lm, ivm, null, false, null), code);
     } else {
       code = llvm.Code.reverseOnto(this.toLLVMCont(lm, ivm, null, nuvs, false, null), code);
-      for (int i = 0; i < lhs.length; i++) {
-        if (lhs[i].nonUnit() && tl.staticValue(i) == null) {
-          llvm.Local var = ivm.lookup(lm, vs[i]);
-          ivm.mapGlobal(tl, i, var);
-          code = new llvm.Store(var, new llvm.Global(var.getType().ptr(), lhs[i].getId()), code);
-        }
-      }
+      return tl.initLLVMTopLhs(lm, ivm, vs, code);
     }
-    return code;
   }
 }

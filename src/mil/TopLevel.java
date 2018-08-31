@@ -565,4 +565,19 @@ public class TopLevel extends TopDefn {
       return code; // all components have static values, no new code required
     }
   }
+
+  /**
+   * Use the values in the given list of atoms to initialize the (non static) left hand sides of
+   * this TopLevel.
+   */
+  llvm.Code initLLVMTopLhs(LLVMMap lm, InitVarMap ivm, Atom[] as, llvm.Code code) {
+    for (int i = 0; i < lhs.length; i++) {
+      if (lhs[i].nonUnit() && staticValue(i) == null) {
+        llvm.Value val = as[i].toLLVMAtom(lm, ivm);
+        ivm.mapGlobal(this, i, val);
+        code = new llvm.Store(val, new llvm.Global(val.getType().ptr(), lhs[i].getId()), code);
+      }
+    }
+    return code;
+  }
 }
