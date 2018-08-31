@@ -94,4 +94,8 @@ public class TopArea extends Top {
   public void setDeclared(Handler handler, Position pos, Scheme scheme) {
     area.setDeclared(handler, pos, scheme);
   }
+
+  public llvm.Value staticValue() {
+    return area.staticValue();
+  }
 }

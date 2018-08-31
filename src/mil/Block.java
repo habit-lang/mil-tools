@@ -1168,4 +1168,8 @@ public class Block extends Defn {
   Temp[] getParams() {
     return params;
   }
+
+  llvm.Code initCode(LLVMMap lm, InitVarMap ivm) {
+    return code.toLLVMCode(lm, ivm, null, Label.noLabels);
+  }
 }

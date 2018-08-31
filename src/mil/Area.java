@@ -24,6 +24,7 @@ import compiler.Handler;
 import compiler.Position;
 import core.*;
 import java.io.PrintWriter;
+import java.math.BigInteger;
 
 public class Area extends TopDefn {
 
@@ -279,6 +280,26 @@ public class Area extends TopDefn {
    */
   Temp[] addArgs() throws Failure {
     return null;
+  }
+
+  private llvm.Value staticValue;
+
+  public llvm.Value staticValue() {
+    return staticValue;
+  }
+
+  /** Calculate a staticValue (which could be null) for each top level definition. */
+  void calcStaticValues(LLVMMap lm, llvm.Program prog) {
+    BigInteger bigsize = size.getNat();
+    if (bigsize == null || bigsize.signum() < 0) { // TODO: add upper bound test
+      debug.Internal.error("Unable to determine size of area " + id);
+    }
+    llvm.ArrayType at = new llvm.ArrayType(bigsize.longValue(), llvm.Type.i8);
+    String rawName = prog.freshName("raw");
+    llvm.Global rawGlobal = new llvm.Global(at.ptr(), rawName);
+    prog.add(new llvm.GlobalVarDefn(false, rawName, at.defaultValue(), alignment));
+    prog.add(new llvm.Alias(!isEntrypoint, id, new llvm.BitcastVal(rawGlobal, llvm.Type.i8.ptr())));
+    staticValue = new llvm.PtrToIntVal(new llvm.Global(llvm.Type.i8.ptr(), id), llvm.Type.i32);
   }
 
   /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */

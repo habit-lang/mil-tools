@@ -618,10 +618,14 @@ public class MILProgram {
               llvm.FuncDefn.mainFunctionName,
               new llvm.Local[0],
               new String[] {"entry"},
-              new llvm.Code[] {llvm.Code.reverseOnto(code, new llvm.RetVoid())}));
+              new llvm.Code[] {llvm.Code.reverseOnto(code, initCode(lm, ivm))}));
     } else if (code != null) {
       throw new Failure(
           "LLVM program requires initialization function (set using --llvm-main=NAME)");
     }
+  }
+
+  llvm.Code initCode(LLVMMap lm, InitVarMap ivm) {
+    return (initialize == null) ? new llvm.RetVoid() : initialize.initCode(lm, ivm);
   }
 }
