@@ -18,37 +18,16 @@
 */
 package llvm;
 
-import java.io.PrintWriter;
 
-/** Represents an LLVM alias definition. */
-public class Alias extends Defn {
-
-  /** Internal flag (true=>access only in this module). */
-  private boolean internal;
-
-  /** The name of the new item. */
-  private String name;
-
-  /** The value being aliased. */
-  private Value val;
+/** Pointer to integer casts. */
+public class PtrToIntVal extends CastVal {
 
   /** Default constructor. */
-  public Alias(boolean internal, String name, Value val) {
-    this.internal = internal;
-    this.name = name;
-    this.val = val;
+  public PtrToIntVal(Value val, Type ty) {
+    super(val, ty);
   }
 
-  void print(PrintWriter out) {
-    out.println(
-        "@"
-            + name
-            + " = "
-            + (internal ? "internal " : "")
-            + "alias "
-            + val.getType().ptsTo()
-            + ", "
-            + val);
-    out.println();
+  String castString() {
+    return "ptrtoint";
   }
 }

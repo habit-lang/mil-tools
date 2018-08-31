@@ -18,37 +18,31 @@
 */
 package llvm;
 
-import java.io.PrintWriter;
 
-/** Represents an LLVM alias definition. */
-public class Alias extends Defn {
+/** Represents an array type. */
+public class ArrayType extends Type {
 
-  /** Internal flag (true=>access only in this module). */
-  private boolean internal;
+  /** The number of elements in the array. */
+  private long size;
 
-  /** The name of the new item. */
-  private String name;
-
-  /** The value being aliased. */
-  private Value val;
+  /** The type of elements in the array. */
+  private Type elemType;
 
   /** Default constructor. */
-  public Alias(boolean internal, String name, Value val) {
-    this.internal = internal;
-    this.name = name;
-    this.val = val;
+  public ArrayType(long size, Type elemType) {
+    this.size = size;
+    this.elemType = elemType;
   }
 
-  void print(PrintWriter out) {
-    out.println(
-        "@"
-            + name
-            + " = "
-            + (internal ? "internal " : "")
-            + "alias "
-            + val.getType().ptsTo()
-            + ", "
-            + val);
-    out.println();
+  /** Append the name of this type to the specified buffer. */
+  public void append(StringBuilder buf) {
+    buf.append("[" + size + " x ");
+    elemType.append(buf);
+    buf.append("]");
+  }
+
+  /** Calculate a default value of this type, suitable for use as an initial value. */
+  public Value defaultValue() {
+    return new ZeroInitializer(this);
   }
 }

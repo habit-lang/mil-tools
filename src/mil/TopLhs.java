@@ -227,7 +227,7 @@ public class TopLhs {
    * initialized to the specified value.
    */
   llvm.GlobalVarDefn globalVarDefn(LLVMMap lm, boolean internal, llvm.Value val) {
-    return new llvm.GlobalVarDefn(internal, id, val);
+    return new llvm.GlobalVarDefn(internal, id, val, 0);
   }
 
   /**

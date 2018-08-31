@@ -19,32 +19,15 @@
 package llvm;
 
 
-/** Represents an LLVM value that is bitcast to a different type. */
-public class BitcastVal extends Value {
-
-  /** The original value. */
-  private Value val;
-
-  /** The type that it is cast to. */
-  private Type ty;
+/** Bitcast operators. */
+public class BitcastVal extends CastVal {
 
   /** Default constructor. */
   public BitcastVal(Value val, Type ty) {
-    this.val = val;
-    this.ty = ty;
+    super(val, ty);
   }
 
-  /** Return the LLVM type of this value. */
-  public Type getType() {
-    return ty;
-  }
-
-  /** Append the name for this value to the specified buffer. */
-  public void appendName(StringBuilder buf) {
-    buf.append("bitcast(");
-    val.append(buf);
-    buf.append(" to ");
-    ty.append(buf);
-    buf.append(")");
+  String castString() {
+    return "bitcast";
   }
 }

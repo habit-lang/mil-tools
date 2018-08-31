@@ -18,37 +18,39 @@
 */
 package llvm;
 
-import java.io.PrintWriter;
 
-/** Represents an LLVM alias definition. */
-public class Alias extends Defn {
+/**
+ * Represents LLVM values that are cast to a different type. TODO: can we avoid overlap with the
+ * CastOp class and subclasses?
+ */
+public abstract class CastVal extends Value {
 
-  /** Internal flag (true=>access only in this module). */
-  private boolean internal;
+  /** The original value. */
+  protected Value val;
 
-  /** The name of the new item. */
-  private String name;
-
-  /** The value being aliased. */
-  private Value val;
+  /** The type that it is cast to. */
+  protected Type ty;
 
   /** Default constructor. */
-  public Alias(boolean internal, String name, Value val) {
-    this.internal = internal;
-    this.name = name;
+  public CastVal(Value val, Type ty) {
     this.val = val;
+    this.ty = ty;
   }
 
-  void print(PrintWriter out) {
-    out.println(
-        "@"
-            + name
-            + " = "
-            + (internal ? "internal " : "")
-            + "alias "
-            + val.getType().ptsTo()
-            + ", "
-            + val);
-    out.println();
+  /** Return the LLVM type of this value. */
+  public Type getType() {
+    return ty;
   }
+
+  /** Append the name for this value to the specified buffer. */
+  public void appendName(StringBuilder buf) {
+    buf.append(castString());
+    buf.append("(");
+    val.append(buf);
+    buf.append(" to ");
+    ty.append(buf);
+    buf.append(")");
+  }
+
+  abstract String castString();
 }

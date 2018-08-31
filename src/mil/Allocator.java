@@ -124,7 +124,7 @@ public abstract class Allocator extends Call {
 
     // Create an alias that casts the specific constructor to the general type for this object:
     String valueName = prog.freshName("val");
-    prog.add(new llvm.Alias(valueName, new llvm.BitcastVal(layoutGlobal, genPtrType)));
+    prog.add(new llvm.Alias(false, valueName, new llvm.BitcastVal(layoutGlobal, genPtrType)));
     return new llvm.Global(genPtrType, valueName);
   }
 

@@ -32,15 +32,23 @@ public class GlobalVarDefn extends Defn {
   /** The initial value. */
   private Value initial;
 
+  /** Alignment (or zero to omit). */
+  private long alignment;
+
   /** Default constructor. */
-  public GlobalVarDefn(boolean internal, String name, Value initial) {
+  public GlobalVarDefn(boolean internal, String name, Value initial, long alignment) {
     this.internal = internal;
     this.name = name;
     this.initial = initial;
+    this.alignment = alignment;
   }
 
   void print(PrintWriter out) {
-    out.println("@" + name + " = " + (internal ? "internal " : "") + "global " + initial);
+    out.print("@" + name + " = " + (internal ? "internal " : "") + "global " + initial);
+    if (alignment != 0) {
+      out.print(", align " + alignment);
+    }
+    out.println();
     out.println();
   }
 }
