@@ -49,7 +49,7 @@ class LCC {
         }
 
         // Load the source code:
-        MILProgram mil = loader.load(handler);
+        MILProgram mil = loader.load(handler, "");
 
         // Run the MIL type checker as an initial dependency analysis and sanity check:
         mil.typeChecking(handler);

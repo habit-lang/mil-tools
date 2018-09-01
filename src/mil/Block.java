@@ -84,10 +84,6 @@ public class Block extends Defn {
     return id;
   }
 
-  public void addInitializer(Tail tail) {
-    code = new Bind(new Temp(), tail, code);
-  }
-
   /** Find the list of Defns that this Defn depends on. */
   public Defns dependencies() {
     return code.dependencies(null);
@@ -100,7 +96,7 @@ public class Block extends Defn {
   void displayDefn(PrintWriter out, boolean isEntrypoint) {
     if (declared != null) {
       if (isEntrypoint) {
-        out.print("export ");
+        out.print("entrypoint ");
       }
       out.println(id + " :: " + declared);
     }
@@ -1007,6 +1003,10 @@ public class Block extends Defn {
     declared = declared.canonBlockType(set);
   }
 
+  Tail makeTail() throws Failure {
+    return (params.length == 0) ? new BlockCall(this, Atom.noAtoms) : super.makeTail();
+  }
+
   public static Block returnTrue = atomBlock("returnTrue", Flag.True);
 
   public static Block returnFalse = atomBlock("returnFalse", Flag.False);
@@ -1081,6 +1081,15 @@ public class Block extends Defn {
   /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
   void countCalls() {
     code.countCalls();
+  }
+
+  /**
+   * Count the number of calls to blocks, both regular and tail calls, in this abstract syntax
+   * fragment. This is suitable for counting the calls in the main function; unlike countCalls, it
+   * does not skip tail calls at the end of a code sequence.
+   */
+  void countAllCalls() {
+    code.countAllCalls();
   }
 
   /**
@@ -1169,7 +1178,18 @@ public class Block extends Defn {
     return params;
   }
 
-  llvm.Code initCode(LLVMMap lm, InitVarMap ivm) {
-    return code.toLLVMCode(lm, ivm, null, Label.noLabels);
+  /**
+   * Calculate the LLVM return type that will be produced by the code in the main Block of a
+   * program, if one has been specified.
+   */
+  llvm.Type initType(LLVMMap lm) throws Failure {
+    return retType(lm);
+  }
+
+  /** Generate an LLVM code sequence from the main Block in a program, if one has been specified. */
+  llvm.Code initCode(LLVMMap lm, InitVarMap ivm) throws Failure {
+    return (params.length != 0)
+        ? super.initCode(lm, ivm)
+        : code.toLLVMCode(lm, ivm, null, Label.noLabels);
   }
 }

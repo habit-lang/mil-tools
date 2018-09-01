@@ -77,7 +77,7 @@ public class Area extends TopDefn {
   void displayDefn(PrintWriter out, boolean isEntrypoint) {
     if (declared != null) {
       if (isEntrypoint) {
-        out.print("export ");
+        out.print("entrypoint ");
       }
       out.println(id + " :: " + declared);
     }
@@ -304,6 +304,15 @@ public class Area extends TopDefn {
 
   /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
   void countCalls() {
+    /* Nothing to do here */
+  }
+
+  /**
+   * Count the number of calls to blocks, both regular and tail calls, in this abstract syntax
+   * fragment. This is suitable for counting the calls in the main function; unlike countCalls, it
+   * does not skip tail calls at the end of a code sequence.
+   */
+  void countAllCalls() {
     /* Nothing to do here */
   }
 }

@@ -62,7 +62,7 @@ public class TopLhs {
   void displayDefn(PrintWriter out, boolean isEntrypoint) {
     if (declared != null) {
       if (isEntrypoint) {
-        out.print("export ");
+        out.print("entrypoint ");
       }
       out.println(id + " :: " + declared);
     }
@@ -181,7 +181,7 @@ public class TopLhs {
   Defn makeEntryBlock(Position pos, TopLevel tl) {
     Block b = declared.liftToBlock0(pos, id, tl);
     if (b != null) {
-      b.setIsEntrypoint(true); // Mark the new block as an entrypoint ...
+      b.setIsEntrypoint(tl.isEntrypoint()); // Use the same entrypoint flag as the original ...
       id = id + "_impl"; // ... rename the original entrypoint ...
       tl.setIsEntrypoint(false); // ... and clear the flag for the original entrypoint.
       return b;

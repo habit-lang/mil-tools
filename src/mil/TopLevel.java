@@ -472,6 +472,10 @@ public class TopLevel extends TopDefn {
     }
   }
 
+  Tail makeTail() throws Failure {
+    return (lhs.length == 1) ? new Return(new TopDef(this, 0)) : super.makeTail();
+  }
+
   public void setDeclared(Handler handler, Position pos, int i, Scheme scheme) {
     lhs[i].setDeclared(handler, pos, scheme);
   }
@@ -547,6 +551,15 @@ public class TopLevel extends TopDefn {
   /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
   void countCalls() {
     tail.countCalls();
+  }
+
+  /**
+   * Count the number of calls to blocks, both regular and tail calls, in this abstract syntax
+   * fragment. This is suitable for counting the calls in the main function; unlike countCalls, it
+   * does not skip tail calls at the end of a code sequence.
+   */
+  void countAllCalls() {
+    tail.countAllCalls();
   }
 
   /**

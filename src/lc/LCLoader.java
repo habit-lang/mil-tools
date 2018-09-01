@@ -97,7 +97,7 @@ public class LCLoader {
    * Load all of the files that have been requested from this loader, including any transitive
    * dependencies.
    */
-  public MILProgram load(Handler handler) throws Failure {
+  public MILProgram load(Handler handler, String mainName) throws Failure {
     // Load all of the required LCProgram objects:
     LCProgramSCCs sccs = LCPrograms.scc(syntaxAnalysis(handler));
     // ! LCProgramSCCs.display("LCPrograms", sccs);
@@ -127,8 +127,16 @@ public class LCLoader {
         ast.compile(mil, milenv);
       }
     }
-    if (mil.isEmpty()) {
-      handler.report(new Failure("No entrypoints have been specified for this program"));
+    if (!mainName.equals("")) {
+      Top main = milenv.findTop(mainName);
+      if (main == null) {
+        handler.report(new Failure("Program does not contain a definition for " + mainName));
+      } else {
+        mil.setMain(main.getDefn());
+      }
+    } else if (mil.isEmpty()) {
+      handler.report(
+          new Failure("No entrypoints or main function have been specified for this program"));
     }
     mil.addArgs(); // Add arguments to blocks and closures
     handler.abortOnFailures();

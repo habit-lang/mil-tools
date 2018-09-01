@@ -479,6 +479,10 @@ public abstract class Defn {
   /** Rewrite the components of this definition to account for changes in representation. */
   abstract void repTransform(Handler handler, RepTypeSet set);
 
+  Tail makeTail() throws Failure {
+    throw new Failure("Unable to use \"" + this + "\" as a main function");
+  }
+
   /** Add this exported definition to the specified MIL environment. */
   abstract void addExport(MILEnv exports);
 
@@ -522,6 +526,13 @@ public abstract class Defn {
   abstract void countCalls();
 
   /**
+   * Count the number of calls to blocks, both regular and tail calls, in this abstract syntax
+   * fragment. This is suitable for counting the calls in the main function; unlike countCalls, it
+   * does not skip tail calls at the end of a code sequence.
+   */
+  abstract void countAllCalls();
+
+  /**
    * Identify the set of blocks that should be included in the function that is generated for this
    * definition. A block call in the tail for a TopLevel is considered a regular call (it will
    * likely be called from the initialization code), but a block call in the tail for a ClosureDefn
@@ -534,6 +545,20 @@ public abstract class Defn {
 
   CFG makeCFG() {
     return null;
+  }
+
+  /**
+   * Calculate the LLVM return type that will be produced by the code in the main Block of a
+   * program, if one has been specified.
+   */
+  llvm.Type initType(LLVMMap lm) throws Failure {
+    return llvm.Type.vd;
+  }
+
+  /** Generate an LLVM code sequence from the main Block in a program, if one has been specified. */
+  llvm.Code initCode(LLVMMap lm, InitVarMap ivm) throws Failure {
+    throw new Failure(
+        "Cannot use \"" + this + "\" as a main function (requires zero parameter block)");
   }
 
   /**

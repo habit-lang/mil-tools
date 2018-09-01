@@ -43,6 +43,8 @@ public abstract class Top extends Atom {
 
   public abstract String getId();
 
+  public abstract Defn getDefn();
+
   boolean isStatic() {
     return true;
   }
@@ -77,8 +79,6 @@ public abstract class Top extends Atom {
       new TopDef(
           new TopLevel(BuiltinPosition.position, new TopLhs(), new DataAlloc(Cfun.Unit).withArgs()),
           0);
-
-  abstract Defn getDefn();
 
   public void setDeclared(Handler handler, Position pos, Scheme scheme) {
     handler.report(

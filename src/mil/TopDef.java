@@ -66,6 +66,10 @@ public class TopDef extends Top {
     return this.topLevel == topLevel && this.i == i;
   }
 
+  public Defn getDefn() {
+    return topLevel;
+  }
+
   /** Find the dependencies of this AST fragment. */
   public Defns dependencies(Defns ds) {
     return topLevel.dependencies(ds);
@@ -127,10 +131,6 @@ public class TopDef extends Top {
 
   Atom[] repArg(RepTypeSet set, RepEnv env) {
     return set.topDef(topLevel, i);
-  }
-
-  Defn getDefn() {
-    return topLevel;
   }
 
   public void setDeclared(Handler handler, Position pos, Scheme scheme) {

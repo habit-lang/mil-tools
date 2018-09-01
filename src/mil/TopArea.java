@@ -59,6 +59,10 @@ public class TopArea extends Top {
     return this.area == area;
   }
 
+  public Defn getDefn() {
+    return area;
+  }
+
   /** Find the dependencies of this AST fragment. */
   public Defns dependencies(Defns ds) {
     return area.dependencies(ds);
@@ -85,10 +89,6 @@ public class TopArea extends Top {
 
   Atom[] repArg(RepTypeSet set, RepEnv env) {
     return new Atom[] {new TopArea(null, area)};
-  }
-
-  Defn getDefn() {
-    return area;
   }
 
   public void setDeclared(Handler handler, Position pos, Scheme scheme) {

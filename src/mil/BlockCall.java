@@ -422,6 +422,15 @@ public class BlockCall extends Call {
   }
 
   /**
+   * Count the number of calls to blocks, both regular and tail calls, in this abstract syntax
+   * fragment. This is suitable for counting the calls in the main function; unlike countCalls, it
+   * does not skip tail calls at the end of a code sequence.
+   */
+  void countAllCalls() {
+    b.called();
+  }
+
+  /**
    * Search this fragment of MIL code for tail calls, adding new blocks that should be included in
    * the code for a current function to the list bs.
    */
@@ -450,7 +459,11 @@ public class BlockCall extends Call {
 
   /** Generate LLVM code to execute this Tail in tail call position. */
   llvm.Code toLLVMDone(LLVMMap lm, VarMap vm, TempSubst s, Label[] succs) {
-    return new llvm.Goto(succs[0].label());
+    // We allow for a null/empty list of successors to handle the possibility of a BlockCall at the
+    // end of the main function.
+    return (succs == null || succs.length == 0)
+        ? super.toLLVMDone(lm, vm, s, succs)
+        : new llvm.Goto(succs[0].label());
   }
 
   /**

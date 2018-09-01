@@ -19,17 +19,12 @@
 package mil;
 
 import compiler.*;
+import compiler.BuiltinPosition;
+import compiler.Failure;
 import core.*;
 import java.util.HashMap;
 
 public class RepTypeSet extends TypeSet {
-
-  private MILProgram prog;
-
-  /** Default constructor. */
-  public RepTypeSet(MILProgram prog) {
-    this.prog = prog;
-  }
 
   /**
    * Return a canonical version of a type with a given head, h, and the specified number of
@@ -126,7 +121,25 @@ public class RepTypeSet extends TypeSet {
     }
   }
 
-  public void addInitializer(Tail tail) {
-    prog.addInitializer(tail);
+  private Tails initializers = null;
+
+  void addInitializer(Tail tail) {
+    initializers = new Tails(tail, initializers);
+  }
+
+  Defn makeMain(Defn oldMain) throws Failure {
+    String id;
+    if (oldMain == null) {
+      if (initializers == null) {
+        return null;
+      }
+    } else {
+      addInitializer(oldMain.makeTail());
+    }
+    Code code = new Done(initializers.head);
+    while ((initializers = initializers.next) != null) {
+      code = new Bind(new Temp(), initializers.head, code);
+    }
+    return new Block(BuiltinPosition.position, "initialize", Temp.noTemps, code);
   }
 }

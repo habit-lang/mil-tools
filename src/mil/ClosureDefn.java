@@ -94,7 +94,7 @@ public class ClosureDefn extends Defn {
   void displayDefn(PrintWriter out, boolean isEntrypoint) {
     if (declared != null) {
       if (isEntrypoint) {
-        out.print("export ");
+        out.print("entrypoint ");
       }
       out.println(id + " :: " + declared);
     }
@@ -736,6 +736,15 @@ public class ClosureDefn extends Defn {
   /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
   void countCalls() {
     /* no non-tail calls here */
+  }
+
+  /**
+   * Count the number of calls to blocks, both regular and tail calls, in this abstract syntax
+   * fragment. This is suitable for counting the calls in the main function; unlike countCalls, it
+   * does not skip tail calls at the end of a code sequence.
+   */
+  void countAllCalls() {
+    tail.countAllCalls();
   }
 
   /**

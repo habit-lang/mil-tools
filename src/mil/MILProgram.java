@@ -29,6 +29,13 @@ import java.io.PrintWriter;
 /** Provides a representation for MIL programs. */
 public class MILProgram {
 
+  /** The main definition for this program, if specified. */
+  private Defn main = null;
+
+  public void setMain(Defn main) {
+    this.main = main;
+  }
+
   /** Stores a list of the entry points for this program. */
   private Defns entries = null;
 
@@ -43,17 +50,7 @@ public class MILProgram {
 
   /** Report whether this program is empty or not (i.e., whether it has any entrypoints). */
   public boolean isEmpty() {
-    return (entries == null);
-  }
-
-  private Block initialize = null;
-
-  public void addInitializer(Tail tail) {
-    if (initialize == null) {
-      initialize = new Block(BuiltinPosition.position, "initialize", Temp.noTemps, new Done(tail));
-    } else {
-      initialize.addInitializer(tail);
-    }
+    return (main == null) && (entries == null);
   }
 
   /** Record the list of strongly connected components in this program. */
@@ -66,8 +63,8 @@ public class MILProgram {
     for (Defns ds = entries; ds != null; ds = ds.next) {
       defns = ds.head.visitDepends(defns);
     }
-    if (initialize != null) {
-      defns = initialize.visitDepends(defns);
+    if (main != null) {
+      defns = main.visitDepends(defns);
     }
     // ! if (defns==null) {
     // !   System.out.println("No definitions remain");
@@ -414,14 +411,12 @@ public class MILProgram {
     MILSpec spec =
         new MILSpec(); // Used to record information about generated/requested specializations
 
-    // Step 1: Generate specialized versions of each entry point:
+    // Step 1: Generate specialized versions of each entry point, and a specialized main if
+    // necessary:
     for (Defns es = entries; es != null; es = es.next) {
-      try {
-        spec.addEntry(es.head);
-      } catch (Failure f) {
-        handler.report(f);
-      }
+      spec.addEntry(handler, es.head);
     }
+    spec.addMain(handler, main);
     handler.abortOnFailures();
 
     // Step 2: Generate specialized versions of all reachable definitions:
@@ -461,10 +456,13 @@ public class MILProgram {
     for (Defns es = entries; es != null; es = es.next) {
       es.head = es.head.makeEntryBlock();
     }
+    if (main != null) {
+      main = main.makeEntryBlock();
+    }
   }
 
   public RepTypeSet repTransform(Handler handler) throws Failure {
-    RepTypeSet set = new RepTypeSet(this);
+    RepTypeSet set = new RepTypeSet();
     collect(set);
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       // Rewrite the left hand side of any top level definitions in this SCC:
@@ -478,6 +476,7 @@ public class MILProgram {
       }
     }
     makeEntryBlocks();
+    main = set.makeMain(main);
     return set;
   }
 
@@ -541,6 +540,9 @@ public class MILProgram {
     // Mark all blocks that are listed as entry points as being "called"
     for (Defns es = entries; es != null; es = es.next) {
       es.head.called();
+    }
+    if (main != null) {
+      main.countAllCalls();
     }
 
     // Scan the full program to register any additional non-tail calls:
@@ -614,18 +616,27 @@ public class MILProgram {
       prog.add(
           new llvm.FuncDefn(
               false, // make sure this function is externally visible.  TODO: "false" is too generic
-              llvm.Type.vd,
+              initType(lm),
               llvm.FuncDefn.mainFunctionName,
               new llvm.Local[0],
               new String[] {"entry"},
               new llvm.Code[] {llvm.Code.reverseOnto(code, initCode(lm, ivm))}));
-    } else if (code != null) {
+    } else if (code != null || main != null) {
       throw new Failure(
           "LLVM program requires initialization function (set using --llvm-main=NAME)");
     }
   }
 
-  llvm.Code initCode(LLVMMap lm, InitVarMap ivm) {
-    return (initialize == null) ? new llvm.RetVoid() : initialize.initCode(lm, ivm);
+  /**
+   * Calculate the LLVM return type that will be produced by the code in the main Block of a
+   * program, if one has been specified.
+   */
+  llvm.Type initType(LLVMMap lm) throws Failure {
+    return (main == null) ? llvm.Type.vd : main.initType(lm);
+  }
+
+  /** Generate an LLVM code sequence from the main Block in a program, if one has been specified. */
+  llvm.Code initCode(LLVMMap lm, InitVarMap ivm) throws Failure {
+    return (main == null) ? new llvm.RetVoid() : main.initCode(lm, ivm);
   }
 }

@@ -57,6 +57,10 @@ public class TopExt extends Top {
     return this.external == external;
   }
 
+  public Defn getDefn() {
+    return external;
+  }
+
   /** Find the dependencies of this AST fragment. */
   public Defns dependencies(Defns ds) {
     return external.dependencies(ds);
@@ -84,10 +88,6 @@ public class TopExt extends Top {
 
   Atom[] repArg(RepTypeSet set, RepEnv env) {
     return external.repExt();
-  }
-
-  Defn getDefn() {
-    return external;
   }
 
   /**

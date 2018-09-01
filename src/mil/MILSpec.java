@@ -20,6 +20,7 @@ package mil;
 
 import compiler.*;
 import compiler.Failure;
+import compiler.Handler;
 import core.*;
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -217,9 +218,26 @@ public class MILSpec extends TypeSet {
   }
 
   /** Request a specialized version of a given definition as an entry point to the new program. */
-  void addEntry(Defn d) throws Failure {
-    // !  System.out.println("Specializing entry for " + d);
-    prog.addEntry(d.specializeEntry(this));
+  void addEntry(Handler handler, Defn d) {
+    // ! System.out.println("Specializing entry for " + d);
+    try {
+      prog.addEntry(d.specializeEntry(this));
+    } catch (Failure f) {
+      handler.report(f);
+    }
+  }
+
+  /**
+   * Request a specializxed version of the given definition as the main definition for this program.
+   */
+  void addMain(Handler handler, Defn main) {
+    if (main != null) {
+      try {
+        prog.setMain(main.specializeEntry(this));
+      } catch (Failure f) {
+        handler.report(f);
+      }
+    }
   }
 
   /**

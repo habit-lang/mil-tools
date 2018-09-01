@@ -54,6 +54,7 @@ class Main {
     System.err.println("         -l[filename]   LLVM code (requires s)");
     System.err.println("         -b[filename]   bytecode text");
     System.err.println("         -x[filename]   execute bytecode");
+    System.err.println("         --mil-main=N   Set name of main function in MIL input");
     System.err.println("         --llvm-main=N  Set name of main function in LLVM output");
   }
 
@@ -87,11 +88,16 @@ class Main {
 
   private FilenameOption execOutput = new FilenameOption("execution output");
 
+  private String milMain = "";
+
   /** Simple command line option processing. */
   private void options(String str) throws Failure {
     String special;
     if ((special = nonemptyOptString("--llvm-main=", str)) != null) {
       llvm.FuncDefn.mainFunctionName = special;
+      return;
+    } else if ((special = nonemptyOptString("--mil-main=", str)) != null) {
+      milMain = special;
       return;
     }
     for (int i = 1; i < str.length(); i++) {
@@ -173,7 +179,7 @@ class Main {
       }
     }
     message("Loading source files ..."); // Load and compile everything
-    MILProgram mil = loader.load(handler);
+    MILProgram mil = loader.load(handler, milMain);
 
     message("Running type checker ..."); // Sanity check/dependency analysis
     mil.typeChecking(handler);
