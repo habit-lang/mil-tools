@@ -56,6 +56,7 @@ class Main {
     System.err.println("         -x[filename]   execute bytecode");
     System.err.println("         --mil-main=N   Set name of main function in MIL input");
     System.err.println("         --llvm-main=N  Set name of main function in LLVM output");
+    System.err.println("         --main         Equivalent to --mil-main=main --llvm-main=main");
   }
 
   private boolean trace = false;
@@ -98,6 +99,9 @@ class Main {
       return;
     } else if ((special = nonemptyOptString("--mil-main=", str)) != null) {
       milMain = special;
+      return;
+    } else if (str.equals("--main")) {
+      milMain = llvm.FuncDefn.mainFunctionName = "main";
       return;
     }
     for (int i = 1; i < str.length(); i++) {
