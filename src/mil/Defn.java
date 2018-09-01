@@ -260,6 +260,11 @@ public abstract class Defn {
     addrMap.addCodeLabel(addr, toString());
   }
 
+  /** Generate code to invoke the main definition, if it is a block with no parameters. */
+  void callMain(MachineBuilder builder) {
+    /* Ignore if main is not a Block */
+  }
+
   /** First pass code generation: produce code for top-level definitions. */
   abstract void generateMain(Handler handler, MachineBuilder builder);
 

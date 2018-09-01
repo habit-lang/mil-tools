@@ -208,6 +208,13 @@ public class Block extends Defn {
     }
   }
 
+  /** Generate code to invoke the main definition, if it is a block with no parameters. */
+  void callMain(MachineBuilder builder) {
+    if (params.length == 0) {
+      builder.call(0, this);
+    }
+  }
+
   /** First pass code generation: produce code for top-level definitions. */
   void generateMain(Handler handler, MachineBuilder builder) {
     /* skip these definitions on first pass */

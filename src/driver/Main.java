@@ -201,7 +201,9 @@ class Main {
       passes =
           llvmOutput.isSet()
               ? "cosboro"
-              : repTypesetOutput.isSet() ? "cosor" : specTypesetOutput.isSet() ? "cos" : "co";
+              : execOutput.isSet()
+                  ? "cosboro"
+                  : repTypesetOutput.isSet() ? "cosor" : specTypesetOutput.isSet() ? "cos" : "co";
       message("Defaulting to passes \"" + passes + "\":");
     }
 

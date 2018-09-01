@@ -164,6 +164,9 @@ public class MILProgram {
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       dsccs.head.generateMain(handler, builder);
     }
+    if (main != null) {
+      main.callMain(builder);
+    }
     builder.stop();
 
     // In the second pass over the MIL program, we generate code for the block
