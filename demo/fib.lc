@@ -15,12 +15,10 @@ fib n = if eq n 0 then 0
         else if eq n 1 then 1
         else add (fib (sub n 1)) (fib (sub n 2))
 
-main :: Proc Unit
+export main :: Proc Unit
 main  = do printWord 91
            printWord (fib  12)
            printWord (fib1 12)
            printWord 17
 
 ------
-entrypoint begin
-begin = unsafeRunProc main

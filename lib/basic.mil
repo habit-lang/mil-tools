@@ -8,12 +8,6 @@ export primRet :: a -> Proc a
 primRet   <- {x} c <- ret1{x}; Proc(c)
 ret1{x} [] = return x
 
--- A simple interface for running monadic programs.  This operation
--- is unsafe in general, but valid if it is used exclusively to run
--- a single, monadic procedure as the body of a program.
-export unsafeRunProc :: Proc a -> Unit
-unsafeRunProc <- {p} f <- Proc 0 p; r <- f @ []; Unit()
-
 -- Arithmetic primitives:
 export add, sub, mul, div :: Word -> Word -> Word
 add <- {x,y} add((x,y))
