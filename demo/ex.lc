@@ -1,0 +1,11 @@
+require "lib/prelude.lc"
+data Dup a      = Dup a a
+entrypoint swap7 :: Dup (Bit 7) -> Dup (Bit 7)
+entrypoint swap8 :: Dup (Bit 8) -> Dup (Bit 8)
+swap7 = swap
+swap8 = swap
+
+swap d = case d of Dup x y -> Dup y x
+
+entrypoint d1
+d1 = Dup B001 B110
