@@ -25,7 +25,7 @@ the following commands (this time assuming that you have a
 suitable installation of LLVM):
 
     # Use mil-tools to compile fib.lc into LLVM:
-    milc demo/fib.lc -ltmp/fib.ll --llvm-main=main
+    milc --standalone demo/fib.lc -ltmp/fib.ll
 
     # Build an executable from the generated LLVM code:
     clang -o tmp/fib tmp/fib.ll demo/runtime.c
@@ -70,7 +70,7 @@ of the Fibonnacci function:
 Alternatively, you can use the following command line to run
 the program directly through the bytecode interpreter:
 
-    milc -x demo/fib.lc
+    milc --standalone -x demo/fib.lc
 
 Replace `-x` with `-m` to see the generated MIL code, or with `-l` to
 see the generated LLVM code, etc. (Or just run either `milc`,

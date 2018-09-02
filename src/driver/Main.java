@@ -36,8 +36,10 @@ class Main {
   }
 
   public static void usage() {
-    System.err.println("usage: java driver.Main [options] inputFile ...");
-    System.err.println("options: -d             debugging on");
+    System.err.println("usage: milc [options]");
+    System.err.println("options: filename.mil   Load MIL source from specified file");
+    System.err.println("         filename.lc    Load LC source from specified file");
+    System.err.println("         -d             debugging on");
     System.err.println("         -v             verbose on");
     System.err.println("         -p{c,o,b,s,r}* passes");
     System.err.println("                        c = cfun rewrite");
@@ -56,7 +58,7 @@ class Main {
     System.err.println("         -x[filename]   execute bytecode");
     System.err.println("         --mil-main=N   Set name of main function in MIL input");
     System.err.println("         --llvm-main=N  Set name of main function in LLVM output");
-    System.err.println("         --main         Equivalent to --mil-main=main --llvm-main=main");
+    System.err.println("         --standalone   Equivalent to --mil-main=main --llvm-main=main");
   }
 
   private boolean trace = false;
@@ -100,7 +102,7 @@ class Main {
     } else if ((special = nonemptyOptString("--mil-main=", str)) != null) {
       milMain = special;
       return;
-    } else if (str.equals("--main")) {
+    } else if (str.equals("--standalone")) {
       milMain = llvm.FuncDefn.mainFunctionName = "main";
       return;
     }
