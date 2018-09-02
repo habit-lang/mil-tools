@@ -1,0 +1,11 @@
+require "lib/prelude.lc"
+
+entrypoint fib :: Word -> Word
+fib n = if eq n 0 then 0
+        else if eq n 1 then 1
+        else add (fib (sub n 1)) (fib (sub n 2))
+
+entrypoint fib12, fib15
+fib12  = fib 12
+fib15  = fib 15
+

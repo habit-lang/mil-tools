@@ -1,0 +1,22 @@
+require "lib/prelude.lc"
+
+-- A standard recursive version of the Fibonnaci function:
+entrypoint fib :: Word -> Word
+fib n = if eq n 0 then 0
+        else if eq n 1 then 1
+        else add (fib (sub n 1)) (fib (sub n 2))
+
+-- An iterative version of the Fibonnaci function:
+entrypoint itfib :: Word -> Word
+itfib = let loop a b n = if eq n 0 then a else loop b (add a b) (sub n 1)
+        in loop 0 1
+
+-- A traditional recursive implementation of the factorial function:
+entrypoint recfac :: Word -> Word
+recfac n = if eq n 0 then 1 else mul n (recfac (sub n 1))
+
+-- An iterative version of the factorial function:
+entrypoint itfac :: Word -> Word
+itfac = let loop a n = if eq n 0 then a else loop (mul a n) (sub n 1)
+        in loop 1
+

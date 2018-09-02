@@ -550,3 +550,260 @@ to follow.)
       ret i32 %r1
     }
     $
+
+# Function libraries, standalone programs, and variations
+
+The tools described here can be used in various ways to support
+the development of software libraries, standalone programs, or
+variations in between.  The following examples illustrate some
+of the possibilities, and the corresponding use of LC/MIL features
+and milc command line options.
+
+## Function Libraries
+
+Our first example is a small library of functions that are not
+complete programs in themselves, but could potentially be linked
+in as useful components of a variety of different applications.
+This particular library, whose source code is in `demo/funlib.lc`
+provides two implementations of the Fibonnaci function, and two
+implementations of the factorial function, so it will probably
+not be useful in many real world settings, but should provide
+some familiar examples and should also be sufficient to demonstrate
+the main ideas:
+
+    $ cat demo/funlib.lc 
+    require "lib/prelude.lc"
+
+    -- A standard recursive version of the Fibonnaci function:
+    entrypoint fib :: Word -> Word
+    fib n = if eq n 0 then 0
+            else if eq n 1 then 1
+            else add (fib (sub n 1)) (fib (sub n 2))
+
+    -- An iterative version of the Fibonnaci function:
+    entrypoint itfib :: Word -> Word
+    itfib = let loop a b n = if eq n 0 then a else loop b (add a b) (sub n 1)
+            in loop 0 1
+    
+    -- A traditional recursive implementation of the factorial function:
+    entrypoint recfac :: Word -> Word
+    recfac n = if eq n 0 then 1 else mul n (recfac (sub n 1))
+    
+    -- An iterative version of the factorial function:
+    entrypoint itfac :: Word -> Word
+    itfac = let loop a n = if eq n 0 then a else loop (mul a n) (sub n 1)
+            in loop 1
+    $
+
+Perhaps the most important detail here is that each of the four
+functions is declared as an `entrypoint`.  (The type signatures that
+are provided for each function here could be useful as documentation,
+but they can also be inferred automatically, so are not actually
+required.)  As a result, when this program is compiled using the
+following command, it will produce an LLVM output (in the file
+`tmp/funlib.ll` that contains an externally visible function
+definition for each of the four LC functions.
+
+    $ ./milc demo/funlib.lc -ltmp/funlib.ll
+    $ clang -c -o tmp/funlib.o tmp/funlib.ll
+    $
+
+[As before, assuming you have a conventional LLVM installation,
+you should be able ignore the warning message shown here.]
+
+The command sequence shown above follows the use of `milc` with a
+`clang` command that builds an object file `tmp/funlib.o` that can
+be linked with other programs.  Alternatively, we can write a C
+program that uses the functions in `funlib.lc` and then use a
+single `clang` command to compile and link it with the
+`tmp/funlib.ll` source file:
+
+    $ cat demo/funlibtest.c 
+    #include <stdio.h>
+
+    extern int fib(int);
+    extern int itfib(int);
+    extern int recfac(int);
+    extern int itfac(int);
+
+    int main(int argc, char** argv) {
+      for (int i=0; i<10; i++) {
+        printf("%d\t%d\t%d\t%d\t%d\n",
+               i, fib(i), itfib(i), recfac(i), itfac(i));
+      }
+    }
+    $ clang -o tmp/funlibtest demo/funlibtest.c tmp/funlib.ll 
+    $
+
+[Note: On macOS, you may be able (or need) to substitute `gcc` for
+`clang` in the command lines shown here, depending on details of
+your LLVM installation.]
+
+Notice that the C code references the functions we have seen
+defined in `funlib.lc` as regular C functions with conventional
+function prototypes.  This is possible because, if an entrypoint
+in the LC code is a curried function, then it will be exported
+from the generated LLVM code as a fully uncurried function (i.e.,
+as a function that takes all of its arguments at the same time, as
+is the norm in languages like C that do not directly support
+higher order functions).  The result is an executable that blends
+code from the two different source code components into a single
+program:
+
+    $ tmp/funlibtest 
+    0       0       0       1       1
+    1       1       1       1       1
+    2       1       1       2       2
+    3       2       2       6       6
+    4       3       3       24      24
+    5       5       5       120     120
+    6       8       8       720     720
+    7       13      13      5040    5040
+    8       21      21      40320   40320
+    9       34      34      362880  362880
+    $
+
+## Initialization functions
+
+Although there is no need for this in our `funlib` example,
+it is sometimes necessary to perform some kind of initialization
+steps before any (or all) of the entrypoints in a library are
+used for the first time.  The following shows a contrived
+example of this that includes entrypoints called `fib12` and
+`fib15` that are supposed to contain the 12th and 15th
+Fibonnaci numbers, respectively:
+
+    $ cat demo/needinit.lc 
+    require "lib/prelude.lc"
+
+    entrypoint fib :: Word -> Word
+    fib n = if eq n 0 then 0
+            else if eq n 1 then 1
+            else add (fib (sub n 1)) (fib (sub n 2))
+
+    entrypoint fib12, fib15
+    fib12  = fib 12
+    fib15  = fib 15
+
+    $
+
+But now suppose that we link this with a C program that reads the
+values of `fib12` and `fib15` and displays them on the screen.  At
+what point will those values be calculated?  If we compile this
+program using a similar `milc` command line to the previous
+example, we get an error informing us that the generated code
+requires an initialization function (in this case, we can infer
+that it will be used to set the values for `fib12` and `fib15`):
+
+    $ ./milc demo/needinit.lc -ltmp/needinit.ll
+    ERROR: LLVM program requires initialization function (set using --llvm-main=NAME)
+
+    $
+
+The error message also suggests that we can fix this problem by
+using an `--llvm-main` command line option, which is precisely
+what we do in the following, choosing to use the name `initialize`
+for this function:
+
+    $ ./milc demo/needinit.lc -ltmp/needinit.ll --llvm-main=initialize
+    $ 
+
+Now we can write C programs that use the `needinit` library.  And,
+so long as we ensure that the `initialize()` function is called
+before the values of `fib12` and `fib15` are accessed, then the
+everything should work as expected:
+
+    $ cat demo/printfibs.c 
+    #include <stdio.h>
+
+    extern void initialize();
+    extern int fib12, fib15;
+
+    int main(int argc, char** argv) {
+      initialize();
+      printf("fib(12)=%d, fib(15)=%d\n", fib12, fib15);
+    }
+
+    $ clang -o tmp/printfibs demo/printfibs.c tmp/needinit.ll
+    $ tmp/printfibs 
+    fib(12)=144, fib(15)=610
+    $ 
+
+In general, it can sometimes be difficult to determine whether or
+not an initialization function is actually required, short of
+running a `milc` command line like the one above to see if an
+error is reported.  For example, if we replace the `fib` function
+in `needinit.lc` with the more efficient `itfib` function, then
+the mil-tools optimizer in actually able to compute the values
+of `fib12` and `fib15` at compile-time, and there will not be any
+need for an initialization function.  For this reason, it is often
+a good practice to specify an initialization function name using
+the `--llvm-main` option and to encourage users of the library to
+call that function before attempting to accessing any of its other
+features.  If the library does not actually require special treatment,
+then `milc` will just generate an initialization function with an
+empty body.  But if something subsequently changes in the program
+that does require proper initialization, then users of the library,
+at least if they are following your advice, will already have
+included the appropriate function call in their code.
+
+## Writing standalone programs
+
+In the previous examples, we wrote code in LC that was accessed
+and executed from a `main` function written in C.  But what if
+we wanted to write our `main` program directly in LC, as in the
+following simple example for displaying the value of `fib 12`:
+
+    $ cat demo/program.lc
+    require "lib/prelude.lc"
+    require "lib/io.mil"
+
+    itfib :: Word -> Word
+    itfib  = let loop a b n = if eq n 0 then a else loop b (add a b) (sub n 1)
+             in loop 0 1
+
+    -- A program to print the 12th Fibonnaci number:
+    export main
+    main = printWord (itfib 12)
+    $
+
+This program does not specify any explicit entrypoints, but it
+does contain a definition for a `main` routine that is marked as
+an `export`.  This allows us to compile the program using the
+`--standalone` flag for `milc`:
+
+    $ ./milc --standalone demo/program.lc -ltmp/program.ll
+    $ clang -o tmp/program tmp/program.ll demo/runtime.c
+    warning: overriding the module target triple with ...
+    1 warning generated.
+    $ tmp/program
+    144
+    $ 
+
+Note that, despite what the name `--standalone` might suggest,
+the `clang` command line shown here does actually mention
+the C source file `demo/runtime.c`, which provides an
+implementation for the `printWord` function in the original
+LC code.  So, in fact, we are still mixing LC and C code,
+but this time we are calling the C code from the LC code,
+which is the opposite to what we saw in the earlier examples.
+
+The `--standalone` flag is really just a shorthand for the
+following two command line options:
+
+    --llvm-main=main --mil-main=main
+
+As we have already seen, the first of these specifies that the
+generated LLVM code should include an initialization function
+called `main`.  The second identifies a specific definition, also
+with the name `main`, but this time in the _input_ program, that
+will be executed at the end of the initialization function.  At
+most one `main` definition can be specified in this way, but it is
+possible to use a value with a different name, so long as it is
+marked as an `export` in the source program and identified using
+an explicit `--mil-main=NAME` setting on the command line.)
+While `--standalone` provides sensible defaults for both of
+these command line options, the separate `--mil-main` and
+`--llvm-main` options provide useful additional control
+in some more advanced settings.
+

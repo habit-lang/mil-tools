@@ -1,0 +1,10 @@
+require "lib/prelude.lc"
+require "lib/io.mil"
+
+itfib :: Word -> Word
+itfib  = let loop a b n = if eq n 0 then a else loop b (add a b) (sub n 1)
+         in loop 0 1
+
+-- A program to print the 12th Fibonnaci number:
+export main
+main = printWord (itfib 12)
