@@ -58,7 +58,10 @@ class MILAST extends CoreProgram {
     try {
       Reader reader = new FileReader(name);
       Source source = new JavaSource(handler, name, reader);
-      source = new CacheSource(handler, source); // Add an (optional) caching layer
+      if (name.endsWith(".lmil")) {
+        source = new LiterateSource(handler, true, source);
+      }
+      source = new CacheSource(handler, source); // Add a caching layer
       MILLexer lexer = new MILLexer(handler, true, source);
       MILParser parser = new MILParser(handler, lexer, loader);
       parser.parse(this);

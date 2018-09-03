@@ -82,11 +82,12 @@ public class LCLoader {
   }
 
   /**
-   * If the given name ends with ".mil", then add it as a MIL requirement for this loader and return
-   * true. Otherwise return false, indicating that further action is required to load it as lc code.
+   * If the given name ends with ".mil" or ".lmil", then add it as a MIL requirement for this loader
+   * and return true. Otherwise return false, indicating that further action is required to load it
+   * as lc code.
    */
   public boolean loadMIL(String name) {
-    if (name.endsWith(".mil")) {
+    if (name.endsWith(".mil") || name.endsWith(".lmil")) {
       requireMIL(name);
       return true;
     }

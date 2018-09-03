@@ -64,6 +64,9 @@ public class LCProgram extends CoreProgram {
     try {
       Reader reader = new FileReader(name);
       Source source = new JavaSource(handler, name, reader);
+      if (name.endsWith(".llc")) {
+        source = new LiterateSource(handler, true, source);
+      }
       source = new CacheSource(handler, source);
       LCLexer lexer = new LCLexer(handler, true, source);
       LCParser parser = new LCParser(handler, lexer, loader);

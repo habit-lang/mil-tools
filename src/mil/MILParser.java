@@ -49,13 +49,15 @@ public class MILParser extends CoreParser implements MILTokens {
               throw new Failure(lexer.getPos(), "Missing file name for require declaration");
             }
             String name = lexer.getLexeme();
-            if (name.endsWith(".mil")) {
+            if (name.endsWith(".mil") || name.endsWith(".lmil")) {
               ast.requires(loader.require(name));
             } else {
               handler.report(
                   new Failure(
                       lexer.getPos(),
-                      "Filename \"" + name + "\" does not have \".mil\" extension"));
+                      "Filename \""
+                          + name
+                          + "\" does not end with \".mil\" (or \".lmil\") extension"));
             }
             lexer.nextToken(/* STRLIT */ );
             lexer.itemEnd("require declaration");
