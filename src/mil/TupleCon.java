@@ -40,10 +40,12 @@ public class TupleCon extends Tycon {
     return arity;
   }
 
-  private static TupleCon[] tupleCache = new TupleCon[10];
+  private static TupleCon[] tupleCache;
 
   public static TupleCon tuple(int n) {
-    if (n >= tupleCache.length) {
+    if (tupleCache == null) {
+      tupleCache = new TupleCon[10];
+    } else if (n >= tupleCache.length) {
       TupleCon[] newCache = new TupleCon[Math.max(n + 1, 2 * tupleCache.length)];
       for (int i = 0; i < tupleCache.length; i++) {
         newCache[i] = tupleCache[i];

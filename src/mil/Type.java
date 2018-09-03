@@ -49,10 +49,12 @@ public abstract class Type extends Scheme {
     return this;
   }
 
-  private static TGen[] genCache = new TGen[10];
+  private static TGen[] genCache;
 
   public static TGen gen(int n) {
-    if (n >= genCache.length) {
+    if (genCache == null) {
+      genCache = new TGen[10];
+    } else if (n >= genCache.length) {
       TGen[] newCache = new TGen[Math.max(n + 1, 2 * genCache.length)];
       for (int i = 0; i < genCache.length; i++) {
         newCache[i] = genCache[i];
