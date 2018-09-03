@@ -37,15 +37,18 @@ public class BitdataName extends DataName {
     super(pos, id, kind, arity);
   }
 
-  /** A constructor for defining names that have BuiltinPosition. */
-  public BitdataName(String id, Kind kind, int arity) {
-    this(BuiltinPosition.pos, id, kind, arity);
-    TyconEnv.builtin.add(this);
+  protected BitdataLayout[] layouts;
+
+  public BitdataLayout[] getLayouts() {
+    return layouts;
   }
 
-  /** Return the nat that specifies the bit size of the type produced by this type constructor. */
-  public Type bitSize() {
-    return bitSize;
+  public void setLayouts(BitdataLayout[] layouts) {
+    this.layouts = layouts;
+
+    for (int i = 0; i < layouts.length; i++) {
+      layouts[i].calculateBitdataBlocks(cfuns[i]);
+    }
   }
 
   private Type bitSize;
@@ -60,23 +63,10 @@ public class BitdataName extends DataName {
     this.pat = pat;
   }
 
-  /** Return the bit pattern for the values of this type. */
-  public Pat bitPat() {
-    return pat;
-  }
-
-  protected BitdataLayout[] layouts;
-
-  public BitdataLayout[] getLayouts() {
-    return layouts;
-  }
-
-  public void setLayouts(BitdataLayout[] layouts) {
-    this.layouts = layouts;
-
-    for (int i = 0; i < layouts.length; i++) {
-      layouts[i].calculateBitdataBlocks(cfuns[i]);
-    }
+  /** A constructor for defining names that have BuiltinPosition. */
+  public BitdataName(String id, Kind kind, int arity) {
+    this(BuiltinPosition.pos, id, kind, arity);
+    TyconEnv.builtin.add(this);
   }
 
   /** Find the name of the associated bitdata type, if any. */
@@ -167,5 +157,15 @@ public class BitdataName extends DataName {
 
   Code repTransformSel(RepTypeSet set, RepEnv env, Temp[] vs, Cfun cf, int n, Atom a, Code c) {
     return new Bind(vs, repTransformSel(set, env, cf, n, a), c);
+  }
+
+  /** Return the nat that specifies the bit size of the type produced by this type constructor. */
+  public Type bitSize() {
+    return bitSize;
+  }
+
+  /** Return the bit pattern for the values of this type. */
+  public Pat bitPat() {
+    return pat;
   }
 }

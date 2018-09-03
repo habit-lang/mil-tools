@@ -53,8 +53,8 @@ public abstract class Name {
   }
 
   /**
-   * Find the number for the field with the given label in the specified array of names, or else
-   * return (-1) to indicate that there is no element with the given name.
+   * Find the index for the name with the given label in the specified array, or return (-1) if
+   * there is no matching element.
    */
   public static int index(String lab, Name[] names) {
     for (int i = 0; i < names.length; i++) {

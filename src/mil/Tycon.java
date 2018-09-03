@@ -130,84 +130,6 @@ public abstract class Tycon extends TypeName {
     return (-1);
   }
 
-  /**
-   * Worker method for calculating the BitSize for a type of the form (this a) (i.e., this, applied
-   * to the argument a). The specified type environment, tenv, is used for both this and a.
-   */
-  Type bitSize(Type[] tenv, Type a) {
-    if (this == DataName.bit
-        || this == DataName.nzbit) { // BitSize(Bit n) ==>  n,  same for (NZBit n)
-      return a.simplifyNatType(tenv);
-    } else if (this == DataName.ix) { // BitSize(Ix n)  ==>  (calculation below)
-      BigInteger n = a.ixBound(tenv);
-      if (n.signum() <= 0) {
-        return new TNat(BigInteger.ZERO);
-      }
-      int w = n.bitLength();
-      if (w < 0 || w >= Type.WORDSIZE) {
-        return null;
-      }
-      return new TNat(BigInteger.valueOf(w));
-    }
-    return null;
-  }
-
-  /**
-   * Worker method for calculating the BitSize for a type of the form (this a b) (i.e., this,
-   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
-   * and b.
-   */
-  Type bitSize(Type[] tenv, Type a, Type b) {
-    if (this == DataName.aref
-        || this == DataName.aptr) { // BitSize(ARef (2^(WORDSIZE-w)) a) = w (if 0<=w<=WORDSIZE)
-      int w = a.arefWidth(tenv); // (same calculation for aptr)
-      return (w > 0) ? new TNat(BigInteger.valueOf(w)) : null;
-    }
-    return null;
-  }
-
-  /** Return the nat that specifies the bit size of the type produced by this type constructor. */
-  public Type bitSize() {
-    return null;
-  }
-
-  /** Return the bit pattern for the values of this type. */
-  public Pat bitPat() {
-    return null;
-  }
-
-  Pat bitPat(Type[] tenv, Type a) {
-    if (this == DataName.bit) {
-      return obdd.Pat.all(a.bitWidth(tenv));
-    } else if (this == DataName.nzbit) {
-      int w = a.bitWidth(tenv);
-      return (w > 0) ? obdd.Pat.nonzero(w) : null;
-    } else if (this == DataName.ix) {
-      BigInteger n = a.ixBound(tenv);
-      if (n.signum() <= 0) {
-        return obdd.Pat.empty(0);
-      }
-      int w = n.bitLength();
-      if (w < 0 || w >= Type.WORDSIZE) {
-        // TODO: generate an internal error?  or make above internals return null instead?
-        return null;
-      }
-      return obdd.Pat.lessEq(w, n.intValue());
-    }
-    return null;
-  }
-
-  Pat bitPat(Type[] tenv, Type a, Type b) {
-    if (this == DataName.aref) {
-      int w = a.arefWidth(tenv);
-      return (w > 0) ? obdd.Pat.nonzero(w) : null;
-    } else if (this == DataName.aptr) {
-      int w = a.arefWidth(tenv);
-      return (w > 0) ? obdd.Pat.all(w) : null;
-    }
-    return null;
-  }
-
   /** Find the name of the associated bitdata type, if any. */
   public BitdataName bitdataName() {
     return null;
@@ -215,7 +137,7 @@ public abstract class Tycon extends TypeName {
 
   /**
    * Find the Bitdata Layout associated with values of this type, if there is one, or else return
-   * null. TODO: perhaps this code should be colocated with bitdataName()?
+   * null.
    */
   public BitdataLayout bitdataLayout() {
     return null;
@@ -224,56 +146,6 @@ public abstract class Tycon extends TypeName {
   /** Find the name of the associated struct type, if any. */
   public StructName structName() {
     return null;
-  }
-
-  /** Return the nat that specifies the byte size of the type produced by this type constructor. */
-  public Type byteSize() {
-    return null;
-  }
-
-  /**
-   * Worker method for calculating the ByteSize for a type of the form (this a) (i.e., this, applied
-   * to the argument a). The specified type environment, tenv, is used for both this and a.
-   */
-  Type byteSize(Type[] tenv, Type a) {
-    return (this == DataName.stored) ? a.byteSizeStored(tenv) : null;
-  }
-
-  /**
-   * Worker method for calculating the ByteSize for a type of the form (this a b) (i.e., this,
-   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
-   * and b.
-   */
-  Type byteSize(Type[] tenv, Type a, Type b) {
-    if (this == DataName.array || this == DataName.pad) {
-      // ByteSize (Array a b) = a * ByteSize b
-      // ByteSize (Pad   a b) = a * ByteSize b
-      BigInteger n = a.simplifyNatType(tenv).getNat();
-      if (n != null) {
-        Type s = b.byteSize(tenv);
-        if (s != null) {
-          BigInteger m = s.simplifyNatType(null).getNat();
-          if (m != null) {
-            return new TNat(n.multiply(m));
-          }
-        }
-      }
-    }
-    return null;
-  }
-
-  Type byteSizeStoredRef(Type[] tenv) {
-    return null;
-  }
-
-  Type byteSizeStoredRef(Type[] tenv, Type a) {
-    return null;
-  }
-
-  Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
-    return (this == DataName.aref || this == DataName.aptr)
-        ? new TNat(Type.numBytes(Type.WORDSIZE))
-        : null;
   }
 
   /**
@@ -412,6 +284,134 @@ public abstract class Tycon extends TypeName {
    */
   Code liftToCode0(Block b, Temp[] us, Atom f, Temp[] vs) {
     return null;
+  }
+
+  /**
+   * Worker method for calculating the BitSize for a type of the form (this a) (i.e., this, applied
+   * to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  Type bitSize(Type[] tenv, Type a) {
+    if (this == DataName.bit
+        || this == DataName.nzbit) { // BitSize(Bit n) ==>  n,  same for (NZBit n)
+      return a.simplifyNatType(tenv);
+    } else if (this == DataName.ix) { // BitSize(Ix n)  ==>  (calculation below)
+      BigInteger n = a.ixBound(tenv);
+      if (n.signum() <= 0) {
+        return new TNat(BigInteger.ZERO);
+      }
+      int w = n.bitLength();
+      if (w < 0 || w >= Type.WORDSIZE) {
+        return null;
+      }
+      return new TNat(BigInteger.valueOf(w));
+    }
+    return null;
+  }
+
+  /**
+   * Worker method for calculating the BitSize for a type of the form (this a b) (i.e., this,
+   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
+   * and b.
+   */
+  Type bitSize(Type[] tenv, Type a, Type b) {
+    if (this == DataName.aref
+        || this == DataName.aptr) { // BitSize(ARef (2^(WORDSIZE-w)) a) = w (if 0<=w<=WORDSIZE)
+      int w = a.arefWidth(tenv); // (same calculation for aptr)
+      return (w > 0) ? new TNat(BigInteger.valueOf(w)) : null;
+    }
+    return null;
+  }
+
+  /** Return the nat that specifies the bit size of the type produced by this type constructor. */
+  public Type bitSize() {
+    return null;
+  }
+
+  /** Return the bit pattern for the values of this type. */
+  public Pat bitPat() {
+    return null;
+  }
+
+  Pat bitPat(Type[] tenv, Type a) {
+    if (this == DataName.bit) {
+      return obdd.Pat.all(a.bitWidth(tenv));
+    } else if (this == DataName.nzbit) {
+      int w = a.bitWidth(tenv);
+      return (w > 0) ? obdd.Pat.nonzero(w) : null;
+    } else if (this == DataName.ix) {
+      BigInteger n = a.ixBound(tenv);
+      if (n.signum() <= 0) {
+        return obdd.Pat.empty(0);
+      }
+      int w = n.bitLength();
+      if (w < 0 || w >= Type.WORDSIZE) {
+        // TODO: generate an internal error?  or make above internals return null instead?
+        return null;
+      }
+      return obdd.Pat.lessEq(w, n.intValue());
+    }
+    return null;
+  }
+
+  Pat bitPat(Type[] tenv, Type a, Type b) {
+    if (this == DataName.aref) {
+      int w = a.arefWidth(tenv);
+      return (w > 0) ? obdd.Pat.nonzero(w) : null;
+    } else if (this == DataName.aptr) {
+      int w = a.arefWidth(tenv);
+      return (w > 0) ? obdd.Pat.all(w) : null;
+    }
+    return null;
+  }
+
+  /** Return the nat that specifies the byte size of the type produced by this type constructor. */
+  public Type byteSize() {
+    return null;
+  }
+
+  /**
+   * Worker method for calculating the ByteSize for a type of the form (this a) (i.e., this, applied
+   * to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  Type byteSize(Type[] tenv, Type a) {
+    return (this == DataName.stored) ? a.byteSizeStored(tenv) : null;
+  }
+
+  /**
+   * Worker method for calculating the ByteSize for a type of the form (this a b) (i.e., this,
+   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
+   * and b.
+   */
+  Type byteSize(Type[] tenv, Type a, Type b) {
+    if (this == DataName.array || this == DataName.pad) {
+      // ByteSize (Array a b) = a * ByteSize b
+      // ByteSize (Pad   a b) = a * ByteSize b
+      BigInteger n = a.simplifyNatType(tenv).getNat();
+      if (n != null) {
+        Type s = b.byteSize(tenv);
+        if (s != null) {
+          BigInteger m = s.simplifyNatType(null).getNat();
+          if (m != null) {
+            return new TNat(n.multiply(m));
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  Type byteSizeStoredRef(Type[] tenv) {
+    return null;
+  }
+
+  Type byteSizeStoredRef(Type[] tenv, Type a) {
+    return null;
+  }
+
+  Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
+    return (this == DataName.aref || this == DataName.aptr)
+        ? new TNat(Type.numBytes(Type.WORDSIZE))
+        : null;
   }
 
   /**

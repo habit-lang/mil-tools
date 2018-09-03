@@ -88,75 +88,6 @@ public class Synonym extends Tycon {
   }
 
   /**
-   * Worker method for calculating the BitSize for a type of the form (this a) (i.e., this, applied
-   * to the argument a). The specified type environment, tenv, is used for both this and a.
-   */
-  Type bitSize(Type[] tenv, Type a) {
-    return expansion.bitSize(tenv, a);
-  }
-
-  /**
-   * Worker method for calculating the BitSize for a type of the form (this a b) (i.e., this,
-   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
-   * and b.
-   */
-  Type bitSize(Type[] tenv, Type a, Type b) {
-    return expansion.bitSize(tenv, a, b);
-  }
-
-  /** Return the nat that specifies the bit size of the type produced by this type constructor. */
-  public Type bitSize() {
-    return expansion.bitSize(null);
-  }
-
-  /** Return the bit pattern for the values of this type. */
-  public Pat bitPat() {
-    return expansion.bitPat(null);
-  }
-
-  Pat bitPat(Type[] tenv, Type a) {
-    return expansion.bitPat(tenv, a);
-  }
-
-  Pat bitPat(Type[] tenv, Type a, Type b) {
-    return expansion.bitPat(tenv, a, b);
-  }
-
-  /** Return the nat that specifies the byte size of the type produced by this type constructor. */
-  public Type byteSize() {
-    return expansion.byteSize(null);
-  }
-
-  /**
-   * Worker method for calculating the ByteSize for a type of the form (this a) (i.e., this, applied
-   * to the argument a). The specified type environment, tenv, is used for both this and a.
-   */
-  Type byteSize(Type[] tenv, Type a) {
-    return expansion.byteSize(tenv, a);
-  }
-
-  /**
-   * Worker method for calculating the ByteSize for a type of the form (this a b) (i.e., this,
-   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
-   * and b.
-   */
-  Type byteSize(Type[] tenv, Type a, Type b) {
-    return expansion.byteSize(tenv, a, b);
-  }
-
-  Type byteSizeStoredRef(Type[] tenv) {
-    return expansion.byteSizeStoredRef(null);
-  }
-
-  Type byteSizeStoredRef(Type[] tenv, Type a) {
-    return expansion.byteSizeStoredRef(tenv, a);
-  }
-
-  Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
-    return expansion.byteSizeStoredRef(tenv, a, b);
-  }
-
-  /**
    * Print a definition for this type constructor using source level syntax. TODO: Find a more
    * appropriate place for this code ...
    */
@@ -259,6 +190,75 @@ public class Synonym extends Tycon {
    */
   Code liftToCode0(Block b, Temp[] us, Atom f, Temp[] vs) {
     return expansion.liftToCode0(b, us, f, vs);
+  }
+
+  /**
+   * Worker method for calculating the BitSize for a type of the form (this a) (i.e., this, applied
+   * to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  Type bitSize(Type[] tenv, Type a) {
+    return expansion.bitSize(tenv, a);
+  }
+
+  /**
+   * Worker method for calculating the BitSize for a type of the form (this a b) (i.e., this,
+   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
+   * and b.
+   */
+  Type bitSize(Type[] tenv, Type a, Type b) {
+    return expansion.bitSize(tenv, a, b);
+  }
+
+  /** Return the nat that specifies the bit size of the type produced by this type constructor. */
+  public Type bitSize() {
+    return expansion.bitSize(null);
+  }
+
+  /** Return the bit pattern for the values of this type. */
+  public Pat bitPat() {
+    return expansion.bitPat(null);
+  }
+
+  Pat bitPat(Type[] tenv, Type a) {
+    return expansion.bitPat(tenv, a);
+  }
+
+  Pat bitPat(Type[] tenv, Type a, Type b) {
+    return expansion.bitPat(tenv, a, b);
+  }
+
+  /** Return the nat that specifies the byte size of the type produced by this type constructor. */
+  public Type byteSize() {
+    return expansion.byteSize(null);
+  }
+
+  /**
+   * Worker method for calculating the ByteSize for a type of the form (this a) (i.e., this, applied
+   * to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  Type byteSize(Type[] tenv, Type a) {
+    return expansion.byteSize(tenv, a);
+  }
+
+  /**
+   * Worker method for calculating the ByteSize for a type of the form (this a b) (i.e., this,
+   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
+   * and b.
+   */
+  Type byteSize(Type[] tenv, Type a, Type b) {
+    return expansion.byteSize(tenv, a, b);
+  }
+
+  Type byteSizeStoredRef(Type[] tenv) {
+    return expansion.byteSizeStoredRef(null);
+  }
+
+  Type byteSizeStoredRef(Type[] tenv, Type a) {
+    return expansion.byteSizeStoredRef(tenv, a);
+  }
+
+  Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
+    return expansion.byteSizeStoredRef(tenv, a, b);
   }
 
   /**

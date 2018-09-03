@@ -31,23 +31,13 @@ public class StructName extends Tycon {
     super(pos, id, kind);
   }
 
-  /** Find the name of the associated struct type, if any. */
-  public StructName structName() {
-    return this;
-  }
-
   private Type byteSize;
+
+  private StructField[] fields;
 
   public void setByteSize(Type byteSize) {
     this.byteSize = byteSize;
   }
-
-  /** Return the nat that specifies the byte size of the type produced by this type constructor. */
-  public Type byteSize() {
-    return byteSize;
-  }
-
-  private StructField[] fields;
 
   public StructField[] getFields() {
     return fields;
@@ -55,6 +45,11 @@ public class StructName extends Tycon {
 
   public void setFields(StructField[] fields) {
     this.fields = fields;
+  }
+
+  /** Find the name of the associated struct type, if any. */
+  public StructName structName() {
+    return this;
   }
 
   public void debugDump() {
@@ -94,5 +89,10 @@ public class StructName extends Tycon {
    */
   public Prim initStructFieldPrim(int i) {
     return fields[i].initStructFieldPrim(this);
+  }
+
+  /** Return the nat that specifies the byte size of the type produced by this type constructor. */
+  public Type byteSize() {
+    return byteSize;
   }
 }

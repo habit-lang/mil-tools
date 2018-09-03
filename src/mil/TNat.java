@@ -100,14 +100,6 @@ public class TNat extends TLit {
   }
 
   /**
-   * Determine whether this type is a natural number that falls within the specified range,
-   * inclusive of bounds.
-   */
-  BigInteger inRange(BigInteger lo, BigInteger hi) {
-    return (num.compareTo(lo) >= 0 && num.compareTo(hi) <= 0) ? num : null;
-  }
-
-  /**
    * Find a canonical version of this type in the given set, using the specified environment to
    * interpret TGens, and assuming that we have already pushed a certain number of args for this
    * type on the stack.
@@ -130,5 +122,13 @@ public class TNat extends TLit {
    */
   Type[] nzbitvectorRep() {
     return Type.numWords(num.intValue()) == 1 ? DataName.nzwordRep : null;
+  }
+
+  /**
+   * Determine whether this type is a natural number that falls within the specified range,
+   * inclusive of bounds.
+   */
+  BigInteger inRange(BigInteger lo, BigInteger hi) {
+    return (num.compareTo(lo) >= 0 && num.compareTo(hi) <= 0) ? num : null;
   }
 }

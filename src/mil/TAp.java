@@ -169,58 +169,6 @@ public class TAp extends Type {
   }
 
   /**
-   * Return the natural number type that specifies the BitSize of this type (required to be of kind
-   * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should
-   * only be used with a limited collection of classes (we only expect to use it with top-level,
-   * monomorphic types), but, just in case, we also provide implementations for classes that we do
-   * not expect to see in practice, and allow for the possibility of a type environment, even though
-   * we expect it will only ever be null.
-   */
-  public Type bitSize(Type[] tenv) {
-    return fun.bitSize(tenv, arg);
-  }
-
-  /**
-   * Worker method for calculating the BitSize for a type of the form (this a) (i.e., this, applied
-   * to the argument a). The specified type environment, tenv, is used for both this and a.
-   */
-  Type bitSize(Type[] tenv, Type a) {
-    return fun.bitSize(tenv, arg, a);
-  }
-
-  public Pat bitPat(Type[] tenv) {
-    return fun.bitPat(tenv, arg);
-  }
-
-  Pat bitPat(Type[] tenv, Type a) {
-    return fun.bitPat(tenv, arg, a);
-  }
-
-  /**
-   * Return the natural number type that specifies the ByteSize of this type (required to be of kind
-   * area) or null if this type has no ByteSize (i.e., no memory layout).
-   */
-  public Type byteSize(Type[] tenv) {
-    return fun.byteSize(tenv, arg);
-  }
-
-  /**
-   * Worker method for calculating the ByteSize for a type of the form (this a) (i.e., this, applied
-   * to the argument a). The specified type environment, tenv, is used for both this and a.
-   */
-  Type byteSize(Type[] tenv, Type a) {
-    return fun.byteSize(tenv, arg, a);
-  }
-
-  Type byteSizeStoredRef(Type[] tenv) {
-    return fun.byteSizeStoredRef(tenv, arg);
-  }
-
-  Type byteSizeStoredRef(Type[] tenv, Type a) {
-    return fun.byteSizeStoredRef(tenv, arg, a);
-  }
-
-  /**
    * A worker function that traverses a tuple type and removes the components that are not marked in
    * usedArgs. We assume a very simple structure for the input type: a left-leaning spine of TAps
    * with a tuple type constructor at the head, and no TGen, TVar, or TInd nodes on the spine.
@@ -367,6 +315,58 @@ public class TAp extends Type {
 
   boolean useBitdataLo(Type s) {
     return fun.useBitdataLo(arg, s);
+  }
+
+  /**
+   * Return the natural number type that specifies the BitSize of this type (required to be of kind
+   * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should
+   * only be used with a limited collection of classes (we only expect to use it with top-level,
+   * monomorphic types), but, just in case, we also provide implementations for classes that we do
+   * not expect to see in practice, and allow for the possibility of a type environment, even though
+   * we expect it will only ever be null.
+   */
+  public Type bitSize(Type[] tenv) {
+    return fun.bitSize(tenv, arg);
+  }
+
+  /**
+   * Worker method for calculating the BitSize for a type of the form (this a) (i.e., this, applied
+   * to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  Type bitSize(Type[] tenv, Type a) {
+    return fun.bitSize(tenv, arg, a);
+  }
+
+  public Pat bitPat(Type[] tenv) {
+    return fun.bitPat(tenv, arg);
+  }
+
+  Pat bitPat(Type[] tenv, Type a) {
+    return fun.bitPat(tenv, arg, a);
+  }
+
+  /**
+   * Return the natural number type that specifies the ByteSize of this type (required to be of kind
+   * area) or null if this type has no ByteSize (i.e., no memory layout).
+   */
+  public Type byteSize(Type[] tenv) {
+    return fun.byteSize(tenv, arg);
+  }
+
+  /**
+   * Worker method for calculating the ByteSize for a type of the form (this a) (i.e., this, applied
+   * to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  Type byteSize(Type[] tenv, Type a) {
+    return fun.byteSize(tenv, arg, a);
+  }
+
+  Type byteSizeStoredRef(Type[] tenv) {
+    return fun.byteSizeStoredRef(tenv, arg);
+  }
+
+  Type byteSizeStoredRef(Type[] tenv, Type a) {
+    return fun.byteSizeStoredRef(tenv, arg, a);
   }
 
   /**

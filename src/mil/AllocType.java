@@ -227,11 +227,6 @@ public class AllocType {
     return true;
   }
 
-  /** Return the bit pattern for the ith stored component of this AllocType. */
-  Pat bitPat(int i) {
-    return stored[i].bitPat(null);
-  }
-
   void dump(PrintWriter out, Type head) {
     Type[] tenv = tenv();
     if (result.match(tenv, head, null)) {
@@ -313,6 +308,11 @@ public class AllocType {
       offset += (r == null ? 1 : r.length);
     }
     return offset;
+  }
+
+  /** Return the bit pattern for the ith stored component of this AllocType. */
+  Pat bitPat(int i) {
+    return stored[i].bitPat(null);
   }
 
   /**

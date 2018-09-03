@@ -50,11 +50,6 @@ class TIndAllocType extends AllocType {
     return tenv;
   }
 
-  /** Return the bit pattern for the ith stored component of this AllocType. */
-  Pat bitPat(int i) {
-    return stored[i].bitPat(tenv);
-  }
-
   /** Calculate a new version of this allocator type with canonical components. */
   AllocType canonAllocType(TypeSet set) {
     return new AllocType(set.canonTypes(stored, tenv), result.canonType(tenv, set));
@@ -66,5 +61,10 @@ class TIndAllocType extends AllocType {
 
   boolean resultMatches(Type inst) {
     return result.match(tenv, inst, null);
+  }
+
+  /** Return the bit pattern for the ith stored component of this AllocType. */
+  Pat bitPat(int i) {
+    return stored[i].bitPat(tenv);
   }
 }

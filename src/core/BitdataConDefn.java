@@ -146,10 +146,9 @@ class BitdataConDefn extends Name {
     BitdataLayout[] layouts = new BitdataLayout[constrs.length];
     for (int i = 0; i < constrs.length; i++) {
       BitdataConDefn ci = constrs[i];
-      AllocType type = ci.layout.cfunType();
-      cfuns[i] = new Cfun(ci.pos, ci.id, bn, i, type);
+      cfuns[i] = new Cfun(ci.pos, ci.id, bn, i, ci.layout.cfunType());
       layouts[i] = ci.layout;
-      debug.Log.println(cfuns[i] + " :: " + type);
+      debug.Log.println(cfuns[i] + " :: " + cfuns[i].getAllocType());
       layouts[i].debugDump();
     }
     bn.setCfuns(cfuns);

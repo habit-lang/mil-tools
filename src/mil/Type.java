@@ -413,151 +413,6 @@ public abstract class Type extends Scheme {
     return new TAp(DataName.init.asType(), a);
   }
 
-  public static final int FLAGSIZE = 1;
-
-  public static final BigInteger BigFLAGSIZE = BigInteger.valueOf(FLAGSIZE);
-
-  public static final Type TypeFLAGSIZE = new TNat(BigFLAGSIZE);
-
-  public static final int WORDSIZE = 32;
-
-  public static final Type TypeWORDSIZE = new TNat(BigInteger.valueOf(WORDSIZE));
-
-  /** Return the number of words that are needed to hold a value with the specified bitsize. */
-  public static int numWords(int numBits) {
-    return (numBits + WORDSIZE - 1) / WORDSIZE;
-  }
-
-  /**
-   * Determine whether this type is a natural number that falls within the specified range,
-   * inclusive of bounds.
-   */
-  BigInteger inRange(BigInteger lo, BigInteger hi) {
-    return null;
-  }
-
-  /**
-   * A BigInteger representation for the largest positive value that can be represented by a
-   * (signed) int.
-   */
-  public static final BigInteger MAX_INT = BigInteger.valueOf(Integer.MAX_VALUE);
-
-  /**
-   * Test whether this is a natural number type in the range [0..MAX_INT]. (If a value v passes this
-   * test, then an intValue() call on the resulting BigInteger will produce the correct int result
-   * with no loss of information.)
-   */
-  BigInteger isNonNegInt() {
-    return inRange(BigInteger.ZERO, MAX_INT);
-  }
-
-  /**
-   * Test whether this is a natural number type in the range [1..MAX_INT]. (If a value v passes this
-   * test, then an intValue() call on the resulting BigInteger will produce the correct int result
-   * with no loss of information.)
-   */
-  BigInteger isPosInt() {
-    return inRange(BigInteger.ONE, MAX_INT);
-  }
-
-  /**
-   * A BigInteger representation for the largest value that can be represented by an unsigned Word.
-   */
-  public static final BigInteger MAX_WORD =
-      BigInteger.ONE.shiftLeft(WORDSIZE).subtract(BigInteger.ONE);
-
-  /**
-   * Test whether this is a natural number that can fit in a Word (i.e., a value in the range
-   * [0..MAX_WORD]).
-   */
-  BigInteger isNonNegWord() {
-    return inRange(BigInteger.ZERO, MAX_WORD);
-  }
-
-  /**
-   * Test whether this is a natural number type in the range [1..MAX_WORD], suitable for use as an
-   * argument to Ix. (This will ensure that all Ix values can be represented in a single word.) Note
-   * that we exclude Ix 0 because that would be an empty type. Technically, we could include
-   * MAX_WORD+1 (i.e., 1<<WORDSIZE) here but choose not to do that so that all Maybe (Ix n) types
-   * can also be represented within a single word.
-   */
-  BigInteger isPosWord() {
-    return inRange(BigInteger.ONE, MAX_WORD);
-  }
-
-  /**
-   * Return the natural number type that specifies the BitSize of this type (required to be of kind
-   * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should
-   * only be used with a limited collection of classes (we only expect to use it with top-level,
-   * monomorphic types), but, just in case, we also provide implementations for classes that we do
-   * not expect to see in practice, and allow for the possibility of a type environment, even though
-   * we expect it will only ever be null.
-   */
-  public abstract Type bitSize(Type[] tenv);
-
-  /**
-   * Worker method for calculating the BitSize for a type of the form (this a) (i.e., this, applied
-   * to the argument a). The specified type environment, tenv, is used for both this and a.
-   */
-  Type bitSize(Type[] tenv, Type a) {
-    return null;
-  }
-
-  BigInteger ixBound(Type[] tenv) {
-    BigInteger n = simplifyNatType(tenv).getNat();
-    if (n == null) {
-      debug.Internal.error("invalid Ix bound: " + skeleton(tenv));
-    }
-    return n.subtract(BigInteger.ONE);
-  }
-
-  /**
-   * Worker method for calculating the BitSize for a type of the form (this a b) (i.e., this,
-   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
-   * and b.
-   */
-  Type bitSize(Type[] tenv, Type a, Type b) {
-    return null;
-  }
-
-  int arefWidth(Type[] tenv) {
-    BigInteger n = simplifyNatType(tenv).getNat();
-    if (n == null) {
-      debug.Internal.error("invalid ARef alignment: " + skeleton(tenv));
-    }
-    if (n.signum() <= 0) { // not strictly positive
-      return 0;
-    }
-    BigInteger n1 = n.subtract(BigInteger.ONE);
-    if (n.and(n1).signum() != 0) { // not a power of two
-      return 0;
-    }
-    int w = Type.WORDSIZE - n1.bitLength(); // Find width
-    return (w >= 0 && w <= Type.WORDSIZE) ? w : 0;
-  }
-
-  public Pat bitPat(Type[] tenv) {
-    return null;
-  }
-
-  Pat bitPat(Type[] tenv, Type a) {
-    return null;
-  }
-
-  int bitWidth(Type[] tenv) {
-    BigInteger nat = simplifyNatType(tenv).getNat();
-    if (nat == null) {
-      debug.Internal.error("Unresolved size parameter " + skeleton(tenv));
-    } else if (nat.signum() < 0 || nat.compareTo(MAX_INT) > 0) {
-      debug.Internal.error("Bit width " + nat + " is out of allowed range");
-    }
-    return nat.intValue();
-  }
-
-  Pat bitPat(Type[] tenv, Type a, Type b) {
-    return null;
-  }
-
   /** Find the name of the associated bitdata type, if any. */
   public BitdataName bitdataName() {
     return null;
@@ -565,80 +420,14 @@ public abstract class Type extends Scheme {
 
   /**
    * Find the Bitdata Layout associated with values of this type, if there is one, or else return
-   * null. TODO: perhaps this code should be colocated with bitdataName()?
+   * null.
    */
   public BitdataLayout bitdataLayout() {
     return null;
   }
 
-  /** Return the number of bytes that are needed to hold a value with the specified bitsize. */
-  public static int numBytes(int numBits) {
-    return (numBits + 7) / 8;
-  }
-
   /** Find the name of the associated struct type, if any. */
   public StructName structName() {
-    return null;
-  }
-
-  /**
-   * Return the natural number type that specifies the ByteSize of this type (required to be of kind
-   * area) or null if this type has no ByteSize (i.e., no memory layout).
-   */
-  public abstract Type byteSize(Type[] tenv);
-
-  /**
-   * Worker method for calculating the ByteSize for a type of the form (this a) (i.e., this, applied
-   * to the argument a). The specified type environment, tenv, is used for both this and a.
-   */
-  Type byteSize(Type[] tenv, Type a) {
-    return null;
-  }
-
-  /**
-   * Worker method for calculating the ByteSize for a type of the form (this a b) (i.e., this,
-   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
-   * and b.
-   */
-  Type byteSize(Type[] tenv, Type a, Type b) {
-    return null;
-  }
-
-  /**
-   * Worker method for calculating ByteSize (Stored this), with the specified type environment tenv,
-   * short-circuiting through indirections and type variables as necessary. Implements the function:
-   * ByteSize (Stored (ARef l a)) = WordSize / 8 ByteSize (Stored (APtr l a)) = WordSize / 8
-   * ByteSize (Stored t) = 0, if BitSize t == 0 = 1, if 0 < BitSize t <= 8 = 2, if 8 < BitSize t <=
-   * 16 = 4, if 16 < BitSize t <= 32 = 8, if 32 < BitSize t <= 64
-   */
-  Type byteSizeStored(Type[] tenv) {
-    Type bytes = byteSizeStoredRef(tenv); // Check cases for ARef and APtr types first
-    if (bytes == null) {
-      Type bits = bitSize(tenv); // Otherwise check bit representation of this type
-      if (bits != null) {
-        BigInteger m = bits.simplifyNatType(null).getNat();
-        if (m != null) {
-          int n = Type.numBytes(m.intValue());
-          return (n == 0)
-              ? new TNat(0)
-              : (n == 1)
-                  ? new TNat(1)
-                  : (n == 2) ? new TNat(2) : (n <= 4) ? new TNat(4) : (n <= 8) ? new TNat(8) : null;
-        }
-      }
-    }
-    return bytes;
-  }
-
-  Type byteSizeStoredRef(Type[] tenv) {
-    return null;
-  }
-
-  Type byteSizeStoredRef(Type[] tenv, Type a) {
-    return null;
-  }
-
-  Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
     return null;
   }
 
@@ -922,6 +711,217 @@ public abstract class Type extends Scheme {
 
   boolean useBitdataLo(Type t, Type s) {
     return true;
+  }
+
+  public static final int FLAGSIZE = 1;
+
+  public static final BigInteger BigFLAGSIZE = BigInteger.valueOf(FLAGSIZE);
+
+  public static final Type TypeFLAGSIZE = new TNat(BigFLAGSIZE);
+
+  public static final int WORDSIZE = 32;
+
+  public static final Type TypeWORDSIZE = new TNat(BigInteger.valueOf(WORDSIZE));
+
+  /** Return the number of words that are needed to hold a value with the specified bitsize. */
+  public static int numWords(int numBits) {
+    return (numBits + WORDSIZE - 1) / WORDSIZE;
+  }
+
+  /**
+   * Determine whether this type is a natural number that falls within the specified range,
+   * inclusive of bounds.
+   */
+  BigInteger inRange(BigInteger lo, BigInteger hi) {
+    return null;
+  }
+
+  /**
+   * A BigInteger representation for the largest positive value that can be represented by a
+   * (signed) int.
+   */
+  public static final BigInteger MAX_INT = BigInteger.valueOf(Integer.MAX_VALUE);
+
+  /**
+   * Test whether this is a natural number type in the range [0..MAX_INT]. (If a value v passes this
+   * test, then an intValue() call on the resulting BigInteger will produce the correct int result
+   * with no loss of information.)
+   */
+  BigInteger isNonNegInt() {
+    return inRange(BigInteger.ZERO, MAX_INT);
+  }
+
+  /**
+   * Test whether this is a natural number type in the range [1..MAX_INT]. (If a value v passes this
+   * test, then an intValue() call on the resulting BigInteger will produce the correct int result
+   * with no loss of information.)
+   */
+  BigInteger isPosInt() {
+    return inRange(BigInteger.ONE, MAX_INT);
+  }
+
+  /**
+   * A BigInteger representation for the largest value that can be represented by an unsigned Word.
+   */
+  public static final BigInteger MAX_WORD =
+      BigInteger.ONE.shiftLeft(WORDSIZE).subtract(BigInteger.ONE);
+
+  /**
+   * Test whether this is a natural number that can fit in a Word (i.e., a value in the range
+   * [0..MAX_WORD]).
+   */
+  BigInteger isNonNegWord() {
+    return inRange(BigInteger.ZERO, MAX_WORD);
+  }
+
+  /**
+   * Test whether this is a natural number type in the range [1..MAX_WORD], suitable for use as an
+   * argument to Ix. (This will ensure that all Ix values can be represented in a single word.) Note
+   * that we exclude Ix 0 because that would be an empty type. Technically, we could include
+   * MAX_WORD+1 (i.e., 1<<WORDSIZE) here but choose not to do that so that all Maybe (Ix n) types
+   * can also be represented within a single word.
+   */
+  BigInteger isPosWord() {
+    return inRange(BigInteger.ONE, MAX_WORD);
+  }
+
+  /**
+   * Return the natural number type that specifies the BitSize of this type (required to be of kind
+   * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should
+   * only be used with a limited collection of classes (we only expect to use it with top-level,
+   * monomorphic types), but, just in case, we also provide implementations for classes that we do
+   * not expect to see in practice, and allow for the possibility of a type environment, even though
+   * we expect it will only ever be null.
+   */
+  public abstract Type bitSize(Type[] tenv);
+
+  /**
+   * Worker method for calculating the BitSize for a type of the form (this a) (i.e., this, applied
+   * to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  Type bitSize(Type[] tenv, Type a) {
+    return null;
+  }
+
+  BigInteger ixBound(Type[] tenv) {
+    BigInteger n = simplifyNatType(tenv).getNat();
+    if (n == null) {
+      debug.Internal.error("invalid Ix bound: " + skeleton(tenv));
+    }
+    return n.subtract(BigInteger.ONE);
+  }
+
+  /**
+   * Worker method for calculating the BitSize for a type of the form (this a b) (i.e., this,
+   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
+   * and b.
+   */
+  Type bitSize(Type[] tenv, Type a, Type b) {
+    return null;
+  }
+
+  int arefWidth(Type[] tenv) {
+    BigInteger n = simplifyNatType(tenv).getNat();
+    if (n == null) {
+      debug.Internal.error("invalid ARef alignment: " + skeleton(tenv));
+    }
+    if (n.signum() <= 0) { // not strictly positive
+      return 0;
+    }
+    BigInteger n1 = n.subtract(BigInteger.ONE);
+    if (n.and(n1).signum() != 0) { // not a power of two
+      return 0;
+    }
+    int w = Type.WORDSIZE - n1.bitLength(); // Find width
+    return (w >= 0 && w <= Type.WORDSIZE) ? w : 0;
+  }
+
+  public Pat bitPat(Type[] tenv) {
+    return null;
+  }
+
+  Pat bitPat(Type[] tenv, Type a) {
+    return null;
+  }
+
+  int bitWidth(Type[] tenv) {
+    BigInteger nat = simplifyNatType(tenv).getNat();
+    if (nat == null) {
+      debug.Internal.error("Unresolved size parameter " + skeleton(tenv));
+    } else if (nat.signum() < 0 || nat.compareTo(MAX_INT) > 0) {
+      debug.Internal.error("Bit width " + nat + " is out of allowed range");
+    }
+    return nat.intValue();
+  }
+
+  Pat bitPat(Type[] tenv, Type a, Type b) {
+    return null;
+  }
+
+  /** Return the number of bytes that are needed to hold a value with the specified bitsize. */
+  public static int numBytes(int numBits) {
+    return (numBits + 7) / 8;
+  }
+
+  /**
+   * Return the natural number type that specifies the ByteSize of this type (required to be of kind
+   * area) or null if this type has no ByteSize (i.e., no memory layout).
+   */
+  public abstract Type byteSize(Type[] tenv);
+
+  /**
+   * Worker method for calculating the ByteSize for a type of the form (this a) (i.e., this, applied
+   * to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  Type byteSize(Type[] tenv, Type a) {
+    return null;
+  }
+
+  /**
+   * Worker method for calculating the ByteSize for a type of the form (this a b) (i.e., this,
+   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
+   * and b.
+   */
+  Type byteSize(Type[] tenv, Type a, Type b) {
+    return null;
+  }
+
+  /**
+   * Worker method for calculating ByteSize (Stored this), with the specified type environment tenv,
+   * short-circuiting through indirections and type variables as necessary. Implements the function:
+   * ByteSize (Stored (ARef l a)) = WordSize / 8 ByteSize (Stored (APtr l a)) = WordSize / 8
+   * ByteSize (Stored t) = 0, if BitSize t == 0 = 1, if 0 < BitSize t <= 8 = 2, if 8 < BitSize t <=
+   * 16 = 4, if 16 < BitSize t <= 32 = 8, if 32 < BitSize t <= 64
+   */
+  Type byteSizeStored(Type[] tenv) {
+    Type bytes = byteSizeStoredRef(tenv); // Check cases for ARef and APtr types first
+    if (bytes == null) {
+      Type bits = bitSize(tenv); // Otherwise check bit representation of this type
+      if (bits != null) {
+        BigInteger m = bits.simplifyNatType(null).getNat();
+        if (m != null) {
+          int n = Type.numBytes(m.intValue());
+          return (n == 0)
+              ? new TNat(0)
+              : (n == 1)
+                  ? new TNat(1)
+                  : (n == 2) ? new TNat(2) : (n <= 4) ? new TNat(4) : (n <= 8) ? new TNat(8) : null;
+        }
+      }
+    }
+    return bytes;
+  }
+
+  Type byteSizeStoredRef(Type[] tenv) {
+    return null;
+  }
+
+  Type byteSizeStoredRef(Type[] tenv, Type a) {
+    return null;
+  }
+
+  Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
+    return null;
   }
 
   /**

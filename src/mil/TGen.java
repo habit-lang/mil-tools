@@ -224,6 +224,19 @@ public class TGen extends Type {
   }
 
   /**
+   * Find a canonical version of this type in the given set, using the specified environment to
+   * interpret TGens, and assuming that we have already pushed a certain number of args for this
+   * type on the stack.
+   */
+  Type canonType(Type[] env, TypeSet set, int args) {
+    return (env == null) ? set.canonOther(this, args) : env[n].canonType(null, set, args);
+  }
+
+  Type apply(Type[] thisenv, TVarSubst s) {
+    return thisenv[n].apply(null, s);
+  }
+
+  /**
    * Return the natural number type that specifies the BitSize of this type (required to be of kind
    * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should
    * only be used with a limited collection of classes (we only expect to use it with top-level,
@@ -299,19 +312,6 @@ public class TGen extends Type {
 
   Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
     return tenv[n].byteSizeStoredRef(null, a.with(tenv), b.with(tenv));
-  }
-
-  /**
-   * Find a canonical version of this type in the given set, using the specified environment to
-   * interpret TGens, and assuming that we have already pushed a certain number of args for this
-   * type on the stack.
-   */
-  Type canonType(Type[] env, TypeSet set, int args) {
-    return (env == null) ? set.canonOther(this, args) : env[n].canonType(null, set, args);
-  }
-
-  Type apply(Type[] thisenv, TVarSubst s) {
-    return thisenv[n].apply(null, s);
   }
 
   boolean nonUnit(Type[] tenv) {

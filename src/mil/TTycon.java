@@ -226,47 +226,6 @@ public class TTycon extends TConst {
     return name.tupleArity(null, n);
   }
 
-  /**
-   * Return the natural number type that specifies the BitSize of this type (required to be of kind
-   * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should
-   * only be used with a limited collection of classes (we only expect to use it with top-level,
-   * monomorphic types), but, just in case, we also provide implementations for classes that we do
-   * not expect to see in practice, and allow for the possibility of a type environment, even though
-   * we expect it will only ever be null.
-   */
-  public Type bitSize(Type[] tenv) {
-    return name.bitSize();
-  }
-
-  /**
-   * Worker method for calculating the BitSize for a type of the form (this a) (i.e., this, applied
-   * to the argument a). The specified type environment, tenv, is used for both this and a.
-   */
-  Type bitSize(Type[] tenv, Type a) {
-    return name.bitSize(tenv, a);
-  }
-
-  /**
-   * Worker method for calculating the BitSize for a type of the form (this a b) (i.e., this,
-   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
-   * and b.
-   */
-  Type bitSize(Type[] tenv, Type a, Type b) {
-    return name.bitSize(tenv, a, b);
-  }
-
-  public Pat bitPat(Type[] tenv) {
-    return name.bitPat();
-  }
-
-  Pat bitPat(Type[] tenv, Type a) {
-    return name.bitPat(tenv, a);
-  }
-
-  Pat bitPat(Type[] tenv, Type a, Type b) {
-    return name.bitPat(tenv, a, b);
-  }
-
   /** Find the name of the associated bitdata type, if any. */
   public BitdataName bitdataName() {
     return name.bitdataName();
@@ -274,7 +233,7 @@ public class TTycon extends TConst {
 
   /**
    * Find the Bitdata Layout associated with values of this type, if there is one, or else return
-   * null. TODO: perhaps this code should be colocated with bitdataName()?
+   * null.
    */
   public BitdataLayout bitdataLayout() {
     return name.bitdataLayout();
@@ -283,43 +242,6 @@ public class TTycon extends TConst {
   /** Find the name of the associated struct type, if any. */
   public StructName structName() {
     return name.structName();
-  }
-
-  /**
-   * Return the natural number type that specifies the ByteSize of this type (required to be of kind
-   * area) or null if this type has no ByteSize (i.e., no memory layout).
-   */
-  public Type byteSize(Type[] tenv) {
-    return name.byteSize();
-  }
-
-  /**
-   * Worker method for calculating the ByteSize for a type of the form (this a) (i.e., this, applied
-   * to the argument a). The specified type environment, tenv, is used for both this and a.
-   */
-  Type byteSize(Type[] tenv, Type a) {
-    return name.byteSize(tenv, a);
-  }
-
-  /**
-   * Worker method for calculating the ByteSize for a type of the form (this a b) (i.e., this,
-   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
-   * and b.
-   */
-  Type byteSize(Type[] tenv, Type a, Type b) {
-    return name.byteSize(tenv, a, b);
-  }
-
-  Type byteSizeStoredRef(Type[] tenv) {
-    return name.byteSizeStoredRef(null);
-  }
-
-  Type byteSizeStoredRef(Type[] tenv, Type a) {
-    return name.byteSizeStoredRef(tenv, a);
-  }
-
-  Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
-    return name.byteSizeStoredRef(tenv, a, b);
   }
 
   /**
@@ -430,6 +352,84 @@ public class TTycon extends TConst {
 
   boolean useBitdataLo(Type t, Type s) {
     return name != DataName.aref && name != DataName.aptr;
+  }
+
+  /**
+   * Return the natural number type that specifies the BitSize of this type (required to be of kind
+   * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should
+   * only be used with a limited collection of classes (we only expect to use it with top-level,
+   * monomorphic types), but, just in case, we also provide implementations for classes that we do
+   * not expect to see in practice, and allow for the possibility of a type environment, even though
+   * we expect it will only ever be null.
+   */
+  public Type bitSize(Type[] tenv) {
+    return name.bitSize();
+  }
+
+  /**
+   * Worker method for calculating the BitSize for a type of the form (this a) (i.e., this, applied
+   * to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  Type bitSize(Type[] tenv, Type a) {
+    return name.bitSize(tenv, a);
+  }
+
+  /**
+   * Worker method for calculating the BitSize for a type of the form (this a b) (i.e., this,
+   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
+   * and b.
+   */
+  Type bitSize(Type[] tenv, Type a, Type b) {
+    return name.bitSize(tenv, a, b);
+  }
+
+  public Pat bitPat(Type[] tenv) {
+    return name.bitPat();
+  }
+
+  Pat bitPat(Type[] tenv, Type a) {
+    return name.bitPat(tenv, a);
+  }
+
+  Pat bitPat(Type[] tenv, Type a, Type b) {
+    return name.bitPat(tenv, a, b);
+  }
+
+  /**
+   * Return the natural number type that specifies the ByteSize of this type (required to be of kind
+   * area) or null if this type has no ByteSize (i.e., no memory layout).
+   */
+  public Type byteSize(Type[] tenv) {
+    return name.byteSize();
+  }
+
+  /**
+   * Worker method for calculating the ByteSize for a type of the form (this a) (i.e., this, applied
+   * to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  Type byteSize(Type[] tenv, Type a) {
+    return name.byteSize(tenv, a);
+  }
+
+  /**
+   * Worker method for calculating the ByteSize for a type of the form (this a b) (i.e., this,
+   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
+   * and b.
+   */
+  Type byteSize(Type[] tenv, Type a, Type b) {
+    return name.byteSize(tenv, a, b);
+  }
+
+  Type byteSizeStoredRef(Type[] tenv) {
+    return name.byteSizeStoredRef(null);
+  }
+
+  Type byteSizeStoredRef(Type[] tenv, Type a) {
+    return name.byteSizeStoredRef(tenv, a);
+  }
+
+  Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
+    return name.byteSizeStoredRef(tenv, a, b);
   }
 
   boolean nonUnit(Type[] tenv) {

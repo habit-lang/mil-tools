@@ -286,6 +286,45 @@ public final class TVar extends TInd {
   }
 
   /**
+   * Generate a printable description for an array of type variables, such as the type variables
+   * that are implicitly bound by a "big lambda" in a polymorphic definition.
+   */
+  public static String show(TVar[] tvs) {
+    StringBuilder buf = new StringBuilder("[");
+    if (tvs != null && tvs.length > 0) {
+      buf.append(tvs[0].toString());
+      for (int i = 1; i < tvs.length; i++) {
+        buf.append(", ");
+        buf.append(tvs[i].toString());
+      }
+    }
+    buf.append("]");
+    return buf.toString();
+  }
+
+  /**
+   * Find a canonical version of this type in the given set, using the specified environment to
+   * interpret TGens, and assuming that we have already pushed a certain number of args for this
+   * type on the stack.
+   */
+  Type canonType(Type[] env, TypeSet set, int args) {
+    return (bound == null) ? set.canonOther(this, args) : bound.canonType(boundenv, set, args);
+  }
+
+  Type apply(Type[] thisenv, TVarSubst s) {
+    return (bound == null) ? s.find(this) : bound.apply(boundenv, s);
+  }
+
+  Type removeTVar() {
+    if (bound == null) {
+      debug.Internal.error("removeTVar: variable has not been bound");
+    } else if (boundenv != null) {
+      debug.Internal.error("removeTVar: non empty environment");
+    }
+    return bound;
+  }
+
+  /**
    * Return the natural number type that specifies the BitSize of this type (required to be of kind
    * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should
    * only be used with a limited collection of classes (we only expect to use it with top-level,
@@ -361,45 +400,6 @@ public final class TVar extends TInd {
 
   Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
     return (bound == null) ? null : bound.byteSizeStoredRef(boundenv, a.with(tenv), b.with(tenv));
-  }
-
-  /**
-   * Generate a printable description for an array of type variables, such as the type variables
-   * that are implicitly bound by a "big lambda" in a polymorphic definition.
-   */
-  public static String show(TVar[] tvs) {
-    StringBuilder buf = new StringBuilder("[");
-    if (tvs != null && tvs.length > 0) {
-      buf.append(tvs[0].toString());
-      for (int i = 1; i < tvs.length; i++) {
-        buf.append(", ");
-        buf.append(tvs[i].toString());
-      }
-    }
-    buf.append("]");
-    return buf.toString();
-  }
-
-  /**
-   * Find a canonical version of this type in the given set, using the specified environment to
-   * interpret TGens, and assuming that we have already pushed a certain number of args for this
-   * type on the stack.
-   */
-  Type canonType(Type[] env, TypeSet set, int args) {
-    return (bound == null) ? set.canonOther(this, args) : bound.canonType(boundenv, set, args);
-  }
-
-  Type apply(Type[] thisenv, TVarSubst s) {
-    return (bound == null) ? s.find(this) : bound.apply(boundenv, s);
-  }
-
-  Type removeTVar() {
-    if (bound == null) {
-      debug.Internal.error("removeTVar: variable has not been bound");
-    } else if (boundenv != null) {
-      debug.Internal.error("removeTVar: non empty environment");
-    }
-    return bound;
   }
 
   boolean nonUnit(Type[] tenv) {

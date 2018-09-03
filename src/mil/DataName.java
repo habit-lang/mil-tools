@@ -118,23 +118,6 @@ public class DataName extends Tycon {
 
   public static final DataName stored = new DataName("Stored", starToArea, 1);
 
-  /** Return the nat that specifies the bit size of the type produced by this type constructor. */
-  public Type bitSize() {
-    return (this == DataName.word || this == DataName.nzword)
-        ? Type.TypeWORDSIZE
-        : (this == DataName.flag) ? Type.TypeFLAGSIZE : null;
-  }
-
-  /** Return the bit pattern for the values of this type. */
-  public Pat bitPat() {
-    // TODO: cache these patterns?
-    return (this == DataName.word)
-        ? Pat.all(Type.WORDSIZE)
-        : (this == DataName.nzword)
-            ? Pat.nonzero(Type.WORDSIZE)
-            : (this == DataName.flag) ? Pat.all(Type.FLAGSIZE) : null;
-  }
-
   public obdd.Pat getPat(int num) {
     debug.Internal.error("DataName does not have a bit pattern");
     return null;
@@ -637,6 +620,23 @@ public class DataName extends Tycon {
       }
     }
     return c;
+  }
+
+  /** Return the nat that specifies the bit size of the type produced by this type constructor. */
+  public Type bitSize() {
+    return (this == DataName.word || this == DataName.nzword)
+        ? Type.TypeWORDSIZE
+        : (this == DataName.flag) ? Type.TypeFLAGSIZE : null;
+  }
+
+  /** Return the bit pattern for the values of this type. */
+  public Pat bitPat() {
+    // TODO: cache these patterns?
+    return (this == DataName.word)
+        ? Pat.all(Type.WORDSIZE)
+        : (this == DataName.nzword)
+            ? Pat.nonzero(Type.WORDSIZE)
+            : (this == DataName.flag) ? Pat.all(Type.FLAGSIZE) : null;
   }
 
   public void addCfunsTo(Handler handler, MILEnv milenv) {

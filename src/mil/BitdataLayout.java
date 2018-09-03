@@ -25,7 +25,7 @@ import core.*;
 import java.io.PrintWriter;
 import java.math.BigInteger;
 
-/** Represents the type constructor for a specific bitdata layout. */
+/** Represents a type constructor for a specific bitdata layout. */
 public class BitdataLayout extends DataName {
 
   /** The bitdata type for this layout. */
@@ -74,6 +74,20 @@ public class BitdataLayout extends DataName {
     this(pos, id, KAtom.STAR, fields.length, bn, tagbits, fields, pat);
   }
 
+  private obdd.MaskTestPat maskTest;
+
+  public void setMaskTest(obdd.MaskTestPat maskTest) {
+    this.maskTest = maskTest;
+  }
+
+  public BitdataField[] getFields() {
+    return fields;
+  }
+
+  /**
+   * Write this type to the specified writer, in a context with the specified precedence and number
+   * of arguments.
+   */
   void write(TypeWriter tw, int prec, int args) {
     if (args == 0) {
       bn.write(tw, prec, 0);
@@ -84,30 +98,12 @@ public class BitdataLayout extends DataName {
     }
   }
 
-  public int getWidth() {
-    return pat.getWidth();
-  }
-
-  public Type bitSize() {
-    return bn.bitSize();
-  }
-
-  public BitdataField[] getFields() {
-    return fields;
-  }
-
-  public boolean isNullary() {
-    return fields.length == 0;
-  }
-
-  private obdd.MaskTestPat maskTest;
-
-  public void setMaskTest(obdd.MaskTestPat maskTest) {
-    this.maskTest = maskTest;
-  }
-
-  public AllocType cfunType() {
-    return new AllocType((isNullary() ? Type.noTypes : new Type[] {this.asType()}), bn.asType());
+  /**
+   * Find the Bitdata Layout associated with values of this type, if there is one, or else return
+   * null.
+   */
+  public BitdataLayout bitdataLayout() {
+    return this;
   }
 
   /** Return the bit pattern for this object. */
@@ -118,6 +114,18 @@ public class BitdataLayout extends DataName {
   /** Return the constructor function for this layout. */
   public Cfun getCfun() {
     return cfuns[0];
+  }
+
+  public int getWidth() {
+    return pat.getWidth();
+  }
+
+  public boolean isNullary() {
+    return fields.length == 0;
+  }
+
+  public AllocType cfunType() {
+    return new AllocType((isNullary() ? Type.noTypes : new Type[] {this.asType()}), bn.asType());
   }
 
   public void debugDump() {
@@ -138,14 +146,6 @@ public class BitdataLayout extends DataName {
       fields[i].debugDump();
     }
     debug.Log.println("  mask-test " + maskTest.toString(id));
-  }
-
-  /**
-   * Find the Bitdata Layout associated with values of this type, if there is one, or else return
-   * null. TODO: perhaps this code should be colocated with bitdataName()?
-   */
-  public BitdataLayout bitdataLayout() {
-    return this;
   }
 
   /** Print a definition for this bitdata type using source level syntax. */
@@ -411,5 +411,10 @@ public class BitdataLayout extends DataName {
     for (int i = 0; i < fields.length; i++) {
       fields[i].calculateBitdataBlocks(cf, this);
     }
+  }
+
+  /** Return the nat that specifies the bit size of the type produced by this type constructor. */
+  public Type bitSize() {
+    return bn.bitSize();
   }
 }
