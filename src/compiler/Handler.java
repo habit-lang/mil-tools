@@ -65,7 +65,7 @@ public abstract class Handler {
   /**
    * Respond to a diagnostic report. Subclasses should override this method to deal with diagnostic
    * reports in an appropriate way. Diagnostics will normally be passed to this method indirectly
-   * via a call to report() in the client code.
+   * via a call to report().
    */
   protected abstract void respondTo(Diagnostic d);
 

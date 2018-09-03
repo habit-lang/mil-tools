@@ -24,18 +24,13 @@ package compiler;
  */
 public class Failure extends Diagnostic {
 
-  /** Construct a simple failure report with a fixed description. */
+  /** Default constructor. */
+  public Failure(Position pos, String text) {
+    super(pos, text);
+  }
+
+  /** Construct a failure with no associated position. */
   public Failure(String text) {
     super(text);
-  }
-
-  /** Construct a failure report for a particular source position. */
-  public Failure(Position position) {
-    super(position);
-  }
-
-  /** Construct a simple failure report with a fixed description and a source position. */
-  public Failure(Position position, String text) {
-    super(position, text);
   }
 }

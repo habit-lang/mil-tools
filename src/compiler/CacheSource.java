@@ -72,8 +72,8 @@ public class CacheSource extends Source {
   }
 
   /**
-   * Return the text of a specific line, if it is available. If the requested source line has not
-   * been read yet, then a null is returned.
+   * Return the text of a specific line, if it is available. If the requested line has not been read
+   * yet, then a null is returned.
    */
   public String getLine(int lineNo) {
     return (cache == null || lineNo <= 0 || lineNo > used) ? null : cache[lineNo - 1];

@@ -26,12 +26,8 @@ public class SimpleHandler extends Handler {
 
   /** Respond to a diagnostic by displaying it on the error output stream. */
   protected void respondTo(Diagnostic d) {
+    System.err.print((d instanceof Warning) ? "WARNING: " : "ERROR: ");
     Position pos = d.getPos();
-    if (d instanceof Warning) {
-      System.err.print("WARNING: ");
-    } else {
-      System.err.print("ERROR: ");
-    }
     if (pos != null) {
       System.err.println(pos.describe());
     }

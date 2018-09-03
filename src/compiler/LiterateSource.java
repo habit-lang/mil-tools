@@ -49,10 +49,7 @@ public class LiterateSource extends Source {
     this(handler, true, source);
   }
 
-  /**
-   * Return a description of the source as a String. This method just returns the description of the
-   * source for this LiterateSource.
-   */
+  /** Return a description of the source as a String. */
   public String describe() {
     return source.describe();
   }
