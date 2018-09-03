@@ -600,12 +600,14 @@ functions is declared as an `entrypoint`.  (The type signatures that
 are provided for each function here could be useful as documentation,
 but they can also be inferred automatically, so are not actually
 required.)  As a result, when this program is compiled using the
-following command, it will produce an LLVM output (in the file
-`tmp/funlib.ll` that contains an externally visible function
+following commands, it will produce an LLVM output (in the file
+`tmp/funlib.ll`) that contains an externally visible function
 definition for each of the four LC functions.
 
     $ ./milc demo/funlib.lc -ltmp/funlib.ll
     $ clang -c -o tmp/funlib.o tmp/funlib.ll
+    warning: overriding the module target triple with ...
+    1 warning generated.
     $
 
 [As before, assuming you have a conventional LLVM installation,
@@ -667,9 +669,9 @@ program:
 
 Although there is no need for this in our `funlib` example,
 it is sometimes necessary to perform some kind of initialization
-steps before any (or all) of the entrypoints in a library are
+steps before some (or all) of the entrypoints in a library are
 used for the first time.  The following shows a contrived
-example of this that includes entrypoints called `fib12` and
+example that includes entrypoints called `fib12` and
 `fib15` that are supposed to contain the 12th and 15th
 Fibonnaci numbers, respectively:
 
