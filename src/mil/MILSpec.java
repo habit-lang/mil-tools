@@ -32,14 +32,14 @@ public class MILSpec extends TypeSet {
    * datatypes in the original program to the corresponding specialized (non-parameterized)
    * datatypes.
    */
-  private HashMap<Type, DataName> specDataNames = new HashMap();
+  private HashMap<Type, DataType> specDataTypes = new HashMap();
 
-  void put(Type inst, DataName dn) {
-    specDataNames.put(inst, dn);
+  void put(Type inst, DataType dt) {
+    specDataTypes.put(inst, dt);
   }
 
-  DataName get(Type inst) {
-    return specDataNames.get(inst);
+  DataType get(Type inst) {
+    return specDataTypes.get(inst);
   }
 
   public void dump(PrintWriter out) {
@@ -64,11 +64,11 @@ public class MILSpec extends TypeSet {
     }
 
     out.println("Specialized Datatypes: ------------------");
-    for (Type t : specDataNames.keySet()) {
-      DataName dn = specDataNames.get(t);
-      if (t != dn.asType()) {
-        out.println("  " + t + "  ~~>  " + dn.asType());
-        Cfun[] cfuns = dn.getCfuns();
+    for (Type t : specDataTypes.keySet()) {
+      DataType dt = specDataTypes.get(t);
+      if (t != dt.asType()) {
+        out.println("  " + t + "  ~~>  " + dt.asType());
+        Cfun[] cfuns = dt.getCfuns();
         for (int i = 0; i < cfuns.length; i++) {
           out.println("      " + cfuns[i].getId() + " :: " + cfuns[i].getAllocType());
         }
@@ -259,15 +259,15 @@ public class MILSpec extends TypeSet {
    * constructors that do not already have an associated bitSize, and might therefore be candidates
    * for replacing with bitdata types.
    */
-  public DataNames bitdataCandidates() {
-    DataNames cands = null;
-    for (Type t : specDataNames.keySet()) {
-      DataName dn = specDataNames.get(t);
-      if (t == dn.asType() && dn.getArity() == 0 && !dn.isRecursive() && dn.bitSize() == null) {
-        Cfun[] cfuns = dn.getCfuns();
+  public DataTypes bitdataCandidates() {
+    DataTypes cands = null;
+    for (Type t : specDataTypes.keySet()) {
+      DataType dt = specDataTypes.get(t);
+      if (t == dt.asType() && dt.getArity() == 0 && !dt.isRecursive() && dt.bitSize() == null) {
+        Cfun[] cfuns = dt.getCfuns();
         if (cfuns != null && cfuns.length > 0) {
-          debug.Log.println("DataName " + dn + " is a candidate for bitdata representation");
-          cands = new DataNames(dn, cands);
+          debug.Log.println("DataType " + dt + " is a candidate for bitdata representation");
+          cands = new DataTypes(dt, cands);
         }
       }
     }

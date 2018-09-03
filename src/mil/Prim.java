@@ -123,26 +123,24 @@ public class Prim {
     return withArgs(new Atom[] {new Word(n), b});
   }
 
-  protected static final Type flagTuple = Type.tuple(DataName.flag.asType());
+  protected static final Type flagTuple = Type.tuple(Tycon.flag.asType());
 
-  protected static final Type flagFlagTuple =
-      Type.tuple(DataName.flag.asType(), DataName.flag.asType());
+  protected static final Type flagFlagTuple = Type.tuple(Tycon.flag.asType(), Tycon.flag.asType());
 
   protected static final BlockType unaryFlagType = new BlockType(flagTuple, flagTuple);
 
   protected static final BlockType binaryFlagType = new BlockType(flagFlagTuple, flagTuple);
 
-  protected static final Type wordTuple = Type.tuple(DataName.word.asType());
+  protected static final Type wordTuple = Type.tuple(Tycon.word.asType());
 
-  protected static final Type wordWordTuple =
-      Type.tuple(DataName.word.asType(), DataName.word.asType());
+  protected static final Type wordWordTuple = Type.tuple(Tycon.word.asType(), Tycon.word.asType());
 
   protected static final BlockType unaryWordType = new BlockType(wordTuple, wordTuple);
 
   protected static final BlockType binaryWordType = new BlockType(wordWordTuple, wordTuple);
 
   protected static final BlockType nzdivType =
-      new BlockType(Type.tuple(DataName.word.asType(), DataName.nzword.asType()), wordTuple);
+      new BlockType(Type.tuple(Tycon.word.asType(), Tycon.nzword.asType()), wordTuple);
 
   protected static final BlockType flagToWordType = new BlockType(flagTuple, wordTuple);
 
@@ -1619,11 +1617,11 @@ public class Prim {
 
   public static final Type bit64 = Type.bit(64);
 
-  public static final Type addrType = DataName.addr.asType();
+  public static final Type addrType = Tycon.addr.asType();
 
   public static final Type addrTuple = Type.tuple(addrType);
 
-  public static final Type unitTuple = Type.tuple(DataName.unit.asType());
+  public static final Type unitTuple = Type.tuple(Tycon.unit.asType());
 
   public static final BlockType load8type = new BlockType(addrTuple, Type.tuple(bit8));
 

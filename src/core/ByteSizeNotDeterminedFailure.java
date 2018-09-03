@@ -23,7 +23,7 @@ import mil.*;
 
 class ByteSizeNotDeterminedFailure extends Failure {
 
-  public ByteSizeNotDeterminedFailure(Position pos, StructName sn) {
-    super(pos, "Unable to determine a unique ByteSize value for " + sn);
+  public ByteSizeNotDeterminedFailure(Position pos, StructType st) {
+    super(pos, "Unable to determine a unique ByteSize value for " + st);
   }
 }

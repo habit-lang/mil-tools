@@ -19,25 +19,27 @@
 package mil;
 
 import compiler.*;
-import compiler.Position;
 import core.*;
 
-/** Names corresponding to types, each of which has an associated kind. */
-public abstract class TypeName extends Name {
+public class DataTypes {
 
-  protected Kind kind;
+  public DataType head;
+
+  public DataTypes next;
 
   /** Default constructor. */
-  public TypeName(Position pos, String id, Kind kind) {
-    super(pos, id);
-    this.kind = kind;
+  public DataTypes(DataType head, DataTypes next) {
+    this.head = head;
+    this.next = next;
   }
 
-  public Kind getKind() {
-    return kind;
-  }
-
-  public void fixKinds() {
-    kind = kind.fixKind();
+  /** Test for membership in a list. */
+  public static boolean isIn(DataType val, DataTypes list) {
+    for (; list != null; list = list.next) {
+      if (list.head == val) {
+        return true;
+      }
+    }
+    return false;
   }
 }

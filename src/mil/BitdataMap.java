@@ -23,8 +23,8 @@ import core.*;
 
 class BitdataMap extends TypeSet {
 
-  BitdataRep findRep(DataName dn) {
-    DataName ndn = getDataName(dn);
+  BitdataRep findRep(DataType dt) {
+    DataName ndn = getDataType(dt);
     return (ndn == null) ? null : ndn.isBitdataRep();
   }
 
@@ -32,16 +32,16 @@ class BitdataMap extends TypeSet {
    * Rewrite this program to use bitdata types in place of any of the algebraic types, passed in as
    * candidates, that can be given a suitable bitdata representation.
    */
-  int addMappings(DataNames cands) {
+  int addMappings(DataTypes cands) {
     int total = 0; // Track the total number of mappings created during this call
     if (cands != null) { // If there are no candidates, then there is no need for a rewrite
       int added;
       do { // Invariant: we only start this loop if cands!=null
-        DataNames nextpass = null; // The list of candidates retained for the next pass
+        DataTypes nextpass = null; // The list of candidates retained for the next pass
         int retained = 0;
         added = 0;
         do {
-          DataNames next = cands.next;
+          DataTypes next = cands.next;
           int act = cands.head.bitdataEncoding(this, next, nextpass);
           if (act > 0) {
             added++;
@@ -69,7 +69,7 @@ class BitdataMap extends TypeSet {
   /**
    * Override the TypeSet method for calculating canonical versions of a type with a Tycon at its
    * head. By overriding this method, we are able to check for situations where the head is a
-   * DataName that is being replaced by a BitdataName and then make an appropriate substitution of
+   * DataType that is being replaced by a BitdataType and then make an appropriate substitution of
    * names in all of the types where that is required.
    */
   protected Type canon(Tycon h, int args) {

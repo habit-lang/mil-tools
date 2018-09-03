@@ -29,7 +29,7 @@ import java.math.BigInteger;
 public class BitdataLayout extends DataName {
 
   /** The bitdata type for this layout. */
-  private BitdataName bn;
+  private BitdataType bt;
 
   /** The tagbits for this layout. */
   private BigInteger tagbits;
@@ -44,14 +44,12 @@ public class BitdataLayout extends DataName {
   public BitdataLayout(
       Position pos,
       String id,
-      Kind kind,
-      int arity,
-      BitdataName bn,
+      BitdataType bt,
       BigInteger tagbits,
       BitdataField[] fields,
       obdd.Pat pat) {
-    super(pos, id, kind, arity);
-    this.bn = bn;
+    super(pos, id);
+    this.bt = bt;
     this.tagbits = tagbits;
     this.fields = fields;
     this.pat = pat;
@@ -61,17 +59,11 @@ public class BitdataLayout extends DataName {
       stored[i] = fields[i].getType();
     }
     cfuns =
-        new Cfun[] {new Cfun(pos, bn + "." + id, this, 0, new AllocType(stored, this.asType()))};
+        new Cfun[] {new Cfun(pos, bt + "." + id, this, 0, new AllocType(stored, this.asType()))};
   }
 
-  public BitdataLayout(
-      Position pos,
-      String id,
-      BitdataName bn,
-      BigInteger tagbits,
-      BitdataField[] fields,
-      obdd.Pat pat) {
-    this(pos, id, KAtom.STAR, fields.length, bn, tagbits, fields, pat);
+  public BitdataField[] getFields() {
+    return fields;
   }
 
   private obdd.MaskTestPat maskTest;
@@ -80,8 +72,14 @@ public class BitdataLayout extends DataName {
     this.maskTest = maskTest;
   }
 
-  public BitdataField[] getFields() {
-    return fields;
+  /** Return the kind of this type constructor. */
+  public Kind getKind() {
+    return KAtom.STAR;
+  }
+
+  /** Return the arity of this type constructor. */
+  public int getArity() {
+    return fields.length;
   }
 
   /**
@@ -90,7 +88,7 @@ public class BitdataLayout extends DataName {
    */
   void write(TypeWriter tw, int prec, int args) {
     if (args == 0) {
-      bn.write(tw, prec, 0);
+      bt.write(tw, prec, 0);
       tw.write(".");
       tw.write(id);
     } else {
@@ -125,7 +123,7 @@ public class BitdataLayout extends DataName {
   }
 
   public AllocType cfunType() {
-    return new AllocType((isNullary() ? Type.noTypes : new Type[] {this.asType()}), bn.asType());
+    return new AllocType((isNullary() ? Type.noTypes : new Type[] {this.asType()}), bt.asType());
   }
 
   public void debugDump() {
@@ -179,14 +177,6 @@ public class BitdataLayout extends DataName {
     return this;
   }
 
-  /**
-   * Return true if this is a newtype constructor (i.e., a single argument constructor function for
-   * a nonrecursive type that only has one constructor).
-   */
-  public boolean isNewtype() { // Don't treat bitdata types as newtypes
-    return false;
-  }
-
   Type specializeTycon(MILSpec spec, Type inst) {
     return inst;
   }
@@ -204,7 +194,7 @@ public class BitdataLayout extends DataName {
     Cfun[] cfuns = new Cfun[layouts.length];
     for (int i = 0; i < layouts.length; i++) {
       BitdataLayout layout = layouts[i];
-      cfuns[i] = new Cfun(layout.pos, layout.id, layout.bn, i, layout.cfunType());
+      cfuns[i] = new Cfun(layout.pos, layout.id, layout.bt, i, layout.cfunType());
     }
     return cfuns;
   }
@@ -232,7 +222,7 @@ public class BitdataLayout extends DataName {
 
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
-    return bn.repCalc();
+    return bt.repCalc();
   }
 
   Code repTransformAssert(RepTypeSet set, Cfun cf, Atom a, Code c) {
@@ -415,6 +405,6 @@ public class BitdataLayout extends DataName {
 
   /** Return the nat that specifies the bit size of the type produced by this type constructor. */
   public Type bitSize() {
-    return bn.bitSize();
+    return bt.bitSize();
   }
 }

@@ -49,17 +49,16 @@ public class SelTypeExp extends PosTypeExp {
   }
 
   public Type toType(Prefix prefix) throws Failure {
-    Type bt = t.toType(prefix);
-    BitdataName bn = bt.bitdataName();
-    if (bn == null) {
+    BitdataType bt = t.toType(prefix).bitdataType();
+    if (bt == null) {
       throw new Failure(pos, "Expected bitdata type");
     } else {
-      BitdataLayout[] layouts = bn.getLayouts();
+      BitdataLayout[] layouts = bt.getLayouts();
       int i = Name.index(lab, layouts);
       if (i >= 0) {
         return layouts[i].asType();
       }
-      throw new Failure(pos, "Label " + lab + " is not used in " + bn);
+      throw new Failure(pos, "Label " + lab + " is not used in " + bt);
     }
   }
 

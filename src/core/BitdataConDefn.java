@@ -64,7 +64,7 @@ class BitdataConDefn extends Name {
 
   private BitdataLayout layout;
 
-  obdd.Pat calcLayout(BitdataName bn) throws Failure {
+  obdd.Pat calcLayout(BitdataType bt) throws Failure {
     // TODO: it is ugly to use four separate loops and transient width and offset fields
     // in each BitdataRegionExp; but is there a cleaner way to do this?
 
@@ -93,7 +93,7 @@ class BitdataConDefn extends Name {
       next = regexps[i].collectFields(fields, next);
     }
 
-    layout = new BitdataLayout(pos, id, bn, tagbits, fields, pat);
+    layout = new BitdataLayout(pos, id, bt, tagbits, fields, pat);
     return pat;
   }
 
@@ -141,18 +141,18 @@ class BitdataConDefn extends Name {
     constrs[i].layout.setMaskTest(test);
   }
 
-  static void calcCfuns(BitdataName bn, BitdataConDefn[] constrs) {
+  static void calcCfuns(BitdataType bt, BitdataConDefn[] constrs) {
     Cfun[] cfuns = new Cfun[constrs.length];
     BitdataLayout[] layouts = new BitdataLayout[constrs.length];
     for (int i = 0; i < constrs.length; i++) {
       BitdataConDefn ci = constrs[i];
-      cfuns[i] = new Cfun(ci.pos, ci.id, bn, i, ci.layout.cfunType());
+      cfuns[i] = new Cfun(ci.pos, ci.id, bt, i, ci.layout.cfunType());
       layouts[i] = ci.layout;
       debug.Log.println(cfuns[i] + " :: " + cfuns[i].getAllocType());
       layouts[i].debugDump();
     }
-    bn.setCfuns(cfuns);
-    bn.setLayouts(layouts);
+    bt.setCfuns(cfuns);
+    bt.setLayouts(layouts);
   }
 
   public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {

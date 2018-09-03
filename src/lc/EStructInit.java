@@ -45,7 +45,7 @@ class EStructInit extends EConstruct {
     EField.indent(out, n + 1, fields);
   }
 
-  private StructName sn;
+  private StructType st;
 
   /**
    * Perform a scope analysis on this expression, creating a Temp object for each variable binding,
@@ -56,7 +56,7 @@ class EStructInit extends EConstruct {
     Tycon tc = TyconEnv.findTycon(id, milenv.getTyconEnv());
     if (tc == null) {
       handler.report(new UnknownStructureFailure(pos, id));
-    } else if ((sn = tc.structName()) == null) {
+    } else if ((st = tc.structType()) == null) {
       handler.report(new StructureRequiredFailure(pos, tc));
     }
     return EField.inScopeOf(handler, milenv, env, null, fields);
@@ -67,13 +67,13 @@ class EStructInit extends EConstruct {
    * type variables that appear in an assumption.
    */
   Type inferType(TVarsInScope tis) throws Failure {
-    StructField[] sfields = sn.getFields();
+    StructField[] sfields = st.getFields();
     // A mapping from field numbers in the structure to field numbers in this expression:
     int[] map = new int[sfields.length];
 
     // Check that individual fields have the expected type:
     for (int i = 0; i < fields.length; i++) {
-      int p = fields[i].checkTypeStructInit(tis, sn, sfields);
+      int p = fields[i].checkTypeStructInit(tis, st, sfields);
       if (map[p] != 0) {
         throw new Failure(
             fields[i].getPos(), "There are multiple initializers for field \"" + sfields[p] + "\"");
@@ -87,14 +87,14 @@ class EStructInit extends EConstruct {
         throw new Failure(
             pos,
             "Structure "
-                + sn
+                + st
                 + " requires initializer for field "
                 + sfields[p]
                 + " :: "
                 + sfields[p].getType());
       }
     }
-    return Type.init(sn.asType());
+    return Type.init(st.asType());
   }
 
   /** Compile an expression into a Tail. */
@@ -103,7 +103,7 @@ class EStructInit extends EConstruct {
     if (fields.length == 0) {
       debug.Internal.error("code generation for structure initializers with no fields");
     }
-    return EField.compInit(env, abort, sn, fields, 0, fields.length - 1, kt);
+    return EField.compInit(env, abort, st, fields, 0, fields.length - 1, kt);
   }
 
   /** Compile a monadic expression into a Tail. */

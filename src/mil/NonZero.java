@@ -57,7 +57,7 @@ public class NonZero extends Const {
 
   /** Return a type for an instantiated version of this item when used as Atom (input operand). */
   public Type instantiate() {
-    return DataName.nzword.asType();
+    return Tycon.nzword.asType();
   }
 
   /** Find the Value for a given mil constant. */

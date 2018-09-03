@@ -1884,15 +1884,15 @@ public class External extends TopDefn {
         new Generator(4) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) {
             BigInteger m = ts[0].getNat(); // Alignment of structure
-            StructName sn = ts[1].structName(); // Structure
+            StructType st = ts[1].structType(); // Structure
             String lab = ts[2].getLabel(); // Field label
             BigInteger n = ts[3].getNat(); // Alignment of field
-            if (m != null && sn != null && lab != null && n != null) {
+            if (m != null && st != null && lab != null && n != null) {
               // TODO: For now, we ignore the alignment values, trusting that the values passed in
               // by the front
               // end will be valid ... but it probably would not be a bad idea to check them here
               // too.
-              StructField[] fields = sn.getFields();
+              StructField[] fields = st.getFields();
               int i = Name.index(lab, fields);
               if (i >= 0) {
                 Temp[] vs = Temp.makeTemps(1);

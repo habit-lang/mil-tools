@@ -474,9 +474,9 @@ public class Case extends Code {
   }
 
   Code repTransform(RepTypeSet set, RepEnv env) {
-    BitdataName bn = dom.bitdataName();
-    if (bn != null) {
-      return Alt.repTransformBitdataCase(set, env, bn, a, alts, def);
+    BitdataType bt = dom.bitdataType();
+    if (bt != null) {
+      return Alt.repTransformBitdataCase(set, env, bt, a, alts, def);
     } else {
       // We're assuming that cfunRewrite has already been applied; one consequence is that we don't
       // have to

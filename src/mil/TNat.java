@@ -121,7 +121,7 @@ public class TNat extends TLit {
    * for n.
    */
   Type[] nzbitvectorRep() {
-    return Type.numWords(num.intValue()) == 1 ? DataName.nzwordRep : null;
+    return Type.numWords(num.intValue()) == 1 ? Tycon.nzwordRep : null;
   }
 
   /**

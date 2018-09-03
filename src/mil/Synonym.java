@@ -25,13 +25,17 @@ import core.*;
 import java.io.PrintWriter;
 import obdd.Pat;
 
+/** Represents a nullary type synonym. */
 public class Synonym extends Tycon {
+
+  private Kind kind;
 
   private Type expansion;
 
   /** Default constructor. */
   public Synonym(Position pos, String id, Kind kind, Type expansion) {
-    super(pos, id, kind);
+    super(pos, id);
+    this.kind = kind;
     this.expansion = expansion;
   }
 
@@ -43,14 +47,32 @@ public class Synonym extends Tycon {
     this.expansion = expansion;
   }
 
-  public int level = 0;
+  /** Return the kind of this type constructor. */
+  public Kind getKind() {
+    return kind;
+  }
 
-  public int getLevel() {
-    return level;
+  /** Return the arity of this type constructor. */
+  public int getArity() {
+    // TODO: The arity values returned by this method are used only to provide (hopefully)
+    // friendlier error messages when a tycon is applied to the wrong number of arguments ...
+    // For a synonym, we choose a large value to avoid imposing a limit.  Perhaps we can
+    // find a better abstraction than getArity() that better matches the actual use.
+    return Integer.MAX_VALUE;
   }
 
   public Synonym isSynonym() {
     return this;
+  }
+
+  public void fixKinds() {
+    kind = kind.fixKind();
+  }
+
+  public int level = 0;
+
+  public int getLevel() {
+    return level;
   }
 
   public int findLevel() throws Failure {
@@ -156,7 +178,7 @@ public class Synonym extends Tycon {
     return expansion.funcFromTuple1();
   }
 
-  /** Test to determine if this type is the MILArrow, ->>, without any arguments. */
+  /** Test to determine if this type is the MIL function arrow, ->>, without any arguments. */
   boolean isMILArrow() {
     return expansion.isMILArrow();
   }

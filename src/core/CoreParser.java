@@ -327,7 +327,7 @@ public class CoreParser extends Phase implements CoreTokens {
    */
   protected TypeExp maybeTypeArrow() {
     if (lexer.getToken() == TO) {
-      TypeExp t = new TyconTypeExp(lexer.getPos(), DataName.arrow);
+      TypeExp t = new TyconTypeExp(lexer.getPos(), DataType.arrow);
       lexer.nextToken(/* -> */ );
       return t;
     }

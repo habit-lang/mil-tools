@@ -76,9 +76,9 @@ public class StructField extends Name {
    * Return the initializer primitive for this field, calculating a definition for the primitive on
    * the first call.
    */
-  Prim initStructFieldPrim(StructName sn) {
+  Prim initStructFieldPrim(StructType st) {
     if (initStructField == null) {
-      BlockType bt = new BlockType(Type.tuple(Type.init(type)), Type.tuple(Type.init(sn.asType())));
+      BlockType bt = new BlockType(Type.tuple(Type.init(type)), Type.tuple(Type.init(st.asType())));
       initStructField = new Prim.initStructField("init_" + id, Prim.PURE, bt, offset);
     }
     return initStructField;

@@ -24,11 +24,14 @@ import compiler.Position;
 import core.*;
 
 /** Names for type variables/parameters. */
-public class Tyvar extends TypeName {
+public class Tyvar extends Name {
+
+  private Kind kind;
 
   /** Default constructor. */
   public Tyvar(Position pos, String id, Kind kind) {
-    super(pos, id, kind);
+    super(pos, id);
+    this.kind = kind;
   }
 
   public static final Tyvar[] noTyvars = new Tyvar[0];
@@ -44,4 +47,13 @@ public class Tyvar extends TypeName {
   public static final Tyvar area = new Tyvar(BuiltinPosition.pos, "", KAtom.AREA);
 
   public static final Tyvar nat = new Tyvar(BuiltinPosition.pos, "", KAtom.NAT);
+
+  /** Return the kind of this type constructor. */
+  public Kind getKind() {
+    return kind;
+  }
+
+  public void fixKinds() {
+    kind = kind.fixKind();
+  }
 }

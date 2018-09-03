@@ -51,7 +51,7 @@ class DataConDefn extends Name {
     }
   }
 
-  Cfun calcCfun(Prefix prefix, DataName dn, Type result, int num) throws Failure {
+  Cfun calcCfun(Prefix prefix, DataType dt, Type result, int num) throws Failure {
     // Calculate an AllocType for this constructor:
     Type[] stored = new Type[args.length];
     for (int i = 0; i < args.length; ++i) {
@@ -60,6 +60,6 @@ class DataConDefn extends Name {
     AllocType allocType = prefix.forall(stored, result);
     debug.Log.println(
         id + " :: " + allocType + " --  num = " + num + ", arity = " + allocType.getArity());
-    return new Cfun(pos, id, dn, num, allocType);
+    return new Cfun(pos, id, dt, num, allocType);
   }
 }

@@ -73,10 +73,10 @@ public class Cfun extends Name {
           Type.fun(Type.gen(0), Type.gen(1)),
           new Prefix(new Tyvar[] {Tyvar.star, Tyvar.star}));
 
-  public static final Cfun Func = new Cfun("Func", DataName.arrow, 0, funcType);
+  public static final Cfun Func = new Cfun("Func", Tycon.arrow, 0, funcType);
 
   static {
-    DataName.arrow.setCfuns(new Cfun[] {Cfun.Func});
+    Tycon.arrow.setCfuns(new Cfun[] {Cfun.Func});
   }
 
   private static final AllocType procType =
@@ -85,25 +85,25 @@ public class Cfun extends Name {
           Type.procOf(Type.gen(0)),
           new Prefix(new Tyvar[] {Tyvar.star}));
 
-  public static final Cfun Proc = new Cfun("Proc", DataName.proc, 0, procType);
+  public static final Cfun Proc = new Cfun("Proc", Tycon.proc, 0, procType);
 
   static {
 
     // debug.Log.println("Proc alloc type is: " + Proc.allocType);
-    DataName.proc.setCfuns(new Cfun[] {Cfun.Proc});
+    Tycon.proc.setCfuns(new Cfun[] {Cfun.Proc});
   }
 
-  private static final AllocType unitType = new AllocType(DataName.unit.asType());
+  private static final AllocType unitType = new AllocType(Tycon.unit.asType());
 
-  public static final Cfun Unit = new Cfun("Unit", DataName.unit, 0, unitType);
+  public static final Cfun Unit = new Cfun("Unit", Tycon.unit, 0, unitType);
 
   static {
-    DataName.unit.setCfuns(new Cfun[] {Cfun.Unit});
+    Tycon.unit.setCfuns(new Cfun[] {Cfun.Unit});
   }
 
   /** Find the name of the associated bitdata type, if any. */
-  public BitdataName bitdataName() {
-    return dn.bitdataName();
+  public BitdataType bitdataType() {
+    return dn.bitdataType();
   }
 
   /** Return the bit pattern for this object. */
@@ -188,8 +188,8 @@ public class Cfun extends Name {
     return ccfuns == null ? this : ccfuns[num];
   }
 
-  Cfun remap(TypeSet set, DataName newDn) {
-    return new Cfun(pos, id, newDn, num, allocType.canonAllocType(set));
+  Cfun remap(TypeSet set, DataType newDt) {
+    return new Cfun(pos, id, newDt, num, allocType.canonAllocType(set));
   }
 
   /**
@@ -209,13 +209,13 @@ public class Cfun extends Name {
 
   private static int count = 0;
 
-  Cfun specialize(MILSpec spec, DataName newDn, Type inst) {
+  Cfun specialize(MILSpec spec, DataType newDt, Type inst) {
     // no topDefn for this Cfun; they are only used in the milasm and lc frontends
     AllocType at = allocType.instantiate();
     if (!at.resultMatches(inst)) {
       debug.Internal.error("failed to specialize allocType " + this + " to " + inst);
     }
-    return new Cfun(pos, id + count++, newDn, num, at.canonAllocType(spec));
+    return new Cfun(pos, id + count++, newDt, num, at.canonAllocType(spec));
   }
 
   Cfun specializeCfun(MILSpec spec, AllocType type, TVarSubst s) {
@@ -229,13 +229,13 @@ public class Cfun extends Name {
 
   /**
    * Build a bitdata layout corresponding to this constructor function with the additional
-   * parameters that specify the associated bitdata type (bn), tagbits, offset (for rightmost
+   * parameters that specify the associated bitdata type (bt), tagbits, offset (for rightmost
    * field), bit patterns for fields (fpats), bit pattern p for the full constructor, and a suitably
    * chosen mask test predicate, mt.
    */
   BitdataLayout makeLayout(
       BitdataMap m,
-      BitdataName bn,
+      BitdataType bt,
       BigInteger tagbits,
       int offset,
       Pat[] fpats,
@@ -249,7 +249,7 @@ public class Cfun extends Name {
           new BitdataField(pos, id + i, allocType.storedType(i).canonType(m), offset, width);
       offset += width;
     }
-    BitdataLayout layout = new BitdataLayout(pos, id, bn, tagbits, fields, p);
+    BitdataLayout layout = new BitdataLayout(pos, id, bt, tagbits, fields, p);
     layout.setMaskTest(mt);
     return layout;
   }

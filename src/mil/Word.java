@@ -74,7 +74,7 @@ public class Word extends Const {
 
   /** Return a type for an instantiated version of this item when used as Atom (input operand). */
   public Type instantiate() {
-    return DataName.word.asType();
+    return Tycon.word.asType();
   }
 
   /** Find the Value for a given mil constant. */

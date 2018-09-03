@@ -630,7 +630,7 @@ public class MILParser extends CoreParser implements MILTokens {
    */
   protected TypeExp maybeTypeArrow() {
     if (lexer.getToken() == MILTO) {
-      TypeExp t = new TyconTypeExp(lexer.getPos(), MILArrow.milArrow);
+      TypeExp t = new TyconTypeExp(lexer.getPos(), Tycon.milArrow);
       lexer.nextToken(/* ->> */ );
       return t;
     }

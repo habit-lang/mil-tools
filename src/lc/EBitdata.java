@@ -47,7 +47,7 @@ class EBitdata extends EConstruct {
 
   private Cfun cf;
 
-  private BitdataName bn;
+  private BitdataType bt;
 
   private BitdataLayout layout;
 
@@ -62,10 +62,10 @@ class EBitdata extends EConstruct {
     cf = milenv.findCfun(id);
     if (cf == null) {
       handler.report(new UnknownConstructorFailure(pos, id));
-    } else if ((bn = cf.bitdataName()) == null) {
+    } else if ((bt = cf.bitdataType()) == null) {
       handler.report(new BitdataRequiredFailure(pos, cf));
     } else {
-      layout = bn.getLayouts()[cf.getNum()];
+      layout = bt.getLayouts()[cf.getNum()];
     }
     return EField.inScopeOf(handler, milenv, env, null, fields);
   }
@@ -107,7 +107,7 @@ class EBitdata extends EConstruct {
         invmap[map[p] - 1] = p;
       }
     }
-    return bn.asType();
+    return bt.asType();
   }
 
   /** Compile an expression into a Tail. */

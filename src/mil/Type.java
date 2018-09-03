@@ -343,12 +343,12 @@ public abstract class Type extends Scheme {
 
   /** Convenience method for constructing types of the form dom -> rng: */
   public static Type fun(Type dom, Type rng) {
-    return DataName.arrow.asType().tap(dom, rng);
+    return Tycon.arrow.asType().tap(dom, rng);
   }
 
   /** Convenience method for constructing types of the form dom ->> rng: */
   public static Type milfun(Type dom, Type rng) {
-    return MILArrow.milArrow.asType().tap(dom, rng);
+    return Tycon.milArrow.asType().tap(dom, rng);
   }
 
   /** Convenience method for constructing types of the form [dom] ->> [rng]: */
@@ -384,12 +384,12 @@ public abstract class Type extends Scheme {
   }
 
   public static Type procOf(Type res) {
-    return new TAp(DataName.proc.asType(), res);
+    return new TAp(Tycon.proc.asType(), res);
   }
 
   /** Convenience method for making a type of the form Bit n for some type w. */
   public static Type bit(Type w) {
-    return new TAp(DataName.bit.asType(), w);
+    return new TAp(Tycon.bit.asType(), w);
   }
 
   /** Convenience method for making a type of the form Bit n for some known integer value n. */
@@ -401,7 +401,7 @@ public abstract class Type extends Scheme {
    * Convenience method for making a type of the form ARef l a for some alignment l and area type a.
    */
   public static Type aref(Type alignment, Type areaType) {
-    return new TAp(new TAp(DataName.aref.asType(), alignment), areaType);
+    return new TAp(new TAp(Tycon.aref.asType(), alignment), areaType);
   }
 
   public static Type aref(long alignment, Type areaType) {
@@ -410,11 +410,11 @@ public abstract class Type extends Scheme {
 
   /** Convenience method for making a type of the form Init a for some area type a. */
   public static Type init(Type a) {
-    return new TAp(DataName.init.asType(), a);
+    return new TAp(Tycon.init.asType(), a);
   }
 
   /** Find the name of the associated bitdata type, if any. */
-  public BitdataName bitdataName() {
+  public BitdataType bitdataType() {
     return null;
   }
 
@@ -427,7 +427,7 @@ public abstract class Type extends Scheme {
   }
 
   /** Find the name of the associated struct type, if any. */
-  public StructName structName() {
+  public StructType structType() {
     return null;
   }
 
@@ -517,7 +517,7 @@ public abstract class Type extends Scheme {
     return this;
   }
 
-  DataName isDataName() {
+  DataType dataType() {
     return null;
   }
 
@@ -536,7 +536,7 @@ public abstract class Type extends Scheme {
     // Code to update cache[arg] = ... will be appended here.
 
     Type[] ws = new Type[n];
-    Type w = DataName.word.asType();
+    Type w = Tycon.word.asType();
     for (int i = 0; i < n; i++) {
       ws[i] = w;
     }
@@ -548,7 +548,7 @@ public abstract class Type extends Scheme {
    * of Word values or, for values of width 1, a single MIL Flag value.
    */
   public static Type[] repBits(int w) {
-    return (w == 0) ? DataName.unitRep : (w == 1) ? DataName.flagRep : Type.words(Type.numWords(w));
+    return (w == 0) ? Tycon.unitRep : (w == 1) ? Tycon.flagRep : Type.words(Type.numWords(w));
   }
 
   /** Return the representation vector for values of this type. */
@@ -655,7 +655,7 @@ public abstract class Type extends Scheme {
     return null;
   }
 
-  /** Test to determine if this type is the MILArrow, ->>, without any arguments. */
+  /** Test to determine if this type is the MIL function arrow, ->>, without any arguments. */
   boolean isMILArrow() {
     return false;
   }

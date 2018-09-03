@@ -31,9 +31,9 @@ class LLVMMap extends TypeSet {
     this.prog = prog;
 
     // Create some basic mappings
-    typeMap.put(DataName.word.asType(), llvm.Type.i32);
-    typeMap.put(DataName.nzword.asType(), llvm.Type.i32);
-    typeMap.put(DataName.flag.asType(), llvm.Type.i1);
+    typeMap.put(Tycon.word.asType(), llvm.Type.i32);
+    typeMap.put(Tycon.nzword.asType(), llvm.Type.i32);
+    typeMap.put(Tycon.flag.asType(), llvm.Type.i1);
   }
 
   /** Add a type definition to the program associated with this LLVMMap. */

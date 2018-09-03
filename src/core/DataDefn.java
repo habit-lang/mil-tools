@@ -34,7 +34,7 @@ public class DataDefn extends TyconDefn {
     this.constrs = constrs;
   }
 
-  private DataName dn;
+  private DataType dt;
 
   private TyvarEnv params;
 
@@ -43,7 +43,7 @@ public class DataDefn extends TyconDefn {
    * place, and it's awkward ... look for opportunities to rewrite
    */
   public Tycon getTycon() {
-    return dn;
+    return dt;
   }
 
   public void introduceTycons(Handler handler, TyconEnv env) {
@@ -56,7 +56,7 @@ public class DataDefn extends TyconDefn {
       }
     }
     params.checkForMultipleTyvars(handler);
-    env.add(dn = new DataName(pos, id, params.toKind(), args.length));
+    env.add(dt = new DataType(pos, id, params.toKind(), args.length));
   }
 
   /**
@@ -72,7 +72,7 @@ public class DataDefn extends TyconDefn {
   }
 
   public void setRecursive() {
-    dn.setRecursive();
+    dt.setRecursive();
   }
 
   public void kindInfer(Handler handler) {
@@ -86,13 +86,13 @@ public class DataDefn extends TyconDefn {
 
   public void fixKinds() {
     params.fixKinds();
-    dn.fixKinds();
+    dt.fixKinds();
   }
 
   /** Calculate types for each of the values that are introduced by this definition. */
   public void calcCfuns(Handler handler) {
     // Calculate the range type for constructors in this type
-    Type rng = dn.asType();
+    Type rng = dt.asType();
     for (int i = 0; i < args.length; i++) {
       rng = new TAp(rng, Type.gen(i));
     }
@@ -106,18 +106,18 @@ public class DataDefn extends TyconDefn {
     // Define a name for each constructor function:
     for (int i = 0; i < constrs.length; i++) {
       try {
-        cfuns[i] = constrs[i].calcCfun(prefix, dn, rng, i);
+        cfuns[i] = constrs[i].calcCfun(prefix, dt, rng, i);
       } catch (Failure f) {
         handler.report(f);
       }
     }
 
     // Store the resulting list of constructor functions:
-    dn.setCfuns(cfuns);
-    // ! System.out.println(id + " is newtype? " + dn.isNewtype());
+    dt.setCfuns(cfuns);
+    // ! System.out.println(id + " is newtype? " + dt.isNewtype());
   }
 
   public void addToMILEnv(Handler handler, MILEnv milenv) {
-    dn.addCfunsTo(handler, milenv);
+    dt.addCfunsTo(handler, milenv);
   }
 }

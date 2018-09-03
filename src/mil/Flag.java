@@ -68,7 +68,7 @@ public class Flag extends Const {
 
   /** Return a type for an instantiated version of this item when used as Atom (input operand). */
   public Type instantiate() {
-    return DataName.flag.asType();
+    return Tycon.flag.asType();
   }
 
   /** Find the Value for a given mil constant. */

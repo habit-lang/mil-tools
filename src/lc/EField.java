@@ -91,11 +91,11 @@ class EField extends Name {
     return lfields[p];
   }
 
-  int checkTypeStructInit(TVarsInScope tis, StructName sn, StructField[] sfields) throws Failure {
+  int checkTypeStructInit(TVarsInScope tis, StructType st, StructField[] sfields) throws Failure {
     int p = Name.index(id, sfields);
     if (p < 0) {
       throw new Failure(
-          pos, "Structure " + sn + " does not include a field with label \"" + id + "\"");
+          pos, "Structure " + st + " does not include a field with label \"" + id + "\"");
     }
     e.checkType(tis, Type.init(sfields[p].getType()));
     return p;
@@ -110,7 +110,7 @@ class EField extends Name {
   static Code compInit(
       final CGEnv env,
       final Block abort,
-      final StructName sn,
+      final StructType st,
       final EField[] fields,
       final int lo,
       final int hi,
@@ -135,7 +135,7 @@ class EField extends Name {
           new TailCont() {
             Code with(final Tail init) {
               Temp i = new Temp();
-              return new Bind(i, init, kt.with(sn.initStructFieldPrim(lo).withArgs(i)));
+              return new Bind(i, init, kt.with(st.initStructFieldPrim(lo).withArgs(i)));
             }
           });
     } else {
@@ -143,7 +143,7 @@ class EField extends Name {
       return compInit(
           env,
           abort,
-          sn,
+          st,
           fields,
           lo,
           mid,
@@ -156,7 +156,7 @@ class EField extends Name {
                   compInit(
                       env,
                       abort,
-                      sn,
+                      st,
                       fields,
                       mid + 1,
                       hi,

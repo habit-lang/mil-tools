@@ -19,22 +19,17 @@
 package mil;
 
 import compiler.*;
-import compiler.BuiltinPosition;
 import compiler.Position;
 import core.*;
 import java.io.PrintWriter;
 import obdd.Pat;
 
-/**
- * Represents a type constructor that is introduced as a bitdata type. TODO: BitdataName shouldn't
- * require an arity; refactor to make DataName a common base class for BitdataName and DatatypeName?
- * Reconsider hierarchy!
- */
-public class BitdataName extends DataName {
+/** Represents a type constructor that is introduced as a bitdata type. */
+public class BitdataType extends DataName {
 
   /** Default constructor. */
-  public BitdataName(Position pos, String id, Kind kind, int arity) {
-    super(pos, id, kind, arity);
+  public BitdataType(Position pos, String id) {
+    super(pos, id);
   }
 
   protected BitdataLayout[] layouts;
@@ -63,14 +58,18 @@ public class BitdataName extends DataName {
     this.pat = pat;
   }
 
-  /** A constructor for defining names that have BuiltinPosition. */
-  public BitdataName(String id, Kind kind, int arity) {
-    this(BuiltinPosition.pos, id, kind, arity);
-    TyconEnv.builtin.add(this);
+  /** Return the kind of this type constructor. */
+  public Kind getKind() {
+    return KAtom.STAR;
+  }
+
+  /** Return the arity of this type constructor. */
+  public int getArity() {
+    return 0;
   }
 
   /** Find the name of the associated bitdata type, if any. */
-  public BitdataName bitdataName() {
+  public BitdataType bitdataType() {
     return this;
   }
 
@@ -110,14 +109,6 @@ public class BitdataName extends DataName {
     // none of the
     // Cfun types will change (they are all of the form T.Lab -> T).
     return this;
-  }
-
-  /**
-   * Return true if this is a newtype constructor (i.e., a single argument constructor function for
-   * a nonrecursive type that only has one constructor).
-   */
-  public boolean isNewtype() { // Don't treat bitdata types as newtypes
-    return false;
   }
 
   Type specializeTycon(MILSpec spec, Type inst) {

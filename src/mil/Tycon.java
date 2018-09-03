@@ -27,24 +27,25 @@ import java.math.BigInteger;
 import obdd.Pat;
 
 /** Names for type constants, each of which has an associated kind. */
-public abstract class Tycon extends TypeName {
+public abstract class Tycon extends Name {
 
   /** Default constructor. */
-  public Tycon(Position pos, String id, Kind kind) {
-    super(pos, id, kind);
+  public Tycon(Position pos, String id) {
+    super(pos, id);
   }
 
-  public int getArity() {
-    // TODO: this is a bogus definition; these arity values are only used to provide (hopefully)
-    // friendlier error messages when a tycon is applied to the wrong number of arguments ...
-    // maybe the getArity() method should be replaced with something that more directly supports
-    // that test.  Or perhaps we can find a different way to get a better error message ...
-    return Integer.MAX_VALUE;
+  /** Return the kind of this type constructor. */
+  public abstract Kind getKind();
+
+  /** Return the arity of this type constructor. */
+  public abstract int getArity();
+
+  public Synonym isSynonym() {
+    return null;
   }
 
   public void fixKinds() {
-    super.fixKinds();
-    debug.Log.println(id + " :: " + kind);
+    /* Nothing to do here */
   }
 
   private TTycon type = new TTycon(this);
@@ -98,10 +99,6 @@ public abstract class Tycon extends TypeName {
     tw.close(prec >= TypeWriter.ALWAYS);
   }
 
-  public Synonym isSynonym() {
-    return null;
-  }
-
   public int findLevel() throws Failure {
     return 0;
   }
@@ -121,6 +118,11 @@ public abstract class Tycon extends TypeName {
     return null;
   }
 
+  public static final Tycon milArrow =
+      new PrimTycon("->>", new KFun(KAtom.TUPLE, new KFun(KAtom.TUPLE, KAtom.STAR)), 2);
+
+  public static final DataType arrow = new DataType("->", Kind.simple(2), 2);
+
   /**
    * Find the arity of this tuple type (i.e., the number of components) or return (-1) if it is not
    * a tuple type. Parameter n specifies the number of arguments that have already been found; it
@@ -130,8 +132,50 @@ public abstract class Tycon extends TypeName {
     return (-1);
   }
 
+  public static final DataType proc = new DataType("Proc", Kind.simple(1), 1);
+
+  public static final DataType unit = new DataType("Unit", KAtom.STAR, 0);
+
+  public static final Kind natToStar = new KFun(KAtom.NAT, KAtom.STAR);
+
+  public static final Kind areaToStar = new KFun(KAtom.AREA, KAtom.STAR);
+
+  public static final Kind starToArea = new KFun(KAtom.STAR, KAtom.AREA);
+
+  public static final Kind natToAreaToStar = new KFun(KAtom.NAT, areaToStar);
+
+  public static final Kind areaToArea = new KFun(KAtom.AREA, KAtom.AREA);
+
+  public static final Kind natToAreaToArea = new KFun(KAtom.NAT, areaToArea);
+
+  public static final Tycon word = new PrimTycon("Word", Kind.simple(0), 0);
+
+  public static final Tycon nzword = new PrimTycon("NZWord", Kind.simple(0), 0);
+
+  public static final Tycon addr = new PrimTycon("Addr", Kind.simple(0), 0);
+
+  public static final Tycon flag = new PrimTycon("Flag", Kind.simple(0), 0);
+
+  public static final Tycon bit = new PrimTycon("Bit", natToStar, 1);
+
+  public static final Tycon nzbit = new PrimTycon("NZBit", natToStar, 1);
+
+  public static final Tycon ix = new PrimTycon("Ix", natToStar, 1);
+
+  public static final Tycon pad = new PrimTycon("Pad", natToAreaToArea, 2);
+
+  public static final Tycon array = new PrimTycon("Array", natToAreaToArea, 2);
+
+  public static final Tycon aref = new PrimTycon("ARef", natToAreaToStar, 2);
+
+  public static final Tycon aptr = new PrimTycon("APtr", natToAreaToStar, 2);
+
+  public static final Tycon init = new PrimTycon("Init", areaToStar, 1);
+
+  public static final Tycon stored = new PrimTycon("Stored", starToArea, 1);
+
   /** Find the name of the associated bitdata type, if any. */
-  public BitdataName bitdataName() {
+  public BitdataType bitdataType() {
     return null;
   }
 
@@ -144,7 +188,7 @@ public abstract class Tycon extends TypeName {
   }
 
   /** Find the name of the associated struct type, if any. */
-  public StructName structName() {
+  public StructType structType() {
     return null;
   }
 
@@ -189,13 +233,29 @@ public abstract class Tycon extends TypeName {
     return null;
   }
 
-  DataName isDataName() {
+  DataType dataType() {
     return null;
   }
 
+  /** Representation vector for singleton types. */
+  public static final Type[] unitRep = new Type[] {unit.asType()};
+
+  /** Representation vector for bitdata types of width one. */
+  public static final Type[] flagRep = new Type[] {flag.asType()};
+
+  /** Representation vector for Ix, ARef, APtr, etc. types that fit in a single word. */
+  public static final Type[] wordRep = new Type[] {word.asType()};
+
+  /** Representation vector for NZBit types that fit in a single word. */
+  public static final Type[] nzwordRep = new Type[] {nzword.asType()};
+
+  /** Representation vector for Init a types as functions of type [Word] ->> [Unit]. */
+  public static final Type[] initRep =
+      new Type[] {Type.milfun(Type.tuple(word.asType()), Type.tuple(unit.asType()))};
+
   /** Return the representation vector for values of this type. */
-  Type[] repCalc() {
-    return null;
+  Type[] repCalc() { // Singleton types are all represented by the Unit type
+    return (this == addr) ? Tycon.wordRep : isSingleton() ? Tycon.unitRep : null;
   }
 
   /**
@@ -204,7 +264,11 @@ public abstract class Tycon extends TypeName {
    * there other types we should be including here?
    */
   Type[] bitdataTyconRep(Type a) {
-    return null;
+    return (this == bit)
+        ? a.simplifyNatType(null).bitvectorRep()
+        : (this == nzbit)
+            ? a.simplifyNatType(null).nzbitvectorRep()
+            : (this == ix) ? Tycon.wordRep : (this == init) ? Tycon.initRep : null;
   }
 
   /**
@@ -212,7 +276,15 @@ public abstract class Tycon extends TypeName {
    * representation vector, or else null.
    */
   Type[] bitdataTyconRep2(Type a, Type b) {
-    return null;
+    return (this == aref || this == aptr) ? Tycon.wordRep : null;
+  }
+
+  /**
+   * Determine if this is a singleton type (i.e., a type with only one value), in which case we will
+   * use the Unit type to provide a representation.
+   */
+  boolean isSingleton() {
+    return false;
   }
 
   /**
@@ -250,9 +322,9 @@ public abstract class Tycon extends TypeName {
     return null;
   }
 
-  /** Test to determine if this type is the MILArrow, ->>, without any arguments. */
+  /** Test to determine if this type is the MIL function arrow, ->>, without any arguments. */
   boolean isMILArrow() {
-    return false;
+    return this == milArrow;
   }
 
   /**
@@ -291,10 +363,9 @@ public abstract class Tycon extends TypeName {
    * to the argument a). The specified type environment, tenv, is used for both this and a.
    */
   Type bitSize(Type[] tenv, Type a) {
-    if (this == DataName.bit
-        || this == DataName.nzbit) { // BitSize(Bit n) ==>  n,  same for (NZBit n)
+    if (this == bit || this == nzbit) { // BitSize(Bit n) ==>  n,  same for (NZBit n)
       return a.simplifyNatType(tenv);
-    } else if (this == DataName.ix) { // BitSize(Ix n)  ==>  (calculation below)
+    } else if (this == ix) { // BitSize(Ix n)  ==>  (calculation below)
       BigInteger n = a.ixBound(tenv);
       if (n.signum() <= 0) {
         return new TNat(BigInteger.ZERO);
@@ -314,8 +385,7 @@ public abstract class Tycon extends TypeName {
    * and b.
    */
   Type bitSize(Type[] tenv, Type a, Type b) {
-    if (this == DataName.aref
-        || this == DataName.aptr) { // BitSize(ARef (2^(WORDSIZE-w)) a) = w (if 0<=w<=WORDSIZE)
+    if (this == aref || this == aptr) { // BitSize(ARef (2^(WORDSIZE-w)) a) = w (if 0<=w<=WORDSIZE)
       int w = a.arefWidth(tenv); // (same calculation for aptr)
       return (w > 0) ? new TNat(BigInteger.valueOf(w)) : null;
     }
@@ -324,21 +394,28 @@ public abstract class Tycon extends TypeName {
 
   /** Return the nat that specifies the bit size of the type produced by this type constructor. */
   public Type bitSize() {
-    return null;
+    return (this == word || this == nzword)
+        ? Type.TypeWORDSIZE
+        : (this == flag) ? Type.TypeFLAGSIZE : null;
   }
 
   /** Return the bit pattern for the values of this type. */
   public Pat bitPat() {
-    return null;
+    // TODO: cache these patterns?
+    return (this == word)
+        ? Pat.all(Type.WORDSIZE)
+        : (this == nzword)
+            ? Pat.nonzero(Type.WORDSIZE)
+            : (this == flag) ? Pat.all(Type.FLAGSIZE) : null;
   }
 
   Pat bitPat(Type[] tenv, Type a) {
-    if (this == DataName.bit) {
+    if (this == bit) {
       return obdd.Pat.all(a.bitWidth(tenv));
-    } else if (this == DataName.nzbit) {
+    } else if (this == nzbit) {
       int w = a.bitWidth(tenv);
       return (w > 0) ? obdd.Pat.nonzero(w) : null;
-    } else if (this == DataName.ix) {
+    } else if (this == ix) {
       BigInteger n = a.ixBound(tenv);
       if (n.signum() <= 0) {
         return obdd.Pat.empty(0);
@@ -354,10 +431,10 @@ public abstract class Tycon extends TypeName {
   }
 
   Pat bitPat(Type[] tenv, Type a, Type b) {
-    if (this == DataName.aref) {
+    if (this == aref) {
       int w = a.arefWidth(tenv);
       return (w > 0) ? obdd.Pat.nonzero(w) : null;
-    } else if (this == DataName.aptr) {
+    } else if (this == aptr) {
       int w = a.arefWidth(tenv);
       return (w > 0) ? obdd.Pat.all(w) : null;
     }
@@ -374,7 +451,7 @@ public abstract class Tycon extends TypeName {
    * to the argument a). The specified type environment, tenv, is used for both this and a.
    */
   Type byteSize(Type[] tenv, Type a) {
-    return (this == DataName.stored) ? a.byteSizeStored(tenv) : null;
+    return (this == stored) ? a.byteSizeStored(tenv) : null;
   }
 
   /**
@@ -383,7 +460,7 @@ public abstract class Tycon extends TypeName {
    * and b.
    */
   Type byteSize(Type[] tenv, Type a, Type b) {
-    if (this == DataName.array || this == DataName.pad) {
+    if (this == array || this == pad) {
       // ByteSize (Array a b) = a * ByteSize b
       // ByteSize (Pad   a b) = a * ByteSize b
       BigInteger n = a.simplifyNatType(tenv).getNat();
@@ -409,9 +486,7 @@ public abstract class Tycon extends TypeName {
   }
 
   Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
-    return (this == DataName.aref || this == DataName.aptr)
-        ? new TNat(Type.numBytes(Type.WORDSIZE))
-        : null;
+    return (this == aref || this == aptr) ? new TNat(Type.numBytes(Type.WORDSIZE)) : null;
   }
 
   /**
@@ -427,6 +502,12 @@ public abstract class Tycon extends TypeName {
    * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.
    */
   llvm.Type toLLVMCalc(Type c, LLVMMap lm, int args) {
+    if (this == milArrow) {
+      if (args != 2) {
+        debug.Internal.error("MILArrow toLLVM arity mismatch");
+      }
+      return lm.closurePtrTypeCalc(c);
+    }
     debug.Internal.error("toLLVM not defined for tycon " + this.asType());
     return llvm.Type.vd; // not reached
   }

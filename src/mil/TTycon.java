@@ -26,11 +26,11 @@ import obdd.Pat;
 
 public class TTycon extends TConst {
 
-  private Tycon name;
+  private Tycon tycon;
 
   /** Default constructor. */
-  public TTycon(Tycon name) {
-    this.name = name;
+  public TTycon(Tycon tycon) {
+    this.tycon = tycon;
   }
 
   /**
@@ -46,7 +46,7 @@ public class TTycon extends TConst {
 
   /** Test to determine whether this type is equal to a given TTycon. */
   boolean alphaTTycon(TTycon right) {
-    return this.name == right.name;
+    return this.tycon == right.tycon;
   }
 
   /**
@@ -54,11 +54,11 @@ public class TTycon extends TConst {
    * of arguments.
    */
   void write(TypeWriter tw, int prec, int args) {
-    name.write(tw, prec, args);
+    tycon.write(tw, prec, args);
   }
 
   public int findLevel() throws Failure {
-    return name.findLevel();
+    return tycon.findLevel();
   }
 
   /**
@@ -72,17 +72,17 @@ public class TTycon extends TConst {
 
   /** Test to determine whether this type is equal to a specified type application. */
   boolean sameTAp(Type[] thisenv, TAp tap, Type[] tapenv) {
-    Synonym s = name.isSynonym();
+    Synonym s = tycon.isSynonym();
     return (s != null) && s.getExpansion().sameTAp(null, tap, tapenv);
   }
 
   /** Test to determine whether this type is equal to a specified type constant. */
   boolean sameTTycon(Type[] thisenv, TTycon that) {
-    if (this.name == that.name) {
+    if (this.tycon == that.tycon) {
       return true;
     }
-    Synonym sthis = this.name.isSynonym();
-    Synonym sthat = that.name.isSynonym();
+    Synonym sthis = this.tycon.isSynonym();
+    Synonym sthat = that.tycon.isSynonym();
     if (sthis == null) {
       if (sthat == null) {
         return false; // neither this or that is a synonym
@@ -111,7 +111,7 @@ public class TTycon extends TConst {
 
   /** Test to determine whether this type is equal to a specified type literal. */
   boolean sameTLit(Type[] thisenv, TLit t) {
-    return name.sameTLit(t);
+    return tycon.sameTLit(t);
   }
 
   /**
@@ -121,7 +121,7 @@ public class TTycon extends TConst {
    * correct.
    */
   Kind calcKind(Type[] thisenv) {
-    return name.getKind();
+    return tycon.getKind();
   }
 
   /**
@@ -142,7 +142,7 @@ public class TTycon extends TConst {
    * we should only instantiate type variables that appear in the type application, tap.
    */
   boolean matchTAp(Type[] thisenv, TAp tap, Type[] tapenv) {
-    Synonym s = name.isSynonym();
+    Synonym s = tycon.isSynonym();
     return (s != null) && s.getExpansion().matchTAp(null, tap, tapenv);
   }
 
@@ -156,7 +156,7 @@ public class TTycon extends TConst {
   }
 
   void unifyTAp(Type[] thisenv, TAp tap, Type[] tapenv) throws UnifyException {
-    Synonym s = name.isSynonym();
+    Synonym s = tycon.isSynonym();
     if (s != null) {
       s.getExpansion().unifyTAp(null, tap, tapenv);
     } else {
@@ -165,9 +165,9 @@ public class TTycon extends TConst {
   }
 
   void unifyTTycon(Type[] thisenv, TTycon that) throws UnifyException {
-    if (this.name != that.name) {
-      Synonym sthis = this.name.isSynonym();
-      Synonym sthat = that.name.isSynonym();
+    if (this.tycon != that.tycon) {
+      Synonym sthis = this.tycon.isSynonym();
+      Synonym sthat = that.tycon.isSynonym();
       if (sthis == null) {
         if (sthat == null) { // Distinct, no expansion ==> error
           throw new TypeMismatchException(that, null, this, thisenv);
@@ -197,7 +197,7 @@ public class TTycon extends TConst {
   }
 
   void unifyTLit(Type[] thisenv, TLit t) throws UnifyException {
-    Synonym s = name.isSynonym();
+    Synonym s = tycon.isSynonym();
     if (s != null) {
       s.getExpansion().unifyTLit(null, t);
     } else {
@@ -213,7 +213,7 @@ public class TTycon extends TConst {
    * (and testing too ...)
    */
   public Type simplifyNatType(Type[] tenv) {
-    Type t = name.simplifyNatType(null);
+    Type t = tycon.simplifyNatType(null);
     return (t != null) ? t : this;
   }
 
@@ -223,12 +223,12 @@ public class TTycon extends TConst {
    * should be 0 for the initial call.
    */
   int tupleArity(Type[] tenv, int n) {
-    return name.tupleArity(null, n);
+    return tycon.tupleArity(null, n);
   }
 
   /** Find the name of the associated bitdata type, if any. */
-  public BitdataName bitdataName() {
-    return name.bitdataName();
+  public BitdataType bitdataType() {
+    return tycon.bitdataType();
   }
 
   /**
@@ -236,12 +236,12 @@ public class TTycon extends TConst {
    * null.
    */
   public BitdataLayout bitdataLayout() {
-    return name.bitdataLayout();
+    return tycon.bitdataLayout();
   }
 
   /** Find the name of the associated struct type, if any. */
-  public StructName structName() {
-    return name.structName();
+  public StructType structType() {
+    return tycon.structType();
   }
 
   /**
@@ -259,16 +259,16 @@ public class TTycon extends TConst {
    * type on the stack.
    */
   Type canonType(Type[] env, TypeSet set, int args) {
-    return name.canonType(env, set, args);
+    return tycon.canonType(env, set, args);
   }
 
-  DataName isDataName() {
-    return name.isDataName();
+  DataType dataType() {
+    return tycon.dataType();
   }
 
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
-    return name.repCalc();
+    return tycon.repCalc();
   }
 
   /**
@@ -277,7 +277,7 @@ public class TTycon extends TConst {
    * there other types we should be including here?
    */
   Type[] bitdataTyconRep(Type a) {
-    return name.bitdataTyconRep(a);
+    return tycon.bitdataTyconRep(a);
   }
 
   /**
@@ -285,7 +285,7 @@ public class TTycon extends TConst {
    * representation vector, or else null.
    */
   Type[] bitdataTyconRep2(Type a, Type b) {
-    return name.bitdataTyconRep2(a, b);
+    return tycon.bitdataTyconRep2(a, b);
   }
 
   /**
@@ -294,7 +294,7 @@ public class TTycon extends TConst {
    * [pt] | [r1,...,rm] .
    */
   Tail generatePrim(Position pos, String id) {
-    return name.generatePrim(pos, id);
+    return tycon.generatePrim(pos, id);
   }
 
   /**
@@ -303,7 +303,7 @@ public class TTycon extends TConst {
    * [this].
    */
   Call generatePrimNested(Position pos, String id, Type[] ds) {
-    return name.generatePrimNested(pos, id, ds);
+    return tycon.generatePrimNested(pos, id, ds);
   }
 
   /**
@@ -311,12 +311,12 @@ public class TTycon extends TConst {
    * either the tuple components in an array or null if there is no match.
    */
   Type[] funcFromTuple1() {
-    return name.funcFromTuple1();
+    return tycon.funcFromTuple1();
   }
 
-  /** Test to determine if this type is the MILArrow, ->>, without any arguments. */
+  /** Test to determine if this type is the MIL function arrow, ->>, without any arguments. */
   boolean isMILArrow() {
-    return name.isMILArrow();
+    return tycon.isMILArrow();
   }
 
   /**
@@ -326,7 +326,7 @@ public class TTycon extends TConst {
    * this argument.
    */
   Type[] tupleComponents(int n) {
-    return name.tupleComponents(n);
+    return tycon.tupleComponents(n);
   }
 
   /**
@@ -338,7 +338,7 @@ public class TTycon extends TConst {
    * b[x,y,z] = t <- f @ [x,y]; t @ [z].
    */
   Block liftToBlock0(Position pos, String id, TopLevel f) {
-    return name.liftToBlock0(pos, id, f);
+    return tycon.liftToBlock0(pos, id, f);
   }
 
   /**
@@ -347,11 +347,11 @@ public class TTycon extends TConst {
    * of a ->> function.
    */
   Code liftToCode0(Block b, Temp[] us, Atom f, Temp[] vs) {
-    return name.liftToCode0(b, us, f, vs);
+    return tycon.liftToCode0(b, us, f, vs);
   }
 
   boolean useBitdataLo(Type t, Type s) {
-    return name != DataName.aref && name != DataName.aptr;
+    return tycon != Tycon.aref && tycon != Tycon.aptr;
   }
 
   /**
@@ -363,7 +363,7 @@ public class TTycon extends TConst {
    * we expect it will only ever be null.
    */
   public Type bitSize(Type[] tenv) {
-    return name.bitSize();
+    return tycon.bitSize();
   }
 
   /**
@@ -371,7 +371,7 @@ public class TTycon extends TConst {
    * to the argument a). The specified type environment, tenv, is used for both this and a.
    */
   Type bitSize(Type[] tenv, Type a) {
-    return name.bitSize(tenv, a);
+    return tycon.bitSize(tenv, a);
   }
 
   /**
@@ -380,19 +380,19 @@ public class TTycon extends TConst {
    * and b.
    */
   Type bitSize(Type[] tenv, Type a, Type b) {
-    return name.bitSize(tenv, a, b);
+    return tycon.bitSize(tenv, a, b);
   }
 
   public Pat bitPat(Type[] tenv) {
-    return name.bitPat();
+    return tycon.bitPat();
   }
 
   Pat bitPat(Type[] tenv, Type a) {
-    return name.bitPat(tenv, a);
+    return tycon.bitPat(tenv, a);
   }
 
   Pat bitPat(Type[] tenv, Type a, Type b) {
-    return name.bitPat(tenv, a, b);
+    return tycon.bitPat(tenv, a, b);
   }
 
   /**
@@ -400,7 +400,7 @@ public class TTycon extends TConst {
    * area) or null if this type has no ByteSize (i.e., no memory layout).
    */
   public Type byteSize(Type[] tenv) {
-    return name.byteSize();
+    return tycon.byteSize();
   }
 
   /**
@@ -408,7 +408,7 @@ public class TTycon extends TConst {
    * to the argument a). The specified type environment, tenv, is used for both this and a.
    */
   Type byteSize(Type[] tenv, Type a) {
-    return name.byteSize(tenv, a);
+    return tycon.byteSize(tenv, a);
   }
 
   /**
@@ -417,23 +417,23 @@ public class TTycon extends TConst {
    * and b.
    */
   Type byteSize(Type[] tenv, Type a, Type b) {
-    return name.byteSize(tenv, a, b);
+    return tycon.byteSize(tenv, a, b);
   }
 
   Type byteSizeStoredRef(Type[] tenv) {
-    return name.byteSizeStoredRef(null);
+    return tycon.byteSizeStoredRef(null);
   }
 
   Type byteSizeStoredRef(Type[] tenv, Type a) {
-    return name.byteSizeStoredRef(tenv, a);
+    return tycon.byteSizeStoredRef(tenv, a);
   }
 
   Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
-    return name.byteSizeStoredRef(tenv, a, b);
+    return tycon.byteSizeStoredRef(tenv, a, b);
   }
 
   boolean nonUnit(Type[] tenv) {
-    return name.nonUnit();
+    return tycon.nonUnit();
   }
 
   /**
@@ -441,7 +441,7 @@ public class TTycon extends TConst {
    * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.
    */
   llvm.Type toLLVMCalc(Type c, LLVMMap lm, int args) {
-    llvm.Type t = name.toLLVMCalc(c, lm, args);
+    llvm.Type t = tycon.toLLVMCalc(c, lm, args);
     lm.drop(args);
     return t;
   }

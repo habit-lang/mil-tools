@@ -436,7 +436,7 @@ public class MILProgram {
     }
   }
 
-  public void bitdataRewrite(DataNames cands) {
+  public void bitdataRewrite(DataTypes cands) {
     if (cands != null) {
       BitdataMap m = new BitdataMap();
       if (m.addMappings(cands) > 0) { // If any mappings were found, then rewrite the program

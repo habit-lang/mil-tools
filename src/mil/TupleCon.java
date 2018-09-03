@@ -23,10 +23,21 @@ import compiler.BuiltinPosition;
 import core.*;
 import java.io.PrintWriter;
 
-public class TupleCon extends PrimTycon {
+public class TupleCon extends Tycon {
+
+  private int arity;
 
   private TupleCon(int arity) {
-    super(BuiltinPosition.pos, "TupleCon" + arity, Kind.tuple(arity), arity);
+    super(BuiltinPosition.pos, "TupleCon" + arity);
+    this.arity = arity;
+  }
+
+  public Kind getKind() {
+    return Kind.tuple(arity);
+  }
+
+  public int getArity() {
+    return arity;
   }
 
   private static TupleCon[] tupleCache = new TupleCon[10];

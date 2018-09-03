@@ -78,7 +78,7 @@ public class If extends Code {
   }
 
   Type inferType(Position pos) throws Failure { // if a then ifTrue else ifFalse
-    a.instantiate().unify(pos, DataName.flag.asType());
+    a.instantiate().unify(pos, Tycon.flag.asType());
     Type t = ifTrue.inferType(pos);
     t.unify(pos, ifFalse.inferType(pos));
     return t;

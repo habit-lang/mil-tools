@@ -278,14 +278,14 @@ public class TypeSet {
     return us;
   }
 
-  private HashMap<DataName, DataName> remapDataNames = new HashMap();
+  private HashMap<DataType, DataName> remapDataTypes = new HashMap();
 
-  DataName getDataName(DataName dn) {
-    return remapDataNames.get(dn);
+  DataName getDataType(DataType dt) {
+    return remapDataTypes.get(dt);
   }
 
-  void putDataName(DataName dn, DataName newDn) {
-    remapDataNames.put(dn, newDn);
+  void putDataType(DataType dt, DataName dn) {
+    remapDataTypes.put(dt, dn);
   }
 
   private HashMap<Prim, Prim> primMap = new HashMap();

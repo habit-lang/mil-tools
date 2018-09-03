@@ -24,20 +24,20 @@ import core.*;
 import java.io.PrintWriter;
 
 /** Represents a type constructor that is introduced as a memory structure type. */
-public class StructName extends Tycon {
+public class StructType extends Tycon {
 
   /** Default constructor. */
-  public StructName(Position pos, String id, Kind kind) {
-    super(pos, id, kind);
+  public StructType(Position pos, String id) {
+    super(pos, id);
   }
 
   private Type byteSize;
 
-  private StructField[] fields;
-
   public void setByteSize(Type byteSize) {
     this.byteSize = byteSize;
   }
+
+  private StructField[] fields;
 
   public StructField[] getFields() {
     return fields;
@@ -47,8 +47,18 @@ public class StructName extends Tycon {
     this.fields = fields;
   }
 
+  /** Return the kind of this type constructor. */
+  public Kind getKind() {
+    return KAtom.AREA;
+  }
+
+  /** Return the arity of this type constructor. */
+  public int getArity() {
+    return 0;
+  }
+
   /** Find the name of the associated struct type, if any. */
-  public StructName structName() {
+  public StructType structType() {
     return this;
   }
 

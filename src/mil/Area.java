@@ -137,7 +137,7 @@ public class Area extends TopDefn {
     }
 
     // Validate declared type:
-    Type inferred = (init == null) ? DataName.word.asType() : Type.aref(alignment, areaType);
+    Type inferred = (init == null) ? Tycon.word.asType() : Type.aref(alignment, areaType);
     if (declared != null && !declared.alphaEquiv(inferred)) {
       throw new Failure(
           pos,
@@ -239,7 +239,7 @@ public class Area extends TopDefn {
   }
 
   void topLevelrepTransform(Handler handler, RepTypeSet set) {
-    declared = DataName.word.asType();
+    declared = Tycon.word.asType();
   }
 
   /** Rewrite the components of this definition to account for changes in representation. */

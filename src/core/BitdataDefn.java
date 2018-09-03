@@ -37,18 +37,18 @@ public class BitdataDefn extends TyconDefn {
     this.constrs = constrs;
   }
 
-  private BitdataName bn;
+  private BitdataType bt;
 
   /**
    * Return the Tycon associated with this definition, if any. TODO: this method is only used in one
    * place, and it's awkward ... look for opportunities to rewrite
    */
   public Tycon getTycon() {
-    return bn;
+    return bt;
   }
 
   public void introduceTycons(Handler handler, TyconEnv env) {
-    env.add(bn = new BitdataName(pos, id, KAtom.STAR, 0)); // TODO: shouldn't require arity!
+    env.add(bt = new BitdataType(pos, id));
   }
 
   /**
@@ -76,13 +76,13 @@ public class BitdataDefn extends TyconDefn {
   }
 
   public void fixKinds() {
-    bn.fixKinds();
+    bt.fixKinds();
   }
 
   /** Initialize size information for this definition, if appropriate. */
   void initSizes(Handler handler) {
     try {
-      bn.setBitSize((sizeExp == null) ? new TVar(Tyvar.nat) : sizeExp.toType(null));
+      bt.setBitSize((sizeExp == null) ? new TVar(Tyvar.nat) : sizeExp.toType(null));
     } catch (Failure f) {
       handler.report(f);
     }
@@ -94,7 +94,7 @@ public class BitdataDefn extends TyconDefn {
   public LinearEqns initEqns(Handler handler, LinearEqns eqns) {
     try {
       for (int i = 0; i < constrs.length; i++) {
-        eqns = new LinearEqns(constrs[i].initEqn(bn.bitSize(), bn), eqns);
+        eqns = new LinearEqns(constrs[i].initEqn(bt.bitSize(), bt), eqns);
       }
     } catch (Failure f) {
       handler.report(f);
@@ -104,23 +104,23 @@ public class BitdataDefn extends TyconDefn {
 
   void checkSizes() throws Failure {
     // Check that we have computed a valid BitSize for this type
-    Type size = bn.bitSize().simplifyNatType(null);
+    Type size = bt.bitSize().simplifyNatType(null);
     BigInteger nat = size.getNat();
     if (nat == null) {
-      throw new BitSizeNotDeterminedFailure(pos, bn);
+      throw new BitSizeNotDeterminedFailure(pos, bt);
     } else if (nat.signum() < 0 || nat.compareTo(Type.MAX_INT) > 0) {
-      throw new InvalidWidthFailure(pos, bn, nat);
+      throw new InvalidWidthFailure(pos, bt, nat);
     }
     int w = nat.intValue();
-    bn.setBitSize(size); // save simplified size value
-    debug.Log.println("BitSize(" + bn + ") = " + nat);
+    bt.setBitSize(size); // save simplified size value
+    debug.Log.println("BitSize(" + bt + ") = " + nat);
 
     // Calculate region lists for each of the constructors and a bit pattern for the full type:
     obdd.Pat pat = obdd.Pat.empty(w);
     for (int i = 0; i < constrs.length; i++) {
-      pat = constrs[i].calcLayout(bn).or(pat);
+      pat = constrs[i].calcLayout(bt).or(pat);
     }
-    bn.setPat(pat);
+    bt.setPat(pat);
 
     // Test for junk:
     obdd.Pat junk = pat.not();
@@ -128,7 +128,7 @@ public class BitdataDefn extends TyconDefn {
       BigInteger n = junk.size();
       debug.Log.println(
           "Warning: bitdata type "
-              + bn
+              + bt
               + " includes "
               + ((n.compareTo(BigInteger.ONE) == 0) ? "a junk value" : (n + " junk values")));
       // !   String[] lines = junk.showBits();
@@ -147,11 +147,11 @@ public class BitdataDefn extends TyconDefn {
 
   /** Calculate types for each of the values that are introduced by this definition. */
   public void calcCfuns(Handler handler) {
-    BitdataConDefn.calcCfuns(bn, constrs);
+    BitdataConDefn.calcCfuns(bt, constrs);
   }
 
   public void addToMILEnv(Handler handler, MILEnv milenv) {
-    bn.addCfunsTo(handler, milenv);
+    bt.addCfunsTo(handler, milenv);
   }
 
   public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {

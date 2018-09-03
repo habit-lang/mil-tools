@@ -90,21 +90,21 @@ class ESelect extends PosExpr {
    */
   Type inferType(TVarsInScope tis) throws Failure { // e . lab
     Type et = e.inferType(tis).skeleton(); // take skeleton to shortcut TInds, etc.
-    BitdataName bn = et.bitdataName();
+    BitdataType bt = et.bitdataType();
     BitdataLayout layout;
-    if (bn == null) {
+    if (bt == null) {
       layout = et.bitdataLayout();
       if (layout == null) {
         throw new Failure(pos, "Invalid selector: no layout for " + et);
       }
       cf = null; // et is a layout type, so no outer constructor is involved
     } else {
-      BitdataLayout[] layouts = bn.getLayouts();
+      BitdataLayout[] layouts = bt.getLayouts();
       if (layouts.length != 1) {
         throw new Failure(pos, "Invalid selector: " + et + " has multiple constructors");
       }
       layout = layouts[0];
-      cf = bn.getCfuns()[0]; // record outer constructor
+      cf = bt.getCfuns()[0]; // record outer constructor
     }
     BitdataField[] lfields = layout.getFields();
     index = Name.index(lab, lfields);

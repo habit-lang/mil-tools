@@ -37,18 +37,18 @@ public class StructDefn extends TyconDefn {
     this.regexps = regexps;
   }
 
-  private StructName sn;
+  private StructType st;
 
   /**
    * Return the Tycon associated with this definition, if any. TODO: this method is only used in one
    * place, and it's awkward ... look for opportunities to rewrite
    */
   public Tycon getTycon() {
-    return sn;
+    return st;
   }
 
   public void introduceTycons(Handler handler, TyconEnv env) {
-    env.add(sn = new StructName(pos, id, KAtom.AREA));
+    env.add(st = new StructType(pos, id));
   }
 
   /**
@@ -76,13 +76,13 @@ public class StructDefn extends TyconDefn {
   }
 
   public void fixKinds() {
-    sn.fixKinds();
+    st.fixKinds();
   }
 
   /** Initialize size information for this definition, if appropriate. */
   void initSizes(Handler handler) {
-    try { // TODO: merge this code with the above (only difference is in names sn and bn)
-      sn.setByteSize((sizeExp == null) ? new TVar(Tyvar.nat) : sizeExp.toType(null));
+    try { // TODO: merge this code with the above (only difference is in names st and bt)
+      st.setByteSize((sizeExp == null) ? new TVar(Tyvar.nat) : sizeExp.toType(null));
     } catch (Failure f) {
       handler.report(f);
     }
@@ -93,7 +93,7 @@ public class StructDefn extends TyconDefn {
    */
   public LinearEqns initEqns(Handler handler, LinearEqns eqns) {
     try {
-      eqns = new LinearEqns(this.initEqn(sn.byteSize(), sn), eqns);
+      eqns = new LinearEqns(this.initEqn(st.byteSize(), st), eqns);
     } catch (Failure f) {
       handler.report(f);
     }
@@ -112,13 +112,13 @@ public class StructDefn extends TyconDefn {
 
   void checkSizes() throws Failure {
     // Check that we have computed a valid ByteSize for this structure:
-    Type size = sn.byteSize().simplifyNatType(null);
+    Type size = st.byteSize().simplifyNatType(null);
     BigInteger nat = size.getNat();
     if (nat == null) {
-      throw new ByteSizeNotDeterminedFailure(pos, sn);
+      throw new ByteSizeNotDeterminedFailure(pos, st);
     }
-    sn.setByteSize(size); // save simplified size value
-    debug.Log.println("ByteSize(" + sn + ") = " + nat);
+    st.setByteSize(size); // save simplified size value
+    debug.Log.println("ByteSize(" + st + ") = " + nat);
 
     // Validate the types and calculate offsets for each region:
     int offset = 0;
@@ -138,12 +138,12 @@ public class StructDefn extends TyconDefn {
     for (int i = 0; i < regexps.length; i++) {
       next = regexps[i].collectFields(fields, next);
     }
-    sn.setFields(fields);
+    st.setFields(fields);
   }
 
   /** Calculate types for each of the values that are introduced by this definition. */
   public void calcCfuns(Handler handler) {
-    sn.debugDump();
+    st.debugDump();
   }
 
   public void addToMILEnv(Handler handler, MILEnv milenv) {

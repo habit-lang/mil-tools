@@ -51,7 +51,7 @@ class ENat extends ELit {
    * type variables that appear in an assumption.
    */
   Type inferType(TVarsInScope tis) throws Failure { // nat
-    return type = DataName.word.asType();
+    return type = Tycon.word.asType();
   }
 
   /** Compile an expression into an Atom. */

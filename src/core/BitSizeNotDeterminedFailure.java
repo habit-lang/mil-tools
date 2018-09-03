@@ -23,7 +23,7 @@ import mil.*;
 
 class BitSizeNotDeterminedFailure extends Failure {
 
-  public BitSizeNotDeterminedFailure(Position pos, BitdataName bn) {
-    super(pos, "Unable to determine a unique BitSize value for " + bn);
+  public BitSizeNotDeterminedFailure(Position pos, BitdataType bt) {
+    super(pos, "Unable to determine a unique BitSize value for " + bt);
   }
 }

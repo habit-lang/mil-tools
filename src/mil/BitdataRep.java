@@ -22,11 +22,11 @@ import compiler.*;
 import compiler.Position;
 import core.*;
 
-class BitdataRep extends BitdataName {
+class BitdataRep extends BitdataType {
 
   /** Default constructor. */
-  BitdataRep(Position pos, String id, Kind kind, int arity) {
-    super(pos, id, kind, arity);
+  BitdataRep(Position pos, String id) {
+    super(pos, id);
   }
 
   BitdataRep isBitdataRep() {
