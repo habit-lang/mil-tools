@@ -35,8 +35,9 @@ class EAp extends Expr {
     this.x = x;
   }
 
-  Position getPosition() {
-    return f.getPosition();
+  /** Return a source code position for this expression. */
+  Position getPos() {
+    return f.getPos();
   }
 
   /**

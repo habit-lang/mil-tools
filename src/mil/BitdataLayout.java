@@ -399,7 +399,7 @@ public class BitdataLayout extends DataName {
     Temp[] params = Temp.makeTemps(3);
     Temp w = new Temp();
     return new Block(
-        BuiltinPosition.position,
+        BuiltinPosition.pos,
         name,
         params,
         new Bind(w, Prim.and.withArgs(params[0], params[1]), new Done(p.withArgs(w, params[2]))));

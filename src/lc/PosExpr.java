@@ -31,7 +31,8 @@ abstract class PosExpr extends Expr {
     this.pos = pos;
   }
 
-  Position getPosition() {
+  /** Return a source code position for this expression. */
+  Position getPos() {
     return pos;
   }
 }

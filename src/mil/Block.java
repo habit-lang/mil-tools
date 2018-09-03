@@ -1023,7 +1023,7 @@ public class Block extends Defn {
    * or a Top, but not a Temp (because that would be out of scope). b :: [] >>= [t] b[] = return a
    */
   public static Block atomBlock(String name, Atom a) {
-    return new Block(BuiltinPosition.position, name, Temp.noTemps, new Done(new Return(a)));
+    return new Block(BuiltinPosition.pos, name, Temp.noTemps, new Done(new Return(a)));
   }
 
   /**

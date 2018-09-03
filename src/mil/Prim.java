@@ -1773,7 +1773,7 @@ public class Prim {
           Prim p = Prim.load32.canonPrim(set);
           impl =
               new Block(
-                  BuiltinPosition.position,
+                  BuiltinPosition.pos,
                   vs,
                   new Bind(
                       lsw,
@@ -1923,7 +1923,7 @@ public class Prim {
           Prim p = Prim.store32.canonPrim(set);
           impl =
               new Block(
-                  BuiltinPosition.position,
+                  BuiltinPosition.pos,
                   vs, // store64[addr, lsw, msw]
                   new Bind(
                       new Temp(),
@@ -1986,7 +1986,7 @@ public class Prim {
         Temp[] ijr = Temp.makeTemps(3);
         Block b =
             new Block(
-                BuiltinPosition.position,
+                BuiltinPosition.pos,
                 ijr, //  b[i, j, r]
                 new Bind(
                     new Temp(),
@@ -1996,7 +1996,7 @@ public class Prim {
         Temp[] r = Temp.makeTemps(1);
         impl =
             new ClosureDefn(
-                BuiltinPosition.position,
+                BuiltinPosition.pos,
                 ij,
                 r, //  impl{i, j} r = b[i, j, r]
                 new BlockCall(b).withArgs(Temp.append(ij, r)));
@@ -2040,7 +2040,7 @@ public class Prim {
         Temp g = new Temp();
         Block b =
             new Block(
-                BuiltinPosition.position,
+                BuiltinPosition.pos,
                 fr, // b[f, r]
                 new Bind(
                     g,
@@ -2050,7 +2050,7 @@ public class Prim {
         Temp[] r = Temp.makeTemps(1);
         impl =
             new ClosureDefn(
-                BuiltinPosition.position,
+                BuiltinPosition.pos,
                 f,
                 r, //  impl{f} r = b[f, r]
                 new BlockCall(b).withArgs(Temp.append(f, r)));
@@ -2096,7 +2096,7 @@ public class Prim {
       Temp a = new Temp();
       Block b =
           new Block(
-              BuiltinPosition.position,
+              BuiltinPosition.pos,
               ior, // b[i, o, r]
               new Bind(
                   a,
@@ -2106,7 +2106,7 @@ public class Prim {
       Temp[] r = Temp.makeTemps(1);
       initStructFieldClos =
           new ClosureDefn(
-              BuiltinPosition.position,
+              BuiltinPosition.pos,
               io,
               r, // initStructFieldClos{i, o} r
               new BlockCall(b).withArgs(Temp.append(io, r))); //   = b[i, o, r]

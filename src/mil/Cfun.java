@@ -63,7 +63,7 @@ public class Cfun extends Name {
 
   /** A constructor for defining Cfuns that have BuiltinPosition. */
   public Cfun(String id, DataName dn, int num, AllocType allocType) {
-    this(BuiltinPosition.position, id, dn, num, allocType);
+    this(BuiltinPosition.pos, id, dn, num, allocType);
     // TODO: add this constructor to some builtin environment here?
   }
 

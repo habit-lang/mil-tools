@@ -23,13 +23,13 @@ public class BuiltinPosition extends Position {
 
   private BuiltinPosition() {}
 
-  public static final BuiltinPosition position = new BuiltinPosition();
+  public static final BuiltinPosition pos = new BuiltinPosition();
 
   public String describe() {
     return "builtin";
   }
 
   public Position copy() {
-    return position;
+    return pos;
   }
 }

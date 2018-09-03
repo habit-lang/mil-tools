@@ -70,7 +70,7 @@ public class DataName extends Tycon {
 
   /** A constructor for defining names that have BuiltinPosition. */
   public DataName(String id, Kind kind, int arity) {
-    this(BuiltinPosition.position, id, kind, arity);
+    this(BuiltinPosition.pos, id, kind, arity);
     TyconEnv.builtin.add(this);
   }
 

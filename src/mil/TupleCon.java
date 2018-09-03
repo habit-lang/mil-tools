@@ -26,7 +26,7 @@ import java.io.PrintWriter;
 public class TupleCon extends PrimTycon {
 
   private TupleCon(int arity) {
-    super(BuiltinPosition.position, "TupleCon" + arity, Kind.tuple(arity), arity);
+    super(BuiltinPosition.pos, "TupleCon" + arity, Kind.tuple(arity), arity);
   }
 
   private static TupleCon[] tupleCache = new TupleCon[10];

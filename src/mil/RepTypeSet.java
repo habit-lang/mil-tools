@@ -140,6 +140,6 @@ public class RepTypeSet extends TypeSet {
     while ((initializers = initializers.next) != null) {
       code = new Bind(new Temp(), initializers.head, code);
     }
-    return new Block(BuiltinPosition.position, "initialize", Temp.noTemps, code);
+    return new Block(BuiltinPosition.pos, "initialize", Temp.noTemps, code);
   }
 }

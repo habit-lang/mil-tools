@@ -33,10 +33,6 @@ class EField extends Name {
     this.e = e;
   }
 
-  Position getPosition() {
-    return pos;
-  }
-
   static void display(Screen s, String sep, EField[] fields) {
     s.print("[");
     if (fields != null && fields.length > 0) {

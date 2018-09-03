@@ -77,8 +77,7 @@ public abstract class Top extends Atom {
 
   public static final Top Unit =
       new TopDef(
-          new TopLevel(BuiltinPosition.position, new TopLhs(), new DataAlloc(Cfun.Unit).withArgs()),
-          0);
+          new TopLevel(BuiltinPosition.pos, new TopLhs(), new DataAlloc(Cfun.Unit).withArgs()), 0);
 
   public void setDeclared(Handler handler, Position pos, Scheme scheme) {
     handler.report(

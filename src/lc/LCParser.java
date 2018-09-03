@@ -340,7 +340,7 @@ public class LCParser extends CoreParser implements LCTokens {
             return null;
           } else if (lexer.match(FROM)) {
             LamVar v = e.asLamVar(null);
-            Position pos = e.getPosition();
+            Position pos = e.getPos();
             e = parseTExpr();
             // stmts -> id <- e _ ; stmts
             lexer.itemEnd("generator");
@@ -360,7 +360,7 @@ public class LCParser extends CoreParser implements LCTokens {
     lexer.itemEnd("expression");
     if (lexer.match(SEMI)) {
       Expr s = maybeParseStmts();
-      return (s == null) ? e : new EFrom(e.getPosition(), new FreshVar(), e, s);
+      return (s == null) ? e : new EFrom(e.getPos(), new FreshVar(), e, s);
     }
     return e;
   }

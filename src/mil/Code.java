@@ -135,7 +135,7 @@ public abstract class Code {
     Code c = copy(); // make a copy of this code
     Temps vs = c.liveness(); // find the free variables
     Temp[] formals = Temps.toArray(vs); // create corresponding formal parameters
-    Block b = new Block(BuiltinPosition.position, formals, c); // TODO: different position?
+    Block b = new Block(BuiltinPosition.pos, formals, c); // TODO: different position?
     // !System.out.println("The case block is ");
     // !b.displayDefn();
 

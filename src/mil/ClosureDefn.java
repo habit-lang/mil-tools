@@ -291,7 +291,7 @@ public class ClosureDefn extends Defn {
     Code bcode = addInitializers(calls, params, tss, new Done(newtail));
 
     // Make the definition for the new block b:
-    Block b = new Block(BuiltinPosition.position, bparams, bcode); // TODO: diff position?
+    Block b = new Block(BuiltinPosition.pos, bparams, bcode); // TODO: diff position?
 
     // Fill in the tail for k:
     k.tail = new BlockCall(b, bparams);

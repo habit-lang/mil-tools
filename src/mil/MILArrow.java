@@ -26,11 +26,7 @@ import java.io.PrintWriter;
 public class MILArrow extends PrimTycon {
 
   private MILArrow() {
-    super(
-        BuiltinPosition.position,
-        "->>",
-        new KFun(KAtom.TUPLE, new KFun(KAtom.TUPLE, KAtom.STAR)),
-        2);
+    super(BuiltinPosition.pos, "->>", new KFun(KAtom.TUPLE, new KFun(KAtom.TUPLE, KAtom.STAR)), 2);
   }
 
   public static final Tycon milArrow = new MILArrow();

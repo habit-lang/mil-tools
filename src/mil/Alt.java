@@ -304,8 +304,7 @@ public class Alt {
         Temp[] ps = Temps.toArray(ts); // turn in to an array
         Temp[] vs = new Temp[ps.length]; // fresh variables
         // TODO: do a better job finding a position here ...
-        Block b =
-            new Block(BuiltinPosition.position, vs, code.apply(TempSubst.extend(ps, vs, null)));
+        Block b = new Block(BuiltinPosition.pos, vs, code.apply(TempSubst.extend(ps, vs, null)));
         eb = new BlockCall(b, ps);
       }
     }

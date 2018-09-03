@@ -143,7 +143,7 @@ public class MILProgram {
   }
 
   /** Add a special block for aborting the program. */
-  public static final Block abort = new Block(BuiltinPosition.position, Temp.noTemps, Code.halt);
+  public static final Block abort = new Block(BuiltinPosition.pos, Temp.noTemps, Code.halt);
 
   public void typeChecking(Handler handler) throws Failure {
     shake();

@@ -27,7 +27,7 @@ import core.*;
 public class LinearEqnTest {
 
   public static void main(String[] args) {
-    LinearEqn e = new LinearEqn(BuiltinPosition.position);
+    LinearEqn e = new LinearEqn(BuiltinPosition.pos);
     System.out.println("e = " + e);
 
     TVar x = new TVar(Tyvar.nat);
@@ -57,9 +57,9 @@ public class LinearEqnTest {
     e.addTerm(1, z, "z");
     System.out.println("e:  " + e);
 
-    LinearEqn e1 = new LinearEqn(BuiltinPosition.position);
-    LinearEqn e2 = new LinearEqn(BuiltinPosition.position);
-    LinearEqn e3 = new LinearEqn(BuiltinPosition.position);
+    LinearEqn e1 = new LinearEqn(BuiltinPosition.pos);
+    LinearEqn e2 = new LinearEqn(BuiltinPosition.pos);
+    LinearEqn e3 = new LinearEqn(BuiltinPosition.pos);
     LinearEqns eqns = new LinearEqns(e3, new LinearEqns(e2, new LinearEqns(e1, null)));
 
     e1.addTerm(1, x, "x");

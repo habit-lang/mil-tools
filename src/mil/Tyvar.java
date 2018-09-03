@@ -33,15 +33,15 @@ public class Tyvar extends TypeName {
 
   public static final Tyvar[] noTyvars = new Tyvar[0];
 
-  public static final Tyvar arg = new Tyvar(BuiltinPosition.position, "arg", KAtom.STAR);
+  public static final Tyvar arg = new Tyvar(BuiltinPosition.pos, "arg", KAtom.STAR);
 
-  public static final Tyvar res = new Tyvar(BuiltinPosition.position, "", KAtom.STAR);
+  public static final Tyvar res = new Tyvar(BuiltinPosition.pos, "", KAtom.STAR);
 
-  public static final Tyvar star = new Tyvar(BuiltinPosition.position, "", KAtom.STAR);
+  public static final Tyvar star = new Tyvar(BuiltinPosition.pos, "", KAtom.STAR);
 
-  public static final Tyvar tuple = new Tyvar(BuiltinPosition.position, "", KAtom.TUPLE);
+  public static final Tyvar tuple = new Tyvar(BuiltinPosition.pos, "", KAtom.TUPLE);
 
-  public static final Tyvar area = new Tyvar(BuiltinPosition.position, "", KAtom.AREA);
+  public static final Tyvar area = new Tyvar(BuiltinPosition.pos, "", KAtom.AREA);
 
-  public static final Tyvar nat = new Tyvar(BuiltinPosition.position, "", KAtom.NAT);
+  public static final Tyvar nat = new Tyvar(BuiltinPosition.pos, "", KAtom.NAT);
 }

@@ -84,7 +84,7 @@ class EBitdata extends EConstruct {
       int p = fields[i].checkTypeConstruct(tis, cf, lfields);
       if (map[p] != 0) {
         throw new Failure(
-            fields[i].getPosition(),
+            fields[i].getPos(),
             "Constructor includes multiple definitions for field \"" + lfields[p] + "\"");
       }
       map[p] = 1 + i; // Add one to avoid confusion with 0th element ...

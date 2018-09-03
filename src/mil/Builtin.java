@@ -107,7 +107,7 @@ public class Builtin extends MILEnvHash {
     if (addPrim(p) != null) {
       // TODO: it would be good to give better position information for this primitive
       // TODO: it would be good to give position information for the other definition too
-      multipleDefns(BuiltinPosition.position, "primitive", p.getId());
+      multipleDefns(BuiltinPosition.pos, "primitive", p.getId());
     }
   }
 }

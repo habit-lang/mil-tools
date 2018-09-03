@@ -76,8 +76,7 @@ class EStructInit extends EConstruct {
       int p = fields[i].checkTypeStructInit(tis, sn, sfields);
       if (map[p] != 0) {
         throw new Failure(
-            fields[i].getPosition(),
-            "There are multiple initializers for field \"" + sfields[p] + "\"");
+            fields[i].getPos(), "There are multiple initializers for field \"" + sfields[p] + "\"");
       }
       map[p] = 1 + i; // Add one to avoid confusion with 0th element ...
     }

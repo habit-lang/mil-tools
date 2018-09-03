@@ -75,7 +75,7 @@ public class AreaVar extends Name {
    */
   void compileAreaVar(Type initType) {
     // Create a new top level definition for this variable's initializer:
-    Position ipos = init.getPosition();
+    Position ipos = init.getPos();
     TopLevel tl =
         new TopLevel(
             ipos,

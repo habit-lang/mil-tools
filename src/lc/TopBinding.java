@@ -49,7 +49,7 @@ public class TopBinding {
         type = Type.fun(xvs[i - 1].instantiate(), type);
       }
       // Abstract over the extra variables:
-      e = new ELam(e.getPosition(), xvs, e, type);
+      e = new ELam(e.getPos(), xvs, e, type);
 
       // Calculate the most general type of the lifted function:
       // TODO: use null in the following call because there are no fixed type variables at
