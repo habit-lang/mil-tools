@@ -80,10 +80,20 @@ public class Program {
   /** Write a description of this LLVM program to an arbitrary PrintWriter. */
   public void dump(PrintWriter out) {
     // TODO: write general headers here
+    if (targetTriple != null) {
+      out.println("target triple = \"" + targetTriple + "\"");
+      out.println();
+    }
     for (Defns ds = defns; ds != null; ds = ds.next) {
       ds.head.print(out);
     }
   }
+
+  /**
+   * Holds the LLVM target triple string that will be included in generated programs (or null, in
+   * which case, no target triple declaration will be included).
+   */
+  public static String targetTriple = null;
 
   private static int count = 0;
 

@@ -59,6 +59,7 @@ class Main {
     System.err.println("         --mil-main=N   Set name of main function in MIL input");
     System.err.println("         --llvm-main=N  Set name of main function in LLVM output");
     System.err.println("         --standalone   Equivalent to --mil-main=main --llvm-main=main");
+    System.err.println("         --target=T     Set LLVM target triple to T");
   }
 
   private boolean trace = false;
@@ -104,6 +105,9 @@ class Main {
       return;
     } else if (str.equals("--standalone")) {
       milMain = llvm.FuncDefn.mainFunctionName = "main";
+      return;
+    } else if ((special = nonemptyOptString("--target=", str)) != null) {
+      llvm.Program.targetTriple = special;
       return;
     }
     for (int i = 1; i < str.length(); i++) {
