@@ -248,7 +248,8 @@ class Main {
   private void process(Handler handler, MILProgram mil) throws Failure {
     MILSpec spec = null;
     RepTypeSet rep = null;
-    boolean optimized = false; // Keep track whether the optimizer has been run
+    boolean optimized = false; // Keep track of whether the optimizer has been run
+    boolean cfunRewrite = false; // Keep track of whether the cfun rewrite has been run
 
     if (passes == null) {
       // If no passes are specified, try to set some sensible defaults to satisfy
@@ -270,6 +271,7 @@ class Main {
         case 'c': // Constructor function rewrite
           message("Running constructor function rewrite ...");
           mil.cfunRewrite();
+          cfunRewrite = true;
           optimized = false;
           break;
 
@@ -300,9 +302,12 @@ class Main {
 
         case 'r': // Representation transformation
           message("Running representation transformation ...");
-          if (spec == null) {
+          if (!cfunRewrite) {
             throw new Failure(
-                "Representation transformation only valid after an earlier specialization pass");
+                "Representation transformation requires an earlier constructor function rewrite");
+          } else if (spec == null) {
+            throw new Failure(
+                "Representation transformation requires an earlier specialization pass");
           }
           rep = mil.repTransform(handler);
           handler.abortOnFailures();
