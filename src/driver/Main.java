@@ -19,8 +19,7 @@
 package driver;
 
 import compiler.*;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import lc.*;
 import mil.*;
 
@@ -36,11 +35,14 @@ class Main {
   }
 
   public static void usage() {
-    System.err.println("usage: milc [options]");
-    System.err.println("options: filename.mil   Load MIL source from specified file");
-    System.err.println("         filename.lc    Load LC source from specified file");
-    System.err.println("         -d             debugging on");
-    System.err.println("         -v             verbose on");
+    System.err.println("usage: milc [inputs|options]");
+    System.err.println("inputs:  filename.milc  Load options from specified file");
+    System.err.println(
+        "         filename.mil   Load MIL source from specified file (.lmil for literate)");
+    System.err.println(
+        "         filename.lc    Load LC source from specified file (.llc for literate)");
+    System.err.println("options: -v             verbose on");
+    System.err.println("         -d             display debug messages");
     System.err.println("         -p{c,o,b,s,r}* passes");
     System.err.println("                        c = cfun rewrite");
     System.err.println("                        o = optimizer");
@@ -95,67 +97,87 @@ class Main {
 
   private String milMain = "";
 
-  /** Simple command line option processing. */
-  private void options(String str) throws Failure {
-    String special;
-    if ((special = nonemptyOptString("--llvm-main=", str)) != null) {
-      llvm.FuncDefn.mainFunctionName = special;
-      return;
-    } else if ((special = nonemptyOptString("--mil-main=", str)) != null) {
-      milMain = special;
-      return;
-    } else if (str.equals("--standalone")) {
-      milMain = llvm.FuncDefn.mainFunctionName = "main";
-      return;
-    } else if ((special = nonemptyOptString("--target=", str)) != null) {
-      llvm.Program.targetTriple = special;
-      return;
-    } else if (str.equals("--32")) {
-      Word.setSize(32);
-      return;
-    } else if (str.equals("--64")) {
-      Word.setSize(64);
-      return;
-    }
-    for (int i = 1; i < str.length(); i++) {
-      switch (str.charAt(i)) {
-        case 'd':
-          debug.Log.on();
-          break;
-        case 'v':
-          trace = true;
-          break;
-        case 'p':
-          addPasses(str.substring(i + 1));
-          return;
-        case 'm':
-          milOutput.setName(str, i);
-          return;
-        case 'g':
-          graphvizOutput.setName(str, i);
-          return;
-        case 'c':
-          typesetOutput.setName(str, i);
-          return;
-        case 's':
-          specTypesetOutput.setName(str, i);
-          return;
-        case 'r':
-          repTypesetOutput.setName(str, i);
-          return;
-        case 'l':
-          llvmOutput.setName(str, i);
-          return;
-        case 'b':
-          bytecodeOutput.setName(str, i);
-          return;
-        case 'x':
-          execOutput.setName(str, i);
-          return;
-        default:
-          throw new Failure("Unrecognized option character '" + str.charAt(i) + "'");
+  /** Simple command line argument processing. */
+  private void options(Handler handler, String str, LCLoader loader, boolean nested)
+      throws Failure {
+    if (str.startsWith("-")) {
+      String special;
+      if ((special = nonemptyOptString("--llvm-main=", str)) != null) {
+        llvm.FuncDefn.mainFunctionName = special;
+        return;
+      } else if ((special = nonemptyOptString("--mil-main=", str)) != null) {
+        milMain = special;
+        return;
+      } else if (optMatches("--standalone", str)) {
+        milMain = llvm.FuncDefn.mainFunctionName = "main";
+        return;
+      } else if ((special = nonemptyOptString("--target=", str)) != null) {
+        llvm.Program.targetTriple = special;
+        return;
+      } else if (optMatches("--32", str)) {
+        Word.setSize(32);
+        return;
+      } else if (optMatches("--64", str)) {
+        Word.setSize(64);
+        return;
       }
+      for (int i = 1; i < str.length(); i++) {
+        switch (str.charAt(i)) {
+          case 'd':
+            debug.Log.on();
+            break;
+          case 'v':
+            trace = true;
+            break;
+          case 'p':
+            addPasses(str.substring(i + 1));
+            return;
+          case 'm':
+            milOutput.setName(str, i);
+            return;
+          case 'g':
+            graphvizOutput.setName(str, i);
+            return;
+          case 'c':
+            typesetOutput.setName(str, i);
+            return;
+          case 's':
+            specTypesetOutput.setName(str, i);
+            return;
+          case 'r':
+            repTypesetOutput.setName(str, i);
+            return;
+          case 'l':
+            llvmOutput.setName(str, i);
+            return;
+          case 'b':
+            bytecodeOutput.setName(str, i);
+            return;
+          case 'x':
+            execOutput.setName(str, i);
+            return;
+          default:
+            throw new Failure("Unrecognized option character '" + str.charAt(i) + "'");
+        }
+      }
+    } else if (str.endsWith(".milc")) {
+      if (nested) {
+        throw new Failure("Cannot read options from nested configuration file \"" + str + "\"");
+      } else if (!optionsFromFile(handler, str, loader, true)) {
+        throw new Failure("Error reading options from \"" + str + "\"; file not accessible");
+      }
+    } else if (!loader.loadMIL(str)) { // Try to load as mil
+      loader.require(str); // But otherwise load as lc
     }
+  }
+
+  private static boolean optMatches(String opt, String str) throws Failure {
+    if (!str.startsWith(opt)) {
+      return false;
+    } else if (!str.equals(opt)) {
+      throw new Failure("Extra characters on command line option \"" + str + "\"");
+    }
+    return true;
   }
 
   private static String optString(String prefix, String str) {
@@ -168,6 +190,23 @@ class Main {
       throw new Failure("Missing value for option " + prefix);
     }
     return s;
+  }
+
+  private boolean optionsFromFile(Handler handler, String name, LCLoader loader, boolean nested)
+      throws Failure {
+    try {
+      message("Reading options from " + name + " ...");
+      Reader reader = new FileReader(name);
+      Source source = new OptionSource(handler, reader, name);
+      String line;
+      while ((line = source.readLine()) != null) {
+        options(handler, line, loader, true);
+      }
+      source.close();
+      return true;
+    } catch (FileNotFoundException e) {
+      return false;
+    }
   }
 
   public void run(String[] args) {
@@ -185,16 +224,18 @@ class Main {
    * produce a single MIL program.
    */
   private MILProgram load(Handler handler, String[] args) throws Failure {
-    // TODO: initial message will not appear so long as trace is initialized to false :-)
-    message("Process arguments ..."); // Process command line arguments
+    // TODO: initial messages will not appear so long as trace is initialized to false :-)
     LCLoader loader = new LCLoader();
-    for (int i = 0; i < args.length; i++) {
-      if (args[i].startsWith("-")) {
-        options(args[i]);
-      } else if (!loader.loadMIL(args[i])) { // Try to load as mil
-        loader.require(args[i]); // But otherwise load as lc
-      }
+    if (optionsFromFile(handler, ".milc", loader, false)) {
+      message("Read options from .milc ..."); // Process options in .milc file, if present
     }
+    ;
+    message("Reading command line arguments ..."); // Process command line arguments
+    for (int i = 0; i < args.length; i++) {
+      options(handler, args[i], loader, false);
+    }
+    handler.abortOnFailures();
+
     message("Loading source files ..."); // Load and compile everything
     MILProgram mil = loader.load(handler, milMain);
 
@@ -227,7 +268,7 @@ class Main {
     for (int i = 0; i < passes.length(); i++) {
       switch (passes.charAt(i)) {
         case 'c': // Constructor function rewrite
-          message("Performing constructor function rewrite ...");
+          message("Running constructor function rewrite ...");
           mil.cfunRewrite();
           optimized = false;
           break;
@@ -277,6 +318,12 @@ class Main {
       handler.abortOnFailures();
     }
     output(handler, mil, spec, rep, optimized);
+  }
+
+  /** Encapsulates an action to be performed involving writing to a specified PrintWriter. */
+  abstract static class Action {
+
+    abstract void run(PrintWriter out) throws Failure;
   }
 
   /**

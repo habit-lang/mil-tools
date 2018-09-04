@@ -66,7 +66,7 @@ class MILAST extends CoreProgram {
       MILParser parser = new MILParser(handler, lexer, loader);
       parser.parse(this);
     } catch (FileNotFoundException e) {
-      handler.report(new Failure("Cannot open input file " + name));
+      handler.report(new Failure("Cannot open input file \"" + name + "\""));
     }
     handler.abortOnFailures();
   }

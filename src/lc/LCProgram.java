@@ -72,7 +72,7 @@ public class LCProgram extends CoreProgram {
       LCParser parser = new LCParser(handler, lexer, loader);
       parser.parse(this);
     } catch (FileNotFoundException e) {
-      throw new Failure("Cannot open input file " + name);
+      throw new Failure("Cannot open input file \"" + name + "\"");
     }
     handler.abortOnFailures();
   }
