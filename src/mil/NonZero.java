@@ -23,8 +23,13 @@ import core.*;
 
 public class NonZero extends Const {
 
+  /** The value of this nonzero Word constant. */
   private long val;
 
+  /**
+   * Create a nonzero Word value from the given constant, truncating as necessary to match
+   * Word.size.
+   */
   public NonZero(long val) {
     this.val = Word.fromLong(val);
     if (this.val == 0) {

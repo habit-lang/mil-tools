@@ -1200,7 +1200,7 @@ public class PrimCall extends Call {
         Word c = ap[1].isWord(); // (_ << c) & m
         if (c != null) {
           long w = c.getVal();
-          if (w > 0 && w < Type.WORDSIZE) {
+          if (w > 0 && w < Word.size()) {
             // left shifting by w bits performs an effective mask by em on the result:
             int em = ~((1 << w) - 1);
             if ((m & em) == em) { // if specified mask doesn't do more than effective mask ...
@@ -1214,9 +1214,9 @@ public class PrimCall extends Call {
         Word c = ap[1].isWord(); // (_ >> c) & m
         if (c != null) {
           long w = c.getVal();
-          if (w > 0 && w < Type.WORDSIZE) {
+          if (w > 0 && w < Word.size()) {
             // right shifting by w bits performs an effective mask by em on the result:
-            int em = (1 << (Type.WORDSIZE - w)) - 1;
+            int em = (1 << (Word.size() - w)) - 1;
             if ((m & em) == em) { // if specified mask doesn't do more than effective mask ...
               MILProgram.report(
                   "rewrite: (x >> " + w + ") & 0x" + Long.toHexString(m) + " ==> (x >> " + w + ")");
@@ -1389,8 +1389,10 @@ public class PrimCall extends Call {
     if (m == 0) { // x << 0 == x
       MILProgram.report("rewrite: x << 0 ==> x");
       return done(x);
-    } else if (m < 0 || m >= Type.WORDSIZE) { // x << m == x << (m % WORDSIZE)
-      long n = m % Type.WORDSIZE;
+    }
+    final int wordsize = Word.size();
+    if (m < 0 || m >= wordsize) { // x << m == x << (m % Wordsize)
+      long n = m % wordsize;
       // TODO: Is this architecture dependent?
       MILProgram.report("rewrite: x << " + m + " ==> x << " + n);
       return done(Prim.shl, x, n);
@@ -1402,8 +1404,8 @@ public class PrimCall extends Call {
         Word b = ap[1].isWord();
         if (b != null) {
           long n = b.getVal();
-          if (n >= 0 && n < Type.WORDSIZE && m >= 0 && m < Type.WORDSIZE) {
-            if (n + m >= Type.WORDSIZE) {
+          if (n >= 0 && n < wordsize && m >= 0 && m < wordsize) {
+            if (n + m >= wordsize) {
               MILProgram.report("rewrite: (x << " + n + ") << " + m + " ==> 0");
               return done(0);
             } else {
@@ -1416,7 +1418,7 @@ public class PrimCall extends Call {
         Word b = ap[1].isWord();
         if (b != null) {
           long n = b.getVal();
-          if (n == m && n > 0 && n < Type.WORDSIZE) {
+          if (n == m && n > 0 && n < wordsize) {
             long mask = (-1) << m;
             MILProgram.report(
                 "rewrite: (x >>> " + m + ") << " + m + " ==>  x & 0x" + Long.toHexString(mask));
@@ -1482,8 +1484,10 @@ public class PrimCall extends Call {
     if (m == 0) { // x >>> 0 == x
       MILProgram.report("rewrite: lshr((x, 0)) ==> x");
       return done(x);
-    } else if (m < 0 || m >= Type.WORDSIZE) { // x >>> m == x >>> (m % WORDSIZE)
-      long n = m % Type.WORDSIZE;
+    }
+    final int wordsize = Word.size();
+    if (m < 0 || m >= wordsize) { // x >>> m == x >>> (m % Wordsize)
+      long n = m % wordsize;
       // TODO: Is this architecture dependent?
       MILProgram.report("rewrite: x >>> " + m + " ==> x >>> " + n);
       return done(Prim.lshr, x, n);
@@ -1495,8 +1499,8 @@ public class PrimCall extends Call {
         Word b = ap[1].isWord();
         if (b != null) {
           long n = b.getVal();
-          if (n >= 0 && n < Type.WORDSIZE && m >= 0 && m < Type.WORDSIZE) {
-            if (n + m >= Type.WORDSIZE) {
+          if (n >= 0 && n < wordsize && m >= 0 && m < wordsize) {
+            if (n + m >= wordsize) {
               MILProgram.report("rewrite: (x >>> " + n + ") >>> " + m + " ==> 0");
               return done(0);
             } else {
@@ -1509,7 +1513,7 @@ public class PrimCall extends Call {
         Word b = ap[1].isWord();
         if (b != null) {
           long n = b.getVal();
-          if (n == m && n > 0 && n < Type.WORDSIZE) {
+          if (n == m && n > 0 && n < wordsize) {
             long mask = (-1) >>> m;
             MILProgram.report(
                 "rewrite: (x << " + m + ") >>> " + m + " ==>  x & 0x" + Long.toHexString(mask));
@@ -1561,8 +1565,10 @@ public class PrimCall extends Call {
     if (m == 0) { // x >> 0 == x
       MILProgram.report("rewrite: ashr((x, 0)) ==> x");
       return done(x);
-    } else if (m < 0 || m >= Type.WORDSIZE) { // x >>> m == x >>> (m % WORDSIZE)
-      long n = m % Type.WORDSIZE;
+    }
+    final int wordsize = Word.size();
+    if (m < 0 || m >= wordsize) { // x >>> m == x >>> (m % Wordsize)
+      long n = m % wordsize;
       // TODO: Is this architecture dependent?
       MILProgram.report("rewrite: x >> " + m + " ==> x >> " + n);
       return done(Prim.ashr, x, n);
@@ -1574,11 +1580,11 @@ public class PrimCall extends Call {
         Word b = ap[1].isWord();
         if (b != null) {
           long n = b.getVal();
-          if (n >= 0 && n < Type.WORDSIZE && m >= 0 && m < Type.WORDSIZE) {
-            if (n + m >= Type.WORDSIZE) {
+          if (n >= 0 && n < wordsize && m >= 0 && m < wordsize) {
+            if (n + m >= wordsize) {
               MILProgram.report(
-                  "rewrite: (x >> " + n + ") >> " + m + " ==> x >> " + (Type.WORDSIZE - 1));
-              return done(Prim.ashr, ap[0], Type.WORDSIZE - 1);
+                  "rewrite: (x >> " + n + ") >> " + m + " ==> x >> " + (wordsize - 1));
+              return done(Prim.ashr, ap[0], wordsize - 1);
             } else {
               MILProgram.report("rewrite: (x >> " + n + ") >> " + m + " ==> x >> " + (n + m));
               return done(Prim.ashr, ap[0], n + m);

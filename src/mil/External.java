@@ -391,7 +391,7 @@ public class External extends TopDefn {
               int mw = m.intValue();
               int nw = n.intValue();
               return new BlockCall(BitdataLayout.generateBitConcat(pos, mw, nw))
-                  .makeBinaryFuncClosure(pos, Type.numWords(mw), Type.numWords(nw));
+                  .makeBinaryFuncClosure(pos, Word.numWords(mw), Word.numWords(nw));
             }
             return null;
           }
@@ -438,7 +438,7 @@ public class External extends TopDefn {
                 && w != null
                 && BigInteger.ONE.shiftLeft(w.intValue()).compareTo(m) >= 0) {
               Temp[] vs = Temp.makeTemps(1); // Argument holds incoming index
-              int n = Type.numWords(w.intValue());
+              int n = Word.numWords(w.intValue());
               Atom[] as = new Atom[n];
               as[0] = vs[0];
               for (int i = 1; i < n; i++) { // In general, could return multiple words
@@ -460,7 +460,7 @@ public class External extends TopDefn {
             BigInteger p = ts[1].isPosInt(); // Modulus for shift amount
             if (n != null
                 && p != null
-                && p.compareTo(BigInteger.valueOf(Type.WORDSIZE)) <= 0
+                && p.compareTo(Word.sizeBig()) <= 0
                 && BigInteger.ONE.shiftLeft(p.intValue()).compareTo(n) == 0) {
               Temp[] vs = Temp.makeTemps(2); // One word for each Ix argument
               Block b = new Block(pos, vs, maskTail(Prim.shl.withArgs(vs[0], vs[1]), p.intValue()));
@@ -479,7 +479,7 @@ public class External extends TopDefn {
             BigInteger p = ts[1].isPosInt(); // Modulus for shift amount
             if (n != null
                 && p != null
-                && p.compareTo(BigInteger.valueOf(Type.WORDSIZE)) <= 0
+                && p.compareTo(Word.sizeBig()) <= 0
                 && BigInteger.ONE.shiftLeft(p.intValue()).compareTo(n) == 0) {
               return new PrimCall(Prim.lshr).makeBinaryFuncClosure(pos, 1, 1);
             }
@@ -497,7 +497,7 @@ public class External extends TopDefn {
             if (m != null && w != null) {
               int mod = m.intValue();
               int width = w.intValue();
-              int n = Type.numWords(width);
+              int n = Word.numWords(width);
               if ((mod & (mod - 1)) == 0) { // Test for power of two
                 Temp[] args = Temp.makeTemps(n);
                 Tail t = Prim.and.withArgs(args[0], mod - 1);
@@ -562,7 +562,7 @@ public class External extends TopDefn {
         });
 
     // primIncIx m :: Ix m -> Maybe (Ix m)
-    // Special case: requires bitdataRepresentations, and m < 2^WORDSIZE
+    // Special case: requires bitdataRepresentations, and m < 2^WordSize
     generators.put(
         "primIncIx",
         new Generator(1) {
@@ -606,7 +606,7 @@ public class External extends TopDefn {
         });
 
     // primDecIx m :: Ix m -> Maybe (Ix m)
-    // Special case: requires bitdataRepresentations, m is a power of 2, and m < 2^WORDSIZE
+    // Special case: requires bitdataRepresentations, m is a power of 2, and m < 2^WordSize
     generators.put(
         "primDecIx",
         new Generator(1) {
@@ -647,7 +647,7 @@ public class External extends TopDefn {
               Block yes = enterBlock(pos); // yes[j, i] = j @ i
               // b[n,..., j, i] = w <- ule((i, m-1)); if w then yes[j, i] else return [n,...]
               // NOTE: using (v <= m-1) rather than (v < m) is important for the case where
-              // m=(2^WORDSIZE)
+              // m=(2^WordSize)
               Temp[] njv = Temp.makeTemps(nl + 2);
               Block b = guardBlock(pos, njv, Prim.ule.withArgs(njv[nl + 1], m.intValue() - 1), yes);
               return new BlockCall(b).makeTernaryFuncClosure(pos, nl, 1, 1);
@@ -793,11 +793,11 @@ public class External extends TopDefn {
 
                 default:
                   {
-                    int n = Type.numWords(width);
+                    int n = Word.numWords(width);
                     Temp[] vs = Temp.makeTemps(n); // variables returned from block
                     Temp[] ws = Temp.makeTemps(n); // arguments to closure
                     Code code = new Done(new Return(Temp.clone(vs)));
-                    int rem = width % Type.WORDSIZE; // nonzero => unused bits in most sig word
+                    int rem = width % Word.size(); // nonzero => unused bits in most sig word
 
                     // Use Prim.xor on the most significant word if not all bits are used:
                     if (rem != 0) {
@@ -847,7 +847,7 @@ public class External extends TopDefn {
                 default:
                   {
                     // Block: b[a0,...b0,...] = c0 <- p((a0,b0)); ...; return [c0,...]
-                    int n = Type.numWords(width);
+                    int n = Word.numWords(width);
                     Temp[] as = Temp.makeTemps(n); // inputs
                     Temp[] bs = Temp.makeTemps(n);
                     Temp[] cs = Temp.makeTemps(n); // output
@@ -890,7 +890,7 @@ public class External extends TopDefn {
 
                 default:
                   {
-                    int n = Type.numWords(width);
+                    int n = Word.numWords(width);
                     if (n == 1) {
                       Temp[] args = Temp.makeTemps(1);
                       Code code = maskTail(Prim.neg.withArgs(args), width);
@@ -905,7 +905,7 @@ public class External extends TopDefn {
   }
 
   private static Code maskTail(Tail t, int width) {
-    int rem = width % Type.WORDSIZE; // Determine whether masking is required
+    int rem = width % Word.size(); // Determine whether masking is required
     if (rem == 0) {
       return new Done(t);
     } else {
@@ -917,7 +917,7 @@ public class External extends TopDefn {
   /**
    * A general method for generating implementations for ARITHMETIC binary operations (add, sub,
    * mul), where masking of the most significant word may be required to match the requested length.
-   * TODO: For the time being, these implementations only work for 0 <= width <= Type.WORDSIZE. The
+   * TODO: For the time being, these implementations only work for 0 <= width <= WordSize. The
    * algorithms for these operations on multi-word values are more complex and more varied, so they
    * will require a more sophisticated approach.
    */
@@ -939,7 +939,7 @@ public class External extends TopDefn {
 
                 default:
                   {
-                    int n = Type.numWords(width);
+                    int n = Word.numWords(width);
                     if (n == 1) {
                       Temp[] args = Temp.makeTemps(2);
                       Code code = maskTail(p.withArgs(args), width);
@@ -988,7 +988,7 @@ public class External extends TopDefn {
 
                 default:
                   {
-                    int n = Type.numWords(width);
+                    int n = Word.numWords(width);
                     return new BlockCall(bitEqBlock(pos, n, test, bearly))
                         .makeBinaryFuncClosure(pos, n, n);
                   }
@@ -1065,7 +1065,7 @@ public class External extends TopDefn {
 
                 default:
                   {
-                    int n = Type.numWords(width);
+                    int n = Word.numWords(width);
                     return new BlockCall(bitLexCompBlock(pos, n, lsw, slsw))
                         .makeBinaryFuncClosure(pos, n, n);
                   }
@@ -1164,7 +1164,7 @@ public class External extends TopDefn {
             vs,
             new Bind(
                 v,
-                Prim.ult.withArgs(vs[numArgs], mid * Type.WORDSIZE),
+                Prim.ult.withArgs(vs[numArgs], mid * Word.size()),
                 new If(
                     v,
                     new BlockCall(decisionTree(pos, width, n, lo, mid - 1, numArgs), vs),
@@ -1203,7 +1203,7 @@ public class External extends TopDefn {
           vs, // b[v0,...,i]
           new Bind(
               p,
-              Prim.sub.withArgs(vs[numArgs], lo * Type.WORDSIZE), //  = p <- sub((i, offset))
+              Prim.sub.withArgs(vs[numArgs], lo * Word.size()), //  = p <- sub((i, offset))
               new Bind(
                   m,
                   Prim.shl.withArgs(1, p), //    m <- shl((1, p))
@@ -1230,7 +1230,7 @@ public class External extends TopDefn {
       BigInteger w = ts[0].isPosInt(); // Width of bit vector
       if (w != null) {
         int width = w.intValue();
-        int n = Type.numWords(width);
+        int n = Word.numWords(width);
         return new BlockCall(decisionTree(pos, width, n, 0, n - 1, 0)).makeUnaryFuncClosure(pos, 1);
       }
       return null;
@@ -1248,7 +1248,7 @@ public class External extends TopDefn {
       BigInteger w = ts[0].isPosInt(); // Width of bit vector
       if (w != null) {
         int width = w.intValue();
-        int n = Type.numWords(width);
+        int n = Word.numWords(width);
         return new BlockCall(decisionTree(pos, width, n, 0, n - 1, n))
             .makeBinaryFuncClosure(pos, n, 1);
       }
@@ -1334,7 +1334,7 @@ public class External extends TopDefn {
             BigInteger w = ts[0].isPosInt(); // Bit vector width
             if (w != null) {
               int width = w.intValue();
-              int n = Type.numWords(width);
+              int n = Word.numWords(width);
               Tail t = new Return(new Word(width - 1));
               // TODO: The Temp.makeTemps(n) call in the following creates the proxy argument of
               // type Bit w that is required as an input
@@ -1363,7 +1363,7 @@ public class External extends TopDefn {
             if (w != null) {
               int width = w.intValue();
               if (width > 1) { // TODO: add support for width 0 and width 1?
-                int n = Type.numWords(width);
+                int n = Word.numWords(width);
                 return new BlockCall(decisionTree(pos, width, n, 0, n - 1, n))
                     .makeBinaryFuncClosure(pos, n, 1);
               }
@@ -1381,7 +1381,7 @@ public class External extends TopDefn {
                   vs,
                   new Bind(
                       v,
-                      Prim.eq.withArgs(vs[n], lo * Type.WORDSIZE),
+                      Prim.eq.withArgs(vs[n], lo * Word.size()),
                       new If(
                           v,
                           new BlockCall(shiftLeftMultipleBlock(pos, width, n, lo), vs),
@@ -1393,7 +1393,7 @@ public class External extends TopDefn {
 
           /**
            * Build a block to handle the case in a shift left where the shift is a multiple of the
-           * WORDSIZE.
+           * WordSize.
            */
           private Block shiftLeftMultipleBlock(Position pos, int width, int n, int lo) {
             Temp[] vs = Temp.makeTemps(n + 1); // [v0,...,shift]
@@ -1405,7 +1405,7 @@ public class External extends TopDefn {
               as[i] = vs[i - lo];
             }
             Code code = new Done(new Return(as)); // Mask most significant word, if necessary
-            int rem = width % Type.WORDSIZE;
+            int rem = width % Word.size();
             if (rem != 0) {
               Temp t = new Temp();
               code = new Bind(t, Prim.and.withArgs(as[n - 1], (1 << rem) - 1), code);
@@ -1416,13 +1416,13 @@ public class External extends TopDefn {
 
           /**
            * Build a block to handle the case in a shift left where the shift is offset, NOT a
-           * multiple of the WORDSIZE. Also provides code for the case of a large shift that reaches
+           * multiple of the WordSize. Also provides code for the case of a large shift that reaches
            * in to the most significant word.
            */
           private Block shiftLeftOffsetBlock(Position pos, Temp[] vs, int width, int n, int lo) {
             Atom[] as = new Atom[n];
             Temp offs = new Temp(); // holds offset within word
-            Temp comp = new Temp(); // holds complement of offset (comp + offs == WORDSIZE)
+            Temp comp = new Temp(); // holds complement of offset (comp + offs == WordSize)
             Code code = new Done(new Return(as)); // Build up code in reverse ...
 
             // Zero out least significant words of result:
@@ -1440,7 +1440,7 @@ public class External extends TopDefn {
             // TODO: The implementation of this method is somewhat contorted by the need to have
             // initialized the ts
             // and as arrays by the time we get to this point; is there a cleaner way to do this?
-            int rem = width % Type.WORDSIZE;
+            int rem = width % Word.size();
             if (rem != 0) {
               Temp t = new Temp();
               code = new Bind(t, Prim.and.withArgs(ts[n - lo - 1], (1 << rem) - 1), code);
@@ -1467,10 +1467,10 @@ public class External extends TopDefn {
                 vs,
                 new Bind(
                     offs,
-                    Prim.sub.withArgs(vs[n], lo * Type.WORDSIZE),
+                    Prim.sub.withArgs(vs[n], lo * Word.size()),
                     new Bind(
                         comp,
-                        Prim.sub.withArgs(Type.WORDSIZE, offs),
+                        Prim.sub.withArgs(Word.size(), offs),
                         new Bind(ts[0], Prim.shl.withArgs(vs[0], offs), code))));
           }
         });
@@ -1484,7 +1484,7 @@ public class External extends TopDefn {
             if (w != null) {
               int width = w.intValue();
               if (width > 1) { // TODO: add support for width 0 and width 1?
-                int n = Type.numWords(width);
+                int n = Word.numWords(width);
                 return new BlockCall(decisionTree(pos, width, n, 0, n - 1, n))
                     .makeBinaryFuncClosure(pos, n, 1);
               }
@@ -1502,7 +1502,7 @@ public class External extends TopDefn {
                   vs,
                   new Bind(
                       v,
-                      Prim.eq.withArgs(vs[n], lo * Type.WORDSIZE),
+                      Prim.eq.withArgs(vs[n], lo * Word.size()),
                       new If(
                           v,
                           new BlockCall(shiftRightMultipleBlock(pos, n, lo), vs),
@@ -1513,7 +1513,7 @@ public class External extends TopDefn {
 
           /**
            * Build a block to handle the case in a shift right where the shift is a multiple of the
-           * WORDSIZE.
+           * Word.size.
            */
           private Block shiftRightMultipleBlock(Position pos, int n, int lo) {
             Temp[] vs = Temp.makeTemps(n + 1); // [v0,...,shift]
@@ -1530,13 +1530,13 @@ public class External extends TopDefn {
 
           /**
            * Build a block to handle the case in a shift right where the shift is offset, NOT a
-           * multiple of the WORDSIZE. Also provides code for the case of a large shift that reaches
+           * multiple of the WordSize. Also provides code for the case of a large shift that reaches
            * in to the most significant word.
            */
           private Block shiftRightOffsetBlock(Position pos, Temp[] vs, int n, int lo) {
             Atom[] as = new Atom[n];
             Temp offs = new Temp(); // holds offset within word
-            Temp comp = new Temp(); // holds complement of offset (comp + offs == WORDSIZE)
+            Temp comp = new Temp(); // holds complement of offset (comp + offs == WordSize)
             Code code = new Done(new Return(as));
             int i = 0;
             // Set words that blend data from two sources:
@@ -1568,8 +1568,8 @@ public class External extends TopDefn {
                 vs,
                 new Bind(
                     offs,
-                    Prim.sub.withArgs(vs[n], lo * Type.WORDSIZE),
-                    new Bind(comp, Prim.sub.withArgs(Type.WORDSIZE, offs), code)));
+                    Prim.sub.withArgs(vs[n], lo * Word.size()),
+                    new Bind(comp, Prim.sub.withArgs(Word.size(), offs), code)));
           }
         });
   }
@@ -1585,8 +1585,7 @@ public class External extends TopDefn {
             BigInteger w = ts[1].isPosInt(); // Width of bit vector
             if (v != null
                 && w != null
-                && w.compareTo(BigInteger.valueOf(Type.WORDSIZE))
-                    <= 0 // Bit w must fit in a single word
+                && w.compareTo(Word.sizeBig()) <= 0 // Bit w must fit in a single word
                 && BigInteger.ONE.shiftLeft(w.intValue()).compareTo(v) > 0) { // v must be < 2^w
               Tail t = new Return(new NonZero(v.longValue()));
               ClosureDefn k =
@@ -1606,7 +1605,7 @@ public class External extends TopDefn {
             if (bitdataRepresentations // ensures repr. for Maybe (NZBit n) is Word (the same as
                                        // repr. for Bit n).
                 && w != null
-                && w.compareTo(BigInteger.valueOf(Type.WORDSIZE)) <= 0) {
+                && w.compareTo(BigInteger.valueOf(Word.size())) <= 0) {
               return new Return().makeUnaryFuncClosure(pos, 1);
             }
             return null;
@@ -1619,7 +1618,7 @@ public class External extends TopDefn {
         new Generator(1) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) {
             BigInteger w = ts[0].isPosInt(); // Width of bit vector (must fit within a single word)
-            if (w != null && w.compareTo(BigInteger.valueOf(Type.WORDSIZE)) <= 0) {
+            if (w != null && w.compareTo(Word.sizeBig()) <= 0) {
               return new PrimCall(Prim.nzdiv).makeBinaryFuncClosure(pos, 1, 1);
             }
             return null;

@@ -342,7 +342,7 @@ public class AllocType {
    * constructor.
    */
   llvm.Type cfunLayoutTypeCalc(LLVMMap lm) {
-    return structLayoutCalc(lm, LLVMMap.tagType);
+    return structLayoutCalc(lm, LLVMMap.tagType());
   }
 
   /**

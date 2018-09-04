@@ -24,28 +24,108 @@ import java.math.BigInteger;
 
 public class Word extends Const {
 
+  /** Specifies the number of bits in every value of type Word. (Should be either 32 or 64.) */
+  private static int size;
+
+  /** The current Word size, expressed as a BigInteger. */
+  private static BigInteger sizeBig;
+
+  /** The current Word size, expressed as a type of kind nat. */
+  private static Type sizeType;
+
+  /** The maximum unsigned value that can be represented in a Word. */
+  private static BigInteger maxUnsigned;
+
+  /** A bit pattern for all Word values. */
+  private static obdd.Pat allPat;
+
+  /** A bit pattern for all nonzero Word values. */
+  private static obdd.Pat nonzeroPat;
+
+  /** Set the current word size, and dependent variables. */
+  public static void setSize(int size) {
+    Word.size = size;
+    Word.sizeBig = BigInteger.valueOf(size);
+    Word.sizeType = new TNat(sizeBig);
+    Word.maxUnsigned = BigInteger.ONE.shiftLeft(size).subtract(BigInteger.ONE);
+    Word.allPat = obdd.Pat.all(size);
+    Word.nonzeroPat = obdd.Pat.nonzero(size);
+  }
+
+  static {
+
+    /* Default word size is 32 bits. */
+    setSize(32);
+  }
+
+  /** Return the current Word size. */
+  public static int size() {
+    return size;
+  }
+
+  /** Return the current Word size as a BigInteger. */
+  public static BigInteger sizeBig() {
+    return sizeBig;
+  }
+
+  /** Return the current Word size as a Type. */
+  public static Type sizeType() {
+    return sizeType;
+  }
+
+  /** Return the maximum unsigned value that can be represented in a Word. */
+  public static BigInteger maxUnsigned() {
+    return maxUnsigned;
+  }
+
+  /** Return the bit pattern for all Word values. */
+  public static obdd.Pat allPat() {
+    return allPat;
+  }
+
+  /** Return the bit pattern for all nonzero Word values. */
+  public static obdd.Pat nonzeroPat() {
+    return nonzeroPat;
+  }
+
+  /** The value of this Word constant. */
   private long val;
 
+  /** Return the value of this Word constant. */
+  public long getVal() {
+    return val;
+  }
+
+  /**
+   * Create a Word value from the given long constant, truncating as necessary to match Word.size.
+   */
   public Word(long val) {
     this.val = fromLong(val);
   }
 
   /**
-   * Truncate the given long value to be within the range allowed by a Word of width Type.WORDSIZE.
-   * (The latter should be either 32 or 64.) This allows us to store use long values in Word objects
-   * (so that we can represent Word constants when Type.WORDSIZE==64), but to limit the range to
-   * that of an int object (when necessary, so that we can represent Word constants when
-   * Type.WORDSIZE==32).
+   * Truncate the given long value to be within the range allowed by a Word of width Word.size. (The
+   * latter should be either 32 or 64.) This allows us to use long values in Word objects (so that
+   * we can represent Word constants when Word.size()==64), but to limit the range to that of an int
+   * (when necessary, so that we can represent Word constants when Word.size()==32).
    */
   public static long fromLong(long val) {
-    int offset = 64 - Type.WORDSIZE;
+    int offset = 64 - Word.size;
     return (val << offset) >> offset;
   }
 
-  public long getVal() {
-    return val;
+  public static long fromBig(BigInteger v) {
+    if (size == 32) {
+      return (long) v.intValue();
+    } else if (size == 64) {
+      return v.longValue();
+    } else {
+      debug.Internal.error("Unrecognized Word.size in fromBig");
+      return 0; /* not reached */
+    }
   }
 
+  /** As a special case, to allow easy reuse, export a constant representing the value zero. */
   public static final Word Zero = new Word(0);
 
   /** Generate a printable description of this atom. */
@@ -90,15 +170,9 @@ public class Word extends Const {
     return (int) val;
   }
 
-  public static long fromBig(BigInteger v) {
-    if (Type.WORDSIZE == 32) {
-      return (long) v.intValue();
-    } else if (Type.WORDSIZE == 64) {
-      return v.longValue();
-    } else {
-      debug.Internal.error("Unrecognized WORDSIZE in fromBig");
-      return 0; /* not reached */
-    }
+  /** Return the number of words that are needed to hold a value with the specified bitsize. */
+  public static int numWords(int numBits) {
+    return (numBits + size - 1) / size;
   }
 
   /**

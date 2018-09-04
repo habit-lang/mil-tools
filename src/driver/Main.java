@@ -59,6 +59,7 @@ class Main {
     System.err.println("         --mil-main=N   Set name of main function in MIL input");
     System.err.println("         --llvm-main=N  Set name of main function in LLVM output");
     System.err.println("         --standalone   Equivalent to --mil-main=main --llvm-main=main");
+    System.err.println("         --32 / --64    Set wordsize to 32 / 64 bits");
     System.err.println("         --target=T     Set LLVM target triple to T");
   }
 
@@ -108,6 +109,12 @@ class Main {
       return;
     } else if ((special = nonemptyOptString("--target=", str)) != null) {
       llvm.Program.targetTriple = special;
+      return;
+    } else if (str.equals("--32")) {
+      Word.setSize(32);
+      return;
+    } else if (str.equals("--64")) {
+      Word.setSize(64);
       return;
     }
     for (int i = 1; i < str.length(); i++) {

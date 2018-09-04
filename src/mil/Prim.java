@@ -184,7 +184,7 @@ public class Prim {
         boolean isTail,
         llvm.Local lhs,
         llvm.Code c) {
-      return new llvm.Op(lhs, this.op(llvm.Type.i32, args[0].toLLVMAtom(lm, vm, s)), c);
+      return new llvm.Op(lhs, this.op(llvm.Type.word(), args[0].toLLVMAtom(lm, vm, s)), c);
     }
 
     /**
@@ -726,7 +726,7 @@ public class Prim {
         boolean isTail,
         llvm.Local lhs,
         llvm.Code c) {
-      return new llvm.Op(lhs, this.op(llvm.Type.i32, args[0].toLLVMAtom(lm, vm, s)), c);
+      return new llvm.Op(lhs, this.op(llvm.Type.word(), args[0].toLLVMAtom(lm, vm, s)), c);
     }
 
     /**
@@ -875,7 +875,7 @@ public class Prim {
         llvm.Code c) {
       return new llvm.Op(
           lhs,
-          this.op(llvm.Type.i32, args[0].toLLVMAtom(lm, vm, s), args[1].toLLVMAtom(lm, vm, s)),
+          this.op(llvm.Type.word(), args[0].toLLVMAtom(lm, vm, s), args[1].toLLVMAtom(lm, vm, s)),
           c);
     }
 
@@ -939,7 +939,7 @@ public class Prim {
         llvm.Code c) {
       return new llvm.Op(
           lhs,
-          this.op(llvm.Type.i32, args[0].toLLVMAtom(lm, vm, s), args[1].toLLVMAtom(lm, vm, s)),
+          this.op(llvm.Type.word(), args[0].toLLVMAtom(lm, vm, s), args[1].toLLVMAtom(lm, vm, s)),
           c);
     }
 
@@ -994,7 +994,7 @@ public class Prim {
         llvm.Code c) {
       return new llvm.Op(
           lhs,
-          this.op(llvm.Type.i32, args[0].toLLVMAtom(lm, vm, s), args[1].toLLVMAtom(lm, vm, s)),
+          this.op(llvm.Type.word(), args[0].toLLVMAtom(lm, vm, s), args[1].toLLVMAtom(lm, vm, s)),
           c);
     }
 
@@ -1410,7 +1410,7 @@ public class Prim {
         boolean isTail,
         llvm.Local lhs,
         llvm.Code c) {
-      return new llvm.Op(lhs, new llvm.Zext(args[0].toLLVMAtom(lm, vm, s), llvm.Type.i32), c);
+      return new llvm.Op(lhs, new llvm.Zext(args[0].toLLVMAtom(lm, vm, s), llvm.Type.word()), c);
     }
   }
 
@@ -1756,13 +1756,14 @@ public class Prim {
 
     /**
      * Representation transformation for memory accesses: Generates an implementation of a 64 bit
-     * memory access by using a pair of 32 bit memory accesses, if WORDSIZE==32. Assumes little
+     * memory access by using a pair of 32 bit memory accesses, if Word.size==32. Assumes little
      * endian memory layout.
      */
     Tail repTransformPrim(RepTypeSet set, Atom[] targs) {
-      if (Type.WORDSIZE == 64) {
+      final int wordsize = Word.size();
+      if (wordsize == 64) {
         return super.repTransformPrim(set, targs);
-      } else if (Type.WORDSIZE == 32) {
+      } else if (wordsize == 32) {
         if (impl == null) {
           Temp[] vs = Temp.makeTemps(1);
           Temp a = new Temp();
@@ -1785,7 +1786,7 @@ public class Prim {
         return new BlockCall(impl, targs);
       } else {
         debug.Internal.error(
-            "Unrecognized wordsize " + Type.WORDSIZE + " in repTransformPrim for load64");
+            "Unrecognized wordsize " + wordsize + " in repTransformPrim for load64");
         return null; /* not reached */
       }
     }
@@ -1908,13 +1909,14 @@ public class Prim {
 
     /**
      * Representation transformation for memory accesses: Generates an implementation of a 64 bit
-     * memory access by using a pair of 32 bit memory accesses, if WORDSIZE==32. Assumes little
+     * memory access by using a pair of 32 bit memory accesses, if Word.size==32. Assumes little
      * endian memory layout.
      */
     Tail repTransformPrim(RepTypeSet set, Atom[] targs) {
-      if (Type.WORDSIZE == 64) {
+      final int wordsize = Word.size();
+      if (wordsize == 64) {
         return super.repTransformPrim(set, targs);
-      } else if (Type.WORDSIZE == 32) {
+      } else if (wordsize == 32) {
         if (impl == null) {
           Temp[] vs = Temp.makeTemps(3);
           Temp a = new Temp();
@@ -1934,7 +1936,7 @@ public class Prim {
         return new BlockCall(impl, targs);
       } else {
         debug.Internal.error(
-            "Unrecognized wordsize " + Type.WORDSIZE + " in repTransformPrim for store64");
+            "Unrecognized wordsize " + wordsize + " in repTransformPrim for store64");
         return null; /* not reached */
       }
     }

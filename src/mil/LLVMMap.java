@@ -31,8 +31,8 @@ class LLVMMap extends TypeSet {
     this.prog = prog;
 
     // Create some basic mappings
-    typeMap.put(Tycon.word.asType(), llvm.Type.i32);
-    typeMap.put(Tycon.nzword.asType(), llvm.Type.i32);
+    typeMap.put(Tycon.word.asType(), llvm.Type.word());
+    typeMap.put(Tycon.nzword.asType(), llvm.Type.word());
     typeMap.put(Tycon.flag.asType(), llvm.Type.i1);
   }
 
@@ -63,13 +63,14 @@ class LLVMMap extends TypeSet {
   }
 
   /**
-   * Specifies the type of the tag values that are used to distinguish between different
-   * constructors.
+   * Return the type of the tag values that are used to distinguish between different constructors.
    */
-  public static final llvm.Type tagType = llvm.Type.i32;
+  public static llvm.Type tagType() {
+    return llvm.Type.word();
+  }
 
   llvm.Type dataPtrTypeCalc(Type c) {
-    llvm.DefinedType dt = new llvm.DefinedType(new llvm.StructType(new llvm.Type[] {tagType}));
+    llvm.DefinedType dt = new llvm.DefinedType(new llvm.StructType(new llvm.Type[] {tagType()}));
     typedef("data layout for values of type " + c, dt);
     return dt.ptr();
   }
@@ -179,7 +180,8 @@ class LLVMMap extends TypeSet {
   llvm.Global allocFuncGlobal() {
     if (allocFuncGlobal == null) {
       String id = "alloc";
-      llvm.FunctionType ft = new llvm.FunctionType(allocRetType, new llvm.Type[] {llvm.Type.i32});
+      llvm.FunctionType ft =
+          new llvm.FunctionType(allocRetType, new llvm.Type[] {llvm.Type.word()});
       allocFuncGlobal = new llvm.Global(ft, id);
       declare(id, ft);
     }

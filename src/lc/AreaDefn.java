@@ -54,7 +54,7 @@ public class AreaDefn extends TopDefn {
         throw new Failure(
             texp.position(), "Cannot determine constant value for alignment " + alignType);
       } else if (alignBig.signum() < 0
-          || alignBig.compareTo(BigInteger.ONE.shiftLeft(Type.WORDSIZE - 1)) > 0) {
+          || alignBig.compareTo(BigInteger.ONE.shiftLeft(Word.size() - 1)) > 0) {
         throw new Failure(texp.position(), "Alignment " + alignType + " is out of range");
       }
       long alignment = alignBig.longValue();

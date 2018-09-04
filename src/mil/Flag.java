@@ -20,6 +20,8 @@ package mil;
 
 import compiler.*;
 import core.*;
+import java.math.BigInteger;
+import obdd.Pat;
 
 public class Flag extends Const {
 
@@ -30,6 +32,13 @@ public class Flag extends Const {
     this.val = val;
   }
 
+  /** Specifies the number of bits in every value of type Flag. (Should be 1.) */
+  public static final Type sizeType = new TNat(BigInteger.ONE);
+
+  /** A bit pattern for all word values. */
+  public static obdd.Pat allPat = Pat.all(1);
+
+  /** The value of this Flag constant. */
   public boolean getVal() {
     return val;
   }

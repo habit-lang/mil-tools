@@ -356,7 +356,7 @@ public class Alt {
         nums[i] = new llvm.Word(alts[i].cf.getNum());
         bs[i] = succs[i].label();
       }
-      llvm.Type dt = LLVMMap.tagType; // the type of the tag
+      llvm.Type dt = LLVMMap.tagType(); // the type of the tag
       llvm.Local tag = vm.reg(dt); // a register to hold the tag
       llvm.Local addr = vm.reg(dt.ptr()); // a register that points to the tag
       return new llvm.CodeComment(

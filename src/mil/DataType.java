@@ -231,7 +231,7 @@ public class DataType extends DataName {
         // At this point, we know that all fields for this constructor are bit representable.
         if (width > maxWidth) {
           maxWidth = width;
-          if (maxWidth > Type.WORDSIZE) { // reject this datatype if an encoding will be too long
+          if (maxWidth > Word.size()) { // reject this datatype if an encoding will be too long
             return (-1);
           }
         }
@@ -290,7 +290,7 @@ public class DataType extends DataName {
    * one non nullary, but it it possible to adapt the approach to more general cases.
    */
   BitdataRep recycling(BitdataMap m, int maxWidth, Pat[] fpats) {
-    if (maxWidth <= Type.WORDSIZE) {
+    if (maxWidth <= Word.size()) {
       Pat p = Pat.concat(fpats); // Bit pattern for the non-nullary case
       if (!p.isAll()) { // If they are not all used ...
         int s = p.smallestOutside(); // then pick the smallest value to represent the nullary cfun
@@ -334,7 +334,7 @@ public class DataType extends DataName {
    */
   BitdataRep simpleTagging(BitdataMap m, int maxWidth, Pat[][] pats) {
     int tagWidth = lg(cfuns.length); // how many bits will be needed for tags?
-    if (maxWidth + tagWidth <= Type.WORDSIZE) {
+    if (maxWidth + tagWidth <= Word.size()) {
       // Create a new bitdata type T based on the following encoding:
       //
       //     bitdata T/(maxWidth+tagWidth)
@@ -387,7 +387,7 @@ public class DataType extends DataName {
     if (nullaryWidth > maxWidth) { // maxWidth should be big enough to include nullaryWidth
       maxWidth = nullaryWidth;
     }
-    if (maxWidth + tagWidth <= Type.WORDSIZE) {
+    if (maxWidth + tagWidth <= Word.size()) {
       // Create a new bitdata type T based on the following encoding:
       //
       //     bitdata T'/S = C1   [ pad1 | fields1 | 1 ]  -- \v -> (v&mask)==1

@@ -80,8 +80,8 @@ public abstract class Const extends Atom {
     } else if (w == 1) {
       return new Flag[] {Flag.fromBool(v.compareTo(BigInteger.ZERO) != 0)};
     } else {
-      Word[] as = new Word[Type.numWords(w)];
-      int wordsize = Type.WORDSIZE;
+      Word[] as = new Word[Word.numWords(w)];
+      int wordsize = Word.size();
       int i = 0; // index into array as (least significant word first)
       while (w > 0) { // while there are still bits to write
         long bits = Word.fromBig(v); // get least significant bits

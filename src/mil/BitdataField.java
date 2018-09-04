@@ -97,11 +97,11 @@ public class BitdataField extends Name {
     Temp[] params;
     Code code;
     if (width == 0) {
-      params = Temp.makeTemps(total == 0 ? 1 : Type.numWords(total));
+      params = Temp.makeTemps(total == 0 ? 1 : Word.numWords(total));
       code = new Done(new DataAlloc(Cfun.Unit).withArgs());
     } else {
-      params = Temp.makeTemps(Type.numWords(total)); // input parameters
-      Temp[] ws = Temp.makeTemps(Type.numWords(width)); // output parameters
+      params = Temp.makeTemps(Word.numWords(total)); // input parameters
+      Temp[] ws = Temp.makeTemps(Word.numWords(width)); // output parameters
       code = new Done(new Return(Temp.clone(ws))); // final return
       code =
           width == 1
@@ -121,7 +121,7 @@ public class BitdataField extends Name {
     if (total == 1) { // special case if whole object is just a single bit
       return copy(ws, 0, params[0], code);
     } else {
-      int wordsize = Type.WORDSIZE;
+      int wordsize = Word.size();
       int j = offset / wordsize; // number of word containing the bit we're interested in
       int o = offset % wordsize; // offset of the bit we're interested in ...
       Temp a = new Temp();
@@ -134,7 +134,7 @@ public class BitdataField extends Name {
 
   /** Generate selector code for a bitdata field whose type uses the lo bits representation. */
   private Code selectorLo(int total, Temp[] params, Temp[] ws, Code code) {
-    int wordsize = Type.WORDSIZE;
+    int wordsize = Word.size();
     int n = ws.length; // number of words in output
     int w = n * wordsize - width; // unused bits in most sig output word
     int o = offset % wordsize; // offset within each word
@@ -170,7 +170,7 @@ public class BitdataField extends Name {
 
   /** Generate selector code for a bitdata field whose type uses the hi bits representation. */
   private Code selectorHi(int total, Temp[] params, Temp[] ws, Code code) {
-    int wordsize = Type.WORDSIZE;
+    int wordsize = Word.size();
     int n = ws.length; // number of words in output
     int w = n * wordsize - width; // unused bits in least sig word
     int o = (wordsize - (width + offset) % wordsize) % wordsize; // offset to msb in input
@@ -220,7 +220,7 @@ public class BitdataField extends Name {
     if (total == 0) { // If total==0, then any fields must also have zero width
       impl = new Block(pos, Temp.makeTemps(2), new Done(Cfun.Unit.withArgs()));
     } else { // General case, total>0
-      int n = Type.numWords(total); // number of words in output
+      int n = Word.numWords(total); // number of words in output
       Temp[] ws = Temp.makeTemps(n); // arguments to hold full bitdata value
       Temp[] args; // arguments to hold new field value
       Code code;
@@ -228,7 +228,7 @@ public class BitdataField extends Name {
         args = Temp.makeTemps(1);
         code = new Done(new Return(ws));
       } else { // If width>0, do the proper logic to update the field
-        args = Temp.makeTemps(Type.numWords(width));
+        args = Temp.makeTemps(Word.numWords(width));
         code =
             genMaskField(
                 total,
@@ -264,7 +264,7 @@ public class BitdataField extends Name {
     if (total == 1) { // special case if whole object is just a single bit
       return copy(ws, 0, as[0], code);
     } else {
-      int wordsize = Type.WORDSIZE;
+      int wordsize = Word.size();
       int j = offset / wordsize; // number of word containing the bit we're interested in
       int o = offset % wordsize; // offset of the bit we're interested in ...
       Temp a = new Temp();
@@ -282,7 +282,7 @@ public class BitdataField extends Name {
    */
   static Code genUpdateZeroedFieldLo(
       int offset, int width, int total, Temp[] ws, Temp[] as, Code code) {
-    int wordsize = Type.WORDSIZE;
+    int wordsize = Word.size();
     int n = as.length; // number of words for field
     int w = n * wordsize - width; // unused bits in last word
     int o = offset % wordsize;
@@ -324,7 +324,7 @@ public class BitdataField extends Name {
    */
   static Code genUpdateZeroedFieldHi(
       int offset, int width, int total, Temp[] ws, Temp[] as, Code code) {
-    int wordsize = Type.WORDSIZE;
+    int wordsize = Word.size();
     int n = as.length; // number of words for field
     int w = n * wordsize - width; // unused bits in last word
     int e = offset + width; // offset to msb after field
@@ -366,7 +366,7 @@ public class BitdataField extends Name {
    */
   Code genMaskField(int total, Temp[] ws, Code code) {
     if (width > 0) {
-      int wordsize = Type.WORDSIZE;
+      int wordsize = Word.size();
       int o = offset % wordsize; // offset to lowest bit of field within lowest word
       int j = offset / wordsize; // index of lowest word of ws containing field bits
       int e = offset + width; // index of high bit after field

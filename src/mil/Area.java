@@ -124,7 +124,7 @@ public class Area extends TopDefn {
    */
   void generalizeType(Handler handler) throws Failure {
     if (alignment < 0
-        || alignment > (1L << (Type.WORDSIZE - 1))
+        || alignment > (1L << (Word.size() - 1))
         || (alignment & (alignment - 1)) != 0) {
       handler.report(new Failure(pos, "Invalid alignment value " + alignment));
     }
@@ -299,7 +299,7 @@ public class Area extends TopDefn {
     llvm.Global rawGlobal = new llvm.Global(at.ptr(), rawName);
     prog.add(new llvm.GlobalVarDefn(false, rawName, at.defaultValue(), alignment));
     prog.add(new llvm.Alias(!isEntrypoint, id, new llvm.BitcastVal(rawGlobal, llvm.Type.i8.ptr())));
-    staticValue = new llvm.PtrToIntVal(new llvm.Global(llvm.Type.i8.ptr(), id), llvm.Type.i32);
+    staticValue = new llvm.PtrToIntVal(new llvm.Global(llvm.Type.i8.ptr(), id), llvm.Type.word());
   }
 
   /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */

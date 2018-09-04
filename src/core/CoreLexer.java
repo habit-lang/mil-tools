@@ -336,7 +336,7 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
    * out of range.
    */
   public long getWord() throws Failure {
-    if (nat.compareTo(Type.MAX_WORD) > 0) {
+    if (nat.compareTo(Word.maxUnsigned()) > 0) {
       throw new Failure(getPos(), "Numeric constant " + nat + " is out of Word range (too large)");
     }
     return nat.longValue();

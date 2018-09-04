@@ -133,7 +133,7 @@ public class BitdataLayout extends DataName {
             + ": width "
             + pat.getWidth()
             + " ["
-            + Type.numWords(pat.getWidth())
+            + Word.numWords(pat.getWidth())
             + " word(s)], tagbits 0x"
             + tagbits.toString(16)
             + " and "
@@ -256,7 +256,7 @@ public class BitdataLayout extends DataName {
       params = Temp.makeTemps(fields.length); // Can assume all/any fields must have width 0
       code = new Done(new DataAlloc(Cfun.Unit).withArgs());
     } else {
-      int n = Type.numWords(total); // number of words in output
+      int n = Word.numWords(total); // number of words in output
       Temp[][] args = new Temp[fields.length][]; // args for each input
       Temp[] ws = Temp.makeTemps(n);
       code = new Done(new Return(Temp.clone(ws)));
@@ -264,7 +264,7 @@ public class BitdataLayout extends DataName {
 
       // Add code to set each field (assuming that each field is already zero-ed out):
       for (int k = 0; k < fields.length; k++) {
-        args[k] = Temp.makeTemps(Type.numWords(fields[k].getWidth()));
+        args[k] = Temp.makeTemps(Word.numWords(fields[k].getWidth()));
         code = fields[k].genUpdateZeroedField(total, ws, args[k], code);
       }
 
@@ -286,9 +286,9 @@ public class BitdataLayout extends DataName {
   }
 
   static Block generateBitConcat(Position pos, int u, int v) { // :: Bit u -> Bit v -> Bit (u+v)
-    Temp[] as = Temp.makeTemps(Type.numWords(u)); // as :: Bit u
-    Temp[] bs = Temp.makeTemps(Type.numWords(v)); // bs :: Bit v
-    Temp[] ws = Temp.makeTemps(Type.numWords(u + v));
+    Temp[] as = Temp.makeTemps(Word.numWords(u)); // as :: Bit u
+    Temp[] bs = Temp.makeTemps(Word.numWords(v)); // bs :: Bit v
+    Temp[] ws = Temp.makeTemps(Word.numWords(u + v));
     return new Block(
         pos,
         Temp.append(as, bs),
@@ -339,7 +339,7 @@ public class BitdataLayout extends DataName {
                       Flag.fromBool(eq == bitsNat.testBit(0))); // zero mask ==> const function
       maskTestBlock = new Block(cf.getPos(), "masktest_" + cf, vs, new Done(t));
     } else {
-      int n = Type.numWords(total); // number of words in output
+      int n = Word.numWords(total); // number of words in output
       Atom[] mask = Const.atoms(maskNat, total);
       Atom[] bits = Const.atoms(bitsNat, total);
       maskTestBlock = eq ? Block.returnFalse : Block.returnTrue; // base case, if no data to compare

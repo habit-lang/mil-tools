@@ -569,6 +569,7 @@ public class MILProgram {
 
   /** Generate an LLVM implementation of this MIL program. */
   public llvm.Program toLLVM() throws Failure {
+    llvm.Type.setWord(Word.size());
     analyzeCalls();
     CFGs cfgs = null;
     llvm.Program prog = new llvm.Program();
@@ -578,7 +579,7 @@ public class MILProgram {
       for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
         CFG cfg = ds.head.makeCFG();
         if (cfg != null) {
-          // !        cfg.display();
+          // !       cfg.display();
           TempSubst s = cfg.paramElim();
           // System.out.println(TempSubst.toString(s));
 

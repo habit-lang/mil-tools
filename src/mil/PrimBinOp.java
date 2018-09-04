@@ -68,7 +68,7 @@ public abstract class PrimBinOp extends Prim {
       llvm.Code c) {
     return new llvm.Op(
         lhs,
-        this.op(llvm.Type.i32, args[0].toLLVMAtom(lm, vm, s), args[1].toLLVMAtom(lm, vm, s)),
+        this.op(llvm.Type.word(), args[0].toLLVMAtom(lm, vm, s), args[1].toLLVMAtom(lm, vm, s)),
         c);
   }
 

@@ -550,7 +550,7 @@ public abstract class Type extends Scheme {
    * of Word values or, for values of width 1, a single MIL Flag value.
    */
   public static Type[] repBits(int w) {
-    return (w == 0) ? Tycon.unitRep : (w == 1) ? Tycon.flagRep : Type.words(Type.numWords(w));
+    return (w == 0) ? Tycon.unitRep : (w == 1) ? Tycon.flagRep : Type.words(Word.numWords(w));
   }
 
   /** Return the representation vector for values of this type. */
@@ -715,21 +715,6 @@ public abstract class Type extends Scheme {
     return true;
   }
 
-  public static final int FLAGSIZE = 1;
-
-  public static final BigInteger BigFLAGSIZE = BigInteger.valueOf(FLAGSIZE);
-
-  public static final Type TypeFLAGSIZE = new TNat(BigFLAGSIZE);
-
-  public static final int WORDSIZE = 32;
-
-  public static final Type TypeWORDSIZE = new TNat(BigInteger.valueOf(WORDSIZE));
-
-  /** Return the number of words that are needed to hold a value with the specified bitsize. */
-  public static int numWords(int numBits) {
-    return (numBits + WORDSIZE - 1) / WORDSIZE;
-  }
-
   /**
    * Determine whether this type is a natural number that falls within the specified range,
    * inclusive of bounds.
@@ -738,10 +723,7 @@ public abstract class Type extends Scheme {
     return null;
   }
 
-  /**
-   * A BigInteger representation for the largest positive value that can be represented by a
-   * (signed) int.
-   */
+  /** A BigInteger for the largest positive value that can be represented by a (signed) int. */
   public static final BigInteger MAX_INT = BigInteger.valueOf(Integer.MAX_VALUE);
 
   /**
@@ -763,28 +745,22 @@ public abstract class Type extends Scheme {
   }
 
   /**
-   * A BigInteger representation for the largest value that can be represented by an unsigned Word.
-   */
-  public static final BigInteger MAX_WORD =
-      BigInteger.ONE.shiftLeft(WORDSIZE).subtract(BigInteger.ONE);
-
-  /**
-   * Test whether this is a natural number that can fit in a Word (i.e., a value in the range
-   * [0..MAX_WORD]).
+   * Test whether this is a natural number type with a value that can fit in a Word (i.e., a value
+   * in the range [0..maxUnsigned]).
    */
   BigInteger isNonNegWord() {
-    return inRange(BigInteger.ZERO, MAX_WORD);
+    return inRange(BigInteger.ZERO, Word.maxUnsigned());
   }
 
   /**
-   * Test whether this is a natural number type in the range [1..MAX_WORD], suitable for use as an
-   * argument to Ix. (This will ensure that all Ix values can be represented in a single word.) Note
-   * that we exclude Ix 0 because that would be an empty type. Technically, we could include
-   * MAX_WORD+1 (i.e., 1<<WORDSIZE) here but choose not to do that so that all Maybe (Ix n) types
-   * can also be represented within a single word.
+   * Test whether this is a natural number type in the range [1..maxUnsigned], suitable for use as
+   * an argument to Ix. (This will ensure that all Ix values can be represented in a single word.)
+   * Note that we exclude Ix 0 because that would be an empty type. Technically, we could include
+   * maxUnsigned+1 (i.e., 1<<WordSize) here but choose not to do that so that all Maybe (Ix n) types
+   * can be represented in a single word.
    */
   BigInteger isPosWord() {
-    return inRange(BigInteger.ONE, MAX_WORD);
+    return inRange(BigInteger.ONE, Word.maxUnsigned());
   }
 
   /**
@@ -834,8 +810,9 @@ public abstract class Type extends Scheme {
     if (n.and(n1).signum() != 0) { // not a power of two
       return 0;
     }
-    int w = Type.WORDSIZE - n1.bitLength(); // Find width
-    return (w >= 0 && w <= Type.WORDSIZE) ? w : 0;
+    int wordsize = Word.size();
+    int w = wordsize - n1.bitLength(); // Find width
+    return (w >= 0 && w <= wordsize) ? w : 0;
   }
 
   public Pat bitPat(Type[] tenv) {

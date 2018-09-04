@@ -371,7 +371,7 @@ public abstract class Tycon extends Name {
         return new TNat(BigInteger.ZERO);
       }
       int w = n.bitLength();
-      if (w < 0 || w >= Type.WORDSIZE) {
+      if (w < 0 || w >= Word.size()) {
         return null;
       }
       return new TNat(BigInteger.valueOf(w));
@@ -385,7 +385,7 @@ public abstract class Tycon extends Name {
    * and b.
    */
   Type bitSize(Type[] tenv, Type a, Type b) {
-    if (this == aref || this == aptr) { // BitSize(ARef (2^(WORDSIZE-w)) a) = w (if 0<=w<=WORDSIZE)
+    if (this == aref || this == aptr) { // BitSize(ARef (2^(WordSize-w)) a) = w (if 0<=w<=WordSize)
       int w = a.arefWidth(tenv); // (same calculation for aptr)
       return (w > 0) ? new TNat(BigInteger.valueOf(w)) : null;
     }
@@ -395,18 +395,15 @@ public abstract class Tycon extends Name {
   /** Return the nat that specifies the bit size of the type produced by this type constructor. */
   public Type bitSize() {
     return (this == word || this == nzword)
-        ? Type.TypeWORDSIZE
-        : (this == flag) ? Type.TypeFLAGSIZE : null;
+        ? Word.sizeType()
+        : (this == flag) ? Flag.sizeType : null;
   }
 
   /** Return the bit pattern for the values of this type. */
   public Pat bitPat() {
-    // TODO: cache these patterns?
     return (this == word)
-        ? Pat.all(Type.WORDSIZE)
-        : (this == nzword)
-            ? Pat.nonzero(Type.WORDSIZE)
-            : (this == flag) ? Pat.all(Type.FLAGSIZE) : null;
+        ? Word.allPat()
+        : (this == nzword) ? Word.nonzeroPat() : (this == flag) ? Flag.allPat : null;
   }
 
   Pat bitPat(Type[] tenv, Type a) {
@@ -421,7 +418,7 @@ public abstract class Tycon extends Name {
         return obdd.Pat.empty(0);
       }
       int w = n.bitLength();
-      if (w < 0 || w >= Type.WORDSIZE) {
+      if (w < 0 || w >= Word.size()) {
         // TODO: generate an internal error?  or make above internals return null instead?
         return null;
       }
@@ -486,7 +483,7 @@ public abstract class Tycon extends Name {
   }
 
   Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
-    return (this == aref || this == aptr) ? new TNat(Type.numBytes(Type.WORDSIZE)) : null;
+    return (this == aref || this == aptr) ? new TNat(Type.numBytes(Word.size())) : null;
   }
 
   /**

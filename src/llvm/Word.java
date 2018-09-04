@@ -38,7 +38,7 @@ public class Word extends Value {
 
   /** Return the LLVM type of this value. */
   public Type getType() {
-    return Type.i32;
+    return Type.word();
   }
 
   /** Append the name for this value to the specified buffer. */
