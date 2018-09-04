@@ -301,7 +301,7 @@ public class PrimCall extends Call {
         if (d == 1) { // Look for a (redundant) divide by 1
           return done(x);
         }
-        if ((d & (d - 1)) == 0) { // Look for division by a power of two, d=(1<<n)
+        if ((d & (d - 1)) == 0) { // Look for division by a power of two, d=(1L<<n)
           int n = 1; // Calculate the value of n
           for (long i = (d >>> 1); (i >>>= 1) > 0; n++) {
             /* no extra work here */
@@ -1202,7 +1202,7 @@ public class PrimCall extends Call {
           long w = c.getVal();
           if (w > 0 && w < Word.size()) {
             // left shifting by w bits performs an effective mask by em on the result:
-            int em = ~((1 << w) - 1);
+            long em = ~((1L << w) - 1);
             if ((m & em) == em) { // if specified mask doesn't do more than effective mask ...
               MILProgram.report(
                   "rewrite: (x << " + w + ") & 0x" + Long.toHexString(m) + " ==> (x << " + w + ")");
@@ -1216,7 +1216,7 @@ public class PrimCall extends Call {
           long w = c.getVal();
           if (w > 0 && w < Word.size()) {
             // right shifting by w bits performs an effective mask by em on the result:
-            int em = (1 << (Word.size() - w)) - 1;
+            long em = (1L << (Word.size() - w)) - 1;
             if ((m & em) == em) { // if specified mask doesn't do more than effective mask ...
               MILProgram.report(
                   "rewrite: (x >> " + w + ") & 0x" + Long.toHexString(m) + " ==> (x >> " + w + ")");
@@ -1626,7 +1626,7 @@ public class PrimCall extends Call {
     if (n == 0) { // 0 >> y == 0
       MILProgram.report("rewrite: ashr((0, y)) ==> 0");
       return done(0);
-    } else if (~n == 0) { // ~0 >> y = ~0
+    } else if (n == (~0)) { // ~0 >> y = ~0
       MILProgram.report("rewrite: ashr((~0, y)) ==> ~0");
       return done(n);
     }

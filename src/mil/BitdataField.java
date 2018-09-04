@@ -127,7 +127,7 @@ public class BitdataField extends Name {
       Temp a = new Temp();
       return new Bind(
           a,
-          Prim.and.withArgs(params[j], 1 << o),
+          Prim.and.withArgs(params[j], 1L << o),
           new Bind(ws[0], Prim.neq.withArgs(a, Word.Zero), code));
     }
   }
@@ -141,7 +141,7 @@ public class BitdataField extends Name {
     int j = offset / wordsize; // starting word offset in params
 
     if (width + offset < total && 0 < w) { // add mask on msw, if needed
-      code = prim(ws, n - 1, Prim.and, new Word((1 << (wordsize - w)) - 1), code);
+      code = prim(ws, n - 1, Prim.and, new Word((1L << (wordsize - w)) - 1), code);
     }
 
     for (int i = n - 1; i >= 0; i--) { // extract each word of the result

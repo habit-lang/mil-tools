@@ -803,7 +803,7 @@ public class External extends TopDefn {
                     if (rem != 0) {
                       Temp v = vs[--n];
                       code =
-                          new Bind(v, Prim.xor.withArgs(vs[n] = new Temp(), (1 << rem) - 1), code);
+                          new Bind(v, Prim.xor.withArgs(vs[n] = new Temp(), (1L << rem) - 1), code);
                     }
 
                     // Use Prim.not on any remaining words:
@@ -910,7 +910,7 @@ public class External extends TopDefn {
       return new Done(t);
     } else {
       Temp c = new Temp();
-      return new Bind(c, t, new Done(Prim.and.withArgs(c, (1 << rem) - 1)));
+      return new Bind(c, t, new Done(Prim.and.withArgs(c, (1L << rem) - 1)));
     }
   }
 
@@ -1408,7 +1408,7 @@ public class External extends TopDefn {
             int rem = width % Word.size();
             if (rem != 0) {
               Temp t = new Temp();
-              code = new Bind(t, Prim.and.withArgs(as[n - 1], (1 << rem) - 1), code);
+              code = new Bind(t, Prim.and.withArgs(as[n - 1], (1L << rem) - 1), code);
               as[n - 1] = t;
             }
             return new Block(pos, vs, code);
@@ -1443,7 +1443,7 @@ public class External extends TopDefn {
             int rem = width % Word.size();
             if (rem != 0) {
               Temp t = new Temp();
-              code = new Bind(t, Prim.and.withArgs(ts[n - lo - 1], (1 << rem) - 1), code);
+              code = new Bind(t, Prim.and.withArgs(ts[n - lo - 1], (1L << rem) - 1), code);
               as[n - 1] = t;
             }
 

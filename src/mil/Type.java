@@ -756,8 +756,8 @@ public abstract class Type extends Scheme {
    * Test whether this is a natural number type in the range [1..maxUnsigned], suitable for use as
    * an argument to Ix. (This will ensure that all Ix values can be represented in a single word.)
    * Note that we exclude Ix 0 because that would be an empty type. Technically, we could include
-   * maxUnsigned+1 (i.e., 1<<WordSize) here but choose not to do that so that all Maybe (Ix n) types
-   * can be represented in a single word.
+   * maxUnsigned+1 (i.e., 1L<<WordSize) here but choose not to do that so that all Maybe (Ix n)
+   * types can be represented in a single word.
    */
   BigInteger isPosWord() {
     return inRange(BigInteger.ONE, Word.maxUnsigned());
