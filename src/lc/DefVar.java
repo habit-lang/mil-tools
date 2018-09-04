@@ -47,7 +47,7 @@ abstract class DefVar extends Var {
       } else {
         buf.append("(");
         buf.append(vs[i].getId());
-        buf.append("::");
+        buf.append(" :: ");
         buf.append(s.getType().skeleton().toString());
         buf.append(")");
       }
