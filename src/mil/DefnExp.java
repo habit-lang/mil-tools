@@ -61,6 +61,10 @@ abstract class DefnExp {
     /* do nothing */
   }
 
+  /**
+   * Add the MIL definition associated with this DefnExp, if any, as an entrypoint to the specified
+   * program.
+   */
   void addAsEntryTo(MILProgram mil) {
     /* nothing to do, in general */
   }

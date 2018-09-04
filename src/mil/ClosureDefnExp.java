@@ -63,6 +63,10 @@ class ClosureDefnExp extends DefnExp {
     k.inScopeOf(handler, milenv, ids, args, cexp);
   }
 
+  /**
+   * Add the MIL definition associated with this DefnExp, if any, as an entrypoint to the specified
+   * program.
+   */
   void addAsEntryTo(MILProgram mil) {
     mil.addEntry(k);
   }

@@ -22,6 +22,9 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/**
+ * A null-terminated linked list of items that can be accessed using (public) head and next fields.
+ */
 public class LCPrograms {
 
   public LCProgram head;
@@ -67,34 +70,6 @@ public class LCPrograms {
    * dependency information.
    */
   public static LCProgramSCCs scc(LCPrograms xs) {
-    /*
-          // Compute the transpose (i.e., fill in the callers fields)
-          for (X\s bs=xs; bs!=null; bs=bs.next) {
-            for (X\s cs=bs.head.callees; cs!=null; cs=cs.next) {
-              cs.head.callers = new X\s(bs.head, cs.head.callers);
-            }
-          }
-
-          debug.Log.println("Beginning SCC algorithm");
-          for (X\s bs=xs; bs!=null; bs=bs.next) {
-            debug.Log.print(bs.head.getId() + ": callees {");
-            String punc = "";
-            for (X\s cs = bs.head.callees; cs!=null; cs=cs.next) {
-              debug.Log.print(punc);
-              punc = ", ";
-              debug.Log.print(cs.head.getId());
-            }
-            debug.Log.print("}, callers {");
-            punc = "";
-            for (X\s cs = bs.head.callers; cs!=null; cs=cs.next) {
-              debug.Log.print(punc);
-              punc = ", ";
-              debug.Log.print(cs.head.getId());
-            }
-            debug.Log.println("}");
-          }
-    */
-
     // Run the two depth-first searches of the main algorithm.
     return searchReverse(searchForward(xs, null));
   }

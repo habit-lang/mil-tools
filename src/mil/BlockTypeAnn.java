@@ -44,7 +44,7 @@ class BlockTypeAnn extends TypeAnn {
    */
   void addTo(MILEnv milenv) throws Failure { // ids :: dom >>= rng
     blockType = BlockType.validate(milenv.getTyconEnv(), dom, rng);
-    // !   debug.Log.println("Block type annotation with blocktype: " + blockType);
+    // ! debug.Log.println("Block type annotation with blocktype: " + blockType);
   }
 
   /**

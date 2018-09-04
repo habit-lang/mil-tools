@@ -461,7 +461,7 @@ public class Bind extends Code {
   }
 
   /** Find the argument variables that are used in this Code sequence. */
-  Temps addArgs() throws Failure { // vs <- t; c
+  Temps addArgs() throws Failure {
     return t.addArgs(Temps.remove(vs, c.addArgs()));
   }
 

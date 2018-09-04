@@ -22,6 +22,9 @@ import compiler.*;
 import compiler.Handler;
 import core.*;
 
+/**
+ * A null-terminated linked list of items that can be accessed using (public) head and next fields.
+ */
 public class Tyvars {
 
   public Tyvar head;

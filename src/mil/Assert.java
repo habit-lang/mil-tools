@@ -278,7 +278,7 @@ public class Assert extends Code {
   }
 
   /** Find the argument variables that are used in this Code sequence. */
-  Temps addArgs() throws Failure { // assert a C; c
+  Temps addArgs() throws Failure {
     return a.add(c.addArgs());
   }
 

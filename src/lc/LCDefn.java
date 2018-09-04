@@ -22,6 +22,10 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/**
+ * A base class for definitions that can be used at the top-level and locally (i.e., within a let)
+ * in LC programs.
+ */
 public abstract class LCDefn {
 
   protected Position pos;

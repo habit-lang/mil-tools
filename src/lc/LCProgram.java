@@ -35,6 +35,11 @@ public class LCProgram extends CoreProgram {
     this.name = name;
   }
 
+  /** Return the name for this program. */
+  public String getName() {
+    return name;
+  }
+
   private TopDefns topDefns = null;
 
   private TopDefns topDefnsLast = null;
@@ -110,7 +115,7 @@ public class LCProgram extends CoreProgram {
 
     // Add environment entries for symbols introduced in top-level definitions:
     for (TopDefns tds = topDefns; tds != null; tds = tds.next) {
-      tds.head.addToEnv(handler, milenv);
+      tds.head.validateTopDefn(handler, milenv);
     }
 
     // Visit each binding in the list of top-level bindings:
@@ -235,11 +240,6 @@ public class LCProgram extends CoreProgram {
       // scc dependency from this.scc to scc.
       LCProgramSCC.addDependency(this.scc, scc);
     }
-  }
-
-  /** Return the name for this program. */
-  public String getName() {
-    return name;
   }
 
   /** Run static analysis on this LC program. */

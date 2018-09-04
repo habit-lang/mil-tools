@@ -23,7 +23,7 @@ import core.*;
 import debug.Screen;
 import mil.*;
 
-/** Classes used to provide a representation for expressions. */
+/** A base class for representing the abstract syntax of LC expressions. */
 abstract class Expr {
 
   /** Return a source code position for this expression. */
@@ -113,7 +113,7 @@ abstract class Expr {
   }
 
   /**
-   * Perform a scope analysis on this expression, creating a Temp object for each variable binding,
+   * Perform scope analysis on this expression, creating a Temp object for each variable binding,
    * checking that all of the identifiers that it references correspond to bound variables, and
    * returning the set of free variables in the term.
    */

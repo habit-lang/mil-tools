@@ -310,7 +310,7 @@ public class Done extends Code {
   }
 
   /** Find the argument variables that are used in this Code sequence. */
-  Temps addArgs() throws Failure { // t
+  Temps addArgs() throws Failure {
     return t.addArgs(null);
   }
 

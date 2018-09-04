@@ -418,13 +418,13 @@ public class Pat {
       t = t.or(Pat.intmod(8, n));
       n = (n * 17 + 131) & 255;
 
-      //        try { java.lang.Thread.sleep(200); } catch (Exception ex) { }
+      //    try { java.lang.Thread.sleep(200); } catch (Exception ex) { }
     }
 
     for (int i = 0; i < 256; i++) {
       t.toDot("t.dot");
       t = t.or(Pat.intmod(8, i));
-      //          try { java.lang.Thread.sleep(200); } catch (Exception ex) { }
+      //    try { java.lang.Thread.sleep(200); } catch (Exception ex) { }
     }
   }
 }

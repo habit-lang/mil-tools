@@ -48,7 +48,7 @@ class EStructInit extends EConstruct {
   private StructType st;
 
   /**
-   * Perform a scope analysis on this expression, creating a Temp object for each variable binding,
+   * Perform scope analysis on this expression, creating a Temp object for each variable binding,
    * checking that all of the identifiers that it references correspond to bound variables, and
    * returning the set of free variables in the term.
    */

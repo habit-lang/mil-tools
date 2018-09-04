@@ -118,8 +118,10 @@ public abstract class Tycon extends Name {
     return null;
   }
 
+  public static final String milArrowId = "->>";
+
   public static final Tycon milArrow =
-      new PrimTycon("->>", new KFun(KAtom.TUPLE, new KFun(KAtom.TUPLE, KAtom.STAR)), 2);
+      new PrimTycon(milArrowId, new KFun(KAtom.TUPLE, new KFun(KAtom.TUPLE, KAtom.STAR)), 2);
 
   public static final DataType arrow = new DataType("->", Kind.simple(2), 2);
 

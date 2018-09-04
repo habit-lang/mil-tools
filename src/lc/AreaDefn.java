@@ -36,8 +36,13 @@ public class AreaDefn extends TopDefn {
     this.texp = texp;
   }
 
-  /** Add entries from this top-level definition to the environment, if necessary. */
-  void addToEnv(Handler handler, MILEnv milenv) throws Failure {
+  private Type initType;
+
+  /**
+   * Validate this top level definition and add corresponding entries to the environment, if
+   * necessary.
+   */
+  void validateTopDefn(Handler handler, MILEnv milenv) throws Failure {
     try {
       texp.scopeType(null, milenv.getTyconEnv(), 0);
       texp.checkKind(KAtom.STAR);
@@ -70,8 +75,6 @@ public class AreaDefn extends TopDefn {
       handler.report(f);
     }
   }
-
-  private Type initType;
 
   /**
    * Run scope analysis on a top level lc definition to ensure that all the items identified as

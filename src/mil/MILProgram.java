@@ -483,34 +483,6 @@ public class MILProgram {
     return set;
   }
 
-  private static MILEnv primEnv = null;
-
-  /** Load MIL primitive definitions from the specified filed. */
-  public static void loadPrims(Handler handler, String name) {
-    try {
-      // Load the named file (and anything it depends on):
-      MILLoader loader = new MILLoader();
-      loader.require(name);
-      MILProgram mil = new MILProgram();
-      primEnv = loader.load(handler, mil);
-      handler.abortOnFailures();
-
-      // Run basic type checking on the resulting program:
-      mil.typeChecking(handler);
-      handler.abortOnFailures();
-      // !
-      // !   mil.dump(); // Output result
-    } catch (Failure f) {
-      handler.report(f);
-      debug.Internal.error("Aborting due to errors while loading primitives from " + name);
-    }
-  }
-
-  /** Return a pointer to the set of MIL primitive definitions. */
-  public static MILEnv primEnv() {
-    return primEnv;
-  }
-
   public void addArgs() throws Failure {
     for (Defns ds = reachable(); ds != null; ds = ds.next) {
       ds.head.addArgs();

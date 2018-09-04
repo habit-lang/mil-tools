@@ -23,6 +23,9 @@ import core.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+/**
+ * A null-terminated linked list of items that can be accessed using (public) head and next fields.
+ */
 public class CFGs {
 
   public CFG head;

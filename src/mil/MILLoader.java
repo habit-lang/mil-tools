@@ -77,7 +77,7 @@ public class MILLoader {
   /** Load the abstract syntax for all of the required files. */
   public MILEnv load(Handler handler, MILProgram program) throws Failure {
     MILASTSCCs sccs = MILASTs.scc(syntaxAnalysis(handler));
-    // !     MILASTSCCs.display("MILASTs", sccs);
+    // ! MILASTSCCs.display("MILASTs", sccs);
 
     // Run through strongly connected components to build up a MIL environment for the complete
     // program.
@@ -85,10 +85,9 @@ public class MILLoader {
     MILProgram full = new MILProgram();
     for (; sccs != null; sccs = sccs.next) {
       MILASTSCC scc = sccs.head;
-      // TODO: at some point in the future, we may be able to allow for mutual recursion between MIL
-      // files,
-      // loading all of them as a single group.  But that still wouldn't provide any good reason for
-      // a MIL
+      // TODO: At some point, we may be able to allow for mutual recursion between MIL files,
+      // loading
+      // all of them together as a group.  But that still wouldn't provide any good reason for a MIL
       // file to require itself, so perhaps some of this error checking code would still be useful
       // then ...
       if (scc.isRecursive()) {

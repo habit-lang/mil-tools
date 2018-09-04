@@ -23,6 +23,9 @@ import core.*;
 import debug.Log;
 import mil.*;
 
+/**
+ * A null-terminated linked list of items that can be accessed using (public) head and next fields.
+ */
 public class BindingSCCs {
 
   public BindingSCC head;

@@ -311,7 +311,7 @@ public class Alt {
   }
 
   /** Find the argument variables that are used in this Code sequence. */
-  Temps addArgs() throws Failure { // cf -> bc
+  Temps addArgs() throws Failure {
     return bc.addArgs(null);
   }
 

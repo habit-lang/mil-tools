@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** A base class for definitions that are only valid at the top level in an LC program. */
 public abstract class TopDefn {
 
   protected Position pos;
@@ -31,8 +32,11 @@ public abstract class TopDefn {
     this.pos = pos;
   }
 
-  /** Add entries from this top-level definition to the environment, if necessary. */
-  void addToEnv(Handler handler, MILEnv milenv) throws Failure {
+  /**
+   * Validate this top level definition and add corresponding entries to the environment, if
+   * necessary.
+   */
+  void validateTopDefn(Handler handler, MILEnv milenv) throws Failure {
     /* Default behavior is to do nothing */
   }
 

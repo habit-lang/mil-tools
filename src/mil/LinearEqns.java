@@ -22,6 +22,9 @@ import compiler.*;
 import compiler.Failure;
 import core.*;
 
+/**
+ * A null-terminated linked list of items that can be accessed using (public) head and next fields.
+ */
 public class LinearEqns {
 
   public LinearEqn head;

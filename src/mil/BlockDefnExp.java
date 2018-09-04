@@ -60,6 +60,10 @@ class BlockDefnExp extends DefnExp {
     b.inScopeOf(handler, milenv, ids, cexp);
   }
 
+  /**
+   * Add the MIL definition associated with this DefnExp, if any, as an entrypoint to the specified
+   * program.
+   */
   void addAsEntryTo(MILProgram mil) {
     mil.addEntry(b);
   }

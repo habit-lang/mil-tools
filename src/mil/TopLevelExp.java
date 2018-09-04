@@ -64,6 +64,10 @@ class TopLevelExp extends DefnExp {
     t.inScopeOf(handler, milenv, args, cexp);
   }
 
+  /**
+   * Add the MIL definition associated with this DefnExp, if any, as an entrypoint to the specified
+   * program.
+   */
   void addAsEntryTo(MILProgram mil) {
     mil.addEntry(t);
   }

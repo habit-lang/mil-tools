@@ -34,7 +34,7 @@ public class MILLexer extends LayoutLexer implements MILTokens {
     reserved.put("@", new Integer(APPLY));
     reserved.put("_", new Integer(UNDER));
     reserved.put(">>=", new Integer(TBIND));
-    reserved.put(Tycon.milArrow.getId(), new Integer(MILTO));
+    reserved.put(Tycon.milArrowId, new Integer(MILTO));
     nextToken(); // force reading of first token
   }
 
@@ -54,7 +54,7 @@ public class MILLexer extends LayoutLexer implements MILTokens {
       case TBIND:
         return ">>= (block type arrow)";
       case MILTO:
-        return "\"" + Tycon.milArrow.getId() + "\" symbol";
+        return "\"" + Tycon.milArrowId + "\" symbol";
       default:
         return super.describeToken(token, lexeme);
     }
