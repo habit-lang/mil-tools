@@ -51,6 +51,7 @@ class Main {
     System.err.println(
         "                        r = representation transformation (requires earlier s)");
     System.err.println("         -m[filename]   mil code");
+    System.err.println("         -t[filename]   type definitions");
     System.err.println("         -g[filename]   GraphViz file for mil structure");
     System.err.println("         -c[filename]   type set");
     System.err.println("         -s[filename]   specialization type set (requires s)");
@@ -80,6 +81,8 @@ class Main {
   }
 
   private FilenameOption milOutput = new FilenameOption("MIL output file");
+
+  private FilenameOption typeDefnsOutput = new FilenameOption("Type definitions");
 
   private FilenameOption graphvizOutput = new FilenameOption("MIL code GraphViz output");
 
@@ -134,6 +137,9 @@ class Main {
             return;
           case 'm':
             milOutput.setName(str, i);
+            return;
+          case 't':
+            typeDefnsOutput.setName(str, i);
             return;
           case 'g':
             graphvizOutput.setName(str, i);
@@ -349,6 +355,15 @@ class Main {
             TypeSet set = new TypeSet();
             mil.collect(set);
             set.dump(out);
+          }
+        });
+
+    typeDefnsOutput.run(
+        new Action() {
+          void run(PrintWriter out) {
+            TypeSet set = new TypeSet(); // TODO: can we reuse the set from typesetOutput?
+            mil.collect(set);
+            set.dumpTypeDefinitions(out);
           }
         });
 
