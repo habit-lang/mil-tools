@@ -109,8 +109,8 @@ class ITE extends OBDD {
    * Test for a specific bit pattern in the set represented by an OBDD (assumes that the argument
    * bit pattern is in the correct range for the width of the OBDD.
    */
-  boolean includes(int i) {
-    return (((1 << var) & i) == 0) ? ifFalse.includes(i) : ifTrue.includes(i);
+  boolean includes(long i) {
+    return (((1L << var) & i) == 0) ? ifFalse.includes(i) : ifTrue.includes(i);
   }
 
   /**
@@ -118,18 +118,18 @@ class ITE extends OBDD {
    * given OBDD is not empty and that the required bit pattern can fit within a single machine word
    * (in particular, the largest variable index that is tested in the bdd is less the word size).
    */
-  int minimum() {
-    return ifFalse.isConst(false) ? ((1 << var) | ifTrue.minimum()) : ifFalse.minimum();
+  long minimum() {
+    return ifFalse.isConst(false) ? ((1L << var) | ifTrue.minimum()) : ifFalse.minimum();
   }
 
   /**
-   * Find the smallest int value whose bit pattern is not included in the set represented by this
+   * Find the smallest long value whose bit pattern is not included in the set represented by this
    * OBDD (which, of course, should not be the set of all bit patterns; i.e., its complement should
    * be non empty).
    */
-  int smallestOutside() {
+  long smallestOutside() {
     return ifFalse.isConst(true)
-        ? ((1 << var) | ifTrue.smallestOutside())
+        ? ((1L << var) | ifTrue.smallestOutside())
         : ifFalse.smallestOutside();
   }
 

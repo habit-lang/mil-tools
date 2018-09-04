@@ -92,23 +92,23 @@ public abstract class OBDD {
    * Test for a specific bit pattern in the set represented by an OBDD (assumes that the argument
    * bit pattern is in the correct range for the width of the OBDD.
    */
-  abstract boolean includes(int i);
+  abstract boolean includes(long i);
 
   /**
    * Find bit pattern for the smallest number that is included in a given OBDD. Assumes that the
    * given OBDD is not empty and that the required bit pattern can fit within a single machine word
    * (in particular, the largest variable index that is tested in the bdd is less the word size).
    */
-  int minimum() {
+  long minimum() {
     return 0;
   }
 
   /**
-   * Find the smallest int value whose bit pattern is not included in the set represented by this
+   * Find the smallest long value whose bit pattern is not included in the set represented by this
    * OBDD (which, of course, should not be the set of all bit patterns; i.e., its complement should
    * be non empty).
    */
-  int smallestOutside() {
+  long smallestOutside() {
     return 0;
   }
 
@@ -139,7 +139,7 @@ public abstract class OBDD {
    */
   abstract OBDD shiftLeft(int padding);
 
-  public static OBDD intmod(int width, int val) {
+  public static OBDD intmod(int width, long val) {
     OBDD bdd = OBDD.TRUE;
     for (int i = 0; i < width; i++) {
       bdd = ((val & 1) == 1) ? new ITE(i, bdd, OBDD.FALSE) : new ITE(i, OBDD.FALSE, bdd);

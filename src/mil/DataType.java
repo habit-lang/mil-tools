@@ -293,7 +293,7 @@ public class DataType extends DataName {
     if (maxWidth <= Word.size()) {
       Pat p = Pat.concat(fpats); // Bit pattern for the non-nullary case
       if (!p.isAll()) { // If they are not all used ...
-        int s = p.smallestOutside(); // then pick the smallest value to represent the nullary cfun
+        long s = p.smallestOutside(); // then pick the smallest value to represent the nullary cfun
         Pat q = Pat.intmod(maxWidth, s); // Find the bit pattern for that single value
 
         // Create a new bitdata type T based on the following encoding:

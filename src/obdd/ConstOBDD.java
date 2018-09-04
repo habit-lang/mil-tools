@@ -66,7 +66,7 @@ class ConstOBDD extends OBDD {
    * Test for a specific bit pattern in the set represented by an OBDD (assumes that the argument
    * bit pattern is in the correct range for the width of the OBDD.
    */
-  boolean includes(int i) {
+  boolean includes(long i) {
     return val;
   }
 

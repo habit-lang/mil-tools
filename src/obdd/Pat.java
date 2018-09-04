@@ -108,15 +108,15 @@ public class Pat {
     return bdd.ordered(width);
   }
 
-  public boolean includes(int i) {
+  public boolean includes(long i) {
     return bdd.includes(i);
   }
 
-  public int minimum() {
+  public long minimum() {
     return bdd.minimum();
   }
 
-  public int smallestOutside() {
+  public long smallestOutside() {
     return bdd.smallestOutside();
   }
 
@@ -187,7 +187,7 @@ public class Pat {
    * Returns a bit pattern of the specified width representing the singleton set that contains the
    * given val (modulo 2^width).
    */
-  public static Pat intmod(int width, int val) {
+  public static Pat intmod(int width, long val) {
     return new Pat(width, OBDD.intmod(width, val));
   }
 
@@ -201,11 +201,11 @@ public class Pat {
    * width (close to the word size) and val (in the area where signed and unsigned representations
    * differ).
    */
-  public static Pat greater(int width, int val) {
+  public static Pat greater(int width, long val) {
     if (val < 0) {
       return Pat.all(width);
     }
-    if (val >= (1 << width)) {
+    if (val >= (1L << width)) {
       return Pat.empty(width);
     }
     OBDD bdd = OBDD.FALSE;
@@ -224,7 +224,7 @@ public class Pat {
    * Generate a pattern that matches unsigned integers of the given width that are greater than or
    * equal to the specified value, val.
    */
-  public static Pat greaterEq(int width, int val) {
+  public static Pat greaterEq(int width, long val) {
     return greater(width, val - 1);
   }
 
@@ -232,7 +232,7 @@ public class Pat {
    * Generate a pattern that matches unsigned integers of the given width that are less than the
    * specified value, val.
    */
-  public static Pat less(int width, int val) {
+  public static Pat less(int width, long val) {
     return greaterEq(width, val).not();
   }
 
@@ -240,7 +240,7 @@ public class Pat {
    * Generate a pattern that matches unsigned integers of the given width that are less than or
    * equal to the specified value, val.
    */
-  public static Pat lessEq(int width, int val) {
+  public static Pat lessEq(int width, long val) {
     return greater(width, val).not();
   }
 
@@ -313,7 +313,7 @@ public class Pat {
     OBDD d = bdd;
     System.out.print("{");
     while (!d.isConst(false)) {
-      int m = d.minimum();
+      long m = d.minimum();
       System.out.print(" " + m);
       d = d.and(OBDD.intmod(width, m).not());
     }
