@@ -83,7 +83,9 @@ public class FuncDefn extends Defn {
     // Print code for each of the basic blocks:
     for (int i = 0; i < labels.length; i++) {
       out.println();
-      out.println(labels[i] + ":");
+      if (i != 0) {
+        out.println(labels[i] + ":");
+      }
       bodies[i].print(out);
     }
 
