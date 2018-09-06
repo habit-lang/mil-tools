@@ -87,11 +87,11 @@ class Main {
 
   private FilenameOption graphvizOutput = new FilenameOption("MIL code GraphViz output");
 
-  private FilenameOption typesetOutput = new FilenameOption("type set output");
+  private FilenameOption typeSetOutput = new FilenameOption("type set output");
 
-  private FilenameOption specTypesetOutput = new FilenameOption("specialization type set output");
+  private FilenameOption specTypeSetOutput = new FilenameOption("specialization type set output");
 
-  private FilenameOption repTypesetOutput = new FilenameOption("representation type set output");
+  private FilenameOption repTypeSetOutput = new FilenameOption("representation type set output");
 
   private FilenameOption llvmOutput = new FilenameOption("llvm output");
 
@@ -148,13 +148,13 @@ class Main {
             graphvizOutput.setName(str, i);
             return;
           case 'c':
-            typesetOutput.setName(str, i);
+            typeSetOutput.setName(str, i);
             return;
           case 's':
-            specTypesetOutput.setName(str, i);
+            specTypeSetOutput.setName(str, i);
             return;
           case 'r':
-            repTypesetOutput.setName(str, i);
+            repTypeSetOutput.setName(str, i);
             return;
           case 'l':
             llvmOutput.setName(str, i);
@@ -274,7 +274,7 @@ class Main {
               ? "cosboro"
               : execOutput.isSet()
                   ? "cosboro"
-                  : repTypesetOutput.isSet() ? "cosor" : specTypesetOutput.isSet() ? "cos" : "co";
+                  : repTypeSetOutput.isSet() ? "cosor" : specTypeSetOutput.isSet() ? "cos" : "co";
       message("Defaulting to passes \"" + passes + "\":");
     }
 
@@ -355,25 +355,7 @@ class Main {
       final boolean optimized)
       throws Failure {
 
-    typesetOutput.run(
-        new Action() {
-          void run(PrintWriter out) {
-            TypeSet set = new TypeSet();
-            mil.collect(set);
-            set.dump(out);
-          }
-        });
-
-    typeDefnsOutput.run(
-        new Action() {
-          void run(PrintWriter out) {
-            TypeSet set = new TypeSet(); // TODO: can we reuse the set from typesetOutput?
-            mil.collect(set);
-            set.dumpTypeDefinitions(out);
-          }
-        });
-
-    specTypesetOutput.run(
+    specTypeSetOutput.run(
         new Action() {
           void run(PrintWriter out) throws Failure {
             if (spec == null) {
@@ -385,7 +367,7 @@ class Main {
           }
         });
 
-    repTypesetOutput.run(
+    repTypeSetOutput.run(
         new Action() {
           void run(PrintWriter out) throws Failure {
             if (rep == null) {
@@ -397,15 +379,29 @@ class Main {
           }
         });
 
-    milOutput.run(
-        new Action() {
-          void run(PrintWriter out) {
-            TypeSet set = new TypeSet(); // TODO: can we reuse the set from typesetOutput?
-            mil.collect(set);
-            set.dumpTypeDefinitions(out);
-            mil.dump(out);
-          }
-        });
+    if (typeSetOutput.isSet() || typeDefnsOutput.isSet() || milOutput.isSet()) {
+      final TypeSet set = new TypeSet();
+      mil.collect(set);
+      typeSetOutput.run(
+          new Action() {
+            void run(PrintWriter out) {
+              set.dump(out);
+            }
+          });
+      typeDefnsOutput.run(
+          new Action() {
+            void run(PrintWriter out) {
+              set.dumpTypeDefinitions(out);
+            }
+          });
+      milOutput.run(
+          new Action() {
+            void run(PrintWriter out) {
+              set.dumpTypeDefinitions(out);
+              mil.dump(out);
+            }
+          });
+    }
 
     graphvizOutput.run(
         new Action() {
