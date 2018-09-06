@@ -211,9 +211,7 @@ public abstract class Atom {
   }
 
   /** Apply a TempSubst to this Atom. */
-  public Atom apply(TempSubst s) {
-    return this;
-  }
+  public abstract Atom apply(TempSubst s);
 
   /** Return a type for an instantiated version of this item when used as Atom (input operand). */
   public abstract Type instantiate();

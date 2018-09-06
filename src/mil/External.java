@@ -1877,15 +1877,16 @@ public class External extends TopDefn {
 
   static {
 
-    // structSelect m s f n :: ARef m s -> #f -> ARef n t
+    // primStructSelect m s f n t :: ARef m s -> #f -> ARef n t
     generators.put(
-        "structSelect",
-        new Generator(4) {
+        "primStructSelect",
+        new Generator(5) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) {
             BigInteger m = ts[0].getNat(); // Alignment of structure
             StructType st = ts[1].structType(); // Structure
             String lab = ts[2].getLabel(); // Field label
             BigInteger n = ts[3].getNat(); // Alignment of field
+            Type t = ts[4]; // Area type; not currently used
             if (m != null && st != null && lab != null && n != null) {
               // TODO: For now, we ignore the alignment values, trusting that the values passed in
               // by the front

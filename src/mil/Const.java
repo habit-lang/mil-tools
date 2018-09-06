@@ -24,6 +24,11 @@ import java.math.BigInteger;
 
 public abstract class Const extends Atom {
 
+  /** Apply a TempSubst to this Atom. */
+  public Atom apply(TempSubst s) {
+    return this;
+  }
+
   /** Generate code to copy the data for this atom into the specified frame slot. */
   void copyTo(int dst, MachineBuilder builder) {
     builder.gcopy(constValue(), dst);
