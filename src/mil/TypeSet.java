@@ -36,7 +36,7 @@ public class TypeSet {
    */
   private HashMap<Object, TLit> litsToTypes = new HashMap();
 
-  /** Worker function for TypeSetDumper; writes a description of this TypeSet to a PrintWriter. */
+  /** Write a description of this TypeSet to a PrintWriter. */
   public void dump(PrintWriter out) {
     out.println("Tycon uses: -----------------------------");
     for (Tycon tycon : tyconInstances.keySet()) {
@@ -84,10 +84,7 @@ public class TypeSet {
     out.println("-----------------------------------------");
   }
 
-  /**
-   * Worker method for TypeDefinitionsDumper: write definitions of all the types defined in this
-   * TypeSet to a PrintWriter.
-   */
+  /** Write definitions for all the types defined in this TypeSet to a PrintWriter. */
   public void dumpTypeDefinitions(PrintWriter out) {
     for (Tycon tycon : tyconInstances.keySet()) {
       tycon.dumpTypeDefinition(out);
