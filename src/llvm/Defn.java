@@ -23,5 +23,18 @@ import java.io.PrintWriter;
 /** Represents a definition in an LLVM program. */
 public abstract class Defn {
 
+  /** Print full text for this definition on the specified PrintWriter. */
   abstract void print(PrintWriter out);
+
+  /**
+   * Return a boolean to indicate whether there should be any output from this definition in an LLVM
+   * interface description.
+   */
+  abstract boolean includeInInterface();
+
+  /**
+   * Print interface text for this definition on the specified PrintWriter, assuming that
+   * this.includeInInterface() == true.
+   */
+  abstract void printInterface(PrintWriter out);
 }

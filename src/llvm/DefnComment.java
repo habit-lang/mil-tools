@@ -35,8 +35,25 @@ public class DefnComment extends Defn {
     this.defn = defn;
   }
 
+  /** Print full text for this definition on the specified PrintWriter. */
   void print(PrintWriter out) {
     Program.printComment(out, "", comment);
     defn.print(out);
+  }
+
+  /**
+   * Return a boolean to indicate whether there should be any output from this definition in an LLVM
+   * interface description.
+   */
+  boolean includeInInterface() {
+    return defn.includeInInterface();
+  }
+
+  /**
+   * Print interface text for this definition on the specified PrintWriter, assuming that
+   * this.includeInInterface() == true.
+   */
+  void printInterface(PrintWriter out) {
+    print(out);
   }
 }

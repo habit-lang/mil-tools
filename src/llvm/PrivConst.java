@@ -35,8 +35,25 @@ public class PrivConst extends Defn {
     this.val = val;
   }
 
+  /** Print full text for this definition on the specified PrintWriter. */
   void print(PrintWriter out) {
     out.println("@" + name + " = private constant " + val);
     out.println();
+  }
+
+  /**
+   * Return a boolean to indicate whether there should be any output from this definition in an LLVM
+   * interface description.
+   */
+  boolean includeInInterface() {
+    return false;
+  }
+
+  /**
+   * Print interface text for this definition on the specified PrintWriter, assuming that
+   * this.includeInInterface() == true.
+   */
+  void printInterface(PrintWriter out) {
+    /* No output in this case. */
   }
 }

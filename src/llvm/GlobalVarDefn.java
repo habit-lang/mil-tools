@@ -43,8 +43,30 @@ public class GlobalVarDefn extends Defn {
     this.alignment = alignment;
   }
 
+  /** Print full text for this definition on the specified PrintWriter. */
   void print(PrintWriter out) {
     out.print("@" + name + " = " + (internal ? "internal " : "") + "global " + initial);
+    if (alignment != 0) {
+      out.print(", align " + alignment);
+    }
+    out.println();
+    out.println();
+  }
+
+  /**
+   * Return a boolean to indicate whether there should be any output from this definition in an LLVM
+   * interface description.
+   */
+  boolean includeInInterface() {
+    return !internal;
+  }
+
+  /**
+   * Print interface text for this definition on the specified PrintWriter, assuming that
+   * this.includeInInterface() == true.
+   */
+  void printInterface(PrintWriter out) {
+    out.print("@" + name + " = global " + initial.getType());
     if (alignment != 0) {
       out.print(", align " + alignment);
     }

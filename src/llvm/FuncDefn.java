@@ -64,6 +64,7 @@ public class FuncDefn extends Defn {
    */
   public static String mainFunctionName = "";
 
+  /** Print full text for this definition on the specified PrintWriter. */
   void print(PrintWriter out) {
     out.print("define ");
     if (internal) {
@@ -88,6 +89,32 @@ public class FuncDefn extends Defn {
 
     // Terminate the function definition:
     out.println("}");
+    out.println();
+  }
+
+  /**
+   * Return a boolean to indicate whether there should be any output from this definition in an LLVM
+   * interface description.
+   */
+  boolean includeInInterface() {
+    return !internal;
+  }
+
+  /**
+   * Print interface text for this definition on the specified PrintWriter, assuming that
+   * this.includeInInterface() == true.
+   */
+  void printInterface(PrintWriter out) {
+    out.print("define ");
+    out.print(retType.toString());
+    out.print(" @" + name + "(");
+    for (int i = 0; i < formals.length; i++) {
+      if (i > 0) {
+        out.print(", ");
+      }
+      out.print(formals[i].getType().toString());
+    }
+    out.println(")");
     out.println();
   }
 }

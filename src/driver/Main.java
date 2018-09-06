@@ -57,6 +57,7 @@ class Main {
     System.err.println("         -s[filename]   specialization type set (requires s)");
     System.err.println("         -r[filename]   representation type set (requires r)");
     System.err.println("         -l[filename]   LLVM code (requires s)");
+    System.err.println("         -f[filename]   LLVM interface (requires s)");
     System.err.println("         -b[filename]   bytecode text");
     System.err.println("         -x[filename]   execute bytecode");
     System.err.println("         --mil-main=N   Set name of main function in MIL input");
@@ -93,6 +94,8 @@ class Main {
   private FilenameOption repTypesetOutput = new FilenameOption("representation type set output");
 
   private FilenameOption llvmOutput = new FilenameOption("llvm output");
+
+  private FilenameOption llvmInterfaceOutput = new FilenameOption("llvm interface");
 
   private FilenameOption bytecodeOutput = new FilenameOption("bytecode output");
 
@@ -155,6 +158,9 @@ class Main {
             return;
           case 'l':
             llvmOutput.setName(str, i);
+            return;
+          case 'f':
+            llvmInterfaceOutput.setName(str, i);
             return;
           case 'b':
             bytecodeOutput.setName(str, i);
@@ -264,7 +270,7 @@ class Main {
       // a prior 's', or an attempt to generate LLVM code without specialization).
 
       passes =
-          llvmOutput.isSet()
+          (llvmOutput.isSet() || llvmInterfaceOutput.isSet())
               ? "cosboro"
               : execOutput.isSet()
                   ? "cosboro"
@@ -408,18 +414,26 @@ class Main {
           }
         });
 
-    llvmOutput.run(
-        new Action() {
-          void run(PrintWriter out) throws Failure {
-            if (!optimized) {
-              throw new Failure("An optimization pass is required for LLVM output");
-            } else if (spec == null) {
-              throw new Failure("A specialization pass is required for LLVM output");
-            } else {
-              mil.toLLVM().dump(out);
+    if (llvmOutput.isSet() || llvmInterfaceOutput.isSet()) {
+      if (!optimized) {
+        throw new Failure("An optimization pass is required for LLVM output");
+      } else if (spec == null) {
+        throw new Failure("A specialization pass is required for LLVM output");
+      }
+      final llvm.Program llvmProg = mil.toLLVM();
+      llvmOutput.run(
+          new Action() {
+            void run(PrintWriter out) throws Failure {
+              llvmProg.dump(out);
             }
-          }
-        });
+          });
+      llvmInterfaceOutput.run(
+          new Action() {
+            void run(PrintWriter out) throws Failure {
+              llvmProg.dumpInterface(out);
+            }
+          });
+    }
 
     if (bytecodeOutput.isSet() || execOutput.isSet()) {
       final MachineBuilder builder = mil.generateMachineBuilder(handler);

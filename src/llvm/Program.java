@@ -95,6 +95,33 @@ public class Program {
    */
   public static String targetTriple = null;
 
+  /** Write a description of the interface for this LLVM program to standard output. */
+  public void dumpInterface() {
+    PrintWriter out = new PrintWriter(System.out);
+    dumpInterface(out);
+    out.flush();
+  }
+
+  /** Write a description of the interface for this LLVM program to a named file. */
+  public void dumpInterface(String name) {
+    try {
+      PrintWriter out = new PrintWriter(name);
+      dumpInterface(out);
+      out.close();
+    } catch (IOException e) {
+      System.out.println("Attempt to create llvm output in \"" + name + "\" failed");
+    }
+  }
+
+  /** Write a description of the interface for this LLVM program to an arbitrary PrintWriter. */
+  public void dumpInterface(PrintWriter out) {
+    for (Defns ds = defns; ds != null; ds = ds.next) {
+      if (ds.head.includeInInterface()) {
+        ds.head.printInterface(out);
+      }
+    }
+  }
+
   private static int count = 0;
 
   public String freshName(String prefix) {

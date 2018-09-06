@@ -37,8 +37,25 @@ public class GlobalVarDecl extends Defn {
     this.type = type;
   }
 
+  /** Print full text for this definition on the specified PrintWriter. */
   void print(PrintWriter out) {
     out.println("@" + name + " = external global " + type);
     out.println();
+  }
+
+  /**
+   * Return a boolean to indicate whether there should be any output from this definition in an LLVM
+   * interface description.
+   */
+  boolean includeInInterface() {
+    return true;
+  }
+
+  /**
+   * Print interface text for this definition on the specified PrintWriter, assuming that
+   * this.includeInInterface() == true.
+   */
+  void printInterface(PrintWriter out) {
+    print(out);
   }
 }
