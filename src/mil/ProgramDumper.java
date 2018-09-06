@@ -22,27 +22,21 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
-/**
- * A null-terminated linked list of items that can be accessed using (public) head and next fields.
- */
-public class CFGs {
+/** Class for displaying printable representations of LLVM CFGs. */
+public class ProgramDumper extends mil.Dumper {
 
-  public CFG head;
-
-  public CFGs next;
+  private CFGs cfgs;
 
   /** Default constructor. */
-  public CFGs(CFG head, CFGs next) {
-    this.head = head;
-    this.next = next;
+  public ProgramDumper(CFGs cfgs) {
+    this.cfgs = cfgs;
   }
 
-  /** Write a dot format description of the given list of CFGs to the specified PrintWriter. */
-  public static void toDot(PrintWriter out, CFGs cfgs) {
-    out.println("digraph CFGs {");
-    for (; cfgs != null; cfgs = cfgs.next) {
-      cfgs.head.cfgToDot(out);
-    }
-    out.println("}");
+  public String description() {
+    return "dot output for llvm CFGs";
+  }
+
+  public void dump(PrintWriter out) {
+    CFGs.toDot(out, cfgs);
   }
 }

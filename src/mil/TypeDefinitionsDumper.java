@@ -23,26 +23,23 @@ import core.*;
 import java.io.PrintWriter;
 
 /**
- * A null-terminated linked list of items that can be accessed using (public) head and next fields.
+ * Class for displaying definitions for all of the types in a TypeSet objects (intended for
+ * debugging).
  */
-public class CFGs {
+public class TypeDefinitionsDumper extends Dumper {
 
-  public CFG head;
-
-  public CFGs next;
+  private TypeSet set;
 
   /** Default constructor. */
-  public CFGs(CFG head, CFGs next) {
-    this.head = head;
-    this.next = next;
+  public TypeDefinitionsDumper(TypeSet set) {
+    this.set = set;
   }
 
-  /** Write a dot format description of the given list of CFGs to the specified PrintWriter. */
-  public static void toDot(PrintWriter out, CFGs cfgs) {
-    out.println("digraph CFGs {");
-    for (; cfgs != null; cfgs = cfgs.next) {
-      cfgs.head.cfgToDot(out);
-    }
-    out.println("}");
+  public String description() {
+    return "type definitions";
+  }
+
+  public void dump(PrintWriter out) {
+    set.dumpTypeDefinitions(out);
   }
 }

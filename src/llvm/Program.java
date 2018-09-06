@@ -18,7 +18,6 @@
 */
 package llvm;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 
 /** Represents an LLVM program comprising a sequence of definitions. */
@@ -33,6 +32,24 @@ public class Program {
     Defns ns = new Defns(elem, null);
     defnsLast = (defnsLast == null) ? (defns = ns) : (defnsLast.next = ns);
   }
+
+  /** Write a description of this LLVM program to an arbitrary PrintWriter. */
+  public void dump(PrintWriter out) {
+    // TODO: write general headers here
+    if (targetTriple != null) {
+      out.println("target triple = \"" + targetTriple + "\"");
+      out.println();
+    }
+    for (Defns ds = defns; ds != null; ds = ds.next) {
+      ds.head.print(out);
+    }
+  }
+
+  /**
+   * Holds the LLVM target triple string that will be included in generated programs (or null, in
+   * which case, no target triple declaration will be included).
+   */
+  public static String targetTriple = null;
 
   static void printComment(PrintWriter out, String indent, String comment) {
     // Attempt to print a comment over multiple lines if necessary by interpreting embedded newlines
@@ -56,60 +73,6 @@ public class Program {
     }
     if (indented) {
       out.println();
-    }
-  }
-
-  /** Write a description of this LLVM program to standard output. */
-  public void dump() {
-    PrintWriter out = new PrintWriter(System.out);
-    dump(out);
-    out.flush();
-  }
-
-  /** Write a description of this LLVM program to a named file. */
-  public void dump(String name) {
-    try {
-      PrintWriter out = new PrintWriter(name);
-      dump(out);
-      out.close();
-    } catch (IOException e) {
-      System.out.println("Attempt to create llvm output in \"" + name + "\" failed");
-    }
-  }
-
-  /** Write a description of this LLVM program to an arbitrary PrintWriter. */
-  public void dump(PrintWriter out) {
-    // TODO: write general headers here
-    if (targetTriple != null) {
-      out.println("target triple = \"" + targetTriple + "\"");
-      out.println();
-    }
-    for (Defns ds = defns; ds != null; ds = ds.next) {
-      ds.head.print(out);
-    }
-  }
-
-  /**
-   * Holds the LLVM target triple string that will be included in generated programs (or null, in
-   * which case, no target triple declaration will be included).
-   */
-  public static String targetTriple = null;
-
-  /** Write a description of the interface for this LLVM program to standard output. */
-  public void dumpInterface() {
-    PrintWriter out = new PrintWriter(System.out);
-    dumpInterface(out);
-    out.flush();
-  }
-
-  /** Write a description of the interface for this LLVM program to a named file. */
-  public void dumpInterface(String name) {
-    try {
-      PrintWriter out = new PrintWriter(name);
-      dumpInterface(out);
-      out.close();
-    } catch (IOException e) {
-      System.out.println("Attempt to create llvm output in \"" + name + "\" failed");
     }
   }
 

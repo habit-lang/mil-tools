@@ -21,7 +21,6 @@ package mil;
 import compiler.*;
 import compiler.Failure;
 import core.*;
-import java.io.IOException;
 import java.io.PrintWriter;
 
 /** Defines an abstract machine with a bytecode (really "int"code) execution engine. */
@@ -213,22 +212,10 @@ public class Machine {
     prog[iaddr] = val;
   }
 
-  public void dump(AddrMap addrMap) {
-    PrintWriter out = new PrintWriter(System.out);
-    dump(out, addrMap);
-    out.flush();
-  }
-
-  public void dump(String name, AddrMap addrMap) {
-    try {
-      PrintWriter out = new PrintWriter(name);
-      dump(out, addrMap);
-      out.close();
-    } catch (IOException e) {
-      System.out.println("Attempt to create bytecode listing in \"" + name + "\" failed");
-    }
-  }
-
+  /**
+   * Write a bytecode listing of the program in this machine to the specified PrintWriter using the
+   * given AddrMap.
+   */
   public void dump(PrintWriter out, AddrMap addrMap) {
     int pc = 0;
     while (pc < nextAddr) {
@@ -399,22 +386,6 @@ public class Machine {
       cached = ncached;
     } else { // Or allocate a new context if necessary
       saved = new Context(fp, pc, saved);
-    }
-  }
-
-  public void exec(int pc) {
-    PrintWriter out = new PrintWriter(System.out);
-    exec(out, pc);
-    out.flush();
-  }
-
-  public void exec(String name, int pc) {
-    try {
-      PrintWriter out = new PrintWriter(name);
-      exec(out, pc);
-      out.close();
-    } catch (IOException e) {
-      System.out.println("Attempt to create execution log in \"" + name + "\" failed");
     }
   }
 

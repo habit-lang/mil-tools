@@ -22,27 +22,24 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
-/**
- * A null-terminated linked list of items that can be accessed using (public) head and next fields.
- */
-public class CFGs {
+/** Class for displaying bytecode listings. */
+public class BytecodeDumper extends Dumper {
 
-  public CFG head;
+  private Machine machine;
 
-  public CFGs next;
+  private AddrMap addrMap;
 
   /** Default constructor. */
-  public CFGs(CFG head, CFGs next) {
-    this.head = head;
-    this.next = next;
+  public BytecodeDumper(Machine machine, AddrMap addrMap) {
+    this.machine = machine;
+    this.addrMap = addrMap;
   }
 
-  /** Write a dot format description of the given list of CFGs to the specified PrintWriter. */
-  public static void toDot(PrintWriter out, CFGs cfgs) {
-    out.println("digraph CFGs {");
-    for (; cfgs != null; cfgs = cfgs.next) {
-      cfgs.head.cfgToDot(out);
-    }
-    out.println("}");
+  public String description() {
+    return "bytecode listing";
+  }
+
+  public void dump(PrintWriter out) {
+    machine.dump(out, addrMap);
   }
 }

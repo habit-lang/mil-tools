@@ -20,7 +20,6 @@ package mil;
 
 import compiler.*;
 import core.*;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 
@@ -37,28 +36,7 @@ public class TypeSet {
    */
   private HashMap<Object, TLit> litsToTypes = new HashMap();
 
-  /** Write a description of this TypeSet on standard output (intended for debugging). */
-  public void dump() {
-    PrintWriter out = new PrintWriter(System.out);
-    dump(out);
-    out.flush();
-  }
-
-  /** Write a description of this TypeSet to a named file. */
-  public void dump(String name) {
-    try {
-      PrintWriter out = new PrintWriter(name);
-      dump(out);
-      out.close();
-    } catch (IOException e) {
-      System.out.println("Attempt to create TypeSet output in \"" + name + "\" failed");
-    }
-  }
-
-  /**
-   * Worker function for preceding dump methods; writes a description of this TypeSet to a
-   * PrintWriter.
-   */
+  /** Worker function for TypeSetDumper; writes a description of this TypeSet to a PrintWriter. */
   public void dump(PrintWriter out) {
     out.println("Tycon uses: -----------------------------");
     for (Tycon tycon : tyconInstances.keySet()) {
@@ -107,28 +85,8 @@ public class TypeSet {
   }
 
   /**
-   * Write definitions of all the types in this TypeSet on standard output (intended for debugging).
-   */
-  public void dumpTypeDefinitions() {
-    PrintWriter out = new PrintWriter(System.out);
-    dumpTypeDefinitions(out);
-    out.flush();
-  }
-
-  /** Write definitions of all the types in this TypeSet to a named file. */
-  public void dumpTypeDefinitions(String name) {
-    try {
-      PrintWriter out = new PrintWriter(name);
-      dumpTypeDefinitions(out);
-      out.close();
-    } catch (IOException e) {
-      System.out.println("Attempt to create TypeSet output in \"" + name + "\" failed");
-    }
-  }
-
-  /**
-   * Worker method for preceding dumpTypeDefinitions() methods: write definitions of all the types
-   * defined in this TypeSet to a PrintWriter.
+   * Worker method for TypeDefinitionsDumper: write definitions of all the types defined in this
+   * TypeSet to a PrintWriter.
    */
   public void dumpTypeDefinitions(PrintWriter out) {
     for (Tycon tycon : tyconInstances.keySet()) {

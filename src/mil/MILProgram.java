@@ -23,7 +23,6 @@ import compiler.BuiltinPosition;
 import compiler.Failure;
 import compiler.Handler;
 import core.*;
-import java.io.IOException;
 import java.io.PrintWriter;
 
 /** Provides a representation for MIL programs. */
@@ -80,22 +79,7 @@ public class MILProgram {
     sccs = Defns.searchReverse(reachable()); // Compute the strongly-connected components
   }
 
-  public void toDot() {
-    PrintWriter out = new PrintWriter(System.out);
-    toDot(out);
-    out.flush();
-  }
-
-  public void toDot(String name) {
-    try {
-      PrintWriter out = new PrintWriter(name);
-      toDot(out);
-      out.close();
-    } catch (IOException e) {
-      System.out.println("Attempt to create dot output in \"" + name + "\" failed");
-    }
-  }
-
+  /** Generate a dot description of this program's call graph on the specified PrintWriter. */
   public void toDot(PrintWriter out) {
     out.println("digraph MIL {");
     for (Defns ds = reachable(); ds != null; ds = ds.next) {
@@ -116,17 +100,6 @@ public class MILProgram {
     PrintWriter out = new PrintWriter(System.out);
     dump(out);
     out.flush();
-  }
-
-  /** Write text for this MIL construct in a file with the specified name. */
-  public void dump(String name) {
-    try {
-      PrintWriter out = new PrintWriter(name);
-      dump(out);
-      out.close();
-    } catch (IOException e) {
-      System.out.println("Attempt to create mil output in \"" + name + "\" failed");
-    }
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
