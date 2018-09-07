@@ -64,12 +64,6 @@ public class PrimTycon extends Tycon {
    * appropriate place for this code ...
    */
   void dumpTypeDefinition(PrintWriter out) {
-    if (this != milArrow) {
-      out.print("primitive type ");
-      out.print(id);
-      out.print(" :: ");
-      out.println(kind.toString());
-      out.println();
-    }
+    /* do nothing */
   }
 }
