@@ -184,7 +184,7 @@ public abstract class Atom {
     return ds;
   }
 
-  /** Find out the list of Defns that this array of Atoms depends on. */
+  /** Find the list of Defns that this array of Atoms depends on. */
   public static Defns dependencies(Atom[] args, Defns ds) {
     if (args != null) {
       for (int i = 0; i < args.length; i++) {
@@ -194,7 +194,7 @@ public abstract class Atom {
     return ds;
   }
 
-  /** Print a list of src values separated by commas. */
+  /** Print an array of atoms, separated by commas. */
   public static void dump(PrintWriter out, Atom[] args, Temps ts) {
     int n = 0; // count number of items displayed so far
     for (int i = 0; i < args.length; i++) {
@@ -206,8 +206,8 @@ public abstract class Atom {
   }
 
   /**
-   * Print a list of src values, separated by commas and enclosed in parentheses if the number of
-   * src values is not 1.
+   * Print an array of atoms, separated by commas and enclosed in parentheses if the number of atoms
+   * is not 1.
    */
   public static void displayTuple(PrintWriter out, Atom[] args, Temps ts) {
     if (args != null && args.length == 1) {
@@ -219,6 +219,10 @@ public abstract class Atom {
     }
   }
 
+  /**
+   * Extend the given substitution with a mapping from this Temp to the specified Atom. If this is
+   * an Atom but not a Temp, then just return the input substitution without modifications.
+   */
   public TempSubst mapsTo(Atom a, TempSubst s) {
     return s;
   }

@@ -66,6 +66,7 @@ public class TopDef extends Top {
     return this.topLevel == topLevel && this.i == i;
   }
 
+  /** Return the definition associated with this Top object. */
   public Defn getDefn() {
     return topLevel;
   }

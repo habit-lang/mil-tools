@@ -95,14 +95,14 @@ public class MILProgram {
     out.println("}");
   }
 
-  /** Display a printable representation of this MIL construct on the standard output. */
+  /** Display a printable representation of this object on the standard output. */
   public void dump() {
     PrintWriter out = new PrintWriter(System.out);
     dump(out);
     out.flush();
   }
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
+  /** Display a printable representation of this object on the specified PrintWriter. */
   public void dump(PrintWriter out) {
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       dsccs.head.dump(out);

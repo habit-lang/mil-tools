@@ -254,7 +254,7 @@ public class TTycon extends TConst {
   }
 
   /**
-   * Find a canonical version of this type in the given set, using the specified environment to
+   * Find the canonical version of this type in the given set, using the specified environment to
    * interpret TGens, and assuming that we have already pushed a certain number of args for this
    * type on the stack.
    */

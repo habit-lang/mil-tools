@@ -31,19 +31,19 @@ public abstract class Tail {
     return false;
   }
 
-  /** Test to see if this Tail expression includes a free occurrence of a particular variable. */
+  /** Test if this Tail expression includes a free occurrence of a particular variable. */
   public abstract boolean contains(Temp w);
 
   /**
-   * Test to see if this Tail expression includes an occurrence of any of the variables listed in
-   * the given array.
+   * Test if this Tail expression includes an occurrence of any of the variables listed in the given
+   * array.
    */
   public abstract boolean contains(Temp[] ws);
 
   /** Add the variables mentioned in this tail to the given list of variables. */
   public abstract Temps add(Temps vs);
 
-  /** Test to see if two Tail expressions are the same. */
+  /** Test if two Tail expressions are the same. */
   public abstract boolean sameTail(Tail that);
 
   boolean sameSel(Sel that) {
@@ -77,7 +77,7 @@ public abstract class Tail {
   /** Find the dependencies of this AST fragment. */
   public abstract Defns dependencies(Defns ds);
 
-  /** Display a printable representation of this MIL construct on the standard output. */
+  /** Display a printable representation of this object on the standard output. */
   public void dump() {
     PrintWriter out = new PrintWriter(System.out);
     dump(out, null);
@@ -101,7 +101,10 @@ public abstract class Tail {
     return (s == null) ? this : forceApply(s);
   }
 
-  /** Apply a TempSubst to this Tail. */
+  /**
+   * Apply a TempSubst to this Tail. A call to this method, even if the substitution is empty, will
+   * force the construction of a new Tail.
+   */
   public abstract Tail forceApply(TempSubst s);
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */

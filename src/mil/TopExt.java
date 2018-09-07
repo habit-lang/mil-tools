@@ -57,6 +57,7 @@ public class TopExt extends Top {
     return this.external == external;
   }
 
+  /** Return the definition associated with this Top object. */
   public Defn getDefn() {
     return external;
   }

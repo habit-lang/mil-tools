@@ -42,14 +42,14 @@ public class Enter extends Call {
     this.args = args;
   }
 
-  /** Test to see if this Tail expression includes a free occurrence of a particular variable. */
+  /** Test if this Tail expression includes a free occurrence of a particular variable. */
   public boolean contains(Temp w) {
     return f == w || super.contains(w);
   }
 
   /**
-   * Test to see if this Tail expression includes an occurrence of any of the variables listed in
-   * the given array.
+   * Test if this Tail expression includes an occurrence of any of the variables listed in the given
+   * array.
    */
   public boolean contains(Temp[] ws) {
     return f.occursIn(ws) || super.contains(ws);
@@ -60,7 +60,7 @@ public class Enter extends Call {
     return f.add(super.add(vs));
   }
 
-  /** Test to see if two Tail expressions are the same. */
+  /** Test if two Tail expressions are the same. */
   public boolean sameTail(Tail that) {
     return that.sameEnter(this);
   }
@@ -80,7 +80,10 @@ public class Enter extends Call {
     Atom.displayTuple(out, args, ts);
   }
 
-  /** Apply a TempSubst to this Tail. */
+  /**
+   * Apply a TempSubst to this Tail. A call to this method, even if the substitution is empty, will
+   * force the construction of a new Tail.
+   */
   public Tail forceApply(TempSubst s) {
     return new Enter(f.apply(s), TempSubst.apply(args, s));
   }

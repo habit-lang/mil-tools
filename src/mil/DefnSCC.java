@@ -86,7 +86,7 @@ public class DefnSCC {
     return false;
   }
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
+  /** Display a printable representation of this object on the specified PrintWriter. */
   public void dump(PrintWriter out) {
     out.println("-----------------------------------------");
     out.print("-- ");
@@ -195,7 +195,7 @@ public class DefnSCC {
 
   void collect(TypeSet set) {
     for (Defns ds = bindings; ds != null; ds = ds.next) {
-      // !   ds.head.displayDefn();
+      // !   ds.head.dump();
       ds.head.collect(set);
     }
   }

@@ -114,9 +114,10 @@ public class TopLevel extends TopDefn {
     return tail.dependencies(null);
   }
 
-  void displayDefn(PrintWriter out, boolean isEntrypoint) {
+  /** Display a printable representation of this definition on the specified PrintWriter. */
+  void dump(PrintWriter out, boolean isEntrypoint) {
     for (int i = 0; i < lhs.length; i++) {
-      lhs[i].displayDefn(out, isEntrypoint);
+      lhs[i].dump(out, isEntrypoint);
     }
     out.print(toString());
     out.print(" <-");
@@ -222,11 +223,11 @@ public class TopLevel extends TopDefn {
   public void inlining() {
     // !  System.out.println("==================================");
     // !  System.out.println("Going to try inlining on:");
-    // !  displayDefn();
+    // !  dump();
     // !  System.out.println();
     tail = tail.inlineTail();
     // !  System.out.println("And the result is:");
-    // !  displayDefn();
+    // !  dump();
     // !  System.out.println();
   }
 

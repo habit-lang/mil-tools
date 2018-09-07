@@ -91,7 +91,9 @@ public class ClosureDefn extends Defn {
     return "style=filled, fillcolor=salmon";
   }
 
-  void displayDefn(PrintWriter out, boolean isEntrypoint) {
+  /** Display a printable representation of this definition on the specified PrintWriter. */
+  /** Display a printable representation of this definition on the specified PrintWriter. */
+  void dump(PrintWriter out, boolean isEntrypoint) {
     if (declared != null) {
       if (isEntrypoint) {
         out.print("entrypoint ");
@@ -243,7 +245,7 @@ public class ClosureDefn extends Defn {
     // !System.out.println("Looking for derived ClosureDefn with Known Cons ");
     // !Call.dump(calls);
     // !System.out.println(" for the Block");
-    // !this.displayDefn();
+    // !this.dump();
     // !System.out.println();
     // Look to see if we have already derived a suitable version of this ClosureDefn:
     for (ClosureDefns cs = derived; cs != null; cs = cs.next) {
@@ -308,11 +310,11 @@ public class ClosureDefn extends Defn {
   public void inlining() {
     // !  System.out.println("==================================");
     // !  System.out.println("Going to try inlining on:");
-    // !  displayDefn();
+    // !  dump();
     // !  System.out.println();
     tail = tail.inlineTail();
     // !  System.out.println("And the result is:");
-    // !  displayDefn();
+    // !  dump();
     // !  System.out.println();
   }
 

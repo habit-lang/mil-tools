@@ -59,7 +59,8 @@ public class TopLhs {
     return id;
   }
 
-  void displayDefn(PrintWriter out, boolean isEntrypoint) {
+  /** Display a printable representation of this definition on the specified PrintWriter. */
+  void dump(PrintWriter out, boolean isEntrypoint) {
     if (declared != null) {
       if (isEntrypoint) {
         out.print("entrypoint ");

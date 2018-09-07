@@ -37,7 +37,7 @@ public class Case extends Code {
   /** A list of alternatives for this Case. */
   private Alt[] alts;
 
-  /** A default branch, to be used if none of the alternatives apply. */
+  /** A default branch, if none of the alternatives apply. */
   private BlockCall def;
 
   /** Default constructor. */
@@ -87,7 +87,11 @@ public class Case extends Code {
     }
   }
 
-  /** Force the application of a TempSubst to this Code sequence. */
+  /**
+   * Force the application of a TempSubst to this Code sequence, forcing construction of a fresh
+   * copy of the input code structure, including the introduction of new temporaries in place of any
+   * variables introduced by Binds.
+   */
   public Code forceApply(TempSubst s) { // case a of alts; d
     Alt[] talts = new Alt[alts.length];
     for (int i = 0; i < alts.length; i++) {

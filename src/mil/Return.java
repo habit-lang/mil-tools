@@ -43,7 +43,7 @@ public class Return extends Call {
     return true;
   }
 
-  /** Test to see if two Tail expressions are the same. */
+  /** Test if two Tail expressions are the same. */
   public boolean sameTail(Tail that) {
     return that.sameReturn(this);
   }

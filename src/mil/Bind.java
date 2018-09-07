@@ -70,7 +70,11 @@ public class Bind extends Code {
     c.dump(out, ts1);
   }
 
-  /** Force the application of a TempSubst to this Code sequence. */
+  /**
+   * Force the application of a TempSubst to this Code sequence, forcing construction of a fresh
+   * copy of the input code structure, including the introduction of new temporaries in place of any
+   * variables introduced by Binds.
+   */
   public Code forceApply(TempSubst s) { // vs <- t; c
     Tail t1 = t.forceApply(s);
     Temp[] ws = new Temp[vs.length];

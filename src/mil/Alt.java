@@ -55,13 +55,8 @@ public class Alt {
     bc.displayln(out, ts);
   }
 
-  /** Apply a TempSubst to this Alt, skipping if the substitution is empty. */
-  public Alt apply(TempSubst s) {
-    return (s == null) ? this : forceApply(s);
-  }
-
-  /** Apply a TempSubst to this Alt. */
-  public Alt forceApply(TempSubst s) { // cf -> bc
+  /** Force the application of a TempSubst to this Alt. */
+  public Alt forceApply(TempSubst s) {
     return new Alt(cf, bc.forceApplyBlockCall(s));
   }
 

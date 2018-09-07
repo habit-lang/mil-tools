@@ -67,8 +67,12 @@ public class If extends Code {
     ifFalse.displayln(out, ts);
   }
 
-  /** Force the application of a TempSubst to this Code sequence. */
-  public Code forceApply(TempSubst s) { // if a then ifTrue else ifFalse
+  /**
+   * Force the application of a TempSubst to this Code sequence, forcing construction of a fresh
+   * copy of the input code structure, including the introduction of new temporaries in place of any
+   * variables introduced by Binds.
+   */
+  public Code forceApply(TempSubst s) {
     return new If(a.apply(s), ifTrue.forceApplyBlockCall(s), ifFalse.forceApplyBlockCall(s));
   }
 

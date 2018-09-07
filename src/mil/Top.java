@@ -43,6 +43,7 @@ public abstract class Top extends Atom {
 
   public abstract String getId();
 
+  /** Return the definition associated with this Top object. */
   public abstract Defn getDefn();
 
   /** Apply a TempSubst to this Atom. */

@@ -59,6 +59,7 @@ public class TopArea extends Top {
     return this.area == area;
   }
 
+  /** Return the definition associated with this Top object. */
   public Defn getDefn() {
     return area;
   }

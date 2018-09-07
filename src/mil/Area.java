@@ -84,7 +84,9 @@ public class Area extends TopDefn {
     return "style=filled, fillcolor=darkolivegreen1";
   }
 
-  void displayDefn(PrintWriter out, boolean isEntrypoint) {
+  /** Display a printable representation of this definition on the specified PrintWriter. */
+  /** Display a printable representation of this definition on the specified PrintWriter. */
+  void dump(PrintWriter out, boolean isEntrypoint) {
     if (declared != null) {
       if (isEntrypoint) {
         out.print("entrypoint ");

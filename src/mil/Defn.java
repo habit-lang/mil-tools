@@ -140,7 +140,7 @@ public abstract class Defn {
   }
 
   /**
-   * Visit this Defn as part of a depth first search, and build up a list of Defn nodes that can be
+   * Visit this Defn as part of a depth first search, and build a list of Defn nodes that can be
    * used to compute strongly-connected components.
    */
   Defns visitDepends(Defns defns) {
@@ -159,7 +159,7 @@ public abstract class Defn {
       // Find immediate dependencies
       Defns deps = dependencies();
       // !System.out.println("------------");
-      // !displayDefn();
+      // !dump();
       // !System.out.print("DEPENDS ON: ");
       // !String msg = "";
       // !for (Defns ds = deps; ds!=null; ds=ds.next) {
@@ -205,33 +205,22 @@ public abstract class Defn {
     return callers;
   }
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out) {
-    // ! out.println("[occurs=" + occurs
-    // !           + ", indegree=" + Defns.length(callers)
-    // !           + ", outdegree=" + Defns.length(callees) + "]");
-    // ! out.print(this.getId() + " -> ");
-    // ! for (Defns ds=callees; ds!=null; ds=ds.next) {
-    // !   out.print(" " + ds.head.getId());
-    // ! }
-    // ! out.println(";");
-    // ! out.print(this.getId() + " -> ");
-    // ! for (Defns ds=callees; ds!=null; ds=ds.next) {
-    // !   out.print(" " + ds.head.getId());
-    // ! }
-    // ! out.println(";");
-    displayDefn(out, isEntrypoint);
+  /** Display a printable representation of this object on the standard output. */
+  public void dump() {
+    PrintWriter out = new PrintWriter(System.out);
+    dump(out);
+    out.flush();
   }
 
-  public void displayDefn() {
-    PrintWriter out = new PrintWriter(System.out);
-    displayDefn(out, isEntrypoint);
-    out.flush();
+  /** Display a printable representation of this object on the specified PrintWriter. */
+  public void dump(PrintWriter out) {
+    dump(out, isEntrypoint);
   }
 
   public static boolean renameTemps = true;
 
-  abstract void displayDefn(PrintWriter out, boolean isEntrypoint);
+  /** Display a printable representation of this definition on the specified PrintWriter. */
+  abstract void dump(PrintWriter out, boolean isEntrypoint);
 
   void limitRecursion() throws Failure {
     /* do nothing */
@@ -396,7 +385,7 @@ public abstract class Defn {
           DefnSCC scc = getScc(); // ... in a call to a non-recursive Defn
           if (scc != null && !scc.isRecursive()) {
             // !System.out.println("Known argument " + a + " in call to: ");
-            // !this.displayDefn();
+            // !this.dump();
             // !System.out.println();
             if (calls == null) {
               calls = new Call[l];

@@ -42,7 +42,7 @@ public class BlockCall extends Call {
     this.args = args;
   }
 
-  /** Test to see if two Tail expressions are the same. */
+  /** Test if two Tail expressions are the same. */
   public boolean sameTail(Tail that) {
     return that.sameBlockCall(this);
   }

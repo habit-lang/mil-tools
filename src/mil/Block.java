@@ -93,7 +93,9 @@ public class Block extends Defn {
     return "style=filled, fillcolor=lightblue";
   }
 
-  void displayDefn(PrintWriter out, boolean isEntrypoint) {
+  /** Display a printable representation of this definition on the specified PrintWriter. */
+  /** Display a printable representation of this definition on the specified PrintWriter. */
+  void dump(PrintWriter out, boolean isEntrypoint) {
     if (declared != null) {
       if (isEntrypoint) {
         out.print("entrypoint ");
@@ -257,7 +259,7 @@ public class Block extends Defn {
     derived = new Blocks(b, derived);
     b.code = code.deriveWithEnter(iargs);
     // !System.out.println("Derived block is:");
-    // !b.displayDefn();
+    // !b.dump();
     return b;
   }
 
@@ -290,7 +292,7 @@ public class Block extends Defn {
     derived = new Blocks(b, derived);
     b.code = code.deriveWithCont(arg);
     // !System.out.println("Derived block is:");
-    // !b.displayDefn();
+    // !b.dump();
     return b;
   }
 
@@ -365,7 +367,7 @@ public class Block extends Defn {
     b.code = addInitializers(calls, params, tss, code.copy());
 
     // !System.out.println("New deriveWithKnownCons block:");
-    // !b.displayDefn();
+    // !b.dump();
     return b;
   }
 
@@ -425,7 +427,7 @@ public class Block extends Defn {
     // TODO: should we set a declared type for b if this block has one?
     derived = new Blocks(b, derived);
     // !System.out.println("New deriveWithDuplicateArgs block:");
-    // !b.displayDefn();
+    // !b.dump();
     return b;
   }
 
@@ -496,12 +498,12 @@ public class Block extends Defn {
   public void inlining() {
     // !System.out.println("==================================");
     // !System.out.println("Going to try inlining on " + getId());
-    // !displayDefn();
+    // !dump();
     // !System.out.println();
     if (isGotoBlock() == null || isEntrypoint) { // TODO: consider replacing with code.isDone()
       code = code.inlining(this);
       // !System.out.println("And the result is:");
-      // !displayDefn();
+      // !dump();
       // !System.out.println();
     }
   }
@@ -539,10 +541,10 @@ public class Block extends Defn {
    */
   Code suffixInline(Block src, Atom[] args) {
     // !System.out.println("Should we inline:");
-    // !displayDefn();
+    // !dump();
     // !System.out.println();
     // !System.out.println("As part of the block:");
-    // !if (src==null) System.out.println("Null block"); else src.displayDefn();
+    // !if (src==null) System.out.println("Null block"); else src.dump();
     // !System.out.println("?");
     if (canSuffixInline(src)) {
       // !System.out.println("YES");
@@ -565,9 +567,9 @@ public class Block extends Defn {
     } else if (occurs == 1 || code.isDone() != null) { // Inline single occurrences and trivial
       // !System.out.println("Single occurrence!");
       // !System.out.println("this block:");
-      // !this.displayDefn();
+      // !this.dump();
       // !System.out.println("src block:");
-      // !src.displayDefn();
+      // !src.dump();
       // !System.out.println("-=-=-=-=-=-");
       return true; // blocks (safe, as a result of removing loops)
     } else if (!this.guarded(src)) { // Don't inline if not guarded.

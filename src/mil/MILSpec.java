@@ -253,7 +253,7 @@ public class MILSpec extends TypeSet {
   }
 
   /**
-   * Request a specializxed version of the given definition as the main definition for this program.
+   * Request a specialized version of the given definition as the main definition for this program.
    */
   void addMain(Handler handler, Defn main) {
     if (main != null) {

@@ -48,6 +48,7 @@ public class TempSubst {
     return s;
   }
 
+  /** Return a printable representation of this substitution (for debugging purposes). */
   static String toString(TempSubst s) {
     StringBuilder buf = new StringBuilder("[");
     for (int i = 0; s != null; s = s.rest) {
@@ -62,7 +63,7 @@ public class TempSubst {
     return buf.toString();
   }
 
-  /** Apply the given substitution to the specified variable. */
+  /** Apply the given substitution to the specified Temp. */
   public static Atom apply(Temp w, TempSubst s) {
     for (; s != null; s = s.rest) {
       if (s.v == w) {
@@ -72,7 +73,7 @@ public class TempSubst {
     return w;
   }
 
-  /** Apply the given substitution to a vector of atoms. */
+  /** Apply the given substitution to an array of atoms. */
   public static Atom[] apply(Atom[] args, TempSubst s) {
     Atom[] nargs = new Atom[args.length];
     for (int i = 0; i < args.length; i++) {

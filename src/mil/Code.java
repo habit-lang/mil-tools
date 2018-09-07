@@ -34,7 +34,7 @@ public abstract class Code {
   /** Find the dependencies of this AST fragment. */
   public abstract Defns dependencies(Defns ds);
 
-  /** Display a printable representation of this MIL construct on the standard output. */
+  /** Display a printable representation of this object on the standard output. */
   public void dump() {
     PrintWriter out = new PrintWriter(System.out);
     dump(out, null);
@@ -56,15 +56,18 @@ public abstract class Code {
   }
 
   /**
-   * Apply a TempSubst to this Code sequence. This operation essentially builds a fresh copy of the
-   * original code sequence, introducing new temporaries in place of any variables introduced by
-   * Binds. As an optimization, we skip the operation if the substitution is empty.
+   * Apply a TempSubst to this Code sequence. As an optimization, skip the operation if the
+   * substitution is empty.
    */
   public Code apply(TempSubst s) {
     return (s == null) ? this : forceApply(s);
   }
 
-  /** Force the application of a TempSubst to this Code sequence. */
+  /**
+   * Force the application of a TempSubst to this Code sequence, forcing construction of a fresh
+   * copy of the input code structure, including the introduction of new temporaries in place of any
+   * variables introduced by Binds.
+   */
   public abstract Code forceApply(TempSubst s);
 
   /** Represents a code sequence that halts/terminates the current program. */
@@ -137,7 +140,7 @@ public abstract class Code {
     Temp[] formals = Temps.toArray(vs); // create corresponding formal parameters
     Block b = new Block(BuiltinPosition.pos, formals, c); // TODO: different position?
     // !System.out.println("The case block is ");
-    // !b.displayDefn();
+    // !b.dump();
 
     // Build a closure definition: k{...} v = b[...]
     Tail t = new BlockCall(b, formals);
@@ -147,7 +150,7 @@ public abstract class Code {
     Temp[] stored = Temps.toArray(v.removeFrom(vs));
     k.setParams(stored); // do not store v in the closure
     // !System.out.println("The continuation definition is:");
-    // !k.displayDefn();
+    // !k.dump();
 
     return new ClosAlloc(k).withArgs(stored);
   }

@@ -64,14 +64,14 @@ public abstract class Call extends Tail {
     return withArgs(new Atom[] {new Word(n), b});
   }
 
-  /** Test to see if this Tail expression includes a free occurrence of a particular variable. */
+  /** Test if this Tail expression includes a free occurrence of a particular variable. */
   public boolean contains(Temp w) {
     return args != null && w.occursIn(args);
   }
 
   /**
-   * Test to see if this Tail expression includes an occurrence of any of the variables listed in
-   * the given array.
+   * Test if this Tail expression includes an occurrence of any of the variables listed in the given
+   * array.
    */
   public boolean contains(Temp[] ws) {
     return Atom.occursIn(args, ws);
@@ -83,8 +83,8 @@ public abstract class Call extends Tail {
   }
 
   /**
-   * Test to see if the arguments for two Calls are the same. Either both argument lists are null,
-   * or else both have the same list of Atoms.
+   * Test if the arguments for two Calls are the same. Either both argument lists are null, or else
+   * both have the same list of Atoms.
    */
   public boolean sameArgs(Call that) {
     return (this.args == null)
@@ -113,7 +113,10 @@ public abstract class Call extends Tail {
     }
   }
 
-  /** Apply a TempSubst to this Tail. */
+  /**
+   * Apply a TempSubst to this Tail. A call to this method, even if the substitution is empty, will
+   * force the construction of a new Tail.
+   */
   public Tail forceApply(TempSubst s) {
     return callDup(TempSubst.apply(args, s));
   }

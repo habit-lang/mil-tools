@@ -97,10 +97,10 @@ public class TypeSet {
    */
   private Type[] stack = new Type[10];
 
-  /** The index of the next unused slot in the stack. */
+  /** The index of the next unused stack slot. */
   private int sp = 0;
 
-  /** Push a type on to the stack, expanding it if necessary. */
+  /** Push a type on to the stack, expanding the stack if necessary. */
   protected void push(Type t) {
     if (sp >= stack.length) {
       Type[] nstack = new Type[2 * stack.length];
@@ -117,13 +117,13 @@ public class TypeSet {
     return stack[sp - n];
   }
 
-  /** Discard the specified number of entries from the top of the stack. We assume n<=sp. */
+  /** Discard the specified number of entries from the top of the stack. Assumes n<=sp. */
   protected void drop(int n) {
     sp -= n;
   }
 
   /**
-   * Pop the specified number of arguments from the stack, and store them in a new array. We assume
+   * Pop the specified number of arguments from the stack, and store them in a new array. Assumes
    * n<=sp.
    */
   protected Type[] pop(int n) {

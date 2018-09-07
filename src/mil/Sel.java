@@ -44,14 +44,14 @@ public class Sel extends Tail {
     return true;
   }
 
-  /** Test to see if this Tail expression includes a free occurrence of a particular variable. */
+  /** Test if this Tail expression includes a free occurrence of a particular variable. */
   public boolean contains(Temp w) {
     return a == w;
   }
 
   /**
-   * Test to see if this Tail expression includes an occurrence of any of the variables listed in
-   * the given array.
+   * Test if this Tail expression includes an occurrence of any of the variables listed in the given
+   * array.
    */
   public boolean contains(Temp[] ws) {
     return a.occursIn(ws);
@@ -62,7 +62,7 @@ public class Sel extends Tail {
     return a.add(vs);
   }
 
-  /** Test to see if two Tail expressions are the same. */
+  /** Test if two Tail expressions are the same. */
   public boolean sameTail(Tail that) {
     return that.sameSel(this);
   }
@@ -81,7 +81,10 @@ public class Sel extends Tail {
     out.print(cf + " " + n + " " + a.toString(ts));
   }
 
-  /** Apply a TempSubst to this Tail. */
+  /**
+   * Apply a TempSubst to this Tail. A call to this method, even if the substitution is empty, will
+   * force the construction of a new Tail.
+   */
   public Tail forceApply(TempSubst s) {
     return new Sel(cf, n, a.apply(s));
   }

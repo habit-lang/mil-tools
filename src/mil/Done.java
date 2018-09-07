@@ -51,8 +51,12 @@ public class Done extends Code {
     t.displayln(out, ts);
   }
 
-  /** Force the application of a TempSubst to this Code sequence. */
-  public Code forceApply(TempSubst s) { // t
+  /**
+   * Force the application of a TempSubst to this Code sequence, forcing construction of a fresh
+   * copy of the input code structure, including the introduction of new temporaries in place of any
+   * variables introduced by Binds.
+   */
+  public Code forceApply(TempSubst s) {
     return new Done(t.forceApply(s));
   }
 

@@ -33,7 +33,7 @@ public class DataAlloc extends Allocator {
     this.cf = cf;
   }
 
-  /** Test to see if two Tail expressions are the same. */
+  /** Test if two Tail expressions are the same. */
   public boolean sameTail(Tail that) {
     return that.sameDataAlloc(this);
   }

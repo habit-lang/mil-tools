@@ -33,7 +33,7 @@ public class Assert extends Code {
   /** An atom (presumably a variable). */
   private Atom a;
 
-  /** The constructor function that was used to build a. */
+  /** The constructor function used to build a. */
   private Cfun cf;
 
   /** The rest of the code sequence. */
@@ -63,8 +63,12 @@ public class Assert extends Code {
     c.dump(out, ts);
   }
 
-  /** Force the application of a TempSubst to this Code sequence. */
-  public Code forceApply(TempSubst s) { // assert a C; c
+  /**
+   * Force the application of a TempSubst to this Code sequence, forcing construction of a fresh
+   * copy of the input code structure, including the introduction of new temporaries in place of any
+   * variables introduced by Binds.
+   */
+  public Code forceApply(TempSubst s) {
     return new Assert(a.apply(s), cf, c.forceApply(s));
   }
 

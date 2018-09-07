@@ -88,7 +88,8 @@ public class External extends TopDefn {
     return false;
   }
 
-  void displayDefn(PrintWriter out, boolean isEntrypoint) {
+  /** Display a printable representation of this definition on the specified PrintWriter. */
+  void dump(PrintWriter out, boolean isEntrypoint) {
     if (isEntrypoint) {
       out.print("export ");
     }

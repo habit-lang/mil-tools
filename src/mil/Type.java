@@ -463,7 +463,7 @@ public abstract class Type extends Scheme {
 
   /**
    * Find the canonical version of this type skeleton for the given TypeSet using the specified
-   * environment to intepret TGens values.
+   * environment to intepret TGen values.
    */
   Type canonType(Type[] env, TypeSet set) {
     return canonType(env, set, 0);
@@ -478,7 +478,7 @@ public abstract class Type extends Scheme {
   }
 
   /**
-   * Find a canonical version of this type in the given set, using the specified environment to
+   * Find the canonical version of this type in the given set, using the specified environment to
    * interpret TGens, and assuming that we have already pushed a certain number of args for this
    * type on the stack.
    */
