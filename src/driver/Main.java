@@ -415,6 +415,8 @@ class Main {
         throw new Failure("An optimization pass is required for LLVM output");
       } else if (spec == null) {
         throw new Failure("A specialization pass is required for LLVM output");
+      } else if (rep == null) {
+        throw new Failure("A representation pass is required for LLVM output");
       }
       final llvm.Program llvmProg = mil.toLLVM();
       llvmOutput.run(
