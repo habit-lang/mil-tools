@@ -84,7 +84,9 @@ public class TopArea extends Top {
   }
 
   Atom specializeAtom(MILSpec spec, TVarSubst s, SpecEnv env) {
-    return this;
+    Type inst =
+        type.apply(s); // (Substitution is not expected to have an effect on monomorphic area type)
+    return new TopArea(inst, spec.specializedArea(area, inst));
   }
 
   Atom[] repArg(RepTypeSet set, RepEnv env) {

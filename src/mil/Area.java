@@ -56,6 +56,16 @@ public class Area extends TopDefn {
     return new TopArea[] {new TopArea(this)};
   }
 
+  /** Get the declared type, or null if no type has been set. */
+  public Scheme getDeclared() {
+    return declared;
+  }
+
+  /** Set the declared type. */
+  public void setDeclared(Scheme declared) {
+    this.declared = declared;
+  }
+
   /** Return the identifier that is associated with this definition. */
   public String getId() {
     return id;
@@ -217,6 +227,33 @@ public class Area extends TopDefn {
 
   void printlnSig(PrintWriter out) {
     out.println(id + " :: " + declared);
+  }
+
+  /** Test to determine if this is an appropriate definition to match the given type. */
+  Area isAreaOfType(Scheme inst) {
+    return declared.alphaEquiv(inst) ? this : null;
+  }
+
+  Area(Area a, int num) {
+    this(a.pos, mkid(a.id, num), a.alignment, a.areaType);
+  }
+
+  /**
+   * Fill in the initializer for this area with a specialized version of the original's initializer.
+   */
+  void specialize(MILSpec spec, Area aorig) {
+    // Although the area itself will have a monomorphic type, we still need to ensure that
+    // specialization is applied to the initializer.
+    debug.Log.println(
+        "Area specialize: "
+            + aorig
+            + " :: "
+            + aorig.declared
+            + "  ~~>  "
+            + this
+            + " :: "
+            + this.declared);
+    this.init = aorig.init.specializeAtom(spec, null, null);
   }
 
   /**

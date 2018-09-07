@@ -455,6 +455,11 @@ public abstract class Defn {
     return null;
   }
 
+  /** Test to determine if this is an appropriate definition to match the given type. */
+  Area isAreaOfType(Scheme inst) {
+    return null;
+  }
+
   protected static String mkid(String id, int num) {
     return (num == 0) ? id : (id + num);
   }

@@ -201,6 +201,31 @@ public class MILSpec extends TypeSet {
     return newDefn;
   }
 
+  /** Request a version of a definition that is specialized to a given monomorphic type. */
+  public Area specializedArea(Area d, Scheme inst) {
+    debug.Log.println("Requesting specialization of " + d + " :: " + inst);
+    // Get the list of previous specializations:
+    Defns specs = specialized.get(d);
+    int num = 0; // count number of existing specializations
+
+    // Search previous specializations for a matching type:
+    for (Defns ds = specs; ds != null; ds = ds.next) {
+      Area prev = ds.head.isAreaOfType(inst);
+      if (prev != null) {
+        return prev;
+      }
+      num++;
+    }
+
+    // Create a new item, insert in specialized table, and add a request to complete the definition
+    // later:
+    Area newDefn = new Area(d, num);
+    newDefn.setDeclared(inst);
+    specialized.put(d, new Defns(newDefn, specs));
+    requested = new SpecReqs(new SpecArea(d, newDefn), requested);
+    return newDefn;
+  }
+
   private HashMap<Prim, Prims> primSpecMap = new HashMap();
 
   Prims getPrims(Prim p) {

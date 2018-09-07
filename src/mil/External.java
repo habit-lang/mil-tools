@@ -216,7 +216,7 @@ public class External extends TopDefn {
     this(e.pos, mkid(e.id, num), e.declared, e.ref, e.ts);
   }
 
-  /** Handle specialization of Externals */
+  /** Handle specialization of Externals. */
   void specialize(MILSpec spec, External eorig) {
     debug.Log.println(
         "External specialize: "
