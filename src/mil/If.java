@@ -57,14 +57,14 @@ public class If extends Code {
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out) {
-    indentln(out, "if " + a);
+  public void dump(PrintWriter out, Temps ts) {
+    indentln(out, "if " + a.toString(ts));
     indent(out);
     out.print("  then ");
-    ifTrue.displayln(out);
+    ifTrue.displayln(out, ts);
     indent(out);
     out.print("  else ");
-    ifFalse.displayln(out);
+    ifFalse.displayln(out, ts);
   }
 
   /** Force the application of a TempSubst to this Code sequence. */

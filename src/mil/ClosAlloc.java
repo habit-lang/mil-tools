@@ -48,8 +48,8 @@ public class ClosAlloc extends Allocator {
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out) {
-    dump(out, k.toString(), "{", args, "}");
+  public void dump(PrintWriter out, Temps ts) {
+    dump(out, k.toString(), "{", args, "}", ts);
   }
 
   /** Construct a new Call value that is based on the receiver, without copying the arguments. */

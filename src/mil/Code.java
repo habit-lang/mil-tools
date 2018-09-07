@@ -37,12 +37,12 @@ public abstract class Code {
   /** Display a printable representation of this MIL construct on the standard output. */
   public void dump() {
     PrintWriter out = new PrintWriter(System.out);
-    dump(out);
+    dump(out, null);
     out.flush();
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public abstract void dump(PrintWriter out);
+  public abstract void dump(PrintWriter out, Temps ts);
 
   /** Print an indent at the beginning of a line. */
   public static final void indent(PrintWriter out) {

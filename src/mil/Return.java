@@ -53,9 +53,9 @@ public class Return extends Call {
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out) {
+  public void dump(PrintWriter out, Temps ts) {
     out.print("return ");
-    Atom.displayTuple(out, args);
+    Atom.displayTuple(out, args, ts);
   }
 
   /** Construct a new Call value that is based on the receiver, without copying the arguments. */

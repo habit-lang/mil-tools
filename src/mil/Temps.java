@@ -55,6 +55,18 @@ public class Temps {
     return len;
   }
 
+  /**
+   * Push each of the variables in the given array, starting at index 0, on to the list of Temps,
+   * and returning the new list as the result. There is no attempt to check for or prevent duplicate
+   * occurrences.
+   */
+  static Temps push(Temp[] vs, Temps ts) {
+    for (int i = 0; i < vs.length; i++) {
+      ts = new Temps(vs[i], ts);
+    }
+    return ts;
+  }
+
   public static String toString(Temps vs) {
     StringBuilder b = new StringBuilder("{");
     if (vs != null) {

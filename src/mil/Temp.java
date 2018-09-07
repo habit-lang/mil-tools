@@ -51,6 +51,31 @@ public class Temp extends Atom {
   }
 
   /**
+   * Generate a printable description of this atom with a renaming of Temp values that is specified
+   * by the list ts.
+   */
+  String toString(Temps ts) {
+    /* If this Temp appears in the list ts, and is followed by i other Temp objects, then it will be displayed as t_i.
+     * This allows the list ts to be built up by pushing new bindings on to the front of ts as they are encountered.
+     * A downside is that it will require a full traversal of ts for every Temp.  However, if we added elements to ts
+     * in order of occurrence, then we could still expect a typical case to require traversal of half the list (so the
+     * constant factor would be the same) and the task of building the list would be more complex.  Another alternative
+     * would be to use a more efficient lookup structure than a list, although that would likely add other overhead.
+     */
+    for (; ts != null; ts = ts.next) {
+      if (ts.head == this) {
+        int i = 0;
+        do {
+          ts = ts.next;
+          i++;
+        } while (ts != null);
+        return "t" + (i - 1);
+      }
+    }
+    return toString();
+  }
+
+  /**
    * Test to see if two atoms are the same. For Temp values, we use pointer equality to determine
    * object equality. For all other types of Atom, we use double dispatch to compare component
    * values.
@@ -98,6 +123,7 @@ public class Temp extends Atom {
     return vs;
   }
 
+  /** Test to determine whether this atom appears in the given list of Temps. */
   boolean isIn(Temps vs) {
     return Temps.isIn(this, vs);
   }

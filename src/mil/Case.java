@@ -72,18 +72,18 @@ public class Case extends Code {
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out) {
-    indentln(out, "case " + a + " of");
+  public void dump(PrintWriter out, Temps ts) {
+    indentln(out, "case " + a.toString(ts) + " of");
     for (int i = 0; i < alts.length; i++) {
       indent(out); // double indent
       indent(out);
-      alts[i].dump(out);
+      alts[i].dump(out, ts);
     }
     if (def != null) {
       indent(out); // double indent
       indent(out);
       out.print("_ -> ");
-      def.displayln(out);
+      def.displayln(out, ts);
     }
   }
 

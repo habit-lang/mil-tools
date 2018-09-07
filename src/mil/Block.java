@@ -101,13 +101,14 @@ public class Block extends Defn {
       out.println(id + " :: " + declared);
     }
 
-    Call.dump(out, id, "[", params, "]");
+    Temps ts = renameTemps ? Temps.push(params, null) : null;
+    Call.dump(out, id, "[", params, "]", ts);
     out.println(" =");
     if (code == null) {
       Code.indent(out);
       out.println("null");
     } else {
-      code.dump(out);
+      code.dump(out, ts);
     }
   }
 

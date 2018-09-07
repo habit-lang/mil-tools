@@ -77,6 +77,11 @@ public abstract class Call extends Tail {
     return Atom.occursIn(args, ws);
   }
 
+  /** Add the variables mentioned in this tail to the given list of variables. */
+  public Temps add(Temps vs) {
+    return Temps.add(args, vs);
+  }
+
   /**
    * Test to see if the arguments for two Calls are the same. Either both argument lists are null,
    * or else both have the same list of Atoms.
@@ -98,18 +103,14 @@ public abstract class Call extends Tail {
    * block, primitive, and data constructor calls; braces for closure constructors; and brackets for
    * monadic thunk constructors).
    */
-  public static void dump(PrintWriter out, String name, String open, Atom[] args, String close) {
+  public static void dump(
+      PrintWriter out, String name, String open, Atom[] args, String close, Temps ts) {
     out.print(name);
     if (args != null) {
       out.print(open);
-      Atom.dump(out, args);
+      Atom.dump(out, args, ts);
       out.print(close);
     }
-  }
-
-  /** Add the variables mentioned in this tail to the given list of variables. */
-  public Temps add(Temps vs) {
-    return Temps.add(args, vs);
   }
 
   /** Apply a TempSubst to this Tail. */
@@ -462,7 +463,7 @@ public abstract class Call extends Tail {
       if (calls[i] == null) {
         out.print("-");
       } else {
-        calls[i].dump(out);
+        calls[i].dump(out, (Temps) null);
       }
     }
     out.print("}");

@@ -61,12 +61,13 @@ public class Bind extends Code {
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out) {
+  public void dump(PrintWriter out, Temps ts) {
+    Temps ts1 = Defn.renameTemps ? Temps.push(vs, ts) : ts;
     indent(out);
-    Atom.displayTuple(out, vs);
+    Atom.displayTuple(out, vs, ts1);
     out.print(" <- ");
-    t.displayln(out);
-    c.dump(out);
+    t.displayln(out, ts);
+    c.dump(out, ts1);
   }
 
   /** Force the application of a TempSubst to this Code sequence. */

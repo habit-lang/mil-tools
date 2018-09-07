@@ -57,10 +57,10 @@ public class Assert extends Code {
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out) {
+  public void dump(PrintWriter out, Temps ts) {
     indent(out);
-    out.println("assert " + a + " " + cf);
-    c.dump(out);
+    out.println("assert " + a.toString(ts) + " " + cf);
+    c.dump(out, ts);
   }
 
   /** Force the application of a TempSubst to this Code sequence. */

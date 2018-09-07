@@ -229,6 +229,8 @@ public abstract class Defn {
     out.flush();
   }
 
+  public static boolean renameTemps = true;
+
   abstract void displayDefn(PrintWriter out, boolean isEntrypoint);
 
   void limitRecursion() throws Failure {

@@ -99,10 +99,11 @@ public class ClosureDefn extends Defn {
       out.println(id + " :: " + declared);
     }
 
-    Call.dump(out, id, "{", params, "} ");
-    Atom.displayTuple(out, args);
+    Temps ts = renameTemps ? Temps.push(args, Temps.push(params, null)) : null;
+    Call.dump(out, id, "{", params, "} ", ts);
+    Atom.displayTuple(out, args, ts);
     out.print(" = ");
-    tail.displayln(out);
+    tail.displayln(out, ts);
   }
 
   AllocType instantiate() {

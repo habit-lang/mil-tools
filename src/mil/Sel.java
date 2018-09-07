@@ -57,6 +57,11 @@ public class Sel extends Tail {
     return a.occursIn(ws);
   }
 
+  /** Add the variables mentioned in this tail to the given list of variables. */
+  public Temps add(Temps vs) {
+    return a.add(vs);
+  }
+
   /** Test to see if two Tail expressions are the same. */
   public boolean sameTail(Tail that) {
     return that.sameSel(this);
@@ -72,13 +77,8 @@ public class Sel extends Tail {
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out) {
-    out.print(cf + " " + n + " " + a);
-  }
-
-  /** Add the variables mentioned in this tail to the given list of variables. */
-  public Temps add(Temps vs) {
-    return a.add(vs);
+  public void dump(PrintWriter out, Temps ts) {
+    out.print(cf + " " + n + " " + a.toString(ts));
   }
 
   /** Apply a TempSubst to this Tail. */

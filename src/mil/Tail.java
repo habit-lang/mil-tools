@@ -40,6 +40,9 @@ public abstract class Tail {
    */
   public abstract boolean contains(Temp[] ws);
 
+  /** Add the variables mentioned in this tail to the given list of variables. */
+  public abstract Temps add(Temps vs);
+
   /** Test to see if two Tail expressions are the same. */
   public abstract boolean sameTail(Tail that);
 
@@ -77,21 +80,18 @@ public abstract class Tail {
   /** Display a printable representation of this MIL construct on the standard output. */
   public void dump() {
     PrintWriter out = new PrintWriter(System.out);
-    dump(out);
+    dump(out, null);
     out.flush();
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public abstract void dump(PrintWriter out);
+  public abstract void dump(PrintWriter out, Temps ts);
 
   /** Display a Tail value and then move to the next line. */
-  public void displayln(PrintWriter out) {
-    dump(out);
+  public void displayln(PrintWriter out, Temps ts) {
+    dump(out, ts);
     out.println();
   }
-
-  /** Add the variables mentioned in this tail to the given list of variables. */
-  public abstract Temps add(Temps vs);
 
   /**
    * Apply a TempSubst to this Tail. As an optimization, we skip the operation if the substitution

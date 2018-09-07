@@ -46,9 +46,9 @@ public class Done extends Code {
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out) {
+  public void dump(PrintWriter out, Temps ts) {
     indent(out);
-    t.displayln(out);
+    t.displayln(out, ts);
   }
 
   /** Force the application of a TempSubst to this Code sequence. */

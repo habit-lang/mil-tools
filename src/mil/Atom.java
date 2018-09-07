@@ -34,21 +34,33 @@ public abstract class Atom {
   public abstract String toString();
 
   /**
+   * Generate a printable description of this atom with a renaming of Temp values that is specified
+   * by the list ts.
+   */
+  String toString(Temps ts) {
+    return toString();
+  }
+
+  /**
    * Generate a printable description of the given list of atoms as a comma separated list of the
    * individual atoms.
    */
   public static String toString(Atom[] as) {
+    return toString(as, null);
+  }
+
+  public static String toString(Atom[] as, Temps ts) {
     if (as == null || as.length == 0) { // An empty list?
       return "";
     } else if (as.length == 1) { // A single atom?
-      return as[0].toString();
+      return as[0].toString(ts);
     } else { // General case
       StringBuilder buf = new StringBuilder();
       for (int i = 0; i < as.length; i++) {
         if (i > 0) {
           buf.append(", ");
         }
-        buf.append(as[i].toString());
+        buf.append(as[i].toString(ts));
       }
       return buf.toString();
     }
@@ -153,6 +165,20 @@ public abstract class Atom {
     return n;
   }
 
+  /** Test to determine whether this atom appears in the given list of Temps. */
+  boolean isIn(Temps vs) {
+    return false;
+  }
+
+  /**
+   * Add this atom as an argument variable to the given list; only local variables and temporaries
+   * are treated as argument variables because wildcards are ignored and all other atoms can be
+   * accessed as constants.
+   */
+  public Temps add(Temps vs) {
+    return vs;
+  }
+
   /** Find the dependencies of this AST fragment. */
   public Defns dependencies(Defns ds) {
     return ds;
@@ -169,13 +195,13 @@ public abstract class Atom {
   }
 
   /** Print a list of src values separated by commas. */
-  public static void dump(PrintWriter out, Atom[] args) {
+  public static void dump(PrintWriter out, Atom[] args, Temps ts) {
     int n = 0; // count number of items displayed so far
     for (int i = 0; i < args.length; i++) {
       if (n++ > 0) {
         out.print(", ");
       }
-      out.print(args[i].toString());
+      out.print(args[i].toString(ts));
     }
   }
 
@@ -183,27 +209,14 @@ public abstract class Atom {
    * Print a list of src values, separated by commas and enclosed in parentheses if the number of
    * src values is not 1.
    */
-  public static void displayTuple(PrintWriter out, Atom[] args) {
+  public static void displayTuple(PrintWriter out, Atom[] args, Temps ts) {
     if (args != null && args.length == 1) {
-      out.print(args[0].toString());
+      out.print(args[0].toString(ts));
     } else {
       out.print("[");
-      Atom.dump(out, args);
+      Atom.dump(out, args, ts);
       out.print("]");
     }
-  }
-
-  boolean isIn(Temps vs) {
-    return false;
-  }
-
-  /**
-   * Add this atom as an argument variable to the given list; only local variables and temporaries
-   * are treated as argument variables because wildcards are ignored and all other atoms can be
-   * accessed as constants.
-   */
-  public Temps add(Temps vs) {
-    return vs;
   }
 
   public TempSubst mapsTo(Atom a, TempSubst s) {

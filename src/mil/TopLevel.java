@@ -122,7 +122,7 @@ public class TopLevel extends TopDefn {
     out.print(" <-");
     out.println();
     Code.indent(out);
-    tail.displayln(out);
+    tail.displayln(out, null);
   }
 
   Type instantiate(int i) {

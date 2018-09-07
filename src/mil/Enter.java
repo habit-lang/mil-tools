@@ -55,6 +55,11 @@ public class Enter extends Call {
     return f.occursIn(ws) || super.contains(ws);
   }
 
+  /** Add the variables mentioned in this tail to the given list of variables. */
+  public Temps add(Temps vs) {
+    return f.add(super.add(vs));
+  }
+
   /** Test to see if two Tail expressions are the same. */
   public boolean sameTail(Tail that) {
     return that.sameEnter(this);
@@ -70,14 +75,9 @@ public class Enter extends Call {
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out) {
-    out.print(f + " @ ");
-    Atom.displayTuple(out, args);
-  }
-
-  /** Add the variables mentioned in this tail to the given list of variables. */
-  public Temps add(Temps vs) {
-    return f.add(super.add(vs));
+  public void dump(PrintWriter out, Temps ts) {
+    out.print(f.toString(ts) + " @ ");
+    Atom.displayTuple(out, args, ts);
   }
 
   /** Apply a TempSubst to this Tail. */

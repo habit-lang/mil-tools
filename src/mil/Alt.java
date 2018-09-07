@@ -49,10 +49,10 @@ public class Alt {
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out) {
+  public void dump(PrintWriter out, Temps ts) {
     out.print(cf.toString());
     out.print(" -> ");
-    bc.displayln(out);
+    bc.displayln(out, ts);
   }
 
   /** Apply a TempSubst to this Alt, skipping if the substitution is empty. */

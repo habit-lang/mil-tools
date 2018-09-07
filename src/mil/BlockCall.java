@@ -57,11 +57,8 @@ public class BlockCall extends Call {
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out) {
-    dump(out, b.toString(), "[", args, "]");
-    if (callx != null) {
-      Call.dump(out, callx);
-    }
+  public void dump(PrintWriter out, Temps ts) {
+    dump(out, b.toString(), "[", args, "]", ts);
   }
 
   /** Construct a new Call value that is based on the receiver, without copying the arguments. */
@@ -347,6 +344,12 @@ public class BlockCall extends Call {
   }
 
   private Call[] callx;
+
+  public void dump(PrintWriter out) {
+    if (callx != null) {
+      Call.dump(out, callx);
+    }
+  }
 
   BlockCall shortCase(Facts facts) {
     return b.shortCase(args, facts);
