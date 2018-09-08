@@ -33,11 +33,9 @@ public class RepTypeSet extends TypeSet {
    */
   protected Type canon(Tycon h, int args) {
     int len = h.repTransform(this, args); // Rewrite a tuple type?
-    return (len < 0) ? super.canon(h, args) : super.canonOther(TupleCon.tuple(len).asType(), len);
-  }
-
-  protected Type buildCanon(Tycon h, int args) {
-    return rebuild(h.canonTycon(this).asType(), args);
+    return (len < 0)
+        ? super.canon(h.canonTycon(this), args)
+        : super.canonOther(TupleCon.tuple(len).asType(), len);
   }
 
   /**

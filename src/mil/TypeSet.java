@@ -146,14 +146,10 @@ public class TypeSet {
     Types ts = tyconInstances.get(h); // Find previous uses of this item
     Type t = findMatch(args, ts); // And search for a match
     if (t == null) {
-      t = buildCanon(h, args); // If none found, build a canonical representative
+      t = rebuild(h.asType(), args); // If none found, build a canonical representative
       tyconInstances.put(h, new Types(t, ts)); // Add it to the list
     }
     return t; // Return the (old or new) canonical representative
-  }
-
-  protected Type buildCanon(Tycon h, int args) {
-    return rebuild(h.asType(), args);
   }
 
   /**
