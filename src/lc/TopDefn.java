@@ -42,7 +42,8 @@ public abstract class TopDefn {
 
   /**
    * Run scope analysis on a top level lc definition to ensure that all the items identified as
-   * exports or entrypoints are in scope.
+   * exports or entrypoints are in scope, either as a binding in this program, or as a Top that is
+   * visible in the current environment.
    */
   abstract void scopeTopDefn(Handler handler, MILEnv milenv, Env env) throws Failure;
 

@@ -30,8 +30,8 @@ class Entrypoint extends Export {
   }
 
   void addExports(MILProgram mil, MILEnv milenv) {
-    for (int i = 0; i < topLevels.length; i++) {
-      mil.addEntry(topLevels[i]);
+    for (int i = 0; i < tops.length; i++) {
+      mil.addEntry(tops[i].getDefn());
     }
   }
 }

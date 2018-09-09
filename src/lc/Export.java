@@ -34,13 +34,22 @@ class Export extends TopDefn {
 
   /**
    * Run scope analysis on a top level lc definition to ensure that all the items identified as
-   * exports or entrypoints are in scope.
+   * exports or entrypoints are in scope, either as a binding in this program, or as a Top that is
+   * visible in the current environment.
    */
   void scopeTopDefn(Handler handler, MILEnv milenv, Env env) throws Failure {
     vars = new DefVar[ids.length];
+    tops = new Top[ids.length];
     for (int i = 0; i < ids.length; i++) {
-      if ((vars[i] = Env.find(ids[i], env)) == null) {
-        handler.report(new NotInScopeFailure(pos, ids[i]));
+      if ((vars[i] = Env.find(ids[i], env)) == null
+          && // look for a top level binding
+          (tops[i] = milenv.findTop(ids[i])) == null) { // look for a Top in the current milenv
+        Cfun cf = milenv.findCfun(ids[i]); // and then look for a reference to a constructor
+        if (cf != null) {
+          tops[i] = cf.getTop();
+        } else {
+          handler.report(new NotInScopeFailure(pos, ids[i]));
+        }
       }
     }
   }
@@ -48,28 +57,30 @@ class Export extends TopDefn {
   /** List of variables corresponding to the identifiers in this declaration. */
   protected DefVar[] vars;
 
+  /** List of Top values corresponding to the identifiers in this declaration. */
+  protected Top[] tops;
+
   /** Check types of expressions appearing in top-level definitions. */
   void inferTypes(Handler handler) throws Failure {
     /* Do nothing */
   }
 
   void liftTopDefn(LiftEnv lenv) {
-    topLevels = new TopLevel[vars.length];
     for (int i = 0; i < vars.length; i++) {
-      Lifting l = vars[i].findLifting(lenv);
-      if (l == null) {
-        debug.Internal.error("no lifting for " + vars[i]);
+      if (vars[i] != null) {
+        Lifting l = vars[i].findLifting(lenv);
+        if (l != null) {
+          tops[i] = new TopDef(l.getTopLevel(), 0);
+        } else {
+          debug.Internal.error("no lifting for " + vars[i]);
+        }
       }
-      topLevels[i] = l.getTopLevel();
     }
   }
 
-  /** List of TopLevel values corresponding to the identifiers in this declaration. */
-  protected TopLevel[] topLevels;
-
   void addExports(MILProgram mil, MILEnv milenv) {
-    for (int i = 0; i < topLevels.length; i++) {
-      milenv.addTop(new TopDef(topLevels[i], 0));
+    for (int i = 0; i < tops.length; i++) {
+      milenv.addTop(tops[i]);
     }
   }
 }

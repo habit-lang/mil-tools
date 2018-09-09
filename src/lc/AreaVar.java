@@ -53,7 +53,8 @@ public class AreaVar extends Name {
 
   /**
    * Run scope analysis on a top level lc definition to ensure that all the items identified as
-   * exports or entrypoints are in scope.
+   * exports or entrypoints are in scope, either as a binding in this program, or as a Top that is
+   * visible in the current environment.
    */
   void scopeTopDefn(Handler handler, MILEnv milenv, Env env) throws Failure {
     // Ignore results of top level inScopeOf() call
