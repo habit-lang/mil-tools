@@ -243,7 +243,13 @@ public class External extends TopDefn {
    * version to share the same name as the original).
    */
   Defn specializeEntry(MILSpec spec) throws Failure {
-    throw new ExternalAsEntrypoint(this);
+    Type t = declared.isMonomorphic();
+    if (t != null) {
+      External e = spec.specializedExternal(this, t);
+      e.id = this.id;
+      return e;
+    }
+    throw new PolymorphicEntrypointFailure("external", this);
   }
 
   /** Update all declared types with canonical versions. */
