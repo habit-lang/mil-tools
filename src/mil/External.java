@@ -380,6 +380,19 @@ public class External extends TopDefn {
           }
         });
 
+    // primBitToWord w :: Bit w -> Word
+    generators.put(
+        "primBitToWord",
+        new Generator(1) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
+            BigInteger w = ts[0].isPosInt(); // Width of bit vector
+            if (w != null && w.signum() > 0 && Word.numWords(w.intValue()) == 1) {
+              return new Return().makeUnaryFuncClosure(pos, 1);
+            }
+            return null;
+          }
+        });
+
     // primBitConcat m n p :: Bit m -> Bit n -> Bit p,  where m+n = p
     generators.put(
         ":#",
