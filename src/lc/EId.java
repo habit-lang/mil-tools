@@ -84,11 +84,11 @@ class EId extends EVar {
   }
 
   /**
-   * Perform scope analysis on this expression, creating a Temp object for each variable binding,
-   * checking that all of the identifiers that it references correspond to bound variables, and
-   * returning the set of free variables in the term.
+   * Perform scope analysis on this expression, creating a Temp for each variable binding, checking
+   * that all of the identifiers it references correspond to bound variables, and returning the set
+   * of free variables in the term.
    */
-  DefVars inScopeOf(Handler handler, MILEnv milenv, Env env) { //  id
+  DefVars inScopeOf(Handler handler, MILEnv milenv, Env env) {
     if ((v = Env.find(id, env)) == null) { // look in local environment
       Top top = milenv.findTop(id); // look in milenv
       if (top != null) {

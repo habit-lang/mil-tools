@@ -69,9 +69,9 @@ class EType extends PosExpr {
   private Scheme declared;
 
   /**
-   * Perform scope analysis on this expression, creating a Temp object for each variable binding,
-   * checking that all of the identifiers that it references correspond to bound variables, and
-   * returning the set of free variables in the term.
+   * Perform scope analysis on this expression, creating a Temp for each variable binding, checking
+   * that all of the identifiers it references correspond to bound variables, and returning the set
+   * of free variables in the term.
    */
   DefVars inScopeOf(Handler handler, MILEnv milenv, Env env) { // e :: texp
     try {
