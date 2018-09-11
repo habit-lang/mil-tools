@@ -46,17 +46,6 @@ public abstract class Const extends Atom {
     return true;
   }
 
-  /**
-   * Update the information that we have recorded about a given formal parameter to reflect the use
-   * of this actual parameter. The input, orig, will be one of: - null, indicating that no previous
-   * information has been found - a specific Const or Top, indicating that this single value was
-   * used in all previous calls - a special value, top, indicating that multiple distinct values
-   * have been encountered in previous calls.
-   */
-  Atom update(Atom orig) {
-    return (orig == null || orig.sameAtom(this)) ? this : Atom.top;
-  }
-
   Atom isKnown() {
     return this;
   }

@@ -430,11 +430,6 @@ public class Bind extends Code {
     c.eliminateDuplicates();
   }
 
-  void collect() {
-    t.collect();
-    c.collect();
-  }
-
   void collect(TypeSet set) {
     Atom.collect(vs, set);
     t.collect(set);

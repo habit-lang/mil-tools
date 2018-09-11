@@ -331,8 +331,6 @@ public abstract class Code {
 
   abstract void eliminateDuplicates();
 
-  abstract void collect();
-
   abstract void collect(TypeSet set);
 
   /** Simplify uses of constructor functions in this code sequence. */

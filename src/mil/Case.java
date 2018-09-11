@@ -398,15 +398,6 @@ public class Case extends Code {
     }
   }
 
-  void collect() {
-    if (def != null) {
-      def.collect();
-    }
-    for (int i = 0; i < alts.length; i++) {
-      alts[i].collect();
-    }
-  }
-
   void collect(TypeSet set) {
     a.collect(set);
     if (dom != null) {

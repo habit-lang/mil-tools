@@ -189,10 +189,6 @@ public class Alt {
     bc.eliminateDuplicates();
   }
 
-  void collect() {
-    bc.collect();
-  }
-
   void collect(TypeSet set) {
     if (type != null) {
       type = type.canonAllocType(set);

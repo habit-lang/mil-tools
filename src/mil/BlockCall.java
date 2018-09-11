@@ -380,10 +380,6 @@ public class BlockCall extends Call {
     }
   }
 
-  void collect() {
-    b.collect(args);
-  }
-
   void collect(TypeSet set) {
     if (type != null) {
       type = type.canonBlockType(set);

@@ -407,16 +407,6 @@ public abstract class Defn {
 
   abstract void eliminateDuplicates();
 
-  abstract void collect();
-
-  void clearArgVals() {
-    /* nothing to do */
-  }
-
-  void checkCollection() {
-    /* nothing to do */
-  }
-
   abstract void collect(TypeSet set);
 
   /** Apply constructor function simplifications to this program. */

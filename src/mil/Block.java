@@ -895,37 +895,6 @@ public class Block extends Defn {
     code.eliminateDuplicates();
   }
 
-  void collect() {
-    code.collect();
-  }
-
-  private Atom[] argVals;
-
-  void clearArgVals() {
-    argVals = new Atom[params.length];
-  }
-
-  void collect(Atom[] args) {
-    if (args.length != argVals.length) {
-      debug.Internal.error("Argument length mismatch in collect");
-    }
-    for (int i = 0; i < args.length; i++) {
-      argVals[i] = args[i].update(argVals[i]);
-    }
-  }
-
-  void checkCollection() {
-    for (int i = 0; i < argVals.length; i++) {
-      if (argVals[i] != null) {
-        Atom known = argVals[i].isKnown();
-        if (known != null) {
-          MILProgram.report("Argument " + i + " of " + getId() + " is always " + known);
-          code = new Bind(params[i], new Return(argVals[i]), code);
-        }
-      }
-    }
-  }
-
   void collect(TypeSet set) {
     if (declared != null) {
       declared = declared.canonBlockType(set);

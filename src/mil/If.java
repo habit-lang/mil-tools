@@ -283,11 +283,6 @@ public class If extends Code {
     ifFalse.eliminateDuplicates();
   }
 
-  void collect() {
-    ifTrue.collect();
-    ifFalse.collect();
-  }
-
   void collect(TypeSet set) {
     a.collect(set);
     ifTrue.collect(set);

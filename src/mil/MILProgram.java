@@ -190,11 +190,11 @@ public class MILProgram {
       // !System.out.println("Before flow: =====================================");
       // !dump();
       flow();
-      if (count == 0) { // If no changes so far this iteration, try collect.
-        shake();
-        // collapse();     // TODO: Should we do this every time anyway?
-        collect();
-      }
+      // !     if (count==0) {   // If no changes so far this iteration, try collect.
+      // !       shake();
+      // !       // collapse();     // TODO: Should we do this every time anyway?
+      // !       collect();
+      // !      }
       debug.Log.println("Flow pass finished, running shake.");
       shake();
       debug.Log.println("Steps performed = " + count);
@@ -209,7 +209,7 @@ public class MILProgram {
       count = 0;
       collapse(); // TODO: move inside loop?
       postcount = count;
-      collect();
+      //    collect();
       shake();
       inlining();
       shake();
@@ -218,7 +218,6 @@ public class MILProgram {
       debug.Log.println("Cleanup steps performed = " + count);
       totalCount += count;
     }
-    // while (count!=0 && count!=postcount);
     debug.Log.println("TOTAL steps performed = " + totalCount);
   }
 
@@ -328,33 +327,6 @@ public class MILProgram {
         for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
           ds.head.eliminateDuplicates();
         }
-      }
-    }
-  }
-
-  /**
-   * Scan a program and simplify any blocks that are only ever called with specific values for
-   * particular parameters. In particular, this includes blocks that are only called once with one
-   * or more known parameters.
-   */
-  void collect() {
-    // Collect information about all block calls in the program:
-    for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
-      // Initialize argVals for each block in this SCC
-      for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
-        ds.head.clearArgVals();
-      }
-
-      // Update argVals for each code fragment in this SCC:
-      for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
-        ds.head.collect();
-      }
-    }
-
-    // Now look for places where a unique value is used for all calls to a given block:
-    for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
-      for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
-        ds.head.checkCollection();
       }
     }
   }

@@ -584,10 +584,6 @@ public class ClosureDefn extends Defn {
     tail.eliminateDuplicates();
   }
 
-  void collect() {
-    tail.collect();
-  }
-
   void collect(TypeSet set) {
     if (declared != null) {
       declared = declared.canonAllocType(set);

@@ -208,10 +208,6 @@ public class Area extends TopDefn {
     /* Nothing to do here */
   }
 
-  void collect() {
-    /* Nothing to do here */
-  }
-
   void collect(TypeSet set) {
     areaType = areaType.canonType(set);
     if (declared != null) {

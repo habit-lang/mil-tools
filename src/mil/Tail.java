@@ -378,10 +378,6 @@ public abstract class Tail {
     /* nothing to do in most cases */
   }
 
-  void collect() {
-    /* nothing to do */
-  }
-
   abstract void collect(TypeSet set);
 
   /**

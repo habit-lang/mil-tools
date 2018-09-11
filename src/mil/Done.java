@@ -278,10 +278,6 @@ public class Done extends Code {
     t.eliminateDuplicates();
   }
 
-  void collect() {
-    t.collect();
-  }
-
   void collect(TypeSet set) {
     t.collect(set);
   }

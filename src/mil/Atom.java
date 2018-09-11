@@ -345,21 +345,6 @@ public abstract class Atom {
     return false;
   }
 
-  /**
-   * Update the information that we have recorded about a given formal parameter to reflect the use
-   * of this actual parameter. The input, orig, will be one of: - null, indicating that no previous
-   * information has been found - a specific Const or Top, indicating that this single value was
-   * used in all previous calls - a special value, top, indicating that multiple distinct values
-   * have been encountered in previous calls.
-   */
-  abstract Atom update(Atom orig);
-
-  /**
-   * A dummy temporary to represent a "top" lattice value indicating that a parameter can take
-   * multiple values.
-   */
-  public static final Atom top = new Temp();
-
   Atom isKnown() {
     return null;
   }

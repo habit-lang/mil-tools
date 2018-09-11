@@ -241,10 +241,6 @@ public class Assert extends Code {
     c.eliminateDuplicates();
   }
 
-  void collect() {
-    c.collect();
-  }
-
   void collect(TypeSet set) {
     if (type != null) {
       type = type.canonAllocType(set);

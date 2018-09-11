@@ -184,10 +184,6 @@ public class External extends TopDefn {
     /* Nothing to do here */
   }
 
-  void collect() {
-    /* Nothing to do here */
-  }
-
   void collect(TypeSet set) {
     if (declared != null) {
       declared = declared.canonScheme(set);

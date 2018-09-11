@@ -335,10 +335,6 @@ public class TopLevel extends TopDefn {
     tail.eliminateDuplicates();
   }
 
-  void collect() {
-    tail.collect();
-  }
-
   void collect(TypeSet set) {
     for (int i = 0; i < lhs.length; i++) {
       lhs[i].collect(set);
