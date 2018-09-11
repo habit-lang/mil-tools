@@ -411,9 +411,7 @@ class Main {
         });
 
     if (llvmOutput.isSet() || llvmInterfaceOutput.isSet()) {
-      if (!optimized) {
-        throw new Failure("An optimization pass is required for LLVM output");
-      } else if (spec == null) {
+      if (spec == null) {
         throw new Failure("A specialization pass is required for LLVM output");
       } else if (rep == null) {
         throw new Failure("A representation pass is required for LLVM output");
