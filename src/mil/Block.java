@@ -365,6 +365,7 @@ public class Block extends Defn {
 
     // Fill in the code for the new block by prepending some initializers:
     b.code = addInitializers(calls, params, tss, code.copy());
+    b.flow(); // perform an initial flow analysis to inline initializers.
 
     // !System.out.println("New deriveWithKnownCons block:");
     // !b.dump();
