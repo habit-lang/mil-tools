@@ -127,7 +127,6 @@ public class LayoutLexer extends CoreLexer implements CoreTokens {
       super.nextToken();
       push(HARD);
     } else {
-      // !System.out.println("entered a new section");
       push(getPos().getColumn());
     }
   }
@@ -190,7 +189,6 @@ public class LayoutLexer extends CoreLexer implements CoreTokens {
       token = delayedToken;
       delayedToken = NOTOKEN;
       if (lastToken == SEMI) {
-        // !System.out.println("LL1 token " + token + ", " + describeToken(token, lexemeText));
         return token;
       }
     } else {
@@ -204,7 +202,6 @@ public class LayoutLexer extends CoreLexer implements CoreTokens {
             // specific tokens.
           default:
             delayedToken = token;
-            // !System.out.println("Delaying " + describeToken());
             token = SEMI;
             // Add tokens that do suppress an inserted SEMI here
             // using the DelayTokens macro.
@@ -219,7 +216,6 @@ public class LayoutLexer extends CoreLexer implements CoreTokens {
         token = SOFTEND;
       }
     }
-    // !System.out.println("LL2 token " + token + ", " + describeToken(token, lexemeText));
     return token;
   }
 

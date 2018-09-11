@@ -108,16 +108,7 @@ public class PrimCall extends Call {
    * that ClosureDefns hold Tails rather than Calls?
    */
   public Tail inlineTail() {
-    // !System.out.println("PrimCall was: "); this.dump(); System.out.println();
     Code c = this.rewritePrimCall(null);
-    // !System.out.println("Resulting code is:");
-    // !if (c==null) {
-    // !  System.out.println("  --null--");
-    // !} else {
-    // !  this.dump();
-    // !  System.out.println();
-    // !}
-    // !
     return (c == null) ? this : c.forceToTail(this);
   }
 
@@ -743,11 +734,6 @@ public class PrimCall extends Call {
   private static Code addVarVar(Atom x, Atom y, Facts facts) {
     Tail a = x.lookupFact(facts);
     Tail b = y.lookupFact(facts);
-    // ! System.out.print("addVarVar: a=");
-    // ! if (a==null) { System.out.print("null"); } else { a.dump(); }
-    // ! System.out.print(", b=");
-    // ! if (b==null) { System.out.print("null"); } else { b.dump(); }
-    // ! System.out.println();
     if (a != null || b != null) { // Only look for a rewrite if there are some facts
       Code nc;
       // TODO: commuteRearrange calls redistBin, which checks for combinations that cannot

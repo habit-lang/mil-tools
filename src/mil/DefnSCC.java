@@ -188,14 +188,12 @@ public class DefnSCC {
   /** Apply inlining. */
   public void inlining() {
     for (Defns ds = getBindings(); ds != null; ds = ds.next) {
-      // !System.out.println("inlining loop at: " + ds.head.getId());
       ds.head.inlining();
     }
   }
 
   void collect(TypeSet set) {
     for (Defns ds = bindings; ds != null; ds = ds.next) {
-      // !   ds.head.dump();
       ds.head.collect(set);
     }
   }

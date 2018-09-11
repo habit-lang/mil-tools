@@ -293,27 +293,6 @@ public abstract class Call extends Tail {
             (calls[i].isAllocator() == null) ? Temp.noTemps : Temp.makeTemps(calls[i].getArity());
       }
     }
-    // !/*
-    // !if (tss==null) {
-    // !  System.out.println("-null tss-");
-    // !} else {
-    // !  System.out.print("[");
-    // !  for (int i=0; i<tss.length; i++) {
-    // !    if (i>0) { System.out.print(", "); }
-    // !    if (tss[i]==null) {
-    // !      System.out.print("-");
-    // !    } else {
-    // !      System.out.print("[");
-    // !      for (int j=0; j<tss[i].length; j++) {
-    // !        if (j>0) { System.out.print(", "); }
-    // !        System.out.print(tss[i][j].toString());
-    // !      }
-    // !      System.out.print("]");
-    // !    }
-    // !  }
-    // !  System.out.println("]");
-    // !}
-    // !*/
     return tss;
   }
 

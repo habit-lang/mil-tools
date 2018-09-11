@@ -214,7 +214,6 @@ class Binding extends DefVar {
     DefVars xvs = null; // List of vars required in body
     Bindings cs = null; // Find the callees that are listed in bindings
     DefVars prev = null; // Previous entry
-    // ! System.out.println("definition of " + id + " has free vars = " + DefVars.toString(fvs));
     for (DefVars us = fvs; us != null; us = us.next) {
       Binding b = us.head.find(bindings);
       if (b == null) { // Variable not defined in bindings
@@ -231,9 +230,6 @@ class Binding extends DefVar {
     }
     this.calls(cs); // Register dependencies on this binding
     this.xvs = xvs; // Compute free variables
-    // ! System.out.println(id + " has free vars " + DefVars.toString(fvs)
-    // !                       + ", and extra vars " + DefVars.toString(this.xvs));
-    // ! System.out.println();
     return fvs;
   }
 
@@ -347,7 +343,6 @@ class Binding extends DefVar {
     // generation.
     TopLevel topLevel = new TopLevel(pos, id, null); // Create new top-level definition
     topLevel.setDeclared(0, declared);
-    // ! debug.Log.println("at point of liftToTop, " + v + " has type: " + declared);
 
     // Add an entry for this binding to the lifting environment and return a new top binding.
     lenv.addLifting(this, topLevel, xvs); // Add lifting v -> topLevel xvs

@@ -131,10 +131,6 @@ public class BitdataDefn extends TyconDefn {
               + bt
               + " includes "
               + ((n.compareTo(BigInteger.ONE) == 0) ? "a junk value" : (n + " junk values")));
-      // !   String[] lines = junk.showBits();
-      // !   for (int i=0; i<lines.length; i++) {
-      // !     debug.Log.println("  " + lines[i]);
-      // !   }
     }
 
     // Test for confusion and for the existence of mask-test predicates:

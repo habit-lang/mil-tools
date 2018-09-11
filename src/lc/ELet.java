@@ -87,7 +87,6 @@ class ELet extends PosExpr {
     // Compute the strongly connected components:
     sccs = Bindings.scc(bindings);
     BindingSCC.checkSafeRecursion(handler, sccs);
-    // ! BindingSCCs.display("local bindings", sccs); // TODO: debug code; remove.
 
     return fvs;
   }

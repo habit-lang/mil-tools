@@ -244,7 +244,6 @@ public class MILSpec extends TypeSet {
 
   /** Request a specialized version of a given definition as an entry point to the new program. */
   void addEntry(Handler handler, Defn d) {
-    // ! System.out.println("Specializing entry for " + d);
     try {
       prog.addEntry(d.specializeEntry(this));
     } catch (Failure f) {

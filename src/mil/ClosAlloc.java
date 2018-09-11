@@ -99,24 +99,15 @@ public class ClosAlloc extends Allocator {
 
   ClosAlloc deriveWithKnownCons(Call[] calls) {
     // if (calls!=null) { return null; } // disable optimization
-    // !System.out.print("deriveWithKnownCons for ClosAlloc: ");
-    // !this.dump();
-    // !System.out.println();
     if (calls.length != args.length) {
       debug.Internal.error("ClosAlloc argument list length mismatch in deriveWithKnownCons");
     }
     ClosureDefn nk = k.deriveWithKnownCons(calls);
     if (nk == null) {
-      // !System.out.println("Declined to specialize this closure allocation!");
       return null;
     } else {
       ClosAlloc ca = new ClosAlloc(nk);
       ca.withArgs(specializedArgs(calls));
-      // !System.out.print("Rewrote knownCons thunk: ");
-      // !this.dump();
-      // !System.out.print(" as: ");
-      // !ca.dump();
-      // !System.out.println();
       return ca;
     }
   }
@@ -141,15 +132,7 @@ public class ClosAlloc extends Allocator {
     if (calls != null) {
       ClosAlloc ca = deriveWithKnownCons(calls);
       if (ca != null) {
-        // !System.out.print("Calls for " + k.getId() + " are ");
-        // !Call.dump(calls);
-        // !System.out.println();
         MILProgram.report("deriving specialized block for ClosAlloc block " + k.getId());
-        // !System.out.print("deriveWithKnownCons for ClosAlloc: ");
-        // !this.dump();
-        // !System.out.print(" -> ");
-        // !ca.dump();
-        // !System.out.println();
         return new Done(ca);
       }
     }

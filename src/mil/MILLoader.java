@@ -77,7 +77,6 @@ public class MILLoader {
   /** Load the abstract syntax for all of the required files. */
   public MILEnv load(Handler handler, MILProgram program) throws Failure {
     MILASTSCCs sccs = MILASTs.scc(syntaxAnalysis(handler));
-    // ! MILASTSCCs.display("MILASTs", sccs);
 
     // Run through strongly connected components to build up a MIL environment for the complete
     // program.

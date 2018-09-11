@@ -163,38 +163,26 @@ public class BlockCall extends Call {
   }
 
   BlockCall deriveWithKnownCons(Call[] calls) {
-    // !System.out.print("deriveWithKnownCons for BlockCall: ");
-    // !this.dump();
-    // !System.out.println();
     if (calls.length != args.length) {
       debug.Internal.error("BlockCall argument list length mismatch in deriveWithKnownCons");
     }
     Block nb = b.deriveWithKnownCons(calls);
     if (nb == null) {
-      // !System.out.println("Declined to specialize this block!");
       return null;
     } else {
-      // !System.out.print("Rewriting knownCons call:");
-      // !this.dump();
       return new BlockCall(nb, specializedArgs(calls));
     }
   }
 
   /** Generate a new version of a block call that omits duplicate arguments. */
   public BlockCall deriveWithDuplicateArgs(int[] dups) {
-    // !System.out.print("deriveWithDuplicateArgs for BlockCall: ");
-    // !this.dump();
-    // !System.out.println();
     if (dups.length != args.length) {
       debug.Internal.error("argument list length mismatch in deriveWithDuplicateArgs");
     }
     Block nb = b.deriveWithDuplicateArgs(dups);
     if (nb == null) {
-      // !System.out.println("Declined to specialize this block!");
       return null;
     } else {
-      // !System.out.print("Rewriting block call with duplicated arguments: ");
-      // !this.dump();
       return new BlockCall(nb, removeDuplicateArgs(dups));
     }
   }
@@ -312,31 +300,16 @@ public class BlockCall extends Call {
       if (bc1 != null) {
         bc = bc1;
         MILProgram.report("deriving specialized block for BlockCall to block " + b.getId());
-        // !System.out.print("deriveWithKnownCons for BlockCall: ");
-        // !this.dump();
-        // !System.out.print(" -> ");
-        // !bc.dump();
-        // !System.out.println();
       }
     }
 
     // Look for an opportunity to simplify a BlockCall with duplicate arguments.
     int[] dups = bc.hasDuplicateArgs();
     if (dups != null) {
-      // !System.out.print("Found duplicate args pattern ");
-      // !Block.printDups(dups);
-      // !System.out.print(" for blockCall ");
-      // !bc.dump();
-      // !System.out.println();
       BlockCall bc1 = bc.deriveWithDuplicateArgs(dups);
       if (bc1 != null) {
         bc = bc1;
         MILProgram.report("eliminating duplicate args in call within " + b.getId());
-        // !System.out.print("rewriteBlockCall using deriveWithDuplicateArgs: ");
-        // !this.dump();
-        // !System.out.print(" -> ");
-        // !bc.dump();
-        // !System.out.println();
       }
     }
 

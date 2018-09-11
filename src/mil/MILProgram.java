@@ -40,7 +40,6 @@ public class MILProgram {
 
   /** Add an entry point for this program, if it is not already included. */
   public void addEntry(Defn defn) {
-    // !System.out.println("Adding entry for " + defn.getId());
     if (!Defns.isIn(defn, entries)) {
       entries = new Defns(defn, entries);
       defn.setIsEntrypoint(true);
@@ -65,9 +64,6 @@ public class MILProgram {
     if (main != null) {
       defns = main.visitDepends(defns);
     }
-    // ! if (defns==null) {
-    // !   System.out.println("No definitions remain");
-    // ! }
     return defns;
   }
 
@@ -120,7 +116,6 @@ public class MILProgram {
 
   public void typeChecking(Handler handler) throws Failure {
     shake();
-    // ! dump();
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       dsccs.head.inferTypes(handler);
     }
@@ -171,30 +166,14 @@ public class MILProgram {
     count = 1;
     for (int i = 0; i < MAX_OPTIMIZE_PASSES && count > 0; i++) {
       debug.Log.println("-------------------------");
-      // !System.out.println("==================================================");
-      // !System.out.println("Step " + i);
-      // !System.out.println("==================================================");
-      // !dump();
-      // !System.out.println("==================================================");
       count = 0;
       inlining();
       debug.Log.println("Inlining pass finished, running shake.");
       shake();
-      // !System.out.println("Before lift allocators: ==========================");
-      // !dump();
       liftAllocators(); // TODO: Is this the right position for liftAllocators?
-      // !System.out.println("Before eliminateUnusedArgs: ======================");
-      // !dump();
       eliminateUnusedArgs();
       shake();
-      // !System.out.println("Before flow: =====================================");
-      // !dump();
       flow();
-      // !     if (count==0) {   // If no changes so far this iteration, try collect.
-      // !       shake();
-      // !       // collapse();     // TODO: Should we do this every time anyway?
-      // !       collect();
-      // !      }
       debug.Log.println("Flow pass finished, running shake.");
       shake();
       debug.Log.println("Steps performed = " + count);
@@ -340,8 +319,6 @@ public class MILProgram {
   public void cfunRewrite() {
     TypeSet set = new NewtypeTypeSet();
     collect(set);
-    // ! System.out.println("TypeSet after Newtype Removal: ==========");
-    // ! set.dump();
     cfunSimplify();
   }
 
@@ -471,17 +448,6 @@ public class MILProgram {
         ds.head.countCalls();
       }
     }
-    // ! // Display results:
-    // ! System.out.print("CALLED :");
-    // ! for (DefnSCCs dsccs = sccs; dsccs!=null; dsccs=dsccs.next) {
-    // !   for (Defns ds=dsccs.head.getBindings(); ds!=null; ds=ds.next) {
-    // !     int calls = ds.head.getNumberCalls();
-    // !     if (calls>0) {
-    // !       System.out.print(" " + ds.head + "[" + calls + "]");
-    // !     }
-    // !   }
-    // ! }
-    // ! System.out.println();
   }
 
   /** Generate an LLVM implementation of this MIL program. */
@@ -496,7 +462,6 @@ public class MILProgram {
       for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
         CFG cfg = ds.head.makeCFG();
         if (cfg != null) {
-          // !       cfg.display();
           TempSubst s = cfg.paramElim();
           // System.out.println(TempSubst.toString(s));
 

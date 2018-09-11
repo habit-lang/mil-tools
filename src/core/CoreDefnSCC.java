@@ -99,14 +99,7 @@ public class CoreDefnSCC {
     // Calculate size information by collecting and solving corresponding linear equations
     if (eqns != null) { // no equations => no size information to compute and validate
       try {
-        // !     System.out.println("-------------------");
-        // !     CoreDefns.displaySizes(getBindings());
-        // !     System.out.println("Equations to solve:");
-        // !     LinearEqns.display(eqns);
         LinearEqns.solve(eqns);
-        // !     System.out.println("-------------------");
-        // !     CoreDefns.displaySizes(getBindings());
-        // !     System.out.println("===================");
         for (CoreDefns ds = getBindings(); ds != null; ds = ds.next) {
           ds.head.checkSizes();
         }

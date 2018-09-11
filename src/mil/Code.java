@@ -139,8 +139,6 @@ public abstract class Code {
     Temps vs = c.liveness(); // find the free variables
     Temp[] formals = Temps.toArray(vs); // create corresponding formal parameters
     Block b = new Block(BuiltinPosition.pos, formals, c); // TODO: different position?
-    // !System.out.println("The case block is ");
-    // !b.dump();
 
     // Build a closure definition: k{...} v = b[...]
     Tail t = new BlockCall(b, formals);
@@ -149,8 +147,6 @@ public abstract class Code {
             /*pos*/ null, new Temp[] {v}, t); // define a new closure // TODO: fix position
     Temp[] stored = Temps.toArray(v.removeFrom(vs));
     k.setParams(stored); // do not store v in the closure
-    // !System.out.println("The continuation definition is:");
-    // !k.dump();
 
     return new ClosAlloc(k).withArgs(stored);
   }

@@ -172,11 +172,9 @@ public class Block extends Defn {
   protected TVar[] generics = TVar.noTVars;
 
   void generalizeType(Handler handler) throws Failure {
-    // !   debug.Log.println("Generalizing definition for: " + getId());
     if (defining != null) {
       TVars gens = defining.tvars();
       generics = TVar.generics(gens, null);
-      // !     debug.Log.println("generics: " + TVar.show(generics));
       BlockType inferred = defining.generalize(generics);
       debug.Log.println("Inferred " + id + " :: " + inferred);
       if (declared != null && !declared.alphaEquiv(inferred)) {
@@ -258,8 +256,6 @@ public class Block extends Defn {
     Block b = new BlockWithEnter(pos, nps, null);
     derived = new Blocks(b, derived);
     b.code = code.deriveWithEnter(iargs);
-    // !System.out.println("Derived block is:");
-    // !b.dump();
     return b;
   }
 
@@ -291,8 +287,6 @@ public class Block extends Defn {
     Block b = new BlockWithCont(pos, nps, null);
     derived = new Blocks(b, derived);
     b.code = code.deriveWithCont(arg);
-    // !System.out.println("Derived block is:");
-    // !b.dump();
     return b;
   }
 
@@ -310,11 +304,6 @@ public class Block extends Defn {
   }
 
   public Block deriveWithKnownCons(Call[] calls) {
-    // !System.out.println("Looking for derive with Known Cons ");
-    // !Call.dump(calls);
-    // !System.out.println(" for the Block");
-    // !this.dump();
-    // !System.out.println();
 
     // Do not create a specialized version of a simple block (i.e., a block that contains only a
     // single Done):
@@ -322,28 +311,22 @@ public class Block extends Defn {
     // System.out.println("Will not specialize this block: code is a single tail");
     //      return null;
     //  }
-    // !code.dump();
 
     // TODO: this test is disabled, which results in more aggressive inlining that, so
     // far, appears to be a good thing :-)  Consider removing this test completely ... ?
     //  if (this instanceof BlockWithKnownCons) {
-    // !System.out.println("Will not specialize this block: starting point is a derived block");
     //      return null;
     //  }
-
-    // !if (calls!=null) return null; // disable deriveWithKnownCons
 
     // Look to see if we have already derived a suitable version of this block:
     for (Blocks bs = derived; bs != null; bs = bs.next) {
       if (bs.head.hasKnownCons(calls)) {
-        // !System.out.println("Found a previous occurrence");
         // Return pointer to previous occurrence, or decline the request to specialize
         // the block if the original block already has the requested allocator pattern.
         return (this == bs.head) ? null : bs.head;
       }
     }
 
-    // !System.out.println("Generating a new block");
     // Generate a fresh block; unlike the case for trailing Enter, we're only going to create one
     // block here
     // whose code is the same as the original block except that it adds a group of one or more
@@ -367,8 +350,6 @@ public class Block extends Defn {
     b.code = addInitializers(calls, params, tss, code.copy());
     b.flow(); // perform an initial flow analysis to inline initializers.
 
-    // !System.out.println("New deriveWithKnownCons block:");
-    // !b.dump();
     return b;
   }
 
@@ -380,22 +361,15 @@ public class Block extends Defn {
     if (dups == null) {
       debug.Internal.error("null argument for deriveWithDuplicateArgs");
     }
-    // !System.out.print("Looking for derive with Duplicate Arguments ");
-    // !printDups(dups);
-    // !System.out.println(" for the Block");
-    // !this.dump();
-    // !System.out.println();
 
     // Look to see if we have already derived a suitable version of this block:
     for (Blocks bs = derived; bs != null; bs = bs.next) {
       if (bs.head.hasDuplicateArgs(dups)) {
-        // !System.out.println("Found a previous occurrence");
         // Return pointer to previous occurrence:
         return bs.head;
       }
     }
 
-    // !System.out.println("Generating a new block");
     // Count the number of duplicate params to remove so that we can determine
     // how many formal parameters the derived block should have.
     int numDups = 0;
@@ -427,8 +401,6 @@ public class Block extends Defn {
     Block b = new BlockWithDuplicateArgs(pos, nps, code.forceApply(s), dups);
     // TODO: should we set a declared type for b if this block has one?
     derived = new Blocks(b, derived);
-    // !System.out.println("New deriveWithDuplicateArgs block:");
-    // !b.dump();
     return b;
   }
 
@@ -497,15 +469,8 @@ public class Block extends Defn {
 
   /** Apply inlining. */
   public void inlining() {
-    // !System.out.println("==================================");
-    // !System.out.println("Going to try inlining on " + getId());
-    // !dump();
-    // !System.out.println();
     if (isGotoBlock() == null || isEntrypoint) { // TODO: consider replacing with code.isDone()
       code = code.inlining(this);
-      // !System.out.println("And the result is:");
-      // !dump();
-      // !System.out.println();
     }
   }
 
@@ -541,19 +506,11 @@ public class Block extends Defn {
    * included in the specified src Block. A null return indicates that no inlining was performed.
    */
   Code suffixInline(Block src, Atom[] args) {
-    // !System.out.println("Should we inline:");
-    // !dump();
-    // !System.out.println();
-    // !System.out.println("As part of the block:");
-    // !if (src==null) System.out.println("Null block"); else src.dump();
-    // !System.out.println("?");
     if (canSuffixInline(src)) {
-      // !System.out.println("YES");
       MILProgram.report(
           "suffixInline succeeded for call to block " + getId() + " from block " + src.getId());
       return code.apply(TempSubst.extend(params, args, null));
     }
-    // !System.out.println("NO");
     return null;
   }
 
@@ -566,19 +523,11 @@ public class Block extends Defn {
     if (doesntReturn && getScc().isRecursive()) { // Avoid loopy code that doesn't return
       return false;
     } else if (occurs == 1 || code.isDone() != null) { // Inline single occurrences and trivial
-      // !System.out.println("Single occurrence!");
-      // !System.out.println("this block:");
-      // !this.dump();
-      // !System.out.println("src block:");
-      // !src.dump();
-      // !System.out.println("-=-=-=-=-=-");
       return true; // blocks (safe, as a result of removing loops)
     } else if (!this.guarded(src)) { // Don't inline if not guarded.
-      // !System.out.println("Not guarded!");
       return false;
     } else {
       int n = code.suffixInlineLength(0); // Inline code blocks that are short
-      // !System.out.println("inline length = " + n);
       return n > 0 && n <= INLINE_LINES_LIMIT;
     }
   }
@@ -738,8 +687,6 @@ public class Block extends Defn {
    * destinations (specifically, the formal parameters of a Block or a ClosureDefn).
    */
   Temp[] removeUnusedTemps(Temp[] dsts) {
-    // ! System.out.println("In " + getId() + ": numUsedArgs=" + numUsedArgs + ", dsts.length=" +
-    // dsts.length);
     if (!isEntrypoint && numUsedArgs < dsts.length) { // Found some new, unused args
       Temp[] newTemps = new Temp[numUsedArgs];
       int j = 0;
@@ -1021,7 +968,6 @@ public class Block extends Defn {
    * each subsequent call.
    */
   Temp[] addArgs() throws Failure {
-    // !   System.out.println("In Block " + getId());
     if (params == null) { // compute formal params on first visit
       params = Temps.toArray(code.addArgs());
     }

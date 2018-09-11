@@ -134,9 +134,6 @@ public class Done extends Code {
    * performed, and declining to pursue further inlining at this node once the limit reaches zero.
    */
   Code inlining(Block src, int limit) {
-    // !System.out.print("Got down to Done (limit "+limit+"): ");
-    // !t.dump();
-    // !System.out.println();
     BlockCall bc = t.bypassGotoBlockCall();
     if (bc != null) {
       t = bc;
@@ -144,11 +141,8 @@ public class Done extends Code {
     if (limit > 0) { // Is this an opportunity for suffix inlining?
       Code ic = t.suffixInline(src);
       if (ic != null) {
-        // !System.out.println("Immediate result of suffix inlining was:");
-        // !ic.dump();
         return ic.inlining(src, limit - 1);
       }
-      // !System.out.println("could not inline here");
     }
     return this;
   }
@@ -217,14 +211,7 @@ public class Done extends Code {
   /** Optimize a Code block using a simple flow analysis. */
   public Code flow(Facts facts, TempSubst s) {
     t = t.apply(s);
-    // !System.out.println("At Done, before rewrite");
     Code nc = t.rewrite(facts);
-    // !System.out.println("At Done, with code");
-    // !if (nc==null) {
-    // !  System.out.print("  null, so keeping "); t.dump(); System.out.println();
-    // !} else {
-    // !  nc.dump();
-    // !}
     return (nc == null) ? this : nc.flow(facts, s);
   }
 

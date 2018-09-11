@@ -53,7 +53,6 @@ abstract class Label extends Node {
    * arguments from the specified source node, src:
    */
   void calledFrom(Node src, Atom[] args) {
-    // ! System.out.println(src.label() + " --> " + this.label() + "[" + Atom.toString(args) + "]");
     this.preds = new PredNodes(src, args, this.preds);
   }
 

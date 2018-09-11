@@ -182,14 +182,9 @@ public class Case extends Code {
    */
   public Code casesOn(Temp v, BlockCall bc) {
     if (a == v && bc.contCand()) {
-      // !System.out.println("We can use a cases optimization here ... !");
-      // !dump();
       // Construct a continuation for the derived block:
       Tail cont = makeCont(v);
       Temp w = new Temp();
-      // !System.out.print("The continuation is ");
-      // !cont.dump();
-      // !System.out.println();
 
       // Replace original code with call to a new derived block:
       return new Bind(w, cont, new Done(bc.deriveWithCont(w)));

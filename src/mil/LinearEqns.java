@@ -46,17 +46,13 @@ public class LinearEqns {
   public static void solve(LinearEqns eqns) throws Failure {
     LinearEqns deferred = null; // The list of equations that we were not able to solve immediately
     while (eqns != null) {
-      // !   System.out.println("Trying to solve equations:");
-      // !   LinearEqns.display(eqns);
       LinearEqn eqn = eqns.head;
       if (eqn.solved()) { // If we can solve this equation immediately, then skip it
-        // !     System.out.println("Moving on to remaining equations");
         eqns = eqns.next;
       } else { // Otherwise, defer this equation after eliminating its first variable
         LinearEqns es = eqns.next; // from all of the remaining equations
         eqns.next = deferred;
         deferred = eqns;
-        // !     System.out.println("Eliminating references to " + eqn.lhs.t);
         for (eqns = es; es != null; es = es.next) {
           es.head.elimVar(eqn);
         }

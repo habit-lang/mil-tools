@@ -146,31 +146,19 @@ public abstract class Defn {
   Defns visitDepends(Defns defns) {
     if (visitNum == dfsNum) { // Repeat visit to this Defn?
       occurs++;
-      // !System.out.println(getId() + " has now occurred " + occurs + " times");
     } else { // First time at this Defn
       // Mark this Defn as visited, and initialize fields
       visitNum = dfsNum;
       occurs = 1;
-      // !System.out.println("First occurrence of " + getId());
       scc = null;
       callers = null;
       callees = null;
 
       // Find immediate dependencies
       Defns deps = dependencies();
-      // !System.out.println("------------");
-      // !dump();
-      // !System.out.print("DEPENDS ON: ");
-      // !String msg = "";
-      // !for (Defns ds = deps; ds!=null; ds=ds.next) {
-      // !  System.out.print(msg); msg = ", ";
-      // !  System.out.print(ds.head.getId());
-      // !}
-      // !System.out.println();
 
       // Visit all the immediate dependencies
       for (; deps != null; deps = deps.next) {
-        // !System.out.println("Adjacency: " + getId() + " -> " + deps.head.getId());
         defns = deps.head.visitDepends(defns);
         if (!Defns.isIn(deps.head, callees)) {
           callees = new Defns(deps.head, callees);
@@ -289,14 +277,11 @@ public abstract class Defn {
       if (calls[i] != null) {
         Allocator alloc = calls[i].isAllocator();
         if (alloc != null) {
-          // !System.out.print("Allocator: "); alloc.dump();
           Cfun cf = alloc.cfunNoArgs();
           if (cf != null) {
-            // !System.out.println(" cfun = " + cf.getId());
             code = new Assert(params[i], cf, code);
           } else {
             TopLevel tl = alloc.getTopLevel();
-            // !System.out.println(" " +(tl!=null ? (tl.getId()) : "null"));
             // We are only matching on the outermost constructor in each allocator, so we should
             // only use the
             // top-level version if there are no arguments.  This still works nicely for examples
@@ -384,9 +369,6 @@ public abstract class Defn {
         if (a != null) {
           DefnSCC scc = getScc(); // ... in a call to a non-recursive Defn
           if (scc != null && !scc.isRecursive()) {
-            // !System.out.println("Known argument " + a + " in call to: ");
-            // !this.dump();
-            // !System.out.println();
             if (calls == null) {
               calls = new Call[l];
             }

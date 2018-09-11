@@ -58,7 +58,6 @@ public class ExternalDefn extends CoreDefn {
   public void addToMILEnv(Handler handler, MILEnv milenv) {
     try {
       Scheme scheme = texp.toScheme(milenv.getTyconEnv());
-      // !   debug.Log.println("External declaration with scheme: " + scheme);
       for (int i = 0; i < extids.length; i++) {
         Top ext = new TopExt(extids[i].toExternal(milenv, scheme));
         if (milenv.addTop(ext.getId(), ext) != null) {

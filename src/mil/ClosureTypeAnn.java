@@ -44,7 +44,6 @@ class ClosureTypeAnn extends TypeAnn {
    */
   void addTo(MILEnv milenv) throws Failure { // ids :: {stored} type
     allocType = AllocType.validate(milenv.getTyconEnv(), stored, type);
-    // ! debug.Log.println("Closure type annotation with alloctype: " + allocType);
   }
 
   /**

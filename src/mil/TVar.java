@@ -198,7 +198,6 @@ public final class TVar extends TInd {
       } else if (!t.calcKind(tenv).same(tyvar.getKind())) {
         throw new KindMismatchException(tyvar.getKind(), t, tenv);
       } else {
-        // !System.out.println("binding: " + this + " := " + t.skeleton(tenv));
         bound = t;
         boundenv = tenv;
       }

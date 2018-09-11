@@ -77,7 +77,6 @@ class EField extends Name {
       throw new Failure(
           pos, "Constructor " + cf + " does not include a field with label \"" + id + "\"");
     }
-    // !System.out.println("Found field \"" + id + "\" at position " + p);
     e.checkType(tis, lfields[p].getType());
     return p;
   }

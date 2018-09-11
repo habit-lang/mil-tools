@@ -41,7 +41,6 @@ class TopTypeAnn extends TypeAnn {
    */
   void addTo(MILEnv milenv) throws Failure { // ids :: type
     scheme = type.toScheme(milenv.getTyconEnv());
-    // ! debug.Log.println("Type annotation with scheme: " + scheme);
   }
 
   /**

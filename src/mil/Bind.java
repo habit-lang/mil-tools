@@ -187,27 +187,11 @@ public class Bind extends Code {
       Code nc;
       if ((nc = c.enters(vs, bc)) != null) {
         MILProgram.report("pushed enter into call in " + src.getId());
-        // !System.out.println("Transformed code:");
-        // !this.dump();
-        // !System.out.println();
-        // !System.out.println("Transformed code:");
-        // !nc.dump();
-        // !System.out.println();
         return nc;
       } else if ((nc = c.casesOn(vs, bc)) != null) {
-        // !System.out.println("casesOn for:");
-        // !this.dump();
         MILProgram.report("pushed case into call in " + src.getId());
-        // !System.out.println("New code is:");
-        // !nc.dump();
-        // !System.out.println();
         return nc;
       }
-      // !      if ((nc = c.appliesTo(v, bc))!=null) {
-      // ! IN PROGRESS:
-      // !System.out.println("We could have used deriveWithCont here!");
-      // !dump();
-      // !      }
 
       t = bc.inlineBlockCall();
     }
@@ -326,26 +310,16 @@ public class Bind extends Code {
     if (as != null) {
       MILProgram.report(
           "applied left monad law for " + Atom.toString(vs) + " <- return " + Atom.toString(as));
-      // !System.out.println("Skipping a return");
       return c.flow(facts, TempSubst.extend(vs, as, s));
     }
 
     // Look for opportunities to rewrite this tail, perhaps using previous results
-    // !System.out.print("Looking for ways to rewrite tail "); t.dump(); System.out.println();
     Code nc = t.rewrite(facts); // Look for ways to rewrite the tail
-    // !System.out.println("In Bind, result was null: " + (nc==null));
     if (nc != null) {
-      // !System.out.println("Rewriting a tail");
-      // !nc.dump();
-      // !System.out.println("Expanded");
-      // !Code nc1 = nc.andThen(vs, c);
-      // !nc1.dump();
-      // !return nc1.flow(facts, s);
       return nc.andThen(vs, c).flow(facts, s);
     }
 
     // Propagate analysis to the following code, updating facts as necessary.
-    // !System.out.println("Propagating analysis");
     for (int i = 0; i < vs.length; i++) { // Kill any facts for the bound variables
       facts = vs[i].kills(facts);
     }

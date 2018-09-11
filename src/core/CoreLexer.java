@@ -31,7 +31,6 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
   public CoreLexer(Handler handler, Source source) {
     super(handler, source);
     reserved = new HashMap<String, Integer>();
-    // !System.out.println("Reading from " + source.describe());
     reserved.put("=", new Integer(EQ));
     reserved.put("::", new Integer(COCO));
     reserved.put("|", new Integer(BAR));
@@ -144,11 +143,6 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
 
   /** Read the next token and return the corresponding integer code. */
   public int nextToken() {
-    // !int foo = hidden();
-    // !System.out.println("Token = " + foo);
-    // !return foo;
-    // !}
-    // !public int hidden() {
     for (; ; ) {
       skipWhitespace();
       markPosition();

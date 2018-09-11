@@ -198,8 +198,6 @@ public class LinearEqn {
       if (rhs.signum() != 0) {
         throw new WidthsDifferFailure(pos, rhs);
       }
-      // !   System.out.println("The equation " + this + " is solved because lhs is empty, rhs is
-      // zero");
       return true;
     } else if (lhs.next == null) { // If lhs has exactly one variable, find its value:
       if (lhs.coeff.signum() < 0) {
@@ -210,8 +208,6 @@ public class LinearEqn {
       if (dr[1].signum() != 0 || dr[0].signum() < 0) {
         throw new CannotSatisfyFailure(this);
       }
-      // !   System.out.println("The equation " + this + " is solved by setting " + lhs.t + " to " +
-      // dr[0]);
       lhs.t.bindNat(dr[0]);
       return true;
     }
@@ -235,20 +231,15 @@ public class LinearEqn {
       c = c.divide(g); // ... scale the two coefficients,
       d = d.divide(g); // ... and negate the second
 
-      // !   System.out.print("Scaling " + this + " by " + c + " gives ");
       rhs = rhs.multiply(c); // scale this equation by c
       for (Terms ts = lhs; ts != null; ts = ts.next) {
         ts.coeff = ts.coeff.multiply(c);
       }
-      // !   System.out.println(this.toString());
-      // !   System.out.print("Meanwhile, eqn is " + eqn + " and subtracting that, scaling by " +
-      // d);
       addConst(eqn.rhs.multiply(d)); // subtract a version of eqn scaled by d
       d = d.negate();
       for (Terms ts = eqn.lhs; ts != null; ts = ts.next) {
         addTerm(ts.coeff.multiply(d), ts.t, ts.hint);
       }
-      // !   System.out.println(" gives " + this);
     }
   }
 

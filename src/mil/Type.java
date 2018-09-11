@@ -275,7 +275,6 @@ public abstract class Type extends Scheme {
 
   /** Unify two types with empty type environments. (i.e., no free generic type variables.) */
   public void unify(Position pos, Type that) throws Failure {
-    // ! System.out.println("Attempting to unify " + this + " with " + that);
     unify(pos, null, that, null);
   }
 

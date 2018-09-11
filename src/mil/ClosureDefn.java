@@ -181,11 +181,9 @@ public class ClosureDefn extends Defn {
   protected TVar[] generics = TVar.noTVars;
 
   void generalizeType(Handler handler) throws Failure {
-    // !   debug.Log.println("Generalizing definition for: " + getId());
     if (defining != null) {
       TVars gens = defining.tvars();
       generics = TVar.generics(gens, null);
-      // !     debug.Log.println("generics: " + TVar.show(generics));
       AllocType inferred = defining.generalize(generics);
       debug.Log.println("Inferred " + id + " :: " + inferred);
       if (declared != null && !declared.alphaEquiv(inferred)) {
@@ -242,23 +240,15 @@ public class ClosureDefn extends Defn {
   private ClosureDefns derived = null;
 
   public ClosureDefn deriveWithKnownCons(Call[] calls) {
-    // !System.out.println("Looking for derived ClosureDefn with Known Cons ");
-    // !Call.dump(calls);
-    // !System.out.println(" for the Block");
-    // !this.dump();
-    // !System.out.println();
     // Look to see if we have already derived a suitable version of this ClosureDefn:
     for (ClosureDefns cs = derived; cs != null; cs = cs.next) {
       if (cs.head.hasKnownCons(calls)) {
-        // !System.out.println("Found an existing, suitably specialized occurrence of this
-        // ClosureDefn");
         // Return pointer to previous occurrence, or decline the request to specialize
         // if the original closure definition already has the requested allocator pattern.
         return (this == cs.head) ? null : cs.head;
       }
     }
 
-    // !System.out.println("Generating a new closure definition");
     // Given this closure definition, this{params} [args] = t, we want to be able to replace a
     // closure allocation
     // for this and a set of known constructors specified by calls[] with corresponding allocations
@@ -308,14 +298,7 @@ public class ClosureDefn extends Defn {
 
   /** Apply inlining. */
   public void inlining() {
-    // !  System.out.println("==================================");
-    // !  System.out.println("Going to try inlining on:");
-    // !  dump();
-    // !  System.out.println();
     tail = tail.inlineTail();
-    // !  System.out.println("And the result is:");
-    // !  dump();
-    // !  System.out.println();
   }
 
   void liftAllocators() {
@@ -430,8 +413,6 @@ public class ClosureDefn extends Defn {
    * destinations (specifically, the formal parameters of a Block or a ClosureDefn).
    */
   Temp[] removeUnusedTemps(Temp[] dsts) {
-    // ! System.out.println("In " + getId() + ": numUsedArgs=" + numUsedArgs + ", dsts.length=" +
-    // dsts.length);
     if (!isEntrypoint && numUsedArgs < dsts.length) { // Found some new, unused args
       Temp[] newTemps = new Temp[numUsedArgs];
       int j = 0;
@@ -697,7 +678,6 @@ public class ClosureDefn extends Defn {
    * each subsequent call.
    */
   Temp[] addArgs() throws Failure {
-    // !   System.out.println("In ClosureDefn " + getId());
     if (params == null) { // compute stored params on first visit
       Temps as = tail.addArgs(null);
       for (int i = 0; i < args.length; i++) {

@@ -405,7 +405,6 @@ public class Machine {
     try {
       for (; ; ) {
         instrCount++;
-        // !     out.println("pc = " + pc + ", val=" + (val==null ? "null" : val.toString()));
         switch (prog[pc]) {
           case STOP: // STOP:  Terminate execution.
             return;

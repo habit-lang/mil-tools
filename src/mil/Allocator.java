@@ -38,8 +38,6 @@ public abstract class Allocator extends Call {
         return this;
       }
     }
-    // !System.out.print("The allocator "); this.dump();
-    // !System.out.println(" is static.");
     TopLevel topLevel = new TopLevel(/*pos*/ null, new TopLhs(), this); // TODO: fix position.
     MILProgram.report("lifting static allocator to top-level " + topLevel);
     return new Return(new TopDef(topLevel, 0));
@@ -63,9 +61,6 @@ public abstract class Allocator extends Call {
   }
 
   public Tail lookupFact(TopLevel tl) {
-    // !System.out.print("REGISTER ");
-    // !this.dump();
-    // !System.out.println(" for " + top);
     this.tl = tl;
     return this;
   }

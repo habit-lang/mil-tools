@@ -56,7 +56,6 @@ public class CoreProgram {
 
     // Step 4: Compute SCCs.
     CoreDefnSCCs sccs = CoreDefns.scc(coreDefns);
-    // ! CoreDefnSCCs.display("CoreDefns", sccs);
 
     // Step 5: Perform kind inference.
     for (CoreDefnSCCs ss = sccs; ss != null; ss = ss.next) {

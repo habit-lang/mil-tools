@@ -114,7 +114,6 @@ public class DataDefn extends TyconDefn {
 
     // Store the resulting list of constructor functions:
     dt.setCfuns(cfuns);
-    // ! System.out.println(id + " is newtype? " + dt.isNewtype());
   }
 
   public void addToMILEnv(Handler handler, MILEnv milenv) {

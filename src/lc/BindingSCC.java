@@ -119,12 +119,10 @@ public class BindingSCC {
       BindingSCC scc = sccs.head;
       if (scc.isRecursive()) {
         Bindings bindings = scc.getBindings();
-        // !     System.out.print("Binding group for ");
 
         // Union the free variables for each binding
         DefVars fvs = null;
         for (Bindings bs = bindings; bs != null; bs = bs.next) {
-          // !       System.out.print(" " + bs.head.getId());
           fvs = bs.head.checkSafeToRecurse(handler, fvs);
         }
 
@@ -133,7 +131,6 @@ public class BindingSCC {
           fvs = bs.head.remove(fvs);
         }
         scc.fvs = fvs;
-        // !     System.out.println(", free variables " + DefVars.toString(fvs));
       }
     }
   }

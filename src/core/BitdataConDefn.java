@@ -58,7 +58,6 @@ class BitdataConDefn extends Name {
     for (int i = 0; i < regexps.length; i++) { // Add terms for the other regions
       regexps[i].addTermTo(eqn);
     }
-    // ! System.out.println("Equation for " + id + " is " + eqn);
     return eqn;
   }
 

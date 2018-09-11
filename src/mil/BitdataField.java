@@ -332,7 +332,6 @@ public class BitdataField extends Name {
     int j = (e - 1) / wordsize - (n - 1); // offset from output to input
 
     for (int i = 0; i < n; i++) {
-      // !System.out.println("i="+i+", n="+n+", w="+w+", e="+e+", o="+o+", j="+j);
       if (o == 0) {
         code =
             (i > 0 || w == 0)
@@ -379,25 +378,17 @@ public class BitdataField extends Name {
       if (q < wordsize) {
         himask &= (1L << q) - 1;
       }
-      // !System.out.println("field " + id + ", j=" + j + ", o=" + o + ", e=" + e +
-      // !                   ", k=" + k + ", p=" + p + ", q=" + q +
-      // !                   ", lomask=0x" + Long.toHexString(lomask) +
-      // !                   ", himask=0x" + Long.toHexString(himask));
 
       if (j == k) {
-        // !System.out.println("hi and lo mask words coincide");
-        // !System.out.println("combined mask is 0x" + Integer.toHexString(lomask | himask));
         code = prim(ws, j, Prim.and, new Word(lomask | himask), code);
       } else {
         if (o != 0) {
-          // !System.out.println("lo mask for word " + j + " is 0x" + Integer.toHexString(lomask));
           code = prim(ws, j, Prim.and, new Word(lomask), code);
         }
         for (int i = j + 1; i < k; i++) {
           code = copy(ws, i, Word.Zero, code);
         }
         if (p != 0) {
-          // !System.out.println("hi mask for word " + k + " is 0x" + Integer.toHexString(himask));
           code = prim(ws, k, Prim.and, new Word(himask), code);
         }
       }
