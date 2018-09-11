@@ -258,7 +258,7 @@ public class Enter extends Call {
    * Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. Set
    * isTail to true if the code sequence c is an immediate ret void instruction.
    */
-  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Code c) {
+  llvm.Code toLLVMBindVoid(LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Code c) {
     llvm.Value[] acts = closureActuals(lm, vm, s); // actual parameters
     llvm.Local cptr = vm.reg(lm.toLLVM(ftype)); // a register to hold the code pointer
     return enterCode(vm, acts[0], cptr, new llvm.CallVoid(isTail, cptr, acts, c));
@@ -269,7 +269,7 @@ public class Enter extends Call {
    * Set isTail to true if the code sequence c will immediately return the value in the specified
    * lhs.
    */
-  llvm.Code toLLVMContBind(
+  llvm.Code toLLVMBindCont(
       LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Local lhs, llvm.Code c) {
     llvm.Value[] acts = closureActuals(lm, vm, s); // actual parameters
     llvm.Local cptr = vm.reg(lm.codePtrType(ftype)); // a register to hold the code pointer

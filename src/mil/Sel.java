@@ -274,7 +274,7 @@ public class Sel extends Tail {
    * Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. Set
    * isTail to true if the code sequence c is an immediate ret void instruction.
    */
-  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Code c) {
+  llvm.Code toLLVMBindVoid(LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Code c) {
     debug.Internal.error("Sel does not return void");
     return c;
   }
@@ -284,7 +284,7 @@ public class Sel extends Tail {
    * Set isTail to true if the code sequence c will immediately return the value in the specified
    * lhs.
    */
-  llvm.Code toLLVMContBind(
+  llvm.Code toLLVMBindCont(
       LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Local lhs, llvm.Code c) { // cf n a
     llvm.Type objt = lm.cfunLayoutType(this.cf).ptr();
     llvm.Local base = vm.reg(objt); // register to hold a pointer to a structure for cfun this.cf

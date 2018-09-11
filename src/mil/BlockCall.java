@@ -460,7 +460,7 @@ public class BlockCall extends Call {
     return cfg.edge(src, b, Atom.nonUnits(args));
   }
 
-  /** Generate LLVM code to execute this Tail in tail call position. */
+  /** Generate LLVM code to execute this Tail in tail call position (i.e., as part of a Done). */
   llvm.Code toLLVMDone(LLVMMap lm, VarMap vm, TempSubst s, Label[] succs) {
     // We allow for a null/empty list of successors to handle the possibility of a BlockCall at the
     // end of the main function.
@@ -473,7 +473,7 @@ public class BlockCall extends Call {
    * Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. Set
    * isTail to true if the code sequence c is an immediate ret void instruction.
    */
-  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Code c) {
+  llvm.Code toLLVMBindVoid(LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Code c) {
     return new llvm.CallVoid(isTail, lm.globalFor(b), Atom.toLLVMValues(lm, vm, s, args), c);
   }
 
@@ -482,7 +482,7 @@ public class BlockCall extends Call {
    * Set isTail to true if the code sequence c will immediately return the value in the specified
    * lhs.
    */
-  llvm.Code toLLVMContBind(
+  llvm.Code toLLVMBindCont(
       LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Local lhs, llvm.Code c) {
     return new llvm.Op(
         lhs,

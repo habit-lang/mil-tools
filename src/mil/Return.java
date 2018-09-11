@@ -209,7 +209,16 @@ public class Return extends Call {
     return vals;
   }
 
-  /** Generate LLVM code to execute this Tail in tail call position. */
+  /**
+   * Generate LLVM code for a Bind of the form (vs <- this; c). The isTail parameter should only be
+   * true if c is return vs.
+   */
+  llvm.Code toLLVMBind(
+      LLVMMap lm, VarMap vm, TempSubst s, Temp[] vs, boolean isTail, Code c, Label[] succs) {
+    return c.toLLVMCode(lm, vm, TempSubst.extend(vs, args, s), succs);
+  }
+
+  /** Generate LLVM code to execute this Tail in tail call position (i.e., as part of a Done). */
   llvm.Code toLLVMDone(LLVMMap lm, VarMap vm, TempSubst s, Label[] succs) {
     Atom[] nuargs = Atom.nonUnits(args);
     if (nuargs.length == 0) {
@@ -229,7 +238,7 @@ public class Return extends Call {
    * Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. Set
    * isTail to true if the code sequence c is an immediate ret void instruction.
    */
-  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Code c) {
+  llvm.Code toLLVMBindVoid(LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Code c) {
     debug.Internal.error("A void Return should have been eliminated");
     return c; // Although this return value is actually correct for [] <- return []; c ...
   }
@@ -239,7 +248,7 @@ public class Return extends Call {
    * Set isTail to true if the code sequence c will immediately return the value in the specified
    * lhs.
    */
-  llvm.Code toLLVMContBind(
+  llvm.Code toLLVMBindCont(
       LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Local lhs, llvm.Code c) {
     debug.Internal.error("Return should have been eliminated");
     return c;
@@ -252,8 +261,9 @@ public class Return extends Call {
   llvm.Code revInitTail(LLVMMap lm, InitVarMap ivm, TopLevel tl, TopLhs[] lhs, llvm.Code code) {
     // This is a special case for TopLevels that have a return expression for their tail
     // (essentially copying another
-    // value that is defined at the top-level); we cannot use toLLVMContVoid() or toLLVMCont() in
-    // this case.
+    // value that is defined at the top-level); we cannot use toLLVMBindVoid(), toLLVMBindCont(), or
+    // toLLVMBindTail()
+    // in this case.
     return tl.initLLVMTopLhs(lm, ivm, args, code);
   }
 }

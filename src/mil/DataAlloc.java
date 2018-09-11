@@ -212,7 +212,7 @@ public class DataAlloc extends Allocator {
    * Generate LLVM code to execute this Tail with NO result from the right hand side of a Bind. Set
    * isTail to true if the code sequence c is an immediate ret void instruction.
    */
-  llvm.Code toLLVMContVoid(LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Code c) {
+  llvm.Code toLLVMBindVoid(LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Code c) {
     if (cf != Cfun.Unit) {
       debug.Internal.error("DataAlloc does not return void");
     }
@@ -224,7 +224,7 @@ public class DataAlloc extends Allocator {
    * Set isTail to true if the code sequence c will immediately return the value in the specified
    * lhs.
    */
-  llvm.Code toLLVMContBind(
+  llvm.Code toLLVMBindCont(
       LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Local lhs, llvm.Code c) {
     llvm.Type objt = lm.cfunLayoutType(cf).ptr(); // type of a pointer to a cf object
     llvm.Local obj = vm.reg(objt); // a register to point to the new object
