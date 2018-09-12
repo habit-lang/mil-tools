@@ -171,7 +171,7 @@ public class TypeSet {
   private Type findMatch(int args, Types ts) {
     for (; ts != null; ts = ts.next) {
       if (ts.head.matches(this, args)) {
-        sp -= args; // remove arguments
+        drop(args); // remove arguments
         return ts.head; // and return canonical version
       }
     }

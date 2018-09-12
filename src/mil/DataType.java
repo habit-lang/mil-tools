@@ -74,7 +74,11 @@ public class DataType extends DataName {
       out.println();
       for (int i = 0; i < cfuns.length; i++) {
         out.print((i == 0) ? "  = " : "  | ");
-        cfuns[i].dump(out, head);
+        if (cfuns[i] == null) {
+          out.println("...");
+        } else {
+          cfuns[i].dump(out, head);
+        }
       }
       out.println();
     }
