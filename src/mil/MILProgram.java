@@ -362,7 +362,11 @@ public class MILProgram {
     }
   }
 
-  public void bitdataRewrite(DataTypes cands) {
+  public void bitdataRewrite() {
+    TypeSet set = new TypeSet();
+    collect(set);
+    set.removeUnusedCfuns();
+    DataTypes cands = set.bitdataCandidates();
     if (cands != null) {
       BitdataMap m = new BitdataMap();
       if (m.addMappings(cands) > 0) { // If any mappings were found, then rewrite the program
@@ -372,6 +376,7 @@ public class MILProgram {
           }
         }
         collect(m); // Update types and any constructors/datatypes/etc. that were not rewritten
+        m.removeUnusedCfuns();
       }
     }
   }

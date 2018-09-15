@@ -47,7 +47,7 @@ class Main {
     System.err.println("                        c = cfun rewrite");
     System.err.println("                        o = optimizer");
     System.err.println("                        s = specialization (eliminate polymorphism)");
-    System.err.println("                        b = bitdata generation (immediately after s)");
+    System.err.println("                        b = bitdata generation");
     System.err.println(
         "                        r = representation transformation (requires earlier s)");
     System.err.println("         -m[filename]   mil code");
@@ -303,13 +303,11 @@ class Main {
 
         case 'b': // Bitdata generation
           message("Running bitdata generation ...");
-          if (i == 0 || passes.charAt(i - 1) != 's') {
-            throw new Failure(
-                "Bitdata generation can only be used immediately after a specialization pass");
-          }
-          mil.bitdataRewrite(spec.bitdataCandidates());
+          mil.bitdataRewrite();
           optimized = false;
-          External.setBitdataRepresentations();
+          if (spec != null) {
+            External.setBitdataRepresentations();
+          }
           break;
 
         case 'r': // Representation transformation
