@@ -401,7 +401,7 @@ public class MILProgram {
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       // Rewrite the left hand side of any top level definitions in this SCC:
       for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
-        ds.head.topLevelrepTransform(handler, set);
+        ds.head.topLevelRepTransform(handler, set);
       }
 
       // Rewrite the remaining portions of any definitions in this SCC:

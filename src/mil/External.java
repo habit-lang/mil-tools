@@ -257,7 +257,7 @@ public class External extends TopDefn {
     /* Nothing to do here */
   }
 
-  void topLevelrepTransform(Handler handler, RepTypeSet set) {
+  void topLevelRepTransform(Handler handler, RepTypeSet set) {
     declared = declared.canonType(set);
     debug.Log.println("Determining representation for external " + id + " :: " + declared);
     Type[] r = declared.repCalc();

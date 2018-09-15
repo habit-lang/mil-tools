@@ -273,7 +273,7 @@ public class Area extends TopDefn {
     /* Nothing to do here */
   }
 
-  void topLevelrepTransform(Handler handler, RepTypeSet set) {
+  void topLevelRepTransform(Handler handler, RepTypeSet set) {
     declared = Tycon.word.asType();
   }
 
