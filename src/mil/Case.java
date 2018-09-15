@@ -436,6 +436,7 @@ public class Case extends Code {
         MILProgram.report("eliminating case on single constructor type");
         return new Done(alts[0].getBlockCall());
       }
+      // TODO: if count==0, then we could introduce a halt(()) for unreachable code ...
       def = null; // Eliminate the default case
     } else if (count == used.length - 1 && def != null) {
       // Promote a default to a regular alternative for better flow results:

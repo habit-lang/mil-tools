@@ -207,6 +207,14 @@ public class Cfun extends Name {
     return dn.isSingleConstructor();
   }
 
+  /**
+   * Determine if this is a singleton type (i.e., a type with only one value), in which case we will
+   * use the Unit type to provide a representation.
+   */
+  boolean isSingleton() {
+    return dn.isSingleton();
+  }
+
   private static int count = 0;
 
   Cfun specialize(MILSpec spec, DataType newDt, Type inst) {
@@ -301,14 +309,6 @@ public class Cfun extends Name {
    */
   int repOffset(int n) {
     return allocType.repOffset(n);
-  }
-
-  /**
-   * Translate an occurence of a constructor function for a singleton type into a reference to the
-   * Unit type; in all other cases, just return the orginal constructor.
-   */
-  Cfun repCfun() {
-    return (dn.isSingleton()) ? Cfun.Unit : this;
   }
 
   /** Returns the LLVM type for value that is returned by a function. */

@@ -274,7 +274,7 @@ public class Assert extends Code {
   }
 
   Code repTransform(RepTypeSet set, RepEnv env) {
-    return cf.repCfun().repTransformAssert(set, a, c.repTransform(set, env));
+    return cf.repTransformAssert(set, a, c.repTransform(set, env));
   }
 
   /** Find the argument variables that are used in this Code sequence. */

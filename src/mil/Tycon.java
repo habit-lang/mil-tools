@@ -223,6 +223,14 @@ public abstract class Tycon extends Name {
     return null;
   }
 
+  /**
+   * Determine if this is a singleton type (i.e., a type with only one value), in which case we will
+   * use the Unit type to provide a representation.
+   */
+  boolean isSingleton() {
+    return false;
+  }
+
   Type specializeTycon(MILSpec spec, Type inst) {
     return inst;
   }
@@ -257,7 +265,7 @@ public abstract class Tycon extends Name {
 
   /** Return the representation vector for values of this type. */
   Type[] repCalc() { // Singleton types are all represented by the Unit type
-    return (this == addr) ? Tycon.wordRep : isSingleton() ? Tycon.unitRep : null;
+    return (this == addr) ? Tycon.wordRep : null;
   }
 
   /**
@@ -279,14 +287,6 @@ public abstract class Tycon extends Name {
    */
   Type[] bitdataTyconRep2(Type a, Type b) {
     return (this == aref || this == aptr) ? Tycon.wordRep : null;
-  }
-
-  /**
-   * Determine if this is a singleton type (i.e., a type with only one value), in which case we will
-   * use the Unit type to provide a representation.
-   */
-  boolean isSingleton() {
-    return false;
   }
 
   /**

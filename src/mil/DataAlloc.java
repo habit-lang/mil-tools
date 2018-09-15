@@ -174,6 +174,8 @@ public class DataAlloc extends Allocator {
         debug.Internal.error("newtype constructor with arity!=1");
       }
       return new Return(args[0]); // and generate a Return instead
+    } else if (cf.isSingleton() && cf != Cfun.Unit) { // Look for a use of a singleton constructor
+      return new DataAlloc(Cfun.Unit).withArgs();
     }
     return this;
   }
@@ -196,7 +198,7 @@ public class DataAlloc extends Allocator {
   }
 
   Tail repTransform(RepTypeSet set, RepEnv env) {
-    return cf.repCfun().repTransformDataAlloc(set, Atom.repArgs(set, env, args));
+    return cf.repTransformDataAlloc(set, Atom.repArgs(set, env, args));
   }
 
   /**

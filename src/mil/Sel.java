@@ -234,6 +234,7 @@ public class Sel extends Tail {
       }
       return new Return(a);
     }
+    // No point looking for a selector of a singleton type because they do not have any fields.
     return this;
   }
 
@@ -255,7 +256,7 @@ public class Sel extends Tail {
   }
 
   Tail repTransform(RepTypeSet set, RepEnv env) {
-    return cf.repCfun().repTransformSel(set, env, n, a);
+    return cf.repTransformSel(set, env, n, a);
   }
 
   /**
@@ -267,7 +268,7 @@ public class Sel extends Tail {
    * bitdata names or layouts, neither of which require this special treatment.
    */
   Code repTransform(RepTypeSet set, RepEnv env, Temp[] vs, Code c) {
-    return cf.repCfun().repTransformSel(set, env, vs, n, a, c);
+    return cf.repTransformSel(set, env, vs, n, a, c);
   }
 
   /**
