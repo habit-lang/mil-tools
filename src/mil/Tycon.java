@@ -213,10 +213,6 @@ public abstract class Tycon extends Name {
     return this;
   }
 
-  void removeUnusedCfuns() {
-    /* default is to do nothing */
-  }
-
   /**
    * Attempt to translate a type with this type constructor at its head and some number of arguments
    * on the stack to eliminate newtypes. This will only succeed if the head is a newtype constructor

@@ -74,40 +74,33 @@ public class DataType extends DataName {
       out.println();
       for (int i = 0; i < cfuns.length; i++) {
         out.print((i == 0) ? "  = " : "  | ");
-        if (cfuns[i] == null) {
-          out.println("...");
-        } else {
-          cfuns[i].dump(out, head);
-        }
+        cfuns[i].dump(out, head);
       }
       out.println();
     }
   }
 
   DataName canonDataName(TypeSet set) {
-    if (cfuns == null) {
-      debug.Internal.error("Datatype " + this + " has null cfuns");
+    DataName dn = set.getDataName(this);
+    if (dn != null) { // already mapped?
+      return dn;
+    } else if (set.containsTycon(this)) { // already in the target?
       return this;
-    } else {
-      DataName dn = set.getDataName(this);
-      if (dn != null) { // already mapped?
-        return dn;
-      } else if (set.containsTycon(this)) { // already in the target?
-        return this;
-      } else if (isEnumeration()) { // do not make new versions of enumerations
-        set.addTycon(this);
-        return this;
-      }
-      DataType newDt =
-          new DataType(
-              pos, "new_" + id, kind, arity); // make new type, copying attributes of original
-      newDt.isRecursive = this.isRecursive;
-      newDt.cfuns = new Cfun[this.cfuns.length]; // allocate slots for new cfuns
-      set.putDataName(this, newDt); // add mapping from old to new
-      set.addTycon(newDt); // register the new DataType
-      debug.Log.println("new version of DataType " + id + " is " + newDt);
-      return newDt;
+    } else if (isEnumeration()) { // do not make new versions of enumerations
+      set.addTycon(this);
+      return this;
     }
+    DataType newDt =
+        new DataType(pos, id, kind, arity); // make new type, copying attributes of original
+    newDt.isRecursive = this.isRecursive;
+    set.addTycon(newDt); // register the new DataType
+    set.putDataName(this, newDt); // add mapping from old to new
+    debug.Log.println("new version of DataType " + id + " is " + newDt);
+    newDt.cfuns = new Cfun[cfuns.length]; // add canonical versions of constructors
+    for (int i = 0; i < cfuns.length; i++) {
+      newDt.cfuns[i] = cfuns[i].makeCanonCfun(set, newDt);
+    }
+    return newDt;
   }
 
   /**
@@ -128,10 +121,6 @@ public class DataType extends DataName {
       }
     }
     return true;
-  }
-
-  void removeUnusedCfuns() {
-    cfuns = Cfun.removeUnused(cfuns);
   }
 
   /**
@@ -157,7 +146,7 @@ public class DataType extends DataName {
    * a nonrecursive type that only has one constructor).
    */
   public boolean isNewtype() {
-    return !isRecursive && isSingleConstructor() && cfuns[0] != null && cfuns[0].getArity() == 1;
+    return !isRecursive && isSingleConstructor() && cfuns[0].getArity() == 1;
   }
 
   /** Return true if this is a single constructor type. */
@@ -170,7 +159,7 @@ public class DataType extends DataName {
    * use the Unit type to provide a representation.
    */
   boolean isSingleton() {
-    return cfuns != null && cfuns.length == 1 && cfuns[0] != null && cfuns[0].getArity() == 0;
+    return cfuns != null && cfuns.length == 1 && cfuns[0].getArity() == 0;
   }
 
   /**
@@ -196,17 +185,19 @@ public class DataType extends DataName {
       }
     }
     // Make a new specialized version of this type:
-    DataType newDt;
     if (isEnumeration()) { // Keep original Unit definition (and other enumerated types)
-      newDt = this;
-    } else {
-      newDt = new DataType(pos, id + count++, KAtom.STAR, 0);
-      newDt.isRecursive = this.isRecursive;
-      newDt.cfuns = new Cfun[this.cfuns.length]; // Create openings for cfuns
+      spec.addTycon(this);
+      return this;
     }
+    DataType newDt = new DataType(pos, id + count++, KAtom.STAR, 0);
+    newDt.isRecursive = this.isRecursive;
     spec.addTycon(newDt);
     spec.putTypeSpecs(this, new TypeSpecs(inst, newDt, typespecs));
     debug.Log.println(newDt + " is a specialized DataType for " + inst);
+    newDt.cfuns = new Cfun[this.cfuns.length];
+    for (int i = 0; i < cfuns.length; i++) {
+      newDt.cfuns[i] = cfuns[i].makeSpecializeCfun(spec, newDt, inst);
+    }
     return newDt;
   }
 

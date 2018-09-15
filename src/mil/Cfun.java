@@ -184,36 +184,14 @@ public class Cfun extends Name {
   }
 
   Cfun canonCfun(TypeSet set) {
-    DataName newDn = dn.canonDataName(set);
-    Cfun[] cfuns = newDn.getCfuns();
-    if (cfuns == null) {
-      return this;
-    } else if (cfuns[num] == null) {
-      cfuns[num] = new Cfun(pos, "!" + id, newDn, num, allocType.canonAllocType(set));
-      debug.Log.println("    orig: " + this + " :: " + this.getAllocType());
-      debug.Log.println("    new:  " + cfuns[num] + " :: " + cfuns[num].getAllocType());
-    }
-    return cfuns[num];
+    return dn.canonDataName(set).getCfuns()[num];
   }
 
-  static Cfun[] removeUnused(Cfun[] cfuns) {
-    int n = 0; // count the number of non null constructors
-    for (int i = 0; i < cfuns.length; i++) {
-      if (cfuns[i] != null) {
-        n++;
-      }
-    }
-    if (n == cfuns.length) {
-      return cfuns;
-    }
-    Cfun[] ncfuns = new Cfun[n];
-    for (int i = 0, j = 0; i < cfuns.length; i++) {
-      if (cfuns[i] != null) {
-        ncfuns[j] = cfuns[i];
-        ncfuns[j].num = j++;
-      }
-    }
-    return ncfuns;
+  Cfun makeCanonCfun(TypeSet set, DataName newDn) {
+    Cfun cf = new Cfun(pos, id, newDn, num, allocType.canonAllocType(set));
+    debug.Log.println("    orig: " + this + " :: " + this.getAllocType());
+    debug.Log.println("    new:  " + cf + " :: " + cf.getAllocType());
+    return cf;
   }
 
   /**
@@ -241,19 +219,17 @@ public class Cfun extends Name {
 
   private static int count = 0;
 
+  Cfun makeSpecializeCfun(MILSpec spec, DataName newDn, Type inst) {
+    AllocType at = allocType.instantiate();
+    if (!at.resultMatches(inst)) {
+      debug.Internal.error("failed to specialize allocType " + this + " :: " + at + " to " + inst);
+    }
+    return new Cfun(pos, id + count++, newDn, num, at.canonAllocType(spec));
+  }
+
   Cfun specializeCfun(MILSpec spec, AllocType type, TVarSubst s) {
     Type inst = type.resultType().apply(s).canonArgs(null, spec, 0);
-    DataName newDn = dn.specializeDataName(spec, inst);
-    Cfun[] cfuns = newDn.getCfuns();
-    if (cfuns[num] == null) {
-      AllocType at = allocType.instantiate();
-      if (!at.resultMatches(inst)) {
-        debug.Internal.error(
-            "failed to specialize allocType " + this + " :: " + at + " to " + inst);
-      }
-      cfuns[num] = new Cfun(pos, id + count++, newDn, num, at.canonAllocType(spec));
-    }
-    return cfuns[num];
+    return dn.specializeDataName(spec, inst).getCfuns()[num];
   }
 
   BitdataRep findRep(BitdataMap m) {

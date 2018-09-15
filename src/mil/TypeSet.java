@@ -258,12 +258,6 @@ public class TypeSet {
     }
   }
 
-  public void removeUnusedCfuns() {
-    for (Tycon tycon : tycons) {
-      tycon.removeUnusedCfuns();
-    }
-  }
-
   private HashMap<Prim, Prim> primMap = new HashMap();
 
   Prim getPrim(Prim p) {

@@ -111,10 +111,6 @@ public class BitdataType extends DataName {
     return this;
   }
 
-  void removeUnusedCfuns() {
-    /* Nothing to do here */
-  }
-
   BitdataRep findRep(BitdataMap m) {
     return null;
   }
