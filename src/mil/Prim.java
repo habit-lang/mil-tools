@@ -1553,8 +1553,8 @@ public class Prim {
         newP = this;
       } else {
         newP = this.clone(bt);
-        debug.Log.println("new version of primitive " + id + " :: " + bt);
-        debug.Log.println("         old version was " + id + " :: " + blockType);
+        debug.Log.println("new version of primitive " + newP.id + " :: " + bt);
+        debug.Log.println("         old version was " + this.id + " :: " + blockType);
       }
       set.putPrim(this, newP);
     }

@@ -24,7 +24,7 @@ import core.*;
 class BitdataMap extends TypeSet {
 
   BitdataRep findRep(DataType dt) {
-    DataName ndn = getDataType(dt);
+    DataName ndn = getDataName(dt);
     return (ndn == null) ? null : ndn.isBitdataRep();
   }
 

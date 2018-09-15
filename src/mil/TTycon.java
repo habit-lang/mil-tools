@@ -262,6 +262,18 @@ public class TTycon extends TConst {
     return tycon.canonType(env, set, args);
   }
 
+  boolean instMatches(Type right) {
+    return right.instMatchesTycon(tycon);
+  }
+
+  boolean instMatchesTycon(Tycon left) {
+    return left == tycon;
+  }
+
+  Type canonArgs(Type[] tenv, TypeSet set, int args) {
+    return tycon.canonArgs(tenv, set, args);
+  }
+
   DataType dataType() {
     return tycon.dataType();
   }

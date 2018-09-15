@@ -86,26 +86,26 @@ public class DataType extends DataName {
 
   DataName canonDataName(TypeSet set) {
     if (cfuns == null) {
+      debug.Internal.error("Datatype " + this + " has null cfuns");
       return this;
     } else {
-      DataName newDn = set.getDataType(this);
-      if (newDn != null) {
-        return newDn;
-      } else if (isEnumeration()) { // There is no need to make new versions of "enumeration" types
-        set.putDataType(this, this);
+      DataName dn = set.getDataName(this);
+      if (dn != null) { // already mapped?
+        return dn;
+      } else if (set.containsTycon(this)) { // already in the target?
+        return this;
+      } else if (isEnumeration()) { // do not make new versions of enumerations
+        set.addTycon(this);
         return this;
       }
-      DataType newDt = new DataType(pos, id, kind, arity); // copy attributes of original
-      set.putDataType(this, newDt); // add mapping from old to new
-      set.putDataType(newDt, newDt); // TODO: this is a hack!
+      DataType newDt =
+          new DataType(
+              pos, "new_" + id, kind, arity); // make new type, copying attributes of original
       newDt.isRecursive = this.isRecursive;
-      newDt.cfuns = new Cfun[this.cfuns.length]; // make specialized versions of cfuns
-      debug.Log.println("new version of " + id);
-      for (int i = 0; i < this.cfuns.length; i++) {
-        newDt.cfuns[i] = this.cfuns[i].remap(set, newDt);
-        debug.Log.println("    orig: " + cfuns[i] + " :: " + this.cfuns[i].getAllocType());
-        debug.Log.println("    new:  " + newDt.cfuns[i] + " :: " + newDt.cfuns[i].getAllocType());
-      }
+      newDt.cfuns = new Cfun[this.cfuns.length]; // allocate slots for new cfuns
+      set.putDataName(this, newDt); // add mapping from old to new
+      set.addTycon(newDt); // register the new DataType
+      debug.Log.println("new version of DataType " + id + " is " + newDt);
       return newDt;
     }
   }
@@ -122,12 +122,16 @@ public class DataType extends DataName {
       return false;
     } else if (cfuns != null) {
       for (int i = 0; i < cfuns.length; i++) {
-        if (cfuns[i].getArity() != 0) {
+        if (cfuns[i] == null || cfuns[i].getArity() != 0) {
           return false;
         }
       }
     }
     return true;
+  }
+
+  void removeUnusedCfuns() {
+    cfuns = Cfun.removeUnused(cfuns);
   }
 
   /**
@@ -153,7 +157,7 @@ public class DataType extends DataName {
    * a nonrecursive type that only has one constructor).
    */
   public boolean isNewtype() {
-    return !isRecursive && isSingleConstructor() && cfuns[0].getArity() == 1;
+    return !isRecursive && isSingleConstructor() && cfuns[0] != null && cfuns[0].getArity() == 1;
   }
 
   /** Return true if this is a single constructor type. */
@@ -169,32 +173,50 @@ public class DataType extends DataName {
     return cfuns != null && cfuns.length == 1 && cfuns[0] != null && cfuns[0].getArity() == 0;
   }
 
-  DataName specializeDataName(MILSpec spec, Type inst) {
-    // Look for a previous specialization of this DataType:
-    DataType newDt = spec.get(inst);
-    if (newDt == null) {
-      if (isEnumeration()) {
-        spec.put(inst, this);
-        return this;
-      }
-      // If there was no previous specialized version, then we should make one!
-      newDt = new DataType(pos, id + count++, KAtom.STAR, 0);
-      spec.put(inst, newDt); // add to table now so that mapping is visible for cfun types
-      spec.put(newDt.asType(), newDt); // the new type is its own specialized form
-      newDt.isRecursive = this.isRecursive;
-      newDt.cfuns = new Cfun[this.cfuns.length]; // make specialized versions of cfuns
-      for (int i = 0; i < this.cfuns.length; i++) {
-        newDt.cfuns[i] = this.cfuns[i].specialize(spec, newDt, inst);
-      }
-      debug.Log.println(newDt.getId() + " is a specialized DataType for " + inst);
-    }
-    return newDt;
+  /**
+   * Find out if there is a specialized version of the type with this Tycon as its head and the set
+   * of args (canonical) arguments on the stack of this MILSpec object.
+   */
+  Type specInst(MILSpec spec, int args) {
+    return (args == arity)
+        ? this.specializeDataName(spec, spec.rebuild(this.asType(), args)).asType()
+        : null;
   }
 
   private static int count = 0;
 
+  DataName specializeDataName(MILSpec spec, Type inst) {
+    if (spec.containsTycon(this)) { // Already specialized type
+      return this;
+    }
+    TypeSpecs typespecs = spec.getTypeSpecs(this); // Search previous specializations
+    for (TypeSpecs ts = typespecs; ts != null; ts = ts.next) {
+      if (ts.inst.instMatches(inst)) {
+        return ts.dt; // return previously specialized version of this type
+      }
+    }
+    // Make a new specialized version of this type:
+    DataType newDt;
+    if (isEnumeration()) { // Keep original Unit definition (and other enumerated types)
+      newDt = this;
+    } else {
+      newDt = new DataType(pos, id + count++, KAtom.STAR, 0);
+      newDt.isRecursive = this.isRecursive;
+      newDt.cfuns = new Cfun[this.cfuns.length]; // Create openings for cfuns
+    }
+    spec.addTycon(newDt);
+    spec.putTypeSpecs(this, new TypeSpecs(inst, newDt, typespecs));
+    debug.Log.println(newDt + " is a specialized DataType for " + inst);
+    return newDt;
+  }
+
   BitdataRep findRep(BitdataMap m) {
     return m.findRep(this);
+  }
+
+  /** Determine whether this Tycon is a DataType that is a candidate for bitdata representation. */
+  DataType bitdataCandidate() {
+    return (arity == 0 && !isRecursive && cfuns != null && cfuns.length > 0) ? this : null;
   }
 
   /**
@@ -277,7 +299,8 @@ public class DataType extends DataName {
       br = generalTagging(m, maxWidth, pats, numNullary, numNonNullary);
     }
     if (br != null) { // If we found a new representation, add it to m
-      m.putDataType(this, br);
+      m.putDataName(this, br);
+      m.addTycon(br);
       debug.Log.println("added mapping from " + this + " to bitdata " + br);
       return 1;
     }

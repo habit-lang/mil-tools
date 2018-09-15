@@ -320,6 +320,7 @@ public class MILProgram {
     TypeSet set = new NewtypeTypeSet();
     collect(set);
     cfunSimplify();
+    set.removeUnusedCfuns();
   }
 
   /** Apply constructor function simplifications to this program. */
@@ -346,6 +347,9 @@ public class MILProgram {
 
     // Step 2: Generate specialized versions of all reachable definitions:
     spec.generate();
+
+    // Step 3: Eliminate unused constructors:
+    spec.removeUnusedCfuns();
     return spec;
   }
 
@@ -402,6 +406,7 @@ public class MILProgram {
     }
     makeEntryBlocks();
     main = set.makeMain(main);
+    set.removeUnusedCfuns();
     return set;
   }
 

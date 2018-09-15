@@ -213,6 +213,10 @@ public abstract class Tycon extends Name {
     return this;
   }
 
+  void removeUnusedCfuns() {
+    /* default is to do nothing */
+  }
+
   /**
    * Attempt to translate a type with this type constructor at its head and some number of arguments
    * on the stack to eliminate newtypes. This will only succeed if the head is a newtype constructor
@@ -231,8 +235,16 @@ public abstract class Tycon extends Name {
     return false;
   }
 
-  Type specializeTycon(MILSpec spec, Type inst) {
-    return inst;
+  /**
+   * Find out if there is a specialized version of the type with this Tycon as its head and the set
+   * of args (canonical) arguments on the stack of this MILSpec object.
+   */
+  Type specInst(MILSpec spec, int args) {
+    return null;
+  }
+
+  Type canonArgs(Type[] tenv, TypeSet set, int args) {
+    return set.rebuild(this.asType(), args);
   }
 
   BitdataRep findRep(BitdataMap m) {
@@ -240,6 +252,11 @@ public abstract class Tycon extends Name {
   }
 
   BitdataRep isBitdataRep() {
+    return null;
+  }
+
+  /** Determine whether this Tycon is a DataType that is a candidate for bitdata representation. */
+  DataType bitdataCandidate() {
     return null;
   }
 

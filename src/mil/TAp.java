@@ -200,6 +200,19 @@ public class TAp extends Type {
     return new TAp(fun.apply(thisenv, s), arg.apply(thisenv, s));
   }
 
+  boolean instMatches(Type right) {
+    return right.instMatchesTAp(this);
+  }
+
+  boolean instMatchesTAp(TAp left) {
+    return left.arg == this.arg && left.fun.instMatches(this.fun);
+  }
+
+  Type canonArgs(Type[] tenv, TypeSet set, int args) {
+    set.push(this.arg.canonType(tenv, set, 0));
+    return fun.canonArgs(tenv, set, args + 1);
+  }
+
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     // Look for patterns:  Bit n,  Ix n,  ARef n a,  APtr n a, ...

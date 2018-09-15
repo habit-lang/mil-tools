@@ -236,6 +236,10 @@ public class TGen extends Type {
     return thisenv[n].apply(null, s);
   }
 
+  Type canonArgs(Type[] tenv, TypeSet set, int args) {
+    return (tenv == null) ? super.canonArgs(tenv, set, args) : tenv[n].canonArgs(null, set, args);
+  }
+
   /**
    * Return the natural number type that specifies the BitSize of this type (required to be of kind
    * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should

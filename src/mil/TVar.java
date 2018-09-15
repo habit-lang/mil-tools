@@ -323,6 +323,12 @@ public final class TVar extends TInd {
     return bound;
   }
 
+  Type canonArgs(Type[] tenv, TypeSet set, int args) {
+    return (bound == null)
+        ? super.canonArgs(tenv, set, args)
+        : bound.canonArgs(boundenv, set, args);
+  }
+
   /**
    * Return the natural number type that specifies the BitSize of this type (required to be of kind
    * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should

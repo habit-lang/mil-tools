@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class TypeSet {
 
@@ -38,6 +39,12 @@ public class TypeSet {
 
   /** Write a description of this TypeSet to a PrintWriter. */
   public void dump(PrintWriter out) {
+    out.println("Tycon mapping: --------------------------");
+    for (DataType dt : remapDataTypes.keySet()) {
+      DataName dn = remapDataTypes.get(dt);
+      out.println("  " + dt + " --> " + dn);
+    }
+
     out.println("Tycon uses: -----------------------------");
     for (Tycon tycon : tyconInstances.keySet()) {
       out.println("Tycon: " + tycon.getId());
@@ -82,13 +89,6 @@ public class TypeSet {
     }
 
     out.println("-----------------------------------------");
-  }
-
-  /** Write definitions for all the types defined in this TypeSet to a PrintWriter. */
-  public void dumpTypeDefinitions(PrintWriter out) {
-    for (Tycon tycon : tyconInstances.keySet()) {
-      tycon.dumpTypeDefinition(out);
-    }
   }
 
   /**
@@ -146,7 +146,9 @@ public class TypeSet {
     Types ts = tyconInstances.get(h); // Find previous uses of this item
     Type t = findMatch(args, ts); // And search for a match
     if (t == null) {
-      t = rebuild(h.asType(), args); // If none found, build a canonical representative
+      t =
+          rebuild(
+              h.canonTycon(this).asType(), args); // If none found, build a canonical representative
       tyconInstances.put(h, new Types(t, ts)); // Add it to the list
     }
     return t; // Return the (old or new) canonical representative
@@ -229,14 +231,37 @@ public class TypeSet {
     return us;
   }
 
+  private HashSet<Tycon> tycons = new HashSet();
+
+  boolean containsTycon(Tycon tycon) {
+    return tycons.contains(tycon);
+  }
+
+  void addTycon(Tycon tycon) {
+    tycons.add(tycon);
+  }
+
   private HashMap<DataType, DataName> remapDataTypes = new HashMap();
 
-  DataName getDataType(DataType dt) {
+  DataName getDataName(DataType dt) {
     return remapDataTypes.get(dt);
   }
 
-  void putDataType(DataType dt, DataName dn) {
+  void putDataName(DataType dt, DataName dn) {
     remapDataTypes.put(dt, dn);
+  }
+
+  /** Write definitions for all the types defined in this TypeSet to a PrintWriter. */
+  public void dumpTypeDefinitions(PrintWriter out) {
+    for (Tycon tycon : tycons) {
+      tycon.dumpTypeDefinition(out);
+    }
+  }
+
+  public void removeUnusedCfuns() {
+    for (Tycon tycon : tycons) {
+      tycon.removeUnusedCfuns();
+    }
   }
 
   private HashMap<Prim, Prim> primMap = new HashMap();
@@ -247,5 +272,22 @@ public class TypeSet {
 
   void putPrim(Prim p, Prim q) {
     primMap.put(p, q);
+  }
+
+  /**
+   * Build a list of all the zero arity (no parameters), nonrecursive, datatypes with one or more
+   * constructors that do not already have an associated bitSize, and might therefore be candidates
+   * for replacing with bitdata types.
+   */
+  public DataTypes bitdataCandidates() {
+    DataTypes cands = null;
+    for (Tycon tycon : tycons) {
+      DataType dt = tycon.bitdataCandidate();
+      if (dt != null) {
+        debug.Log.println("DataType " + dt + " is a candidate for bitdata representation");
+        cands = new DataTypes(dt, cands);
+      }
+    }
+    return cands;
   }
 }

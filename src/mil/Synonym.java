@@ -130,6 +130,10 @@ public class Synonym extends Tycon {
     return expansion.canonType(null, set, args);
   }
 
+  Type canonArgs(Type[] tenv, TypeSet set, int args) {
+    return expansion.canonArgs(null, set, args);
+  }
+
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     return expansion.repCalc();

@@ -27,19 +27,15 @@ import java.util.HashMap;
 
 public class MILSpec extends TypeSet {
 
-  /**
-   * A mapping from (canonical) types for specific, monomorphic instances of parameterized algebraic
-   * datatypes in the original program to the corresponding specialized (non-parameterized)
-   * datatypes.
-   */
-  private HashMap<Type, DataType> specDataTypes = new HashMap();
+  /** A mapping from (canonical) versions of DataType values to TypeSpecs mappings. */
+  private HashMap<DataType, TypeSpecs> dataTypeSpecs = new HashMap();
 
-  void put(Type inst, DataType dt) {
-    specDataTypes.put(inst, dt);
+  void putTypeSpecs(DataType dt, TypeSpecs ts) {
+    dataTypeSpecs.put(dt, ts);
   }
 
-  DataType get(Type inst) {
-    return specDataTypes.get(inst);
+  TypeSpecs getTypeSpecs(DataType dt) {
+    return dataTypeSpecs.get(dt);
   }
 
   public void dump(PrintWriter out) {
@@ -64,15 +60,10 @@ public class MILSpec extends TypeSet {
     }
 
     out.println("Specialized Datatypes: ------------------");
-    for (Type t : specDataTypes.keySet()) {
-      DataType dt = specDataTypes.get(t);
-      if (t != dt.asType()) {
-        out.println("  " + t + "  ~~>  " + dt.asType());
-        Cfun[] cfuns = dt.getCfuns();
-        for (int i = 0; i < cfuns.length; i++) {
-          out.println("      " + cfuns[i].getId() + " :: " + cfuns[i].getAllocType());
-        }
-        out.println();
+    for (DataType dt : dataTypeSpecs.keySet()) {
+      for (TypeSpecs ts = getTypeSpecs(dt); ts != null; ts = ts.next) {
+        out.println("-- " + ts.inst + "  ~~>  " + ts.dt.asType());
+        ts.dt.dumpTypeDefinition(out);
       }
     }
     super.dump(out);
@@ -84,7 +75,8 @@ public class MILSpec extends TypeSet {
    * unparameterized types.
    */
   protected Type canon(Tycon h, int args) {
-    return h.specializeTycon(this, super.canon(h, args));
+    Type t = h.specInst(this, args);
+    return (t == null) ? super.canon(h, args) : t;
   }
 
   /**
@@ -276,25 +268,5 @@ public class MILSpec extends TypeSet {
     }
     prog.shake(); // Calculate SCCs for the resulting specialized program
     prog.canonDeclared(this); // Update declared types to use the specialized datatypes
-  }
-
-  /**
-   * Build a list of all the zero arity (no parameters), nonrecursive, datatypes with one or more
-   * constructors that do not already have an associated bitSize, and might therefore be candidates
-   * for replacing with bitdata types.
-   */
-  public DataTypes bitdataCandidates() {
-    DataTypes cands = null;
-    for (Type t : specDataTypes.keySet()) {
-      DataType dt = specDataTypes.get(t);
-      if (t == dt.asType() && dt.getArity() == 0 && !dt.isRecursive() && dt.bitSize() == null) {
-        Cfun[] cfuns = dt.getCfuns();
-        if (cfuns != null && cfuns.length > 0) {
-          debug.Log.println("DataType " + dt + " is a candidate for bitdata representation");
-          cands = new DataTypes(dt, cands);
-        }
-      }
-    }
-    return cands;
   }
 }

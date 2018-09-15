@@ -518,6 +518,22 @@ public abstract class Type extends Scheme {
     return this;
   }
 
+  boolean instMatches(Type right) {
+    return false;
+  }
+
+  boolean instMatchesTycon(Tycon left) {
+    return false;
+  }
+
+  boolean instMatchesTAp(TAp left) {
+    return false;
+  }
+
+  Type canonArgs(Type[] tenv, TypeSet set, int args) {
+    return set.rebuild(this, args);
+  }
+
   DataType dataType() {
     return null;
   }

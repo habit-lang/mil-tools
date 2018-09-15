@@ -80,11 +80,9 @@ public abstract class DataName extends Tycon {
     return false;
   }
 
-  Type specializeTycon(MILSpec spec, Type inst) {
-    return (cfuns == null) ? inst : specializeDataName(spec, inst).asType();
+  DataName specializeDataName(MILSpec spec, Type inst) {
+    return this;
   }
-
-  abstract DataName specializeDataName(MILSpec spec, Type inst);
 
   abstract BitdataRep findRep(BitdataMap m);
 

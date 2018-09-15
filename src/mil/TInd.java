@@ -210,6 +210,10 @@ public class TInd extends Type {
     return bound.apply(boundenv, s);
   }
 
+  Type canonArgs(Type[] tenv, TypeSet set, int args) {
+    return bound.canonArgs(boundenv, set, args);
+  }
+
   /**
    * Return the natural number type that specifies the BitSize of this type (required to be of kind
    * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should

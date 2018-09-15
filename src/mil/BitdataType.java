@@ -111,13 +111,8 @@ public class BitdataType extends DataName {
     return this;
   }
 
-  Type specializeTycon(MILSpec spec, Type inst) {
-    return inst;
-  }
-
-  DataName specializeDataName(MILSpec spec, Type inst) {
-    // Do not specialize bitdata types
-    return this;
+  void removeUnusedCfuns() {
+    /* Nothing to do here */
   }
 
   BitdataRep findRep(BitdataMap m) {
