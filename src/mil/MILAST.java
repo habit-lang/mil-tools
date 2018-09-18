@@ -56,7 +56,7 @@ class MILAST extends CoreProgram {
   public void syntaxAnalysis(Handler handler, MILLoader loader) throws Failure {
     debug.Log.println("Loading " + name + " ...");
     try {
-      Reader reader = new FileReader(name);
+      Reader reader = new FileReader(loader.findFile(handler, name));
       Source source = new JavaSource(handler, name, reader);
       if (name.endsWith(".lmil")) {
         source = new LiterateSource(handler, true, source);

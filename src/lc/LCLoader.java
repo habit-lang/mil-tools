@@ -22,7 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
-public class LCLoader {
+public class LCLoader extends core.Loader {
 
   /** Records the list of objects that have already been loaded. */
   private LCPrograms loaded = null;
@@ -92,6 +92,12 @@ public class LCLoader {
       return true;
     }
     return false;
+  }
+
+  /** Set the search path for this LCLoader as well as the underlying MILLoader. */
+  public void setSearchPath(String[] searchPath) {
+    super.setSearchPath(searchPath);
+    milLoader.setSearchPath(searchPath);
   }
 
   /**

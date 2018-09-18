@@ -43,6 +43,7 @@ class Main {
         "         filename.lc    Load LC source from specified file (.llc for literate)");
     System.err.println("options: -v             verbose on");
     System.err.println("         -d             display debug messages");
+    System.err.println("         -ipathlist     append items to input search path");
     System.err.println("         -p{c,o,b,s,r}* passes");
     System.err.println("                        c = cfun rewrite");
     System.err.println("                        o = optimizer");
@@ -135,6 +136,9 @@ class Main {
           case 'v':
             trace = true;
             break;
+          case 'i':
+            loader.extendSearchPath(str, i + 1);
+            return;
           case 'p':
             addPasses(str.substring(i + 1));
             return;

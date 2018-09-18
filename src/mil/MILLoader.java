@@ -23,7 +23,7 @@ import compiler.Failure;
 import compiler.Handler;
 import core.*;
 
-public class MILLoader {
+public class MILLoader extends core.Loader {
 
   /** Records the list of objects that have already been loaded. */
   private MILASTs loaded = null;
