@@ -80,6 +80,11 @@ public class DataType extends DataName {
     }
   }
 
+  /**
+   * Return the canonical version of a DataName wrt the given set, replacing component types with
+   * canonical versions as necessary. This is extracted as a separate method from canonTycon so that
+   * it can be used in canonCfun, with a return type that guarantees a DataName result.
+   */
   DataName canonDataName(TypeSet set) {
     DataName dn = set.getDataName(this);
     if (dn != null) { // already mapped?

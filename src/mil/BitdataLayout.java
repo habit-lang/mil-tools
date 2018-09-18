@@ -170,10 +170,18 @@ public class BitdataLayout extends DataName {
     out.println();
   }
 
+  /**
+   * Return the canonical version of a DataName wrt the given set, replacing component types with
+   * canonical versions as necessary. This is extracted as a separate method from canonTycon so that
+   * it can be used in canonCfun, with a return type that guarantees a DataName result.
+   */
   DataName canonDataName(TypeSet set) {
-    // We do not need to calculate a new version of the type in these cases because we know that
-    // none of the
-    // Cfun types will change (they are all of the form T.Lab -> T).
+    // We do not need to calculate a new version of bitdata types because we know that none of the
+    // Cfun types will change (they are all of the form T.Lab -> T).  It is sufficient just to
+    // register
+    // occurrences in the tycons set so that we have a full record of which tycons are actually
+    // used.
+    set.addTycon(this);
     return this;
   }
 

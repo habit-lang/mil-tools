@@ -183,15 +183,23 @@ public class Cfun extends Name {
     return id.hashCode();
   }
 
-  Cfun canonCfun(TypeSet set) {
-    return dn.canonDataName(set).getCfuns()[num];
-  }
-
+  /**
+   * Make a new version of this constructor function using types that are canonical wrt the given
+   * set.
+   */
   Cfun makeCanonCfun(TypeSet set, DataName newDn) {
     Cfun cf = new Cfun(pos, id, newDn, num, allocType.canonAllocType(set));
     debug.Log.println("    orig: " + this + " :: " + this.getAllocType());
     debug.Log.println("    new:  " + cf + " :: " + cf.getAllocType());
     return cf;
+  }
+
+  /**
+   * Return the canonical version of this constructor function (by looking it up in the associated
+   * canonical DataName).
+   */
+  Cfun canonCfun(TypeSet set) {
+    return dn.canonDataName(set).getCfuns()[num];
   }
 
   /**

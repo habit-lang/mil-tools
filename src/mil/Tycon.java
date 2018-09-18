@@ -209,6 +209,7 @@ public abstract class Tycon extends Name {
     return set.canon(this, args);
   }
 
+  /** Return the canonical version of a Tycon wrt to the given set. */
   Tycon canonTycon(TypeSet set) {
     return this;
   }

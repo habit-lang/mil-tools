@@ -61,10 +61,16 @@ public abstract class DataName extends Tycon {
     return null;
   }
 
+  /** Return the canonical version of a Tycon wrt to the given set. */
   Tycon canonTycon(TypeSet set) {
     return canonDataName(set);
   }
 
+  /**
+   * Return the canonical version of a DataName wrt the given set, replacing component types with
+   * canonical versions as necessary. This is extracted as a separate method from canonTycon so that
+   * it can be used in canonCfun, with a return type that guarantees a DataName result.
+   */
   abstract DataName canonDataName(TypeSet set);
 
   /**
