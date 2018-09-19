@@ -78,7 +78,12 @@ class EVar extends PosExpr {
     if (extras != null) { // TODO: use a handler rather than an exception?
       throw new Failure(
           pos,
-          "\"" + v + "\" used at type " + type.skeleton() + " with no way to determine " + extras);
+          "\""
+              + v.getId()
+              + "\" used at type "
+              + type.skeleton()
+              + " with no way to determine "
+              + extras);
     }
   }
 
