@@ -541,8 +541,11 @@ public class LCParser extends CoreParser implements LCTokens {
 
       case NATLIT:
         {
-          e = new ENat(lexer.getPos(), lexer.getWord());
-          lexer.nextToken(/* NATLIT */ );
+          try {
+            e = new ENat(lexer.getPos(), lexer.getWord());
+          } finally {
+            lexer.nextToken(/* NATLIT */ );
+          }
           return e;
         }
 

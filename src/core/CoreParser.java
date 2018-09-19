@@ -799,8 +799,11 @@ public class CoreParser extends Phase implements CoreTokens {
     }
     int arity = Integer.MAX_VALUE; // Advisory, not required
     if (lexer.getToken() == NATLIT) {
-      arity = lexer.getInt();
-      lexer.nextToken(/* NATLIT */ );
+      try {
+        arity = lexer.getInt();
+      } finally {
+        lexer.nextToken(/* NATLIT */ );
+      }
     }
     KindExp kexp;
     if (!lexer.match(COCO) || (kexp = maybeKindExp()) == null) {

@@ -182,8 +182,11 @@ public class MILParser extends CoreParser implements MILTokens {
       }
       long alignment; // Read alignment (or assume 1, if alignment missing)
       if (lexer.getToken() == NATLIT) {
-        alignment = lexer.getWord();
-        lexer.nextToken(/* NATLIT */ );
+        try {
+          alignment = lexer.getWord();
+        } finally {
+          lexer.nextToken(/* NATLIT */ );
+        }
       } else {
         alignment = 1L;
       }
@@ -496,8 +499,12 @@ public class MILParser extends CoreParser implements MILTokens {
 
       case NATLIT:
         {
-          int n = lexer.getInt();
-          lexer.nextToken(/* NATLIT */ );
+          int n;
+          try {
+            n = lexer.getInt();
+          } finally {
+            lexer.nextToken(/* NATLIT */ );
+          }
           return new SelExp(pos, id, n, parseAtom());
         }
 
@@ -541,8 +548,12 @@ public class MILParser extends CoreParser implements MILTokens {
 
       case NATLIT:
         {
-          WordExp e = new WordExp(lexer.getWord());
-          lexer.nextToken(/* NATLIT */ );
+          WordExp e;
+          try {
+            e = new WordExp(lexer.getWord());
+          } finally {
+            lexer.nextToken(/* NATLIT */ );
+          }
           return e;
         }
 
