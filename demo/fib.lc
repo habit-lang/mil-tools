@@ -1,5 +1,5 @@
-require "lib/prelude.lc"
-require "lib/io.mil"
+require "prelude.lc"
+require "io.mil"
 
 ------
 

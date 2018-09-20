@@ -1,4 +1,4 @@
-require "lib/prelude.lc"
+require "prelude.lc"
 
 entrypoint fib :: Word -> Word
 fib n = if eq n 0 then 0

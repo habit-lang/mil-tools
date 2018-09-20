@@ -1,4 +1,4 @@
-require "lib/basic.mil"
+require "basic.mil"
 
 -- Basic Datatypes:
 data List a   = Nil | Cons a (List a)

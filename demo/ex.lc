@@ -1,4 +1,4 @@
-require "lib/prelude.lc"
+require "prelude.lc"
 data Dup a      = Dup a a
 entrypoint swap7 :: Dup (Bit 7) -> Dup (Bit 7)
 entrypoint swap8 :: Dup (Bit 8) -> Dup (Bit 8)

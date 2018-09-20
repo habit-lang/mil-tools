@@ -1,4 +1,4 @@
-require "lib/basic.mil"
+require "basic.mil"
   
 -- An impure primitive that returns its input as a result, but also
 -- prints that value on the console:

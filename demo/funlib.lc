@@ -1,4 +1,4 @@
-require "lib/prelude.lc"
+require "prelude.lc"
 
 -- A standard recursive version of the Fibonnaci function:
 entrypoint fib :: Word -> Word
