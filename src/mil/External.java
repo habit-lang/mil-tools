@@ -289,6 +289,7 @@ public class External extends TopDefn {
       impl =
           new TopLevel(
               pos, lhs, t); // Make new top level to use as the replacement for this External
+      impl.setIsEntrypoint(isEntrypoint);
       debug.Log.println("Generated new top level definition for " + impl);
     }
   }
@@ -1920,6 +1921,14 @@ public class External extends TopDefn {
             return null;
           }
         });
+  }
+
+  /**
+   * Rewrite this definition, replacing TopLevels that introduce curried function values with
+   * corresponding uncurried blocks. No changes are made to other forms of definition.
+   */
+  Defn makeEntryBlock() {
+    return (impl == null) ? this : impl.makeEntryBlock();
   }
 
   /** Rewrite the components of this definition to account for changes in representation. */
