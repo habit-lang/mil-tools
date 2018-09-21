@@ -562,10 +562,16 @@ public abstract class Type extends Scheme {
 
   /**
    * Return the representation vector for a bitdata value of width w using an appropriate sequence
-   * of Word values or, for values of width 1, a single MIL Flag value.
+   * of Word values (so long as w <= MAX_BIT_WIDTH, to avoid creating very large representation
+   * vectors for pathological test cases). For values of width 1, the representation vector contains
+   * a single MIL Flag value, while for values of width 0, it contains only Unit.
    */
   public static Type[] repBits(int w) {
-    return (w == 0) ? Tycon.unitRep : (w == 1) ? Tycon.flagRep : Type.words(Word.numWords(w));
+    return (w == 0)
+        ? Tycon.unitRep
+        : (w == 1)
+            ? Tycon.flagRep
+            : (w <= Type.MAX_BIT_WIDTH) ? Type.words(Word.numWords(w)) : null;
   }
 
   /** Return the representation vector for values of this type. */
@@ -605,6 +611,8 @@ public abstract class Type extends Scheme {
   Type[] bitdataTyconRep2(Type a, Type b) {
     return null;
   }
+
+  public static final int MAX_BIT_WIDTH = 1000;
 
   /**
    * Find the number of words (parameter slots) that are needed to represent a value of this type.
