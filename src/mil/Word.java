@@ -33,6 +33,9 @@ public class Word extends Const {
   /** The current Word size, expressed as a type of kind nat. */
   private static Type sizeType;
 
+  /** The maximum signed value that can be represented in a Word. */
+  private static BigInteger maxSigned;
+
   /** The maximum unsigned value that can be represented in a Word. */
   private static BigInteger maxUnsigned;
 
@@ -47,6 +50,7 @@ public class Word extends Const {
     Word.size = size;
     Word.sizeBig = BigInteger.valueOf(size);
     Word.sizeType = new TNat(sizeBig);
+    Word.maxSigned = BigInteger.ONE.shiftLeft(size - 1).subtract(BigInteger.ONE);
     Word.maxUnsigned = BigInteger.ONE.shiftLeft(size).subtract(BigInteger.ONE);
     Word.allPat = obdd.Pat.all(size);
     Word.nonzeroPat = obdd.Pat.nonzero(size);
@@ -71,6 +75,11 @@ public class Word extends Const {
   /** Return the current Word size as a Type. */
   public static Type sizeType() {
     return sizeType;
+  }
+
+  /** Return the maximum signed value that can be represented in a Word. */
+  public static BigInteger maxSigned() {
+    return maxSigned;
   }
 
   /** Return the maximum unsigned value that can be represented in a Word. */
