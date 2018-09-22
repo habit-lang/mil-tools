@@ -327,7 +327,7 @@ public class DataType extends DataName {
   BitdataRep recycling(BitdataMap m, int maxWidth, Pat[] fpats) {
     if (maxWidth <= Word.size()) {
       Pat p = Pat.concat(fpats); // Bit pattern for the non-nullary case
-      if (!p.isAll()) { // If they are not all used ...
+      if (!p.isAll() && !p.isEmpty()) { // If they are not all used ...
         long s = p.smallestOutside(); // then pick the smallest value to represent the nullary cfun
         Pat q = Pat.intmod(maxWidth, s); // Find the bit pattern for that single value
 
@@ -442,7 +442,7 @@ public class DataType extends DataName {
       br.setBitSize(new TNat(width)); // set the width
 
       int nullaryTag = 0; // Next available integer for a nullary constructor tag
-      int nonNullaryTag = 0; // Next available integer for a non-nullary constructor tag
+      int nonNullaryTag = 1; // Next available integer for a non-nullary constructor tag
 
       BitdataLayout[] layouts = new BitdataLayout[cfuns.length];
       for (int i = 0; i < cfuns.length; i++) {

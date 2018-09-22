@@ -263,8 +263,13 @@ public class BitdataLayout extends DataName {
 
       // Add code to set each field (assuming that each field is already zero-ed out):
       for (int k = 0; k < fields.length; k++) {
-        args[k] = Temp.makeTemps(Word.numWords(fields[k].getWidth()));
-        code = fields[k].genUpdateZeroedField(total, ws, args[k], code);
+        int w = fields[k].getWidth();
+        if (w > 0) { // add arguments for this field, and code to insert into result
+          args[k] = Temp.makeTemps(Word.numWords(w));
+          code = fields[k].genUpdateZeroedField(total, ws, args[k], code);
+        } else { // create an argument variable, but no code
+          args[k] = Temp.makeTemps(1);
+        }
       }
 
       // Set initial value for tagbits:
