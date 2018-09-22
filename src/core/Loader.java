@@ -80,7 +80,7 @@ public abstract class Loader {
           f = new File(searchPath[i] + File.separator + name);
           try {
             if (f.isFile() && f.canRead()) {
-              String path = f.getCanonicalPath();
+              String path = f.getPath();
               debug.Log.println("Found file in \"" + path + "\"");
               return path;
             }
