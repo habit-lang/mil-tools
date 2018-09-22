@@ -612,7 +612,64 @@ public abstract class Type extends Scheme {
     return null;
   }
 
+  BigInteger validNat() throws External.GeneratorException {
+    throw new External.GeneratorException(this + " is not a natural number");
+  }
+
   public static final int MAX_BIT_WIDTH = 1000;
+
+  /**
+   * Check that the specified type is a natural number that can be used as the argument for a Bit
+   * type.
+   */
+  int validWidth() throws External.GeneratorException {
+    BigInteger n = validNat();
+    validBelow(n, BigInteger.valueOf(MAX_BIT_WIDTH));
+    return n.intValue();
+  }
+
+  int validWidth(int lo) throws External.GeneratorException {
+    int n = validWidth();
+    validNotBelow(n, lo);
+    return n;
+  }
+
+  /**
+   * Check that the specified type is a natural number that can be used as the argument for an Ix
+   * type. Specifically, we require that this type must be in the range [1..maxSigned], which
+   * ensures that all Ix n values are nonempty (because n>0) and can be stored within a single Word
+   * (because n<=maxSigned). If this test pasts, then it is safe to use longValue() on the result
+   * without loss of information.
+   */
+  BigInteger validIndex() throws External.GeneratorException {
+    BigInteger n = validNat();
+    if (n.signum() <= 0 || n.compareTo(Word.maxSigned()) > 0) {
+      throw new External.GeneratorException(
+          n + " is not a valid index limit; should be between 1 and " + Word.maxSigned());
+    }
+    return n;
+  }
+
+  static void validBelow(BigInteger v, BigInteger tooBig) throws External.GeneratorException {
+    if (v.compareTo(tooBig) >= 0) {
+      throw new External.GeneratorException(
+          "parameter " + v + " is too large; must be less than " + tooBig);
+    }
+  }
+
+  static void validInRange(int v, int lo, int hi) throws External.GeneratorException {
+    if (v < lo || v > hi) {
+      throw new External.GeneratorException(
+          "parameter " + v + " not accepted; value must be in the range " + lo + " to " + hi);
+    }
+  }
+
+  static void validNotBelow(long n, long lo) throws External.GeneratorException {
+    if (n < lo) {
+      throw new External.GeneratorException(
+          "parameter " + n + " is too low; must be at least " + lo);
+    }
+  }
 
   /**
    * Find the number of words (parameter slots) that are needed to represent a value of this type.

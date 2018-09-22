@@ -314,13 +314,28 @@ public class External extends TopDefn {
      * Generate a tail as the implementation of an external described by a reference and list of
      * types.
      */
-    abstract Tail generate(Position pos, Type[] ts, RepTypeSet set);
+    abstract Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException;
   }
 
   /**
    * Stores a mapping from String references to generators for external function implementations.
    */
   private static HashMap<String, Generator> generators = new HashMap();
+
+  /** Captures the reason why a generator failed. */
+  static class GeneratorException extends Exception {
+
+    private String reason;
+
+    /** Default constructor. */
+    GeneratorException(String reason) {
+      this.reason = reason;
+    }
+
+    public String getReason() {
+      return reason;
+    }
+  }
 
   /**
    * Use the ref and ts fields to determine if we can generate an implementation, post
@@ -337,11 +352,15 @@ public class External extends TopDefn {
               new Failure(
                   pos, "Generator for " + ref + " needs at least " + gen.needs + " arguments"));
         } else {
-          Tail t = gen.generate(pos, ts, set);
-          if (t != null) {
-            return t;
+          try {
+            Tail t = gen.generate(pos, ts, set);
+            if (t != null) { // TODO: eliminate this when all generators use GeneratorException
+              return t;
+            }
+            throw new GeneratorException("invalid parameters");
+          } catch (GeneratorException e) {
+            handler.report(new Failure(pos, "No generated implementation: " + e.getReason()));
           }
-          handler.report(new Failure(pos, "No generated implementation"));
         }
         return null;
       } else if (ts.length > 0) {
@@ -356,6 +375,12 @@ public class External extends TopDefn {
     return t;
   }
 
+  static void validPowerOfTwo(long m) throws External.GeneratorException {
+    if ((m & (m - 1)) != 0) {
+      throw new External.GeneratorException(m + " is not a power of two");
+    }
+  }
+
   /** Flag to indicate whether bitdata representations (e.g., for Maybe (Ix 15)) are in use. */
   private static boolean bitdataRepresentations = false;
 
@@ -364,22 +389,23 @@ public class External extends TopDefn {
     bitdataRepresentations = true;
   }
 
+  private static void validBitdataRepresentations() throws GeneratorException {
+    if (!bitdataRepresentations) {
+      throw new GeneratorException("bitdata representations (\"b\" pass) are required");
+    }
+  }
+
   static {
 
     // primBitFromLiteral v w ... :: Proxy v -> Bit w
     generators.put(
         "primBitFromLiteral",
         new Generator(2) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger v = ts[0].getNat(); // Value of literal
-            BigInteger w = ts[1].isPosInt(); // Width of bit vector
-            if (v != null && w != null && v.signum() >= 0) {
-              int width = w.intValue();
-              if (BigInteger.ONE.shiftLeft(width).compareTo(v) > 0) {
-                return new Return(Const.atoms(v, width)).constClosure(pos, 1);
-              }
-            }
-            return null;
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            BigInteger v = ts[0].validNat(); // Value of literal
+            int w = ts[1].validWidth(); // Width of bit vector
+            Type.validBelow(v, BigInteger.ONE.shiftLeft(w)); // v < 2 ^ w
+            return new Return(Const.atoms(v, w)).constClosure(pos, 1);
           }
         });
 
@@ -387,12 +413,11 @@ public class External extends TopDefn {
     generators.put(
         "primBitToWord",
         new Generator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger w = ts[0].isPosInt(); // Width of bit vector
-            if (w != null && w.signum() > 0 && Word.numWords(w.intValue()) == 1) {
-              return new Return().makeUnaryFuncClosure(pos, 1);
-            }
-            return null;
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int w = ts[0].validWidth();
+            Type.validInRange(
+                w, 2, Word.size()); // TODO: provide implementations for Bit 0 and Bit 1?
+            return new Return().makeUnaryFuncClosure(pos, 1);
           }
         });
 
@@ -400,17 +425,15 @@ public class External extends TopDefn {
     generators.put(
         ":#",
         new Generator(3) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger m = ts[0].isNonNegInt(); // Width of first input (most significant bits)
-            BigInteger n = ts[1].isNonNegInt(); // Width of second input (least significant bits)
-            BigInteger p = ts[2].isPosInt(); // width of result
-            if (m != null && n != null && p != null && m.add(n).compareTo(p) == 0) {
-              int mw = m.intValue();
-              int nw = n.intValue();
-              return new BlockCall(BitdataLayout.generateBitConcat(pos, mw, nw))
-                  .makeBinaryFuncClosure(pos, Word.numWords(mw), Word.numWords(nw));
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int m = ts[0].validWidth(1); // Width of first input (most significant bits)
+            int n = ts[1].validWidth(1); // Width of second input (least significant bits)
+            int p = ts[2].validWidth(1); // Width of result
+            if (m + n != p) {
+              throw new GeneratorException(p + " is not the sum of " + m + " and " + n);
             }
-            return null;
+            return new BlockCall(BitdataLayout.generateBitConcat(pos, m, n))
+                .makeBinaryFuncClosure(pos, Word.numWords(m), Word.numWords(n));
           }
         });
   }
@@ -421,26 +444,21 @@ public class External extends TopDefn {
     generators.put(
         "primIxFromLiteral",
         new Generator(2) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger v = ts[0].isNonNegWord(); // Value of literal
-            BigInteger m = ts[1].isPosWord(); // Modulus for index type
-            if (v != null && m != null && v.compareTo(m) < 0) {
-              return new Return(new Word(v.longValue())).constClosure(pos, 1);
-            }
-            return null;
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            BigInteger v = ts[0].validNat(); // Value of literal
+            BigInteger m = ts[1].validIndex(); // Modulus for index type
+            Type.validBelow(v, m); // v < m
+            return new Return(new Word(v.longValue())).constClosure(pos, 1);
           }
         });
 
-    // primIxMaxBound w :: Ix w
+    // primIxMaxBound m :: Ix m
     generators.put(
         "primIxMaxBound",
         new Generator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger w = ts[0].isPosWord(); // Modulus for index type
-            if (w != null) {
-              return new Return(new Word(w.subtract(BigInteger.ONE).longValue()));
-            }
-            return null;
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            BigInteger m = ts[0].validIndex(); // Modulus for index type
+            return new Return(new Word(m.longValue() - 1));
           }
         });
 
@@ -448,42 +466,38 @@ public class External extends TopDefn {
     generators.put(
         "primIxToBits",
         new Generator(2) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger m = ts[0].isPosWord(); // Modulus for index type
-            BigInteger w = ts[1].isPosInt(); // Width of bitdata type
-            if (m != null
-                && w != null
-                && BigInteger.ONE.shiftLeft(w.intValue()).compareTo(m) >= 0) {
-              Temp[] vs = Temp.makeTemps(1); // Argument holds incoming index
-              int n = Word.numWords(w.intValue());
-              Atom[] as = new Atom[n];
-              as[0] = vs[0];
-              for (int i = 1; i < n; i++) { // In general, could return multiple words
-                as[i] = Word.Zero;
-              }
-              ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, vs, new Return(as));
-              return new ClosAlloc(k).withArgs();
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            BigInteger m = ts[0].validIndex(); // Modulus for index type
+            int w = ts[1].validWidth(); // Width of bitdata type
+            if (BigInteger.ONE.shiftLeft(w).compareTo(m) < 0) {
+              throw new GeneratorException(
+                  "width " + w + " is not large enough for index value " + m);
             }
-            return null;
+            Temp[] vs = Temp.makeTemps(1); // Argument holds incoming index
+            int n = Word.numWords(w);
+            Atom[] as = new Atom[n];
+            as[0] = vs[0];
+            for (int i = 1; i < n; i++) { // In general, could return multiple words
+              as[i] = Word.Zero;
+            }
+            ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, vs, new Return(as));
+            return new ClosAlloc(k).withArgs();
           }
         });
+  }
+
+  static {
 
     // primIxShiftL n p :: Ix n -> Ix p -> Ix n,  where n=2^p
     generators.put(
         "primIxShiftL",
         new Generator(2) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger n = ts[0].isPosWord(); // Modulus for index type
-            BigInteger p = ts[1].isPosInt(); // Modulus for shift amount
-            if (n != null
-                && p != null
-                && p.compareTo(Word.sizeBig()) <= 0
-                && BigInteger.ONE.shiftLeft(p.intValue()).compareTo(n) == 0) {
-              Temp[] vs = Temp.makeTemps(2); // One word for each Ix argument
-              Block b = new Block(pos, vs, maskTail(Prim.shl.withArgs(vs[0], vs[1]), p.intValue()));
-              return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
-            }
-            return null;
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            BigInteger n = ts[0].validIndex(); // Modulus for index type
+            int p = validIxShift(ts[1], n); // Modulus for shift amount such that n = 2^p
+            Temp[] vs = Temp.makeTemps(2); // One word for each Ix argument
+            Block b = new Block(pos, vs, maskTail(Prim.shl.withArgs(vs[0], vs[1]), p));
+            return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
           }
         });
 
@@ -491,43 +505,53 @@ public class External extends TopDefn {
     generators.put(
         "primIxShiftR",
         new Generator(2) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger n = ts[0].isPosWord(); // Modulus for index type
-            BigInteger p = ts[1].isPosInt(); // Modulus for shift amount
-            if (n != null
-                && p != null
-                && p.compareTo(Word.sizeBig()) <= 0
-                && BigInteger.ONE.shiftLeft(p.intValue()).compareTo(n) == 0) {
-              return new PrimCall(Prim.lshr).makeBinaryFuncClosure(pos, 1, 1);
-            }
-            return null;
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            BigInteger n = ts[0].validIndex(); // Modulus for index type
+            int p = validIxShift(ts[1], n); // Modulus for shift amount such that n = 2^p
+            return new PrimCall(Prim.lshr).makeBinaryFuncClosure(pos, 1, 1);
           }
         });
+  }
 
-    // primModIx m w :: Bit w -> Ix m
+  /**
+   * Determine if p is a natural number type such that n = 2^p for the given n. Both p and n must be
+   * valid index types, so n must be in the range 1 <= n < Word.size() if the condition is
+   * satisfied. The return result is the value of p, as an int.
+   */
+  private static int validIxShift(Type p, BigInteger n) throws GeneratorException {
+    BigInteger pb = p.validNat(); // Find BigInteger value for p
+    Type.validBelow(pb, Word.sizeBig());
+    int pi = pb.intValue(); // Find int value for p
+    Type.validNotBelow(pi, 1);
+    BigInteger q = BigInteger.ONE.shiftLeft(pi);
+    if (q.compareTo(n) != 0) {
+      throw new GeneratorException(n + " is not 2^" + pi + " (i.e., " + q + ")");
+    }
+    return pi;
+  }
+
+  static {
+
+    // primModIx w m :: Bit w -> Ix m
     generators.put(
         "primModIx",
         new Generator(2) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger m = ts[0].isPosInt(); // Modulus for index type
-            BigInteger w = ts[1].isPosInt(); // Width of bitdata type
-            if (m != null && w != null) {
-              int mod = m.intValue();
-              int width = w.intValue();
-              int n = Word.numWords(width);
-              if ((mod & (mod - 1)) == 0) { // Test for power of two
-                Temp[] args = Temp.makeTemps(n);
-                Tail t = Prim.and.withArgs(args[0], mod - 1);
-                return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t)).withArgs();
-              }
-              if (n == 1) {
-                Temp[] args = Temp.makeTemps(n);
-                Tail t = Prim.rem.withArgs(args[0], mod);
-                return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t)).withArgs();
-              }
-              // TODO: add support for n>1, mod not a power of two ...
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int w = ts[0].validWidth(2); // Width of bitdata type
+            long m = ts[1].validIndex().longValue(); // Modulus for index type
+            int n = Word.numWords(w);
+            if ((m & (m - 1)) == 0) { // Special case for power of two
+              Temp[] args = Temp.makeTemps(n);
+              Tail t = Prim.and.withArgs(args[0], m - 1);
+              return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t)).withArgs();
+            } else if (n != 1) {
+              throw new GeneratorException(
+                  "modulus must be a power of two, or bit vector must fit in one word.");
             }
-            return null;
+            Temp[] args =
+                Temp.makeTemps(n); // TODO: add support for n>1, mod not a power of two ...
+            Tail t = Prim.rem.withArgs(args[0], m);
+            return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t)).withArgs();
           }
         });
 
@@ -535,20 +559,20 @@ public class External extends TopDefn {
     generators.put(
         "primRelaxIx",
         new Generator(2) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger n = ts[0].isPosWord(); // Smaller index modulus
-            BigInteger m = ts[1].isPosWord(); // Larger index modulus
-            if (n != null && m != null && n.compareTo(m) <= 0) {
-              // We implement relaxIx as the identity function (Ix n and Ix m values are both
-              // represented as Word values).
-              // TODO: the type checker will infer a *polymorphic* type for this definition, which
-              // will trip up the LLVM
-              // code generator (although that will likely not happen in practice because this
-              // definition should be inlined
-              // by the optimizer).
-              return new Return().makeUnaryFuncClosure(pos, 1);
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            BigInteger n = ts[0].validIndex(); // Smaller index modulus
+            BigInteger m = ts[1].validIndex(); // Larger index modulus
+            if (n.compareTo(m) > 0) {
+              throw new GeneratorException("first parameter must not be larger than the second");
             }
-            return null;
+            // We implement relaxIx as the identity function (Ix n and Ix m values are both
+            // represented as Word values).
+            // TODO: the type checker will infer a *polymorphic* type for this definition, which
+            // will trip up the LLVM
+            // code generator (although that will likely not happen in practice because this
+            // definition should be inlined
+            // by the optimizer).
+            return new Return().makeUnaryFuncClosure(pos, 1);
           }
         });
 
@@ -556,25 +580,23 @@ public class External extends TopDefn {
     generators.put(
         "primGenIncIx",
         new Generator(2) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
-            BigInteger m = ts[1].isPosWord(); // Index modulus, will be > 0
-            if (m != null) {
-              // inc[j, i] = v <- add((i, 1)); j @ v
-              Temp[] ji = Temp.makeTemps(2);
-              Temp v = new Temp();
-              Block inc =
-                  new Block(
-                      pos,
-                      ji,
-                      new Bind(v, Prim.add.withArgs(ji[1], 1), new Done(new Enter(ji[0], v))));
+            BigInteger m = ts[1].validIndex(); // Index modulus, will be > 0
 
-              // b[n,..., j, i] = w <- ult((i, m-1)); if w then inc[j, i] else return [n,...]
-              Temp[] nji = Temp.makeTemps(nl + 2);
-              Block b = guardBlock(pos, nji, Prim.ult.withArgs(nji[nl + 1], m.intValue() - 1), inc);
-              return new BlockCall(b).makeTernaryFuncClosure(pos, nl, 1, 1);
-            }
-            return null;
+            // inc[j, i] = v <- add((i, 1)); j @ v
+            Temp[] ji = Temp.makeTemps(2);
+            Temp v = new Temp();
+            Block inc =
+                new Block(
+                    pos,
+                    ji,
+                    new Bind(v, Prim.add.withArgs(ji[1], 1), new Done(new Enter(ji[0], v))));
+
+            // b[n,..., j, i] = w <- ult((i, m-1)); if w then inc[j, i] else return [n,...]
+            Temp[] nji = Temp.makeTemps(nl + 2);
+            Block b = guardBlock(pos, nji, Prim.ult.withArgs(nji[nl + 1], m.intValue() - 1), inc);
+            return new BlockCall(b).makeTernaryFuncClosure(pos, nl, 1, 1);
           }
         });
 
@@ -583,16 +605,14 @@ public class External extends TopDefn {
     generators.put(
         "primIncIx",
         new Generator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger m = ts[0].isPosWord(); // Index modulus, must be > 0
-            if (m != null
-                && bitdataRepresentations) { // ensure Maybe (Ix m) and Ix (m+1) have same
-                                             // representation
-              Temp[] vs = Temp.makeTemps(1);
-              Block b = new Block(pos, vs, new Done(Prim.add.withArgs(vs[0], 1)));
-              return new BlockCall(b).makeUnaryFuncClosure(pos, 1);
-            }
-            return null;
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            long m = ts[0].validIndex().longValue(); // Index modulus, must be > 0
+            validBitdataRepresentations(); // ensure Maybe (Ix m) and Ix (m+1) have same
+                                           // representation
+            Temp[] vs = Temp.makeTemps(1);
+            Tail t = (m == 1) ? new Return(Flag.True) : Prim.add.withArgs(vs[0], 1);
+            Block b = new Block(pos, vs, new Done(t));
+            return new BlockCall(b).makeUnaryFuncClosure(pos, 1);
           }
         });
 
@@ -600,56 +620,49 @@ public class External extends TopDefn {
     generators.put(
         "primGenDecIx",
         new Generator(2) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
-            BigInteger m = ts[1].isPosWord(); // Index modulus, must be > 0
-            if (m != null) {
-              // dec[j, i] = v <- sub((i, 1)); j @ v
-              Temp[] ji = Temp.makeTemps(2);
-              Temp v = new Temp();
-              Block dec =
-                  new Block(
-                      pos,
-                      ji,
-                      new Bind(v, Prim.sub.withArgs(ji[1], 1), new Done(new Enter(ji[0], v))));
+            BigInteger m = ts[1].validIndex(); // Index modulus, must be > 0
 
-              // b[n,..., j, i] = w <- ugt((i, 0)); if w then dec[j, i] else return [n,...]
-              Temp[] nji = Temp.makeTemps(nl + 2);
-              Block b = guardBlock(pos, nji, Prim.ugt.withArgs(nji[nl + 1], 0), dec);
-              return new BlockCall(b).makeTernaryFuncClosure(pos, nl, 1, 1);
-            }
-            return null;
+            // dec[j, i] = v <- sub((i, 1)); j @ v
+            Temp[] ji = Temp.makeTemps(2);
+            Temp v = new Temp();
+            Block dec =
+                new Block(
+                    pos,
+                    ji,
+                    new Bind(v, Prim.sub.withArgs(ji[1], 1), new Done(new Enter(ji[0], v))));
+
+            // b[n,..., j, i] = w <- ugt((i, 0)); if w then dec[j, i] else return [n,...]
+            Temp[] nji = Temp.makeTemps(nl + 2);
+            Block b = guardBlock(pos, nji, Prim.ugt.withArgs(nji[nl + 1], 0), dec);
+            return new BlockCall(b).makeTernaryFuncClosure(pos, nl, 1, 1);
           }
         });
 
     // primDecIx m :: Ix m -> Maybe (Ix m)
-    // Special case: requires bitdataRepresentations, m is a power of 2, and m < 2^WordSize
+    // Special case: requires bitdataRepresentations, (m+1) is a power of 2, and m is a valid index
+    // limit
     generators.put(
         "primDecIx",
         new Generator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger m = ts[0].isPosWord(); // Index modulus, must be > 0
-            if (m != null
-                && bitdataRepresentations) { // ensure Maybe (Ix m) and Ix (m+1) have same
-                                             // representation
-              int im = m.intValue();
-              if ((im & (im - 1)) == 0) { // test for a power of two
-                // In this special case, we can avoid a branching implementation by combining a
-                // decrement with a mask:
-                Temp[] vs = Temp.makeTemps(1);
-                Temp w = new Temp();
-                Block b =
-                    new Block(
-                        pos,
-                        vs,
-                        new Bind(
-                            w,
-                            Prim.sub.withArgs(vs[0], 1),
-                            new Done(Prim.and.withArgs(w, im - 1))));
-                return new BlockCall(b).makeUnaryFuncClosure(pos, 1);
-              }
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            long m = ts[0].validIndex().longValue(); // Index modulus, must be > 0
+            if (((m + 1) & m) != 0) { // ... with a successor that is a power of two
+              throw new GeneratorException(m + " is not a power of two minus 1");
             }
-            return null;
+            validBitdataRepresentations(); // ensure that Nothing is represented by all 1s
+            Temp[] vs = Temp.makeTemps(1);
+            Code c;
+            if (m == 1) {
+              c = new Done(new Return(Flag.True));
+            } else {
+              // In this special case, we can avoid a branching implementation by combining a
+              // decrement with a mask:
+              Temp w = new Temp();
+              c = new Bind(w, Prim.sub.withArgs(vs[0], 1), new Done(Prim.and.withArgs(w, m)));
+            }
+            return new BlockCall(new Block(pos, vs, c)).makeUnaryFuncClosure(pos, 1);
           }
         });
 
@@ -657,19 +670,16 @@ public class External extends TopDefn {
     generators.put(
         "primGenMaybeIx",
         new Generator(2) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
-            BigInteger m = ts[1].isPosWord(); // Index modulus
-            if (m != null && m.signum() > 0) {
-              Block yes = enterBlock(pos); // yes[j, i] = j @ i
-              // b[n,..., j, i] = w <- ule((i, m-1)); if w then yes[j, i] else return [n,...]
-              // NOTE: using (v <= m-1) rather than (v < m) is important for the case where
-              // m=(2^WordSize)
-              Temp[] njv = Temp.makeTemps(nl + 2);
-              Block b = guardBlock(pos, njv, Prim.ule.withArgs(njv[nl + 1], m.intValue() - 1), yes);
-              return new BlockCall(b).makeTernaryFuncClosure(pos, nl, 1, 1);
-            }
-            return null;
+            long m = ts[1].validIndex().longValue(); // Index modulus
+            Block yes = enterBlock(pos); // yes[j, i] = j @ i
+            // b[n,..., j, i] = w <- ule((i, m-1)); if w then yes[j, i] else return [n,...]
+            // NOTE: using (v <= m-1) rather than (v < m) is important for the case where
+            // m=(2^WordSize)
+            Temp[] njv = Temp.makeTemps(nl + 2);
+            Block b = guardBlock(pos, njv, Prim.ule.withArgs(njv[nl + 1], m - 1), yes);
+            return new BlockCall(b).makeTernaryFuncClosure(pos, nl, 1, 1);
           }
         });
 
@@ -677,35 +687,32 @@ public class External extends TopDefn {
     generators.put(
         "primGenLeqIx",
         new Generator(2) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
-            BigInteger m = ts[1].isPosWord(); // Index modulus
-            if (m != null && m.compareTo(BigInteger.ZERO) > 0) {
-              Block yes = enterBlock(pos); // yes[j, i] = j @ i
-              Block no = returnBlock(pos, nl); // no[thing] = return thing
-              // b[n,..., j, v, i] = w <- ule((v, i)); if w then yes[j, v] else return [n,...]
-              Temp[] njvi = Temp.makeTemps(nl + 3);
-              Atom[] ns = new Atom[nl];
-              for (int i = 0; i < nl; i++) {
-                ns[i] = njvi[i];
-              }
-              Temp w = new Temp();
-              Block b =
-                  new Block(
-                      pos,
-                      njvi,
-                      new Bind(
-                          w,
-                          Prim.ule.withArgs(njvi[nl + 1], njvi[nl + 2]),
-                          new If(
-                              w,
-                              new BlockCall(yes, new Atom[] {njvi[nl], njvi[nl + 1]}),
-                              new BlockCall(no, ns))));
-              return new BlockCall(b)
-                  .makeClosure(pos, nl + 2, 1)
-                  .makeTernaryFuncClosure(pos, nl, 1, 1);
+            ts[1].validIndex(); // Check for valid index modulus
+            Block yes = enterBlock(pos); // yes[j, i] = j @ i
+            Block no = returnBlock(pos, nl); // no[thing] = return thing
+            // b[n,..., j, v, i] = w <- ule((v, i)); if w then yes[j, v] else return [n,...]
+            Temp[] njvi = Temp.makeTemps(nl + 3);
+            Atom[] ns = new Atom[nl];
+            for (int i = 0; i < nl; i++) {
+              ns[i] = njvi[i];
             }
-            return null;
+            Temp w = new Temp();
+            Block b =
+                new Block(
+                    pos,
+                    njvi,
+                    new Bind(
+                        w,
+                        Prim.ule.withArgs(njvi[nl + 1], njvi[nl + 2]),
+                        new If(
+                            w,
+                            new BlockCall(yes, new Atom[] {njvi[nl], njvi[nl + 1]}),
+                            new BlockCall(no, ns))));
+            return new BlockCall(b)
+                .makeClosure(pos, nl + 2, 1)
+                .makeTernaryFuncClosure(pos, nl, 1, 1);
           }
         });
   }

@@ -292,7 +292,9 @@ public abstract class Tycon extends Name {
         ? a.simplifyNatType(null).bitvectorRep()
         : (this == nzbit)
             ? a.simplifyNatType(null).nzbitvectorRep()
-            : (this == ix) ? Tycon.wordRep : (this == init) ? Tycon.initRep : null;
+            : (this == ix)
+                ? Tycon.wordRep // N.B. even Ix 1, a singleton type, is represented by a Word ...
+                : (this == init) ? Tycon.initRep : null;
   }
 
   /**

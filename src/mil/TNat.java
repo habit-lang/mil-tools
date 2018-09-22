@@ -124,6 +124,10 @@ public class TNat extends TLit {
     return Word.numWords(num.intValue()) == 1 ? Tycon.nzwordRep : null;
   }
 
+  BigInteger validNat() throws External.GeneratorException {
+    return num;
+  }
+
   /**
    * Determine whether this type is a natural number that falls within the specified range,
    * inclusive of bounds.
