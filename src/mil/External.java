@@ -1082,7 +1082,7 @@ public class External extends TopDefn {
               int width = w.intValue();
               switch (width) {
                 case 0:
-                  return new BlockCall(bz).makeBinaryFuncClosure(pos, 1, 1);
+                  return new BlockCall(bz).withArgs().constClosure(pos, 1).constClosure(pos, 1);
 
                 case 1:
                   return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
