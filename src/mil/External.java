@@ -771,12 +771,9 @@ public class External extends TopDefn {
     generators.put(
         ref,
         new Generator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger m = ts[0].isPosWord(); // Index upper bound
-            if (m != null) {
-              return new PrimCall(cmp).makeBinaryFuncClosure(pos, 1, 1);
-            }
-            return null;
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            ts[0].validIndex(); // Index upper bound
+            return new PrimCall(cmp).makeBinaryFuncClosure(pos, 1, 1);
           }
         });
   }
@@ -804,44 +801,40 @@ public class External extends TopDefn {
     generators.put(
         "primBitNot",
         new Generator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger w = ts[0].isNonNegInt(); // Width of bit vector
-            if (w != null) {
-              int width = w.intValue();
-              switch (width) {
-                case 0:
-                  return unaryUnit(pos);
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int width = ts[0].validWidth(); // Width of bit vector
+            switch (width) {
+              case 0:
+                return unaryUnit(pos);
 
-                case 1:
-                  return new PrimCall(Prim.bnot).makeUnaryFuncClosure(pos, 1);
+              case 1:
+                return new PrimCall(Prim.bnot).makeUnaryFuncClosure(pos, 1);
 
-                default:
-                  {
-                    int n = Word.numWords(width);
-                    Temp[] vs = Temp.makeTemps(n); // variables returned from block
-                    Temp[] ws = Temp.makeTemps(n); // arguments to closure
-                    Code code = new Done(new Return(Temp.clone(vs)));
-                    int rem = width % Word.size(); // nonzero => unused bits in most sig word
+              default:
+                {
+                  int n = Word.numWords(width);
+                  Temp[] vs = Temp.makeTemps(n); // variables returned from block
+                  Temp[] ws = Temp.makeTemps(n); // arguments to closure
+                  Code code = new Done(new Return(Temp.clone(vs)));
+                  int rem = width % Word.size(); // nonzero => unused bits in most sig word
 
-                    // Use Prim.xor on the most significant word if not all bits are used:
-                    if (rem != 0) {
-                      Temp v = vs[--n];
-                      code =
-                          new Bind(v, Prim.xor.withArgs(vs[n] = new Temp(), (1L << rem) - 1), code);
-                    }
-
-                    // Use Prim.not on any remaining words:
-                    while (n > 0) {
-                      Temp v = vs[--n];
-                      code = new Bind(v, Prim.not.withArgs(vs[n] = new Temp()), code);
-                    }
-
-                    return new BlockCall(new Block(pos, vs, code))
-                        .makeUnaryFuncClosure(pos, vs.length);
+                  // Use Prim.xor on the most significant word if not all bits are used:
+                  if (rem != 0) {
+                    Temp v = vs[--n];
+                    code =
+                        new Bind(v, Prim.xor.withArgs(vs[n] = new Temp(), (1L << rem) - 1), code);
                   }
-              }
+
+                  // Use Prim.not on any remaining words:
+                  while (n > 0) {
+                    Temp v = vs[--n];
+                    code = new Bind(v, Prim.not.withArgs(vs[n] = new Temp()), code);
+                  }
+
+                  return new BlockCall(new Block(pos, vs, code))
+                      .makeUnaryFuncClosure(pos, vs.length);
+                }
             }
-            return null;
           }
         });
   }
@@ -857,34 +850,30 @@ public class External extends TopDefn {
     generators.put(
         ref,
         new Generator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger w = ts[0].isNonNegInt(); // Width of bit vector
-            if (w != null) {
-              int width = w.intValue();
-              switch (width) {
-                case 0:
-                  return binaryUnit(pos);
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int width = ts[0].validWidth(); // Width of bit vector
+            switch (width) {
+              case 0:
+                return binaryUnit(pos);
 
-                case 1:
-                  return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
+              case 1:
+                return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
 
-                default:
-                  {
-                    // Block: b[a0,...b0,...] = c0 <- p((a0,b0)); ...; return [c0,...]
-                    int n = Word.numWords(width);
-                    Temp[] as = Temp.makeTemps(n); // inputs
-                    Temp[] bs = Temp.makeTemps(n);
-                    Temp[] cs = Temp.makeTemps(n); // output
-                    Code code = new Done(new Return(cs));
-                    for (int i = n; 0 < i--; ) {
-                      code = new Bind(cs[i], p.withArgs(as[i], bs[i]), code);
-                    }
-                    return new BlockCall(new Block(pos, Temp.append(as, bs), code))
-                        .makeBinaryFuncClosure(pos, n, n);
+              default:
+                {
+                  // Block: b[a0,...b0,...] = c0 <- p((a0,b0)); ...; return [c0,...]
+                  int n = Word.numWords(width);
+                  Temp[] as = Temp.makeTemps(n); // inputs
+                  Temp[] bs = Temp.makeTemps(n);
+                  Temp[] cs = Temp.makeTemps(n); // output
+                  Code code = new Done(new Return(cs));
+                  for (int i = n; 0 < i--; ) {
+                    code = new Bind(cs[i], p.withArgs(as[i], bs[i]), code);
                   }
-              }
+                  return new BlockCall(new Block(pos, Temp.append(as, bs), code))
+                      .makeBinaryFuncClosure(pos, n, n);
+                }
             }
-            return null;
           }
         });
   }
@@ -901,31 +890,32 @@ public class External extends TopDefn {
     generators.put(
         "primBitNegate",
         new Generator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger w = ts[0].isNonNegInt(); // Width of bit vector
-            if (w != null) {
-              int width = w.intValue();
-              switch (width) {
-                case 0:
-                  return unaryUnit(pos);
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int width = ts[0].validWidth(); // Width of bit vector
+            switch (width) {
+              case 0:
+                return unaryUnit(pos);
 
-                case 1: // Negate is the identity function on Bit 1!
-                  return new Return().makeUnaryFuncClosure(pos, 1);
+              case 1: // Negate is the identity function on Bit 1!
+                return new Return().makeUnaryFuncClosure(pos, 1);
 
-                default:
-                  {
-                    int n = Word.numWords(width);
-                    if (n == 1) {
-                      Temp[] args = Temp.makeTemps(1);
-                      Code code = maskTail(Prim.neg.withArgs(args), width);
-                      return new BlockCall(new Block(pos, args, code)).makeUnaryFuncClosure(pos, 1);
-                    }
-                  }
-              }
+              default:
+                {
+                  validSingleWord(width);
+                  Temp[] args = Temp.makeTemps(1);
+                  Code code = maskTail(Prim.neg.withArgs(args), width);
+                  return new BlockCall(new Block(pos, args, code)).makeUnaryFuncClosure(pos, 1);
+                }
             }
-            return null;
           }
         });
+  }
+
+  private static void validSingleWord(int width) throws GeneratorException {
+    if (Word.numWords(width) != 1) {
+      throw new GeneratorException(
+          "bit vector of width " + width + " does not fit in a single word");
+    }
   }
 
   private static Code maskTail(Tail t, int width) {
@@ -950,30 +940,23 @@ public class External extends TopDefn {
     generators.put(
         ref,
         new Generator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger w = ts[0].isNonNegInt(); // Width of bit vector
-            if (w != null) {
-              int width = w.intValue();
-              switch (width) {
-                case 0:
-                  return binaryUnit(pos);
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int width = ts[0].validWidth(); // Width of bit vector
+            switch (width) {
+              case 0:
+                return binaryUnit(pos);
 
-                case 1:
-                  return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
+              case 1:
+                return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
 
-                default:
-                  {
-                    int n = Word.numWords(width);
-                    if (n == 1) {
-                      Temp[] args = Temp.makeTemps(2);
-                      Code code = maskTail(p.withArgs(args), width);
-                      return new BlockCall(new Block(pos, args, code))
-                          .makeBinaryFuncClosure(pos, 1, 1);
-                    }
-                  }
-              }
+              default:
+                {
+                  validSingleWord(width);
+                  Temp[] args = Temp.makeTemps(2);
+                  Code code = maskTail(p.withArgs(args), width);
+                  return new BlockCall(new Block(pos, args, code)).makeBinaryFuncClosure(pos, 1, 1);
+                }
             }
-            return null;
           }
         });
   }
@@ -999,26 +982,22 @@ public class External extends TopDefn {
     generators.put(
         ref,
         new Generator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger w = ts[0].isNonNegInt(); // Width of bit vector
-            if (w != null) {
-              int width = w.intValue();
-              switch (width) {
-                case 0:
-                  return new BlockCall(bz).withArgs().constClosure(pos, 1).constClosure(pos, 1);
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int width = ts[0].validWidth(); // Width of bit vector
+            switch (width) {
+              case 0:
+                return new BlockCall(bz).withArgs().constClosure(pos, 1).constClosure(pos, 1);
 
-                case 1:
-                  return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
+              case 1:
+                return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
 
-                default:
-                  {
-                    int n = Word.numWords(width);
-                    return new BlockCall(bitEqBlock(pos, n, test, bearly))
-                        .makeBinaryFuncClosure(pos, n, n);
-                  }
-              }
+              default:
+                {
+                  int n = Word.numWords(width);
+                  return new BlockCall(bitEqBlock(pos, n, test, bearly))
+                      .makeBinaryFuncClosure(pos, n, n);
+                }
             }
-            return null;
           }
         });
   }
@@ -1076,26 +1055,22 @@ public class External extends TopDefn {
     generators.put(
         ref,
         new Generator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger w = ts[0].isNonNegInt(); // Width of bit vector
-            if (w != null) {
-              int width = w.intValue();
-              switch (width) {
-                case 0:
-                  return new BlockCall(bz).withArgs().constClosure(pos, 1).constClosure(pos, 1);
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int width = ts[0].validWidth(); // Width of bit vector
+            switch (width) {
+              case 0:
+                return new BlockCall(bz).withArgs().constClosure(pos, 1).constClosure(pos, 1);
 
-                case 1:
-                  return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
+              case 1:
+                return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
 
-                default:
-                  {
-                    int n = Word.numWords(width);
-                    return new BlockCall(bitLexCompBlock(pos, n, lsw, slsw))
-                        .makeBinaryFuncClosure(pos, n, n);
-                  }
-              }
+              default:
+                {
+                  int n = Word.numWords(width);
+                  return new BlockCall(bitLexCompBlock(pos, n, lsw, slsw))
+                      .makeBinaryFuncClosure(pos, n, n);
+                }
             }
-            return null;
           }
         });
   }
@@ -1250,14 +1225,10 @@ public class External extends TopDefn {
       super(needs);
     }
 
-    Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-      BigInteger w = ts[0].isPosInt(); // Width of bit vector
-      if (w != null) {
-        int width = w.intValue();
-        int n = Word.numWords(width);
-        return new BlockCall(decisionTree(pos, width, n, 0, n - 1, 0)).makeUnaryFuncClosure(pos, 1);
-      }
-      return null;
+    Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+      int width = ts[0].validWidth(2); // Width of bit vector
+      int n = Word.numWords(width);
+      return new BlockCall(decisionTree(pos, width, n, 0, n - 1, 0)).makeUnaryFuncClosure(pos, 1);
     }
   }
 
@@ -1268,15 +1239,11 @@ public class External extends TopDefn {
       super(needs);
     }
 
-    Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-      BigInteger w = ts[0].isPosInt(); // Width of bit vector
-      if (w != null) {
-        int width = w.intValue();
-        int n = Word.numWords(width);
-        return new BlockCall(decisionTree(pos, width, n, 0, n - 1, n))
-            .makeBinaryFuncClosure(pos, n, 1);
-      }
-      return null;
+    Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+      int width = ts[0].validWidth(2); // Width of bit vector
+      int n = Word.numWords(width);
+      return new BlockCall(decisionTree(pos, width, n, 0, n - 1, n))
+          .makeBinaryFuncClosure(pos, n, 1);
     }
 
     protected static Atom[] reuseOtherWords(Temp[] vs, Atom w, int n, int lo) {
@@ -1354,24 +1321,20 @@ public class External extends TopDefn {
     generators.put(
         "primBitBitSize",
         new Generator(1) { // :: Bit w -> Ix w
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger w = ts[0].isPosInt(); // Bit vector width
-            if (w != null) {
-              int width = w.intValue();
-              int n = Word.numWords(width);
-              Tail t = new Return(new Word(width - 1));
-              // TODO: The Temp.makeTemps(n) call in the following creates the proxy argument of
-              // type Bit w that is required as an input
-              // for this function (to avoid ambiguity).  Because it is not actually used, however,
-              // it will result in a polymorphic
-              // definition in post-specialization code, which may break subsequent attempts to
-              // generate code from monomorphic MIL code
-              // ... unless this definition is optimized away (which, it should be ... assuming that
-              // the optimizer is invoked ...)
-              ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(n), t);
-              return new ClosAlloc(k).withArgs();
-            }
-            return null;
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int width = ts[0].validWidth(1); // Bit vector width
+            int n = Word.numWords(width);
+            Tail t = new Return(new Word(width - 1));
+            // TODO: The Temp.makeTemps(n) call in the following creates the proxy argument of type
+            // Bit w that is required as an input
+            // for this function (to avoid ambiguity).  Because it is not actually used, however, it
+            // will result in a polymorphic
+            // definition in post-specialization code, which may break subsequent attempts to
+            // generate code from monomorphic MIL code
+            // ... unless this definition is optimized away (which, it should be ... assuming that
+            // the optimizer is invoked ...)
+            ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(n), t);
+            return new ClosAlloc(k).withArgs();
           }
         });
   }
@@ -1382,17 +1345,13 @@ public class External extends TopDefn {
     generators.put(
         "primBitShiftL",
         new BitPosGenerator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger w = ts[0].isNonNegInt(); // Width of bit vector
-            if (w != null) {
-              int width = w.intValue();
-              if (width > 1) { // TODO: add support for width 0 and width 1?
-                int n = Word.numWords(width);
-                return new BlockCall(decisionTree(pos, width, n, 0, n - 1, n))
-                    .makeBinaryFuncClosure(pos, n, 1);
-              }
-            }
-            return null;
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int width =
+                ts[0].validWidth(
+                    2); // Width of bit vector // TODO: add support for width 0 and width 1?
+            int n = Word.numWords(width);
+            return new BlockCall(decisionTree(pos, width, n, 0, n - 1, n))
+                .makeBinaryFuncClosure(pos, n, 1);
           }
 
           Block decisionLeaf(Position pos, Temp[] vs, int width, int n, int lo, int numArgs) {
@@ -1503,17 +1462,13 @@ public class External extends TopDefn {
     generators.put(
         "primBitShiftRu",
         new BitPosGenerator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger w = ts[0].isNonNegInt(); // Width of bit vector
-            if (w != null) {
-              int width = w.intValue();
-              if (width > 1) { // TODO: add support for width 0 and width 1?
-                int n = Word.numWords(width);
-                return new BlockCall(decisionTree(pos, width, n, 0, n - 1, n))
-                    .makeBinaryFuncClosure(pos, n, 1);
-              }
-            }
-            return null;
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int width =
+                ts[0].validWidth(
+                    2); // Width of bit vector // TODO: add support for width 0 and width 1?
+            int n = Word.numWords(width);
+            return new BlockCall(decisionTree(pos, width, n, 0, n - 1, n))
+                .makeBinaryFuncClosure(pos, n, 1);
           }
 
           Block decisionLeaf(Position pos, Temp[] vs, int width, int n, int lo, int numArgs) {
