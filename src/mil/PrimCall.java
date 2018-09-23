@@ -57,9 +57,6 @@ public class PrimCall extends Call {
     return p.withArgs(args);
   }
 
-  /** Represents a tail expression that halts/terminates the current program. */
-  public static final Call halt = Prim.halt.withArgs();
-
   private BlockType type;
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
@@ -101,7 +98,10 @@ public class PrimCall extends Call {
     return p.doesntReturn();
   }
 
-  public static final Call loop = Prim.loop.withArgs();
+  /** Return true if this is a halt or loop primitive call. */
+  boolean halts() {
+    return p.halts();
+  }
 
   /**
    * Skip goto blocks in a Tail (for a ClosureDefn or TopLevel). TODO: can this be simplified now

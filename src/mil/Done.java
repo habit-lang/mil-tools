@@ -114,6 +114,11 @@ public class Done extends Code {
     return t.doesntReturn();
   }
 
+  /** Return true if this is a halt or loop primitive call. */
+  boolean halts() {
+    return t.halts();
+  }
+
   /**
    * Test whether a given Code/Tail value is an expression of the form return vs, with the specified
    * Temp[] vs as parameter. We also return a true result for a Tail of the form return _, where the

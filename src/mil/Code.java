@@ -70,9 +70,6 @@ public abstract class Code {
    */
   public abstract Code forceApply(TempSubst s);
 
-  /** Represents a code sequence that halts/terminates the current program. */
-  public static final Code halt = new Done(PrimCall.halt);
-
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   abstract TVars tvars(TVars tvs);
 
@@ -163,6 +160,11 @@ public abstract class Code {
    */
   Code cleanup(Block src) {
     return this;
+  }
+
+  /** Return true if this is a halt or loop primitive call. */
+  boolean halts() {
+    return false;
   }
 
   /**

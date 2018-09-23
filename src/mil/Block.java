@@ -461,7 +461,7 @@ public class Block extends Defn {
     // Check to see if this block calls code for an already visited block:
     if (Blocks.isIn(this, visited) || code.detectLoops(this, visited)) {
       MILProgram.report("detected an infinite loop in block " + getId());
-      code = new Done(PrimCall.loop);
+      code = new Done(Prim.loop.withArgs());
       return true;
     }
     return false;

@@ -1437,6 +1437,33 @@ public class Prim {
     void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
       throw new Failure("halt primitive executed");
     }
+
+    /** Return true if this is a halt or loop primitive call. */
+    boolean halts() {
+      return true;
+    }
+  }
+
+  public static final Prim loop = new loop();
+
+  private static class loop extends Prim {
+
+    private loop() {
+      this(haltType);
+    }
+
+    private loop(BlockType bt) {
+      super("loop", DOESNTRETURN, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new loop(bt);
+    }
+
+    /** Return true if this is a halt or loop primitive call. */
+    boolean halts() {
+      return true;
+    }
   }
 
   BlockType instantiate() {
@@ -1512,21 +1539,9 @@ public class Prim {
     throw new Failure("primitive \"" + id + "\" not available");
   }
 
-  public static final Prim loop = new loop();
-
-  private static class loop extends Prim {
-
-    private loop() {
-      this(haltType);
-    }
-
-    private loop(BlockType bt) {
-      super("loop", DOESNTRETURN, bt);
-    }
-
-    public Prim clone(BlockType bt) {
-      return new loop(bt);
-    }
+  /** Return true if this is a halt or loop primitive call. */
+  boolean halts() {
+    return false;
   }
 
   /**

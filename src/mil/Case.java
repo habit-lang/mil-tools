@@ -411,7 +411,7 @@ public class Case extends Code {
     // If there are no alternatives, replace this Case with a Done:
     if (alts.length == 0) { // no alternatives; use default
       MILProgram.report("eliminating case with no alternatives");
-      return (def == null) ? Code.halt : new Done(def);
+      return (def == null) ? new Done(Prim.halt.withArgs()) : new Done(def);
     }
 
     // Determine which constructor numbers are covered by alts:

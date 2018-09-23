@@ -152,9 +152,13 @@ public class Bind extends Code {
     } else if (c.isReturn(vs)) { // Rewrite (vs <- t; return vs) ==> t
       MILProgram.report("applied right monad law in " + src.getId());
       return new Done(t);
-    } else if (t.doesntReturn()) { // Rewrite (vs <- t; c) ==> t, if t doesn't return
+    } else if (t.halts()) { // Rewrite (vs <- loop(()); c) ==> loop(())
+      MILProgram.report("rewrite (vs <- loop(()); c) ==> loop(())");
+      return new Done(Prim.loop.withArgs());
+    } else if (t.doesntReturn()
+        && !c.halts()) { // Rewrite (vs <- t; c) ==> vs <- t; loop(()), if t doesn't return
       MILProgram.report("removed code after a tail that does not return in " + src.getId());
-      return new Done(t);
+      return new Bind(vs, t, new Done(Prim.loop.withArgs()));
     } else {
       c = c.cleanup(src);
       return this;
