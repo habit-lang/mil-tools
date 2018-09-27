@@ -452,11 +452,6 @@ public class Block extends Defn {
     return false; // no change
   }
 
-  /** Perform pre-inlining cleanup on each Block in this SCC. */
-  void cleanup() {
-    code = code.cleanup(this);
-  }
-
   boolean detectLoops(Blocks visited) {
     // Check to see if this block calls code for an already visited block:
     if (Blocks.isIn(this, visited) || code.detectLoops(this, visited)) {
@@ -465,6 +460,11 @@ public class Block extends Defn {
       return true;
     }
     return false;
+  }
+
+  /** Perform pre-inlining cleanup on each Block in this SCC. */
+  void cleanup() {
+    code = code.cleanup(this);
   }
 
   /** Apply inlining. */

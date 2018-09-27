@@ -119,6 +119,10 @@ public class Assert extends Code {
     return c.doesntReturn();
   }
 
+  boolean detectLoops(Block src, Blocks visited) {
+    return c.detectLoops(src, visited);
+  }
+
   /**
    * Return a possibly shortened version of this code sequence by applying some simple
    * transformations. The src Block is passed as an argument for use in reporting any optimizations
@@ -131,10 +135,6 @@ public class Assert extends Code {
       return c;
     }
     return this;
-  }
-
-  boolean detectLoops(Block src, Blocks visited) {
-    return c.detectLoops(src, visited);
   }
 
   /**

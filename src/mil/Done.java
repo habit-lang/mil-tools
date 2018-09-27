@@ -114,6 +114,10 @@ public class Done extends Code {
     return t.doesntReturn();
   }
 
+  boolean detectLoops(Block src, Blocks visited) { // look for src[x] = b[x]
+    return t.detectLoops(src, visited);
+  }
+
   /** Return true if this is a halt or loop primitive call. */
   boolean halts() {
     return t.halts();
@@ -128,10 +132,6 @@ public class Done extends Code {
    */
   boolean isReturn(Temp[] vs) {
     return t.isReturn(vs);
-  }
-
-  boolean detectLoops(Block src, Blocks visited) { // look for src[x] = b[x]
-    return t.detectLoops(src, visited);
   }
 
   /**

@@ -139,6 +139,12 @@ public class Bind extends Code {
     return t.doesntReturn() || c.doesntReturn();
   }
 
+  boolean detectLoops(
+      Block src, Blocks visited) { // look for src[x] = (vs <- b[x]; ...), possibly with some
+    // initial prefix of pure bindings xs1 <- pt1; ...; xsn <- ptn
+    return t.detectLoops(src, visited) || (t.hasNoEffect() && c.detectLoops(src, visited));
+  }
+
   /**
    * Return a possibly shortened version of this code sequence by applying some simple
    * transformations. The src Block is passed as an argument for use in reporting any optimizations
@@ -163,12 +169,6 @@ public class Bind extends Code {
       c = c.cleanup(src);
       return this;
     }
-  }
-
-  boolean detectLoops(
-      Block src, Blocks visited) { // look for src(x) = (vs <- b[x]; ...), possibly with some
-    // initial prefix of pure bindings xs1 <- pt1; ...; xsn <- ptn
-    return t.detectLoops(src, visited) || (t.hasNoEffect() && c.detectLoops(src, visited));
   }
 
   /**

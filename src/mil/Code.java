@@ -153,6 +153,10 @@ public abstract class Code {
   /** Test for code that is guaranteed not to return. */
   abstract boolean doesntReturn();
 
+  boolean detectLoops(Block src, Blocks visited) {
+    return false;
+  }
+
   /**
    * Return a possibly shortened version of this code sequence by applying some simple
    * transformations. The src Block is passed as an argument for use in reporting any optimizations
@@ -175,10 +179,6 @@ public abstract class Code {
    * "void functions" that do not return a useful result.
    */
   boolean isReturn(Temp[] vs) {
-    return false;
-  }
-
-  boolean detectLoops(Block src, Blocks visited) {
     return false;
   }
 

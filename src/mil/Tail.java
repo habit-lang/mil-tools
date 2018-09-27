@@ -156,6 +156,10 @@ public abstract class Tail {
     return false;
   }
 
+  boolean detectLoops(Block src, Blocks visited) {
+    return false;
+  }
+
   /** Return true if this is a halt or loop primitive call. */
   boolean halts() {
     return false;
@@ -169,10 +173,6 @@ public abstract class Tail {
    * "void functions" that do not return a useful result.
    */
   boolean isReturn(Temp[] vs) {
-    return false;
-  }
-
-  boolean detectLoops(Block src, Blocks visited) {
     return false;
   }
 

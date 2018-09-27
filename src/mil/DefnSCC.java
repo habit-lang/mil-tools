@@ -172,16 +172,16 @@ public class DefnSCC {
     } while (changed);
   }
 
+  void detectLoops() {
+    for (Defns ds = getBindings(); ds != null; ds = ds.next) {
+      ds.head.detectLoops(null);
+    }
+  }
+
   /** Perform pre-inlining cleanup on each Block in this SCC. */
   void cleanup() {
     for (Defns ds = getBindings(); ds != null; ds = ds.next) {
       ds.head.cleanup();
-    }
-  }
-
-  void detectLoops() {
-    for (Defns ds = getBindings(); ds != null; ds = ds.next) {
-      ds.head.detectLoops(null);
     }
   }
 
