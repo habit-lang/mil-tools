@@ -28,12 +28,16 @@ public class StructDefn extends TyconDefn {
 
   TypeExp sizeExp;
 
+  TypeExp alignExp;
+
   private StructRegionExp[] regexps;
 
   /** Default constructor. */
-  public StructDefn(Position pos, String id, TypeExp sizeExp, StructRegionExp[] regexps) {
+  public StructDefn(
+      Position pos, String id, TypeExp sizeExp, TypeExp alignExp, StructRegionExp[] regexps) {
     super(pos, id);
     this.sizeExp = sizeExp;
+    this.alignExp = alignExp;
     this.regexps = regexps;
   }
 
@@ -60,6 +64,9 @@ public class StructDefn extends TyconDefn {
     if (sizeExp != null) {
       depends = sizeExp.scopeTycons(handler, null, env, defns, depends);
     }
+    if (alignExp != null) {
+      depends = alignExp.scopeTycons(handler, null, env, defns, depends);
+    }
     for (int i = 0; i < regexps.length; i++) {
       depends = regexps[i].scopeTycons(handler, null, env, defns, depends);
     }
@@ -69,6 +76,9 @@ public class StructDefn extends TyconDefn {
   public void kindInfer(Handler handler) {
     if (sizeExp != null) {
       sizeExp.checkKind(handler, KAtom.NAT);
+    }
+    if (alignExp != null) {
+      alignExp.checkKind(handler, KAtom.NAT);
     }
     for (int i = 0; i < regexps.length; i++) {
       regexps[i].kindInfer(handler);
@@ -138,6 +148,54 @@ public class StructDefn extends TyconDefn {
       next = regexps[i].collectFields(fields, next);
     }
     st.setFields(fields);
+
+    // Calculate the minimal alignment for this structure and validate field alignment/offsets:
+    long alignment = 1;
+    for (int i = 0; i < fields.length; i++) {
+      StructField f = fields[i];
+      Type t = f.getType(); // Find the type of this field
+      long align = t.alignment(null); // Find the alignment of this field
+      if (align < 1) {
+        throw new Failure(
+            f.getPos(), "Unable to determine alignment for field " + f.getId() + " :: " + t);
+      }
+      offset = f.getOffset(); // Check that field alignment divides field offset
+      if ((((long) offset) % align) != 0) {
+        throw new Failure(
+            f.getPos(),
+            "Cannot access field "
+                + f.getId()
+                + " (offset "
+                + offset
+                + " is not divisible by alignment "
+                + align
+                + ")");
+      }
+      alignment = lcm(alignment, align); // Update minimal alignment
+      debug.Log.println("Field " + f.getId() + ": offset=" + offset + ", alignment=" + align);
+    }
+
+    // Validate declared alignment, if specified:
+    if (alignExp != null) {
+      alignment = alignExp.getAlignment(alignment);
+    }
+    debug.Log.println("Structure " + st + " alignment=" + alignment);
+    st.setAlignment(alignment);
+  }
+
+  /** Utility function to calculate the least common multiple (LCM) of two alignment values. */
+  private static long lcm(long a, long b) {
+    return a * (b / gcd(a, b));
+  }
+
+  /** Utility function to calculate the greatest common divisor (GCD) of two alignment values. */
+  private static long gcd(long a, long b) {
+    while (b > 0) {
+      long r = a % b;
+      a = b;
+      b = r;
+    }
+    return a;
   }
 
   /** Calculate types for each of the values that are introduced by this definition. */

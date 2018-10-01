@@ -24,7 +24,7 @@ import mil.*;
 
 interface LCTokens extends CoreTokens {
 
-  int DO = 48;
+  int DO = 49;
 
-  int LAMBDA = 49;
+  int LAMBDA = 50;
 }

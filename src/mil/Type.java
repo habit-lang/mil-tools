@@ -390,7 +390,7 @@ public abstract class Type extends Scheme {
 
   /** Convenience method for making a type of the form Bit n for some type w. */
   public static Type bit(Type w) {
-    return new TAp(Tycon.bit.asType(), w);
+    return Tycon.bit.asType().tap(w);
   }
 
   /** Convenience method for making a type of the form Bit n for some known integer value n. */
@@ -398,20 +398,14 @@ public abstract class Type extends Scheme {
     return Type.bit(new TNat(w));
   }
 
-  /**
-   * Convenience method for making a type of the form ARef l a for some alignment l and area type a.
-   */
-  public static Type aref(Type alignment, Type areaType) {
-    return new TAp(new TAp(Tycon.aref.asType(), alignment), areaType);
-  }
-
-  public static Type aref(long alignment, Type areaType) {
-    return aref(new TNat(alignment), areaType);
+  /** Convenience method for making a type of the form Ref a for some area type a. */
+  public static Type ref(Type areaType) {
+    return Tycon.ref.asType().tap(areaType);
   }
 
   /** Convenience method for making a type of the form Init a for some area type a. */
   public static Type init(Type a) {
-    return new TAp(Tycon.init.asType(), a);
+    return Tycon.init.asType().tap(a);
   }
 
   /** Find the name of the associated bitdata type, if any. */
@@ -580,11 +574,12 @@ public abstract class Type extends Scheme {
   }
 
   /**
-   * Determine whether this type constructor is of the form Bit, Ix, or ARef l returning an
-   * appropriate representation vector, or else null if none of these patterns applies. TODO: are
-   * there other types we should be including here?
+   * Return the representation vector for types formed by applying this type to the argument a. This
+   * allows us to provide special representations for types of the form Bit a, Ix a, Ref a, etc. If
+   * none of these apply, we just return null. TODO: are there other types we should be including
+   * here?
    */
-  Type[] bitdataTyconRep(Type a) {
+  Type[] repCalc(Type a) {
     return null;
   }
 
@@ -601,14 +596,6 @@ public abstract class Type extends Scheme {
    * for n.
    */
   Type[] nzbitvectorRep() {
-    return null;
-  }
-
-  /**
-   * Determine whether this type constructor is an ARef, returning either an appropriate
-   * representation vector, or else null.
-   */
-  Type[] bitdataTyconRep2(Type a, Type b) {
     return null;
   }
 
@@ -791,10 +778,6 @@ public abstract class Type extends Scheme {
     return true;
   }
 
-  boolean useBitdataLo(Type t, Type s) {
-    return true;
-  }
-
   /**
    * Determine whether this type is a natural number that falls within the specified range,
    * inclusive of bounds.
@@ -870,29 +853,18 @@ public abstract class Type extends Scheme {
   }
 
   /**
-   * Worker method for calculating the BitSize for a type of the form (this a b) (i.e., this,
-   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
-   * and b.
+   * Calculate the width in bits that is needed to represent a reference or pointer to a value of
+   * this type using BitSize (Ref a) = WordSize - p if Align a = 2^p.
    */
-  Type bitSize(Type[] tenv, Type a, Type b) {
-    return null;
-  }
-
-  int arefWidth(Type[] tenv) {
-    BigInteger n = simplifyNatType(tenv).getNat();
-    if (n == null) {
-      debug.Internal.error("invalid ARef alignment: " + skeleton(tenv));
+  int refWidth(Type[] tenv) {
+    long alignment = this.alignment(tenv);
+    int width = Word.size();
+    if (alignment > 0 && ((alignment & (alignment - 1)) == 0)) { // power of two alignment
+      while ((alignment >>= 1) != 0) {
+        width--;
+      }
     }
-    if (n.signum() <= 0) { // not strictly positive
-      return 0;
-    }
-    BigInteger n1 = n.subtract(BigInteger.ONE);
-    if (n.and(n1).signum() != 0) { // not a power of two
-      return 0;
-    }
-    int wordsize = Word.size();
-    int w = wordsize - n1.bitLength(); // Find width
-    return (w >= 0 && w <= wordsize) ? w : 0;
+    return width;
   }
 
   public Pat bitPat(Type[] tenv) {
@@ -911,10 +883,6 @@ public abstract class Type extends Scheme {
       debug.Internal.error("Bit width " + nat + " is out of allowed range");
     }
     return nat.intValue();
-  }
-
-  Pat bitPat(Type[] tenv, Type a, Type b) {
-    return null;
   }
 
   /** Return the number of bytes that are needed to hold a value with the specified bitsize. */
@@ -948,39 +916,97 @@ public abstract class Type extends Scheme {
   /**
    * Worker method for calculating ByteSize (Stored this), with the specified type environment tenv,
    * short-circuiting through indirections and type variables as necessary. Implements the function:
-   * ByteSize (Stored (ARef l a)) = WordSize / 8 ByteSize (Stored (APtr l a)) = WordSize / 8
-   * ByteSize (Stored t) = 0, if BitSize t == 0 = 1, if 0 < BitSize t <= 8 = 2, if 8 < BitSize t <=
-   * 16 = 4, if 16 < BitSize t <= 32 = 8, if 32 < BitSize t <= 64
+   * ByteSize (Stored (Ref a)) = WordSize / 8 ByteSize (Stored (Ptr a)) = WordSize / 8 ByteSize
+   * (Stored t) = 0, if BitSize t == 0 = 1, if 0 < BitSize t <= 8 = 2, if 8 < BitSize t <= 16 = 4,
+   * if 16 < BitSize t <= 32 = 8, if 32 < BitSize t <= 64
    */
   Type byteSizeStored(Type[] tenv) {
-    Type bytes = byteSizeStoredRef(tenv); // Check cases for ARef and APtr types first
-    if (bytes == null) {
-      Type bits = bitSize(tenv); // Otherwise check bit representation of this type
-      if (bits != null) {
-        BigInteger m = bits.simplifyNatType(null).getNat();
-        if (m != null) {
-          int n = Type.numBytes(m.intValue());
-          return (n == 0)
-              ? new TNat(0)
-              : (n == 1)
-                  ? new TNat(1)
-                  : (n == 2) ? new TNat(2) : (n <= 4) ? new TNat(4) : (n <= 8) ? new TNat(8) : null;
-        }
+    if (referenceType(tenv)) { // Check cases for Ref and Ptr types first
+      return new TNat(Type.numBytes(Word.size()));
+    }
+    Type bits = bitSize(tenv); // Otherwise check bit representation of this type
+    if (bits != null) {
+      BigInteger m = bits.simplifyNatType(null).getNat();
+      if (m != null) {
+        int n = Type.numBytes(m.intValue());
+        return (n == 0)
+            ? new TNat(1)
+            : (n == 1)
+                ? new TNat(1)
+                : (n == 2) ? new TNat(2) : (n <= 4) ? new TNat(4) : (n <= 8) ? new TNat(8) : null;
       }
     }
-    return bytes;
-  }
-
-  Type byteSizeStoredRef(Type[] tenv) {
     return null;
   }
 
-  Type byteSizeStoredRef(Type[] tenv, Type a) {
-    return null;
+  /** Determine if this is a type of the form (Ref a) or (Ptr a) for some area type a. */
+  boolean referenceType(Type[] tenv) {
+    return false;
   }
 
-  Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
-    return null;
+  /**
+   * Determine if this type, applied to the given a, is a reference type of the form (Ref a) or (Ptr
+   * a). TODO: The a parameter is not currently inspected; we could attempt to check that it is a
+   * valid area type (but kind checking should have done that already) or else look to eliminate it.
+   */
+  boolean referenceType(Type[] tenv, Type a) {
+    return false;
+  }
+
+  /** Return the alignment of this type (or zero if there is no alignment. */
+  public abstract long alignment(Type[] tenv);
+
+  /**
+   * Worker method for calculating the alignment for a type of the form (this a) (i.e., this,
+   * applied to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  long alignment(Type[] tenv, Type a) {
+    return 0;
+  }
+
+  /**
+   * Worker method for calculating the alignment for a type of the form (this a b) (i.e., this,
+   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
+   * and b.
+   */
+  long alignment(Type[] tenv, Type a, Type b) {
+    return 0;
+  }
+
+  /**
+   * Worker method for calculating Align (Stored this), with the specified type environment tenv,
+   * short-circuiting through indirections and type variables as necessary. Implements the function:
+   * Align (Stored (Ref a)) = WordSize / 8 Align (Stored (Ptr a)) = WordSize / 8 Align (Stored t) =
+   * 1, if BitSize t == 0 = 1, if 0 < BitSize t <= 8 = 2, if 8 < BitSize t <= 16 = 4, if 16 <
+   * BitSize t <= 32 = 8, if 32 < BitSize t <= 64 = 0, otherwise TODO: this is very similar to the
+   * byteStored method: if it weren't for the BitSize t == 0 case, we could just use one function
+   * for both; maybe there is still a nice way to do that?
+   */
+  long alignmentStored(Type[] tenv) {
+    if (referenceType(tenv)) { // Check cases for Ref and Ptr types first
+      return Type.numBytes(Word.size());
+    }
+    Type bits = bitSize(tenv); // Otherwise check bit representation of this type
+    if (bits != null) {
+      BigInteger m = bits.simplifyNatType(null).getNat();
+      if (m != null) {
+        int n = Type.numBytes(m.intValue());
+        return (n == 0) ? 1 : (n == 1) ? 1 : (n == 2) ? 2 : (n <= 4) ? 4 : (n <= 8) ? 8 : 0;
+      }
+    }
+    return 0;
+  }
+
+  public long calcAlignment(Position pos, MILEnv milenv, TypeExp alignExp) throws Failure {
+    long alignment = this.alignment(null);
+    if (alignment < 1) {
+      throw new Failure(pos, "Unable to determine alignment for " + this);
+    } else if (alignExp != null) {
+      alignExp.scopeType(null, milenv.getTyconEnv(), 0);
+      alignExp.checkKind(KAtom.NAT);
+      return alignExp.getAlignment(alignment);
+    }
+    return alignment;
   }
 
   /**

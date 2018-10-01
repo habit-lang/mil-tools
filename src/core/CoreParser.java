@@ -676,7 +676,8 @@ public class CoreParser extends Phase implements CoreTokens {
     StructRegionExp[] regexps =
         (lexer.getToken() == SCLOSE) ? new StructRegionExp[0] : structRegions(0);
     require(SCLOSE);
-    return new StructDefn(pos, id, sizeExp, regexps);
+    TypeExp alignExp = lexer.match(ALIGNED) ? typeExp() : null;
+    return new StructDefn(pos, id, sizeExp, alignExp, regexps);
   }
 
   /**

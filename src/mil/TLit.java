@@ -85,8 +85,9 @@ public abstract class TLit extends TConst {
     return null;
   }
 
-  Type byteSizeStoredRef(Type[] tenv) {
-    debug.Internal.error("Type literals do not have area kind");
-    return null;
+  /** Return the alignment of this type (or zero if there is no alignment. */
+  public long alignment(Type[] tenv) {
+    debug.Internal.error("No alignment for type literals (kind error)");
+    return 0;
   }
 }

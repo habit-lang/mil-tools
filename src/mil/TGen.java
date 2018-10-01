@@ -260,25 +260,12 @@ public class TGen extends Type {
     return tenv[n].bitSize(null, a.with(tenv));
   }
 
-  /**
-   * Worker method for calculating the BitSize for a type of the form (this a b) (i.e., this,
-   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
-   * and b.
-   */
-  Type bitSize(Type[] tenv, Type a, Type b) {
-    return tenv[n].bitSize(null, a.with(tenv), b.with(tenv));
-  }
-
   public Pat bitPat(Type[] tenv) {
     return tenv[n].bitPat(null);
   }
 
   Pat bitPat(Type[] tenv, Type a) {
     return tenv[n].bitPat(null, a.with(tenv));
-  }
-
-  Pat bitPat(Type[] tenv, Type a, Type b) {
-    return tenv[n].bitPat(null, a.with(tenv), b.with(tenv));
   }
 
   /**
@@ -306,16 +293,40 @@ public class TGen extends Type {
     return tenv[n].byteSize(null, a.with(tenv), b.with(tenv));
   }
 
-  Type byteSizeStoredRef(Type[] tenv) {
-    return tenv[n].byteSizeStoredRef(null);
+  /** Determine if this is a type of the form (Ref a) or (Ptr a) for some area type a. */
+  boolean referenceType(Type[] tenv) {
+    return tenv[n].referenceType(null);
   }
 
-  Type byteSizeStoredRef(Type[] tenv, Type a) {
-    return tenv[n].byteSizeStoredRef(null, a.with(tenv));
+  /**
+   * Determine if this type, applied to the given a, is a reference type of the form (Ref a) or (Ptr
+   * a). TODO: The a parameter is not currently inspected; we could attempt to check that it is a
+   * valid area type (but kind checking should have done that already) or else look to eliminate it.
+   */
+  boolean referenceType(Type[] tenv, Type a) {
+    return tenv[n].referenceType(null, a.with(tenv));
   }
 
-  Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
-    return tenv[n].byteSizeStoredRef(null, a.with(tenv), b.with(tenv));
+  /** Return the alignment of this type (or zero if there is no alignment. */
+  public long alignment(Type[] tenv) {
+    return tenv[n].alignment(null);
+  }
+
+  /**
+   * Worker method for calculating the alignment for a type of the form (this a) (i.e., this,
+   * applied to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  long alignment(Type[] tenv, Type a) {
+    return tenv[n].alignment(null, a.with(tenv));
+  }
+
+  /**
+   * Worker method for calculating the alignment for a type of the form (this a b) (i.e., this,
+   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
+   * and b.
+   */
+  long alignment(Type[] tenv, Type a, Type b) {
+    return tenv[n].alignment(null, a.with(tenv), b.with(tenv));
   }
 
   boolean nonUnit(Type[] tenv) {

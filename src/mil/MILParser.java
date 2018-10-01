@@ -178,22 +178,13 @@ public class MILParser extends CoreParser implements MILTokens {
   private DefnExp parseTopLevel(Position pos, String[] ids) throws Failure {
     if (lexer.match(AREA)) {
       if (ids.length != 1) {
-        throw new Failure(lexer.getPos(), "Area definition must bind a single identifier");
+        throw new Failure(lexer.getPos(), "An area definition can only bind a single identifier");
       }
-      long alignment; // Read alignment (or assume 1, if alignment missing)
-      if (lexer.getToken() == NATLIT) {
-        try {
-          alignment = lexer.getWord();
-        } finally {
-          lexer.nextToken(/* NATLIT */ );
-        }
-      } else {
-        alignment = 1L;
-      }
-      TypeExp areaType = typeAtomExp(); // Read expression describing area type
+      TypeExp typeExp = typeAtomExp(); // Read expression describing area type
       AtomExp init = parseAtom(); // Read initializer expression
+      TypeExp alignExp = lexer.match(ALIGNED) ? typeExp() : null; // Read (optional) alignment
       lexer.itemEnd("area definition");
-      return new AreaDefnExp(pos, ids[0], alignment, areaType, init);
+      return new AreaDefnExp(pos, ids[0], typeExp, init, alignExp);
     } else {
       String[] args;
       if (lexer.match(BOPEN)) {

@@ -20,20 +20,22 @@ package lc;
 
 import compiler.*;
 import core.*;
-import java.math.BigInteger;
 import mil.*;
 
 public class AreaDefn extends TopDefn {
 
   private AreaVar[] areas;
 
-  private TypeExp texp;
+  private TypeExp typeExp;
+
+  private TypeExp alignExp;
 
   /** Default constructor. */
-  public AreaDefn(Position pos, AreaVar[] areas, TypeExp texp) {
+  public AreaDefn(Position pos, AreaVar[] areas, TypeExp typeExp, TypeExp alignExp) {
     super(pos);
     this.areas = areas;
-    this.texp = texp;
+    this.typeExp = typeExp;
+    this.alignExp = alignExp;
   }
 
   private Type initType;
@@ -44,29 +46,20 @@ public class AreaDefn extends TopDefn {
    */
   void validateTopDefn(Handler handler, MILEnv milenv) throws Failure {
     try {
-      texp.scopeType(null, milenv.getTyconEnv(), 0);
-      texp.checkKind(KAtom.STAR);
-      Type refType = texp.toType(null); // The type of area reference, as declared
-      Type alignType = new TVar(Tyvar.nat);
+      // Validate the area type:
+      typeExp.scopeType(null, milenv.getTyconEnv(), 0);
+      typeExp.checkKind(KAtom.STAR);
+      Type refType = typeExp.toType(null); // The type of area reference, as declared
       Type areaType = new TVar(Tyvar.area);
-      if (!Type.aref(alignType, areaType).match(null, refType, null)) {
-        throw new Failure(texp.position(), "area definition requires a reference type");
+      if (!Type.ref(areaType).match(null, refType, null)) {
+        throw new Failure(typeExp.position(), "area definition requires a reference type");
       }
       areaType = areaType.skeleton();
-      alignType = alignType.simplifyNatType(null);
-      BigInteger alignBig = alignType.getNat();
-      if (alignBig == null) {
-        throw new Failure(
-            texp.position(), "Cannot determine constant value for alignment " + alignType);
-      } else if (alignBig.signum() < 0
-          || alignBig.compareTo(BigInteger.ONE.shiftLeft(Word.size() - 1)) > 0) {
-        throw new Failure(texp.position(), "Alignment " + alignType + " is out of range");
-      }
-      long alignment = alignBig.longValue();
-      if ((alignment & (alignment - 1)) != 0) {
-        throw new Failure(texp.position(), "Alignment " + alignType + " is not a power of two");
-      }
+
+      // Determine alignment, validating declared value if given:
+      long alignment = areaType.calcAlignment(pos, milenv, alignExp);
       debug.Log.println("area type is " + areaType + ", alignment=" + alignment);
+
       initType = Type.init(areaType); // Calculate and save type for initializers
       for (int i = 0; i < areas.length; i++) {
         areas[i].addToEnv(handler, milenv, alignment, areaType, refType);

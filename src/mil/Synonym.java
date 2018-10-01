@@ -140,20 +140,13 @@ public class Synonym extends Tycon {
   }
 
   /**
-   * Determine whether this type constructor is of the form Bit, Ix, or ARef l returning an
-   * appropriate representation vector, or else null if none of these patterns applies. TODO: are
-   * there other types we should be including here?
+   * Return the representation vector for types formed by applying this type to the argument a. This
+   * allows us to provide special representations for types of the form Bit a, Ix a, Ref a, etc. If
+   * none of these apply, we just return null. TODO: are there other types we should be including
+   * here?
    */
-  Type[] bitdataTyconRep(Type a) {
-    return expansion.bitdataTyconRep(a);
-  }
-
-  /**
-   * Determine whether this type constructor is an ARef, returning either an appropriate
-   * representation vector, or else null.
-   */
-  Type[] bitdataTyconRep2(Type a, Type b) {
-    return expansion.bitdataTyconRep2(a, b);
+  Type[] repCalc(Type a) {
+    return expansion.repCalc(a);
   }
 
   /**
@@ -226,15 +219,6 @@ public class Synonym extends Tycon {
     return expansion.bitSize(tenv, a);
   }
 
-  /**
-   * Worker method for calculating the BitSize for a type of the form (this a b) (i.e., this,
-   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
-   * and b.
-   */
-  Type bitSize(Type[] tenv, Type a, Type b) {
-    return expansion.bitSize(tenv, a, b);
-  }
-
   /** Return the nat that specifies the bit size of the type produced by this type constructor. */
   public Type bitSize() {
     return expansion.bitSize(null);
@@ -246,11 +230,7 @@ public class Synonym extends Tycon {
   }
 
   Pat bitPat(Type[] tenv, Type a) {
-    return expansion.bitPat(tenv, a);
-  }
-
-  Pat bitPat(Type[] tenv, Type a, Type b) {
-    return expansion.bitPat(tenv, a, b);
+    return expansion.bitPat(null, a.with(tenv));
   }
 
   /** Return the nat that specifies the byte size of the type produced by this type constructor. */
@@ -263,7 +243,7 @@ public class Synonym extends Tycon {
    * to the argument a). The specified type environment, tenv, is used for both this and a.
    */
   Type byteSize(Type[] tenv, Type a) {
-    return expansion.byteSize(tenv, a);
+    return expansion.byteSize(null, a.with(tenv));
   }
 
   /**
@@ -272,19 +252,43 @@ public class Synonym extends Tycon {
    * and b.
    */
   Type byteSize(Type[] tenv, Type a, Type b) {
-    return expansion.byteSize(tenv, a, b);
+    return expansion.byteSize(null, a.with(tenv), b.with(tenv));
   }
 
-  Type byteSizeStoredRef(Type[] tenv) {
-    return expansion.byteSizeStoredRef(null);
+  /** Determine if this is a type of the form (Ref a) or (Ptr a) for some area type a. */
+  boolean referenceType(Type[] tenv) {
+    return expansion.referenceType(null);
   }
 
-  Type byteSizeStoredRef(Type[] tenv, Type a) {
-    return expansion.byteSizeStoredRef(tenv, a);
+  /**
+   * Determine if this type, applied to the given a, is a reference type of the form (Ref a) or (Ptr
+   * a). TODO: The a parameter is not currently inspected; we could attempt to check that it is a
+   * valid area type (but kind checking should have done that already) or else look to eliminate it.
+   */
+  boolean referenceType(Type[] tenv, Type a) {
+    return expansion.referenceType(null, a.with(tenv));
   }
 
-  Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
-    return expansion.byteSizeStoredRef(tenv, a, b);
+  /** Return the alignment associated with this type constructor. */
+  public long alignment() {
+    return expansion.alignment(null);
+  }
+
+  /**
+   * Worker method for calculating the alignment for a type of the form (this a) (i.e., this,
+   * applied to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  long alignment(Type[] tenv, Type a) {
+    return expansion.alignment(null, a.with(tenv));
+  }
+
+  /**
+   * Worker method for calculating the alignment for a type of the form (this a b) (i.e., this,
+   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
+   * and b.
+   */
+  long alignment(Type[] tenv, Type a, Type b) {
+    return expansion.alignment(null, a.with(tenv), b.with(tenv));
   }
 
   /**

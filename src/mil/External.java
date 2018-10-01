@@ -1607,14 +1607,13 @@ public class External extends TopDefn {
 
   static {
 
-    // primReadRefStored l t :: ARef l (Stored t) -> Proc t
+    // primReadRefStored t :: Ref (Stored t) -> Proc t
     generators.put(
         "primReadRefStored",
-        new Generator(2) {
+        new Generator(1) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger l = ts[0].getNat(); // Alignment of reference
-            Type t = ts[1].byteSizeStored(null); // Type of stored value
-            if (l != null && t != null) {
+            Type t = ts[0].byteSizeStored(null); // ByteSize of stored value
+            if (t != null) {
               BigInteger bytes = t.isNonNegInt();
               if (bytes != null) {
                 Prim load;
@@ -1644,14 +1643,13 @@ public class External extends TopDefn {
           }
         });
 
-    // primWriteRefStored l t :: ARef l (Stored t) -> t -> Proc Unit
+    // primWriteRefStored t :: Ref (Stored t) -> t -> Proc Unit
     generators.put(
         "primWriteRefStored",
-        new Generator(2) {
+        new Generator(1) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger l = ts[0].getNat(); // Alignment of reference
-            Type bs = ts[1].byteSizeStored(null); // Type of stored value
-            if (l != null && bs != null) {
+            Type bs = ts[0].byteSizeStored(null); // ByteSize of stored value
+            if (bs != null) {
               BigInteger bytes = bs.isNonNegInt();
               if (bytes != null) {
                 Prim store;
@@ -1671,7 +1669,7 @@ public class External extends TopDefn {
                   default:
                     return null;
                 }
-                int n = ts[1].repLen();
+                int n = ts[0].repLen();
                 Temp[] vs = Temp.makeTemps(1 + n); // Temps to hold the address and value
                 ClosureDefn k =
                     new ClosureDefn(pos, vs, Temp.noTemps, store.repTransformPrim(set, vs));
@@ -1687,7 +1685,7 @@ public class External extends TopDefn {
         "primInitStored",
         new Generator(1) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            Type bs = ts[0].byteSizeStored(null); // Type of stored value
+            Type bs = ts[0].byteSizeStored(null); // ByteSize of stored value
             if (bs != null) {
               BigInteger bytes = bs.isNonNegInt();
               if (bytes != null) {
@@ -1730,7 +1728,7 @@ public class External extends TopDefn {
         "@",
         new Generator(2) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger n = ts[0].getNat(); // Alignment of structure
+            BigInteger n = ts[0].getNat(); // Array length
             Type bs = ts[1].byteSize(null); // Size of array elements
             BigInteger s;
             if (n != null && bs != null && (s = bs.getNat()) != null) {
@@ -1856,21 +1854,15 @@ public class External extends TopDefn {
 
   static {
 
-    // primStructSelect m s f n t :: ARef m s -> #f -> ARef n t
+    // primStructSelect st lab t :: Ref st -> #lab -> Ref t
     generators.put(
         "primStructSelect",
-        new Generator(5) {
+        new Generator(3) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger m = ts[0].getNat(); // Alignment of structure
-            StructType st = ts[1].structType(); // Structure
-            String lab = ts[2].getLabel(); // Field label
-            BigInteger n = ts[3].getNat(); // Alignment of field
-            Type t = ts[4]; // Area type; not currently used
-            if (m != null && st != null && lab != null && n != null) {
-              // TODO: For now, we ignore the alignment values, trusting that the values passed in
-              // by the front
-              // end will be valid ... but it probably would not be a bad idea to check them here
-              // too.
+            StructType st = ts[0].structType(); // Structure type
+            String lab = ts[1].getLabel(); // Field label
+            Type t = ts[2]; // Field area type; not currently used
+            if (st != null && lab != null) {
               StructField[] fields = st.getFields();
               int i = Name.index(lab, fields);
               if (i >= 0) {

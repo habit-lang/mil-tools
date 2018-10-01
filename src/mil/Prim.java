@@ -2020,14 +2020,12 @@ public class Prim {
     }
   }
 
-  public static final Type init1Type = Type.init(Type.gen(1));
-
-  public static final Type aref01Type = Type.aref(Type.gen(0), Type.gen(1));
+  public static final Type ref0Type = Type.ref(Type.gen(1));
 
   public static final BlockType initSelfType =
       new PolyBlockType(
-          Type.tuple(Type.milfun(aref01Type, init1Type)),
-          Type.tuple(init1Type),
+          Type.tuple(Type.milfun(ref0Type, init0Type)),
+          Type.tuple(init0Type),
           new Prefix(new Tyvar[] {Tyvar.nat, Tyvar.area}));
 
   public static final Prim initSelf = new initSelf();

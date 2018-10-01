@@ -94,11 +94,11 @@ public class Area extends TopDefn {
       out.println(id + " :: " + declared);
     }
 
-    out.print(id + " <- area " + alignment + " " + areaType.toString(TypeWriter.ALWAYS));
+    out.print(id + " <- area " + areaType.toString(TypeWriter.ALWAYS));
     if (init != null) {
       out.print(" " + init);
     }
-    out.println();
+    out.println(" aligned " + alignment);
   }
 
   /** Return a type for an instantiated version of this item when used as Atom (input operand). */
@@ -135,13 +135,8 @@ public class Area extends TopDefn {
    * definitions are at the top level.)
    */
   void generalizeType(Handler handler) throws Failure {
-    if (alignment < 0
-        || alignment > (1L << (Word.size() - 1))
-        || (alignment & (alignment - 1)) != 0) {
-      handler.report(new Failure(pos, "Invalid alignment value " + alignment));
-    }
-
     // Check that area has a known ByteSize
+    // TODO: shouldn't this calculation be done just once when this Area is constructed?
     size = areaType.byteSize(null);
     if (size == null || size.getNat() == null) {
       throw new Failure(
@@ -149,7 +144,7 @@ public class Area extends TopDefn {
     }
 
     // Validate declared type:
-    Type inferred = (init == null) ? Tycon.word.asType() : Type.aref(alignment, areaType);
+    Type inferred = (init == null) ? Tycon.word.asType() : Type.ref(areaType);
     if (declared != null && !declared.alphaEquiv(inferred)) {
       throw new Failure(
           pos,

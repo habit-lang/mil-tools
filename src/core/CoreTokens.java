@@ -85,17 +85,19 @@ public interface CoreTokens {
 
   int BITDATA = 38;
 
-  int CASE = 39;
+  int ALIGNED = 39;
 
-  int OF = 40;
+  int CASE = 40;
 
-  int IF = 41;
+  int OF = 41;
 
-  int THEN = 42;
+  int IF = 42;
 
-  int ELSE = 43;
+  int THEN = 43;
 
-  int LET = 44;
+  int ELSE = 44;
 
-  int IN = 45;
+  int LET = 45;
+
+  int IN = 46;
 }

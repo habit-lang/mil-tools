@@ -46,6 +46,7 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
     reserved.put("area", new Integer(AREA));
     reserved.put("struct", new Integer(STRUCT));
     reserved.put("bitdata", new Integer(BITDATA));
+    reserved.put("aligned", new Integer(ALIGNED));
     reserved.put("case", new Integer(CASE));
     reserved.put("of", new Integer(OF));
     reserved.put("if", new Integer(IF));
@@ -123,6 +124,8 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
         return "\"struct\" keyword";
       case BITDATA:
         return "\"bitdata\" keyword";
+      case ALIGNED:
+        return "\"aligned\" keyword";
       case CASE:
         return "\"case\" keyword";
       case OF:

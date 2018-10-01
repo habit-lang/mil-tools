@@ -215,17 +215,7 @@ public class TAp extends Type {
 
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
-    // Look for patterns:  Bit n,  Ix n,  ARef n a,  APtr n a, ...
-    return fun.bitdataTyconRep(arg);
-  }
-
-  /**
-   * Determine whether this type constructor is of the form Bit, Ix, or ARef l returning an
-   * appropriate representation vector, or else null if none of these patterns applies. TODO: are
-   * there other types we should be including here?
-   */
-  Type[] bitdataTyconRep(Type a) {
-    return fun.bitdataTyconRep2(arg, a);
+    return fun.repCalc(arg);
   }
 
   /**
@@ -326,10 +316,6 @@ public class TAp extends Type {
     return fun.useBitdataLo(arg);
   }
 
-  boolean useBitdataLo(Type s) {
-    return fun.useBitdataLo(arg, s);
-  }
-
   /**
    * Return the natural number type that specifies the BitSize of this type (required to be of kind
    * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should
@@ -342,20 +328,8 @@ public class TAp extends Type {
     return fun.bitSize(tenv, arg);
   }
 
-  /**
-   * Worker method for calculating the BitSize for a type of the form (this a) (i.e., this, applied
-   * to the argument a). The specified type environment, tenv, is used for both this and a.
-   */
-  Type bitSize(Type[] tenv, Type a) {
-    return fun.bitSize(tenv, arg, a);
-  }
-
   public Pat bitPat(Type[] tenv) {
     return fun.bitPat(tenv, arg);
-  }
-
-  Pat bitPat(Type[] tenv, Type a) {
-    return fun.bitPat(tenv, arg, a);
   }
 
   /**
@@ -374,12 +348,22 @@ public class TAp extends Type {
     return fun.byteSize(tenv, arg, a);
   }
 
-  Type byteSizeStoredRef(Type[] tenv) {
-    return fun.byteSizeStoredRef(tenv, arg);
+  /** Determine if this is a type of the form (Ref a) or (Ptr a) for some area type a. */
+  boolean referenceType(Type[] tenv) {
+    return fun.referenceType(tenv, arg);
   }
 
-  Type byteSizeStoredRef(Type[] tenv, Type a) {
-    return fun.byteSizeStoredRef(tenv, arg, a);
+  /** Return the alignment of this type (or zero if there is no alignment. */
+  public long alignment(Type[] tenv) {
+    return fun.alignment(tenv, arg);
+  }
+
+  /**
+   * Worker method for calculating the alignment for a type of the form (this a) (i.e., this,
+   * applied to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  long alignment(Type[] tenv, Type a) {
+    return fun.alignment(tenv, arg, a);
   }
 
   /**

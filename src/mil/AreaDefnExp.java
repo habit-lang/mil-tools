@@ -28,19 +28,19 @@ class AreaDefnExp extends DefnExp {
 
   private String id;
 
-  private long alignment;
-
-  private TypeExp areaType;
+  private TypeExp typeExp;
 
   private AtomExp init;
 
+  private TypeExp alignExp;
+
   /** Default constructor. */
-  AreaDefnExp(Position pos, String id, long alignment, TypeExp areaType, AtomExp init) {
+  AreaDefnExp(Position pos, String id, TypeExp typeExp, AtomExp init, TypeExp alignExp) {
     super(pos);
     this.id = id;
-    this.alignment = alignment;
-    this.areaType = areaType;
+    this.typeExp = typeExp;
     this.init = init;
+    this.alignExp = alignExp;
   }
 
   private Area a;
@@ -49,13 +49,11 @@ class AreaDefnExp extends DefnExp {
    * Worker function for addTo(handler, milenv) that throws an exception if an error is detected.
    */
   void addTo(MILEnv milenv) throws Failure {
-    areaType.scopeType(null, milenv.getTyconEnv(), 0);
-    areaType.checkKind(KAtom.AREA);
-    Type at = areaType.toType(null);
-    if (at == null) {
-      throw new Failure(pos, "Definition for area " + id + " specifies a polymorphic type");
-    }
-    a = new Area(pos, id, alignment, at);
+    typeExp.scopeType(null, milenv.getTyconEnv(), 0);
+    typeExp.checkKind(KAtom.AREA);
+    Type areaType = typeExp.toType(null).skeleton();
+    long alignment = areaType.calcAlignment(pos, milenv, alignExp);
+    a = new Area(pos, id, alignment, areaType);
     if (milenv.addTop(id, new TopArea(a)) != null) {
       MILEnv.multipleDefns(pos, "top level/area symbol", id);
     }

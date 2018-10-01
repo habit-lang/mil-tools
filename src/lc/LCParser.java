@@ -80,7 +80,9 @@ public class LCParser extends CoreParser implements LCTokens {
           lexer.nextToken(/* AREA */ );
           AreaVar[] areas = areaVars(0);
           require(COCO);
-          prog.add(new AreaDefn(pos, areas, typeExp()));
+          TypeExp areaType = typeExp();
+          TypeExp alignExp = lexer.match(ALIGNED) ? typeExp() : null;
+          prog.add(new AreaDefn(pos, areas, areaType, alignExp));
           lexer.itemEnd("area declaration");
           return true;
         }

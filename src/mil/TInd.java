@@ -234,25 +234,12 @@ public class TInd extends Type {
     return bound.bitSize(boundenv, a.with(tenv));
   }
 
-  /**
-   * Worker method for calculating the BitSize for a type of the form (this a b) (i.e., this,
-   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
-   * and b.
-   */
-  Type bitSize(Type[] tenv, Type a, Type b) {
-    return bound.bitSize(boundenv, a.with(tenv), b.with(tenv));
-  }
-
   public Pat bitPat(Type[] tenv) {
     return bound.bitPat(boundenv);
   }
 
   Pat bitPat(Type[] tenv, Type a) {
     return bound.bitPat(boundenv, a.with(tenv));
-  }
-
-  Pat bitPat(Type[] tenv, Type a, Type b) {
-    return bound.bitPat(boundenv, a.with(tenv), b.with(tenv));
   }
 
   /**
@@ -280,16 +267,40 @@ public class TInd extends Type {
     return bound.byteSize(boundenv, a.with(tenv), b.with(tenv));
   }
 
-  Type byteSizeStoredRef(Type[] tenv) {
-    return bound.byteSizeStoredRef(boundenv);
+  /** Determine if this is a type of the form (Ref a) or (Ptr a) for some area type a. */
+  boolean referenceType(Type[] tenv) {
+    return bound.referenceType(boundenv);
   }
 
-  Type byteSizeStoredRef(Type[] tenv, Type a) {
-    return bound.byteSizeStoredRef(boundenv, a.with(tenv));
+  /**
+   * Determine if this type, applied to the given a, is a reference type of the form (Ref a) or (Ptr
+   * a). TODO: The a parameter is not currently inspected; we could attempt to check that it is a
+   * valid area type (but kind checking should have done that already) or else look to eliminate it.
+   */
+  boolean referenceType(Type[] tenv, Type a) {
+    return bound.referenceType(boundenv, a.with(tenv));
   }
 
-  Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
-    return bound.byteSizeStoredRef(boundenv, a.with(tenv), b.with(tenv));
+  /** Return the alignment of this type (or zero if there is no alignment. */
+  public long alignment(Type[] tenv) {
+    return bound.alignment(boundenv);
+  }
+
+  /**
+   * Worker method for calculating the alignment for a type of the form (this a) (i.e., this,
+   * applied to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  long alignment(Type[] tenv, Type a) {
+    return bound.alignment(boundenv, a.with(tenv));
+  }
+
+  /**
+   * Worker method for calculating the alignment for a type of the form (this a b) (i.e., this,
+   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
+   * and b.
+   */
+  long alignment(Type[] tenv, Type a, Type b) {
+    return bound.alignment(boundenv, a.with(tenv), b.with(tenv));
   }
 
   boolean nonUnit(Type[] tenv) {

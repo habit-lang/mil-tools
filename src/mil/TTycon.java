@@ -284,20 +284,13 @@ public class TTycon extends TConst {
   }
 
   /**
-   * Determine whether this type constructor is of the form Bit, Ix, or ARef l returning an
-   * appropriate representation vector, or else null if none of these patterns applies. TODO: are
-   * there other types we should be including here?
+   * Return the representation vector for types formed by applying this type to the argument a. This
+   * allows us to provide special representations for types of the form Bit a, Ix a, Ref a, etc. If
+   * none of these apply, we just return null. TODO: are there other types we should be including
+   * here?
    */
-  Type[] bitdataTyconRep(Type a) {
-    return tycon.bitdataTyconRep(a);
-  }
-
-  /**
-   * Determine whether this type constructor is an ARef, returning either an appropriate
-   * representation vector, or else null.
-   */
-  Type[] bitdataTyconRep2(Type a, Type b) {
-    return tycon.bitdataTyconRep2(a, b);
+  Type[] repCalc(Type a) {
+    return tycon.repCalc(a);
   }
 
   /**
@@ -362,8 +355,8 @@ public class TTycon extends TConst {
     return tycon.liftToCode0(b, us, f, vs);
   }
 
-  boolean useBitdataLo(Type t, Type s) {
-    return tycon != Tycon.aref && tycon != Tycon.aptr;
+  boolean useBitdataLo(Type s) {
+    return tycon != Tycon.ref && tycon != Tycon.ptr;
   }
 
   /**
@@ -386,25 +379,12 @@ public class TTycon extends TConst {
     return tycon.bitSize(tenv, a);
   }
 
-  /**
-   * Worker method for calculating the BitSize for a type of the form (this a b) (i.e., this,
-   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
-   * and b.
-   */
-  Type bitSize(Type[] tenv, Type a, Type b) {
-    return tycon.bitSize(tenv, a, b);
-  }
-
   public Pat bitPat(Type[] tenv) {
     return tycon.bitPat();
   }
 
   Pat bitPat(Type[] tenv, Type a) {
     return tycon.bitPat(tenv, a);
-  }
-
-  Pat bitPat(Type[] tenv, Type a, Type b) {
-    return tycon.bitPat(tenv, a, b);
   }
 
   /**
@@ -432,16 +412,40 @@ public class TTycon extends TConst {
     return tycon.byteSize(tenv, a, b);
   }
 
-  Type byteSizeStoredRef(Type[] tenv) {
-    return tycon.byteSizeStoredRef(null);
+  /** Determine if this is a type of the form (Ref a) or (Ptr a) for some area type a. */
+  boolean referenceType(Type[] tenv) {
+    return tycon.referenceType(null);
   }
 
-  Type byteSizeStoredRef(Type[] tenv, Type a) {
-    return tycon.byteSizeStoredRef(tenv, a);
+  /**
+   * Determine if this type, applied to the given a, is a reference type of the form (Ref a) or (Ptr
+   * a). TODO: The a parameter is not currently inspected; we could attempt to check that it is a
+   * valid area type (but kind checking should have done that already) or else look to eliminate it.
+   */
+  boolean referenceType(Type[] tenv, Type a) {
+    return tycon.referenceType(tenv, a);
   }
 
-  Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
-    return tycon.byteSizeStoredRef(tenv, a, b);
+  /** Return the alignment of this type (or zero if there is no alignment. */
+  public long alignment(Type[] tenv) {
+    return tycon.alignment();
+  }
+
+  /**
+   * Worker method for calculating the alignment for a type of the form (this a) (i.e., this,
+   * applied to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  long alignment(Type[] tenv, Type a) {
+    return tycon.alignment(tenv, a);
+  }
+
+  /**
+   * Worker method for calculating the alignment for a type of the form (this a b) (i.e., this,
+   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
+   * and b.
+   */
+  long alignment(Type[] tenv, Type a, Type b) {
+    return tycon.alignment(tenv, a, b);
   }
 
   boolean nonUnit(Type[] tenv) {

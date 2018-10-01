@@ -168,9 +168,9 @@ public abstract class Tycon extends Name {
 
   public static final Tycon array = new PrimTycon("Array", natToAreaToArea, 2);
 
-  public static final Tycon aref = new PrimTycon("ARef", natToAreaToStar, 2);
+  public static final Tycon ref = new PrimTycon("Ref", areaToStar, 1);
 
-  public static final Tycon aptr = new PrimTycon("APtr", natToAreaToStar, 2);
+  public static final Tycon ptr = new PrimTycon("Ptr", areaToStar, 1);
 
   public static final Tycon init = new PrimTycon("Init", areaToStar, 1);
 
@@ -267,7 +267,7 @@ public abstract class Tycon extends Name {
   /** Representation vector for bitdata types of width one. */
   public static final Type[] flagRep = new Type[] {flag.asType()};
 
-  /** Representation vector for Ix, ARef, APtr, etc. types that fit in a single word. */
+  /** Representation vector for Ix, Ref, Ptr, etc. types that fit in a single word. */
   public static final Type[] wordRep = new Type[] {word.asType()};
 
   /** Representation vector for NZBit types that fit in a single word. */
@@ -278,31 +278,27 @@ public abstract class Tycon extends Name {
       new Type[] {Type.milfun(Type.tuple(word.asType()), Type.tuple(unit.asType()))};
 
   /** Return the representation vector for values of this type. */
-  Type[] repCalc() { // Singleton types are all represented by the Unit type
+  Type[] repCalc() {
     return (this == addr) ? Tycon.wordRep : null;
   }
 
   /**
-   * Determine whether this type constructor is of the form Bit, Ix, or ARef l returning an
-   * appropriate representation vector, or else null if none of these patterns applies. TODO: are
-   * there other types we should be including here?
+   * Return the representation vector for types formed by applying this type to the argument a. This
+   * allows us to provide special representations for types of the form Bit a, Ix a, Ref a, etc. If
+   * none of these apply, we just return null. TODO: are there other types we should be including
+   * here?
    */
-  Type[] bitdataTyconRep(Type a) {
-    return (this == bit)
-        ? a.simplifyNatType(null).bitvectorRep()
-        : (this == nzbit)
-            ? a.simplifyNatType(null).nzbitvectorRep()
-            : (this == ix)
-                ? Tycon.wordRep // N.B. even Ix 1, a singleton type, is represented by a Word ...
-                : (this == init) ? Tycon.initRep : null;
-  }
-
-  /**
-   * Determine whether this type constructor is an ARef, returning either an appropriate
-   * representation vector, or else null.
-   */
-  Type[] bitdataTyconRep2(Type a, Type b) {
-    return (this == aref || this == aptr) ? Tycon.wordRep : null;
+  Type[] repCalc(Type a) {
+    return (this == ref || this == ptr)
+        ? Tycon.wordRep
+        : (this == bit)
+            ? a.simplifyNatType(null).bitvectorRep()
+            : (this == nzbit)
+                ? a.simplifyNatType(null).nzbitvectorRep()
+                : (this == ix)
+                    ? Tycon
+                        .wordRep // N.B. even Ix 1, a singleton type, is represented by a Word ...
+                    : (this == init) ? Tycon.initRep : null;
   }
 
   /**
@@ -393,19 +389,8 @@ public abstract class Tycon extends Name {
         return null;
       }
       return new TNat(BigInteger.valueOf(w));
-    }
-    return null;
-  }
-
-  /**
-   * Worker method for calculating the BitSize for a type of the form (this a b) (i.e., this,
-   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
-   * and b.
-   */
-  Type bitSize(Type[] tenv, Type a, Type b) {
-    if (this == aref || this == aptr) { // BitSize(ARef (2^(WordSize-w)) a) = w (if 0<=w<=WordSize)
-      int w = a.arefWidth(tenv); // (same calculation for aptr)
-      return (w > 0) ? new TNat(BigInteger.valueOf(w)) : null;
+    } else if (this == ref || this == ptr) { // BitSize (Ref a) ==>  (calculation below)
+      return new TNat(a.refWidth(tenv));
     }
     return null;
   }
@@ -425,7 +410,13 @@ public abstract class Tycon extends Name {
   }
 
   Pat bitPat(Type[] tenv, Type a) {
-    if (this == bit) {
+    if (this == ref) {
+      int w = a.refWidth(tenv);
+      return (w > 0) ? obdd.Pat.nonzero(w) : null;
+    } else if (this == ptr) {
+      int w = a.refWidth(tenv);
+      return (w > 0) ? obdd.Pat.all(w) : null;
+    } else if (this == bit) {
       return obdd.Pat.all(a.bitWidth(tenv));
     } else if (this == nzbit) {
       int w = a.bitWidth(tenv);
@@ -441,17 +432,6 @@ public abstract class Tycon extends Name {
         return null;
       }
       return obdd.Pat.lessEq(w, n.intValue());
-    }
-    return null;
-  }
-
-  Pat bitPat(Type[] tenv, Type a, Type b) {
-    if (this == aref) {
-      int w = a.arefWidth(tenv);
-      return (w > 0) ? obdd.Pat.nonzero(w) : null;
-    } else if (this == aptr) {
-      int w = a.arefWidth(tenv);
-      return (w > 0) ? obdd.Pat.all(w) : null;
     }
     return null;
   }
@@ -484,6 +464,13 @@ public abstract class Tycon extends Name {
         if (s != null) {
           BigInteger m = s.simplifyNatType(null).getNat();
           if (m != null) {
+            if (this
+                == array) { // For array, check that element size is a multiple of the alignment
+              long align = b.alignment(tenv);
+              if (align < 1 || (m.longValue() % align) != 0) {
+                return null;
+              }
+            }
             return new TNat(n.multiply(m));
           }
         }
@@ -492,16 +479,44 @@ public abstract class Tycon extends Name {
     return null;
   }
 
-  Type byteSizeStoredRef(Type[] tenv) {
-    return null;
+  /** Determine if this is a type of the form (Ref a) or (Ptr a) for some area type a. */
+  boolean referenceType(Type[] tenv) {
+    return false;
   }
 
-  Type byteSizeStoredRef(Type[] tenv, Type a) {
-    return null;
+  /**
+   * Determine if this type, applied to the given a, is a reference type of the form (Ref a) or (Ptr
+   * a). TODO: The a parameter is not currently inspected; we could attempt to check that it is a
+   * valid area type (but kind checking should have done that already) or else look to eliminate it.
+   */
+  boolean referenceType(Type[] tenv, Type a) {
+    return (this == ref || this == ptr);
   }
 
-  Type byteSizeStoredRef(Type[] tenv, Type a, Type b) {
-    return (this == aref || this == aptr) ? new TNat(Type.numBytes(Word.size())) : null;
+  /** Return the alignment associated with this type constructor. */
+  public long alignment() {
+    return 0;
+  }
+
+  /**
+   * Worker method for calculating the alignment for a type of the form (this a) (i.e., this,
+   * applied to the argument a). The specified type environment, tenv, is used for both this and a.
+   */
+  long alignment(Type[] tenv, Type a) {
+    return (this == stored) ? a.alignmentStored(tenv) : null;
+  }
+
+  /**
+   * Worker method for calculating the alignment for a type of the form (this a b) (i.e., this,
+   * applied to two arguments, a and b). The specified type environment, tenv, is used for this, a,
+   * and b.
+   */
+  long alignment(Type[] tenv, Type a, Type b) {
+    return (this == array)
+        ? b.alignment(tenv) // Align (Array a b) = Align b
+        : (this == pad)
+            ? 1L // Align (Pad   a b) = 1
+            : 0;
   }
 
   /**

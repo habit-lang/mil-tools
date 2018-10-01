@@ -19,6 +19,7 @@
 package core;
 
 import compiler.*;
+import java.math.BigInteger;
 import mil.*;
 
 public abstract class TypeExp {
@@ -92,5 +93,27 @@ public abstract class TypeExp {
     } catch (Failure f) {
       handler.report(f);
     }
+  }
+
+  /** Validate this type expression as a valid alignment, and return that alignment as a long. */
+  public long getAlignment(long minAlignment) throws Failure {
+    Type alignType = this.toType(null).simplifyNatType(null);
+    BigInteger alignBig = alignType.getNat();
+    if (alignBig == null) {
+      throw new Failure(position(), "Cannot determine alignment from " + alignType);
+    } else if (alignBig.signum() <= 0 || alignBig.compareTo(Word.maxSigned()) > 0) {
+      throw new Failure(
+          position(), "Alignment " + alignBig + " is out of range (1 to " + Word.maxSigned() + ")");
+    }
+    long alignment = alignBig.longValue();
+    if ((alignment % minAlignment) != 0) {
+      throw new Failure(
+          position(),
+          "Declared alignment "
+              + alignment
+              + " is not a multiple of minimal alignment "
+              + minAlignment);
+    }
+    return alignment;
   }
 }

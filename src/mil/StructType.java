@@ -37,6 +37,12 @@ public class StructType extends Tycon {
     this.byteSize = byteSize;
   }
 
+  private long alignment;
+
+  public void setAlignment(long alignment) {
+    this.alignment = alignment;
+  }
+
   private StructField[] fields;
 
   public StructField[] getFields() {
@@ -117,11 +123,20 @@ public class StructType extends Tycon {
       }
       out.println(" ]");
     }
+    if (alignment != 0) {
+      out.println("  aligned " + alignment);
+    }
     out.println();
   }
 
   private static void dumpPadding(PrintWriter out, int bytes) {
     out.print("... " + bytes + " byte" + ((bytes > 1) ? "s" : "") + " padding ...");
+  }
+
+  /** Return the canonical version of a Tycon wrt to the given set. */
+  Tycon canonTycon(TypeSet set) {
+    set.addTycon(this);
+    return this;
   }
 
   /**
@@ -137,5 +152,10 @@ public class StructType extends Tycon {
   /** Return the nat that specifies the byte size of the type produced by this type constructor. */
   public Type byteSize() {
     return byteSize;
+  }
+
+  /** Return the alignment associated with this type constructor. */
+  public long alignment() {
+    return alignment;
   }
 }
