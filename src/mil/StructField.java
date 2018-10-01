@@ -64,6 +64,7 @@ public class StructField extends Name {
     out.print(id);
     out.print(" :: ");
     out.print(type.toString());
+    out.print("  {- offset=" + offset + " -}");
   }
 
   /**

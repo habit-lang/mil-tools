@@ -75,20 +75,53 @@ public class StructType extends Tycon {
   void dumpTypeDefinition(PrintWriter out) {
     out.print("struct ");
     out.print(id);
-    out.print(" /");
-    out.println(byteSize.toString());
+    out.print(" / ");
+    int width = byteSize.getNat().intValue();
+    out.println(width);
+    final String beg = "  [ ";
+    final String bar = "  | ";
     if (fields.length == 0) {
-      out.println("[ ]");
+      out.println(beg);
+      if (width > 0) {
+        dumpPadding(out, width);
+        out.println(" ");
+      }
+      out.println("]");
     } else {
-      out.print(" [ ");
+      out.print(beg);
+      int next = fields[0].getOffset();
+      if (next > 0) {
+        dumpPadding(out, next);
+        out.println();
+        out.print(bar);
+      }
       fields[0].dumpTypeDefinition(out);
+      next += fields[0].getWidth();
       for (int i = 1; i < fields.length; i++) {
-        out.print(" | ");
+        out.println();
+        out.print(bar);
+        int offset = fields[i].getOffset();
+        if (next < offset) {
+          dumpPadding(out, offset - next);
+          out.println();
+          out.print(bar);
+          next = offset;
+        }
         fields[i].dumpTypeDefinition(out);
+        next += fields[i].getWidth();
+      }
+      if (next < width) {
+        out.println();
+        out.print(bar);
+        dumpPadding(out, width - next);
       }
       out.println(" ]");
     }
     out.println();
+  }
+
+  private static void dumpPadding(PrintWriter out, int bytes) {
+    out.print("... " + bytes + " byte" + ((bytes > 1) ? "s" : "") + " padding ...");
   }
 
   /**
