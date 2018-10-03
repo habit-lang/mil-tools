@@ -255,7 +255,13 @@ public class Area extends TopDefn {
    * version to share the same name as the original).
    */
   Defn specializeEntry(MILSpec spec) throws Failure {
-    return this; // TODO: is this the correct behavior?
+    Type t = declared.isMonomorphic();
+    if (t != null) {
+      Area a = spec.specializedArea(this, t);
+      a.id = this.id;
+      return a;
+    }
+    throw new PolymorphicEntrypointFailure("area", this);
   }
 
   /** Update all declared types with canonical versions. */
