@@ -403,7 +403,7 @@ public class BitdataLayout extends DataName {
     generateConstructor(cf);
     generateMaskTest(cf);
     for (int i = 0; i < fields.length; i++) {
-      fields[i].calculateBitdataBlocks(cf, this);
+      fields[i].calculateBitdataBlocks(this);
     }
   }
 

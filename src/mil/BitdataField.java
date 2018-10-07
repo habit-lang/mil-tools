@@ -92,7 +92,7 @@ public class BitdataField extends Name {
   /**
    * Generate code for a selector for this field, given total size of the enclosing bitdata type.
    */
-  void generateSelector(Cfun cf, BitdataLayout layout) {
+  void generateSelector(BitdataLayout layout) {
     int total = layout.getWidth(); // number of bits in output
     Temp[] params;
     Code code;
@@ -105,10 +105,10 @@ public class BitdataField extends Name {
       code = new Done(new Return(Temp.clone(ws))); // final return
       code =
           width == 1
-              ? selectorBit(total, params, ws, code)
+              ? selectorBit(offset, total, params, ws, code)
               : type.useBitdataLo()
-                  ? selectorLo(total, params, ws, code)
-                  : selectorHi(total, params, ws, code);
+                  ? selectorLo(offset, width, total, params, ws, code)
+                  : selectorHi(offset, width, total, params, ws, code);
     }
     selectorBlock = new Block(pos, "select_" + id, params, code); // create the new block
   }
@@ -117,7 +117,7 @@ public class BitdataField extends Name {
    * Generate selector code for a bitdata field that contains only one bit; result should be of type
    * Flag.
    */
-  private Code selectorBit(int total, Temp[] params, Temp[] ws, Code code) {
+  private static Code selectorBit(int offset, int total, Temp[] params, Temp[] ws, Code code) {
     if (total == 1) { // special case if whole object is just a single bit
       return copy(ws, 0, params[0], code);
     } else {
@@ -133,7 +133,8 @@ public class BitdataField extends Name {
   }
 
   /** Generate selector code for a bitdata field whose type uses the lo bits representation. */
-  private Code selectorLo(int total, Temp[] params, Temp[] ws, Code code) {
+  private static Code selectorLo(
+      int offset, int width, int total, Temp[] params, Temp[] ws, Code code) {
     int wordsize = Word.size();
     int n = ws.length; // number of words in output
     int w = n * wordsize - width; // unused bits in most sig output word
@@ -169,7 +170,8 @@ public class BitdataField extends Name {
   }
 
   /** Generate selector code for a bitdata field whose type uses the hi bits representation. */
-  private Code selectorHi(int total, Temp[] params, Temp[] ws, Code code) {
+  private static Code selectorHi(
+      int offset, int width, int total, Temp[] params, Temp[] ws, Code code) {
     int wordsize = Word.size();
     int n = ws.length; // number of words in output
     int w = n * wordsize - width; // unused bits in least sig word
@@ -214,7 +216,7 @@ public class BitdataField extends Name {
    * Generate code for an update operator for this field, given total size of the enclosing bitdata
    * type.
    */
-  public void generateUpdate(Cfun cf, BitdataLayout layout) {
+  public void generateUpdate(BitdataLayout layout) {
     int total = layout.getWidth(); // number of bits in output
     Block impl;
     if (total == 0) { // If total==0, then any fields must also have zero width
@@ -396,8 +398,8 @@ public class BitdataField extends Name {
     return code;
   }
 
-  void calculateBitdataBlocks(Cfun cf, BitdataLayout layout) {
-    generateSelector(cf, layout);
-    generateUpdate(cf, layout);
+  void calculateBitdataBlocks(BitdataLayout layout) {
+    generateSelector(layout);
+    generateUpdate(layout);
   }
 }
