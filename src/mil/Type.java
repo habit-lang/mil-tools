@@ -388,6 +388,8 @@ public abstract class Type extends Scheme {
     return new TAp(Tycon.proc.asType(), res);
   }
 
+  public static final int MAX_BIT_WIDTH = 1000;
+
   /** Convenience method for making a type of the form Bit n for some type w. */
   public static Type bit(Type w) {
     return Tycon.bit.asType().tap(w);
@@ -602,8 +604,6 @@ public abstract class Type extends Scheme {
   BigInteger validNat() throws External.GeneratorException {
     throw new External.GeneratorException(this + " is not a natural number");
   }
-
-  public static final int MAX_BIT_WIDTH = 1000;
 
   /**
    * Check that the specified type is a natural number that can be used as the argument for a Bit
