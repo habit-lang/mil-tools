@@ -13,7 +13,7 @@ directory; we need to do a better job with search paths for
 source files in future releases!)
 
 A draft paper with more details about MIL is available from 
-[https://web.cecs.pdx.edu/~mpj/pubs/mil.pdf]().
+https://web.cecs.pdx.edu/~mpj/pubs/mil.pdf.
 
 ### Requirements:
 
