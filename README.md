@@ -12,6 +12,9 @@ independently, as suggested by the following quick demo.
 directory; we need to do a better job with search paths for
 source files in future releases!)
 
+A draft paper with more details about MIL is available from 
+[https://web.cecs.pdx.edu/~mpj/pubs/mil.pdf]().
+
 ### Requirements:
 
 The following items are required to use the code in this repository:
@@ -23,10 +26,16 @@ The following items are required to use the code in this repository:
 
 First, we need to build the mil-tools, and the simplest way to
 do this (assuming you already have a suitable JDK and copy of
-Apache Ant installed) is as follows:
+Apache Ant installed) uses the following command sequence:
 
+    # Ensure a clean starting point:
+    ant clean
+    
     # Build mil-tools:
     ant
+
+[Use of `ant clean` is recommended after every update to ensure
+a consistent build.]
 
 Next, copy the `milc` shell script (or the `milc.bat` file on
 Windows) into a suitable folder on your path, and then edit that
