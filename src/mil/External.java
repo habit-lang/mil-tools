@@ -260,37 +260,10 @@ public class External extends TopDefn {
   void topLevelRepTransform(Handler handler, RepTypeSet set) {
     declared = declared.canonType(set);
     debug.Log.println("Determining representation for external " + id + " :: " + declared);
-    Type[] r = declared.repCalc();
-    Tail t = generateTail(handler, set);
-    if (t == null) { // Program will continue to use an external definition
-      if (r != null) { // Check for a change in representation
-        if (r.length != 1) {
-          // TODO: do something to avoid the following error
-          debug.Internal.error(
-              "Cannot handle change of representation for external " + id + " :: " + declared);
-        }
-        impl = new External(pos, id, r[0], null, null); // do not copy ref or ts
-        debug.Log.println("Replaced external definition with " + id + " :: " + r[0]);
-      }
-    } else { // Generator has produced an implementation for this external
-      TopLhs[] lhs; // Create a left hand side for the new top level definition
-      if (r == null) { // no change in type representation:
-        lhs = new TopLhs[] {new TopLhs(id)};
-        lhs[0].setDeclared(declared);
-      } else {
-        lhs = new TopLhs[r.length];
-        for (int i = 0; i < r.length; i++) {
-          lhs[i] = new TopLhs(mkid(id, i));
-          lhs[i].setDeclared(r[i]);
-        }
-      }
-      // TODO: it seems inconsistent to use a HashMap for topLevelRepMap, while using a field here
-      // ...
-      impl =
-          new TopLevel(
-              pos, lhs, t); // Make new top level to use as the replacement for this External
-      impl.setIsEntrypoint(isEntrypoint);
-      debug.Log.println("Generated new top level definition for " + impl);
+    try {
+      repImplement(handler, declared.repCalc(), set);
+    } catch (Failure f) {
+      handler.report(f);
     }
   }
 
@@ -339,40 +312,92 @@ public class External extends TopDefn {
 
   /**
    * Use the ref and ts fields to determine if we can generate an implementation, post
-   * representation transformation, for an external primitive.
+   * representation transformation, for an external primitive, or if the external should be replaced
+   * with the use of an external primitive.
    */
-  Tail generateTail(Handler handler, RepTypeSet set) {
-    if (ref == null) {
-      return declared.generatePrim(pos, id);
+  private void repImplement(Handler handler, Type[] reps, RepTypeSet set) throws Failure {
+    if (ref == null) { // If there is no reference name given,
+      generatePrim(id, reps); // then consider reimplementation using a primitive.
+      return;
     } else if (ts != null) {
-      Generator gen = generators.get(ref);
+      Generator gen = generators.get(ref); // Otherwise, look for a generator ...
       if (gen != null) {
-        if (ts.length < gen.needs) {
-          handler.report(
-              new Failure(
-                  pos, "Generator for " + ref + " needs at least " + gen.needs + " arguments"));
-        } else {
-          try {
-            Tail t = gen.generate(pos, ts, set);
-            if (t != null) { // TODO: eliminate this when all generators use GeneratorException
-              return t;
-            }
-            throw new GeneratorException("invalid parameters");
-          } catch (GeneratorException e) {
-            handler.report(new Failure(pos, "No generated implementation: " + e.getReason()));
-          }
+        if (ts.length < gen.needs) { // ... with enough arguments
+          throw new Failure(
+              pos, "Generator for " + ref + " needs at least " + gen.needs + " arguments");
         }
-        return null;
-      } else if (ts.length > 0) {
-        handler.report(new Failure(pos, "No generator for " + ref));
-        return null;
+        try {
+          Tail t = gen.generate(pos, ts, set); // ... and try to produce an implementation
+          if (t != null) { // TODO: eliminate this when all generators use GeneratorException
+            topLevelImpl(id, reps, t, isEntrypoint);
+            return;
+          }
+          throw new GeneratorException("invalid parameters");
+        } catch (GeneratorException e) {
+          throw new Failure(pos, "No generated implementation: " + e.getReason());
+        }
+      }
+      if (ts.length > 0) {
+        throw new Failure(pos, "No generator for " + ref);
       }
     }
-    Tail t = declared.generatePrim(pos, ref);
-    if (t == null) {
-      id = ref;
+    generatePrim(ref, reps);
+  }
+
+  private void generatePrim(String id, Type[] reps) throws Failure {
+    if (reps == null) {
+      generatePrim(id, declared);
+    } else if (reps.length == 1) {
+      generatePrim(id, reps[0]);
+    } else {
+      Atom[] exts = new Atom[reps.length];
+      for (int i = 0; i < reps.length; i++) {
+        External ext = new External(pos, mkid(id, i), reps[i], null, null);
+        ext.setIsEntrypoint(isEntrypoint);
+        exts[i] = new TopExt(ext);
+      }
+      topLevelImpl(id, reps, new Return(exts), false);
     }
-    return t;
+  }
+
+  private void generatePrim(String id, Scheme declared) throws Failure {
+    Tail t = declared.generatePrim(pos, id);
+    ;
+    if (t != null) {
+      TopLhs lhs = new TopLhs(id);
+      lhs.setDeclared(declared);
+      impl = new TopLevel(pos, new TopLhs[] {lhs}, t);
+      if (isEntrypoint) { // test delayed until impl has been initialized
+        throw new Failure(
+            pos,
+            "External "
+                + id
+                + " is implemented by a primitive of the same"
+                + " name so cannot be declared as an entrypoint.");
+      }
+    } else {
+      impl = new External(pos, id, declared, null, null);
+      impl.setIsEntrypoint(isEntrypoint);
+    }
+  }
+
+  private void topLevelImpl(String id, Type[] reps, Tail t, boolean isEntrypoint) {
+    TopLhs[] lhs; // Create a left hand side for the new top level definition
+    if (reps == null) { // No change in type representation:
+      lhs = new TopLhs[] {new TopLhs(id)};
+      lhs[0].setDeclared(declared);
+    } else { // Create new left hand sides that reflect change in representation
+      lhs = new TopLhs[reps.length];
+      for (int i = 0; i < reps.length; i++) {
+        lhs[i] = new TopLhs(mkid(id, i));
+        lhs[i].setDeclared(reps[i]);
+      }
+    }
+    // TODO: it seems inconsistent to use a HashMap for topLevelRepMap, while using a field here ...
+    impl =
+        new TopLevel(pos, lhs, t); // Make new top level to use as the replacement for this External
+    impl.setIsEntrypoint(isEntrypoint);
+    debug.Log.println("Generated new top level definition for " + impl);
   }
 
   static void validPowerOfTwo(long m) throws External.GeneratorException {

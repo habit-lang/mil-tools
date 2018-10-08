@@ -403,6 +403,7 @@ public class MILProgram {
         ds.head.repTransform(handler, set);
       }
     }
+    handler.abortOnFailures();
     makeEntryBlocks();
     main = set.makeMain(main);
     return set;
