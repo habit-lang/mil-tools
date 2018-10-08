@@ -1927,4 +1927,20 @@ public class External extends TopDefn {
   void countAllCalls() {
     /* Nothing to do here */
   }
+
+  /**
+   * Generate code (in reverse) to initialize each TopLevel (unless all of the components are
+   * statically known).
+   */
+  llvm.Code addRevInitCode(LLVMMap lm, InitVarMap ivm, llvm.Code code) {
+    // Generate code to load values of externals in case they are needed later in initialization
+    // TODO: Will LLVM optimize away these loads if they are not actually needed?
+    // Can we avoid generating them in the first place?
+    Type t = declared.isMonomorphic(); // - find the MIL type of this external
+    llvm.Type gt = lm.toLLVM(t); // - find the corresponding LLVM type
+    llvm.Global g = new llvm.Global(gt.ptr(), id); // - find the global for this external
+    llvm.Local l = ivm.reg(gt); // - find a local to hold its value
+    ivm.mapGlobal(new TopExt(this), l); // - record the load in the var map
+    return new llvm.Op(l, new llvm.Load(g), code); // - emit code to load the value
+  }
 }

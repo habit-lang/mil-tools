@@ -481,14 +481,4 @@ public abstract class Atom {
 
   /** Calculate an LLVM Value corresponding to a given MIL argument. */
   abstract llvm.Value toLLVMAtom(LLVMMap lm, VarMap vm);
-
-  /**
-   * Generate code to initialize the specified Top value from this atom, inserting a load if the
-   * atom is a TopExt whose value has not been read earlier in the initialization function.
-   */
-  llvm.Code initAtom(LLVMMap lm, InitVarMap ivm, TopDef top, llvm.Code code) {
-    llvm.Value val = toLLVMAtom(lm, ivm);
-    ivm.mapGlobal(top, val);
-    return new llvm.Store(val, new llvm.Global(val.getType().ptr(), top.getId()), code);
-  }
 }
