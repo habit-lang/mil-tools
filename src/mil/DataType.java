@@ -246,7 +246,7 @@ public class DataType extends DataName {
         for (int j = 0; j < n; j++) {
           Pat p = at.bitPat(j);
           if (p == null) { // No bit pattern yet, but perhaps we have added one to the mapping?
-            DataType dt = at.storedType(i).dataType();
+            DataType dt = at.storedType(j).dataType();
             if (dt == null) {
               return (-1); // Remove this dataname from the list of candidates
             } else if ((p = dt.bitPat(m)) == null) {
