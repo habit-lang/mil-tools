@@ -416,7 +416,7 @@ public class External extends TopDefn {
 
   private static void validBitdataRepresentations() throws GeneratorException {
     if (!bitdataRepresentations) {
-      throw new GeneratorException("bitdata representations (\"b\" pass) are required");
+      throw new GeneratorException("bitdata representations (\"b\" pass) required");
     }
   }
 
@@ -1580,23 +1580,24 @@ public class External extends TopDefn {
 
   static {
 
-    // primNZBitFromLiteral v w ... :: Proxy v -> Bit w
+    // primNZBitFromLiteral v w ... :: Proxy v -> NZBit w
     generators.put(
         "primNZBitFromLiteral",
         new Generator(2) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger v = ts[0].isPosWord(); // Value of literal (must be nonzero!)
-            BigInteger w = ts[1].isPosInt(); // Width of bit vector
-            if (v != null
-                && w != null
-                && w.compareTo(Word.sizeBig()) <= 0 // Bit w must fit in a single word
-                && BigInteger.ONE.shiftLeft(w.intValue()).compareTo(v) > 0) { // v must be < 2^w
-              Tail t = new Return(new NonZero(v.longValue()));
-              ClosureDefn k =
-                  new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(1), t); //  k{} _ = return [v]
-              return new ClosAlloc(k).withArgs();
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            BigInteger v = ts[0].validNat(); // Value of literal (must be nonzero!)
+            int w = ts[1].validWidth(); // Width of bit vector
+            if (v.signum() <= 0) {
+              throw new GeneratorException("A nonzero value is required");
             }
-            return null;
+            Type.validBelow(v, BigInteger.ONE.shiftLeft(w)); // v < 2 ^ w
+            ClosureDefn k =
+                new ClosureDefn(
+                    pos,
+                    Temp.noTemps,
+                    Temp.makeTemps(1),
+                    new Return(new NonZero(v.longValue()))); //  k{} _ = return [v]
+            return new ClosAlloc(k).withArgs();
           }
         });
 
