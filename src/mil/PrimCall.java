@@ -98,9 +98,12 @@ public class PrimCall extends Call {
     return p.doesntReturn();
   }
 
-  /** Return true if this is a halt or loop primitive call. */
-  boolean halts() {
-    return p.halts();
+  /**
+   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
+   * loop).
+   */
+  boolean blackholes() {
+    return p.blackholes();
   }
 
   /**

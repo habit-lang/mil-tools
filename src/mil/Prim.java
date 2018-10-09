@@ -1438,8 +1438,11 @@ public class Prim {
       throw new Failure("halt primitive executed");
     }
 
-    /** Return true if this is a halt or loop primitive call. */
-    boolean halts() {
+    /**
+     * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
+     * loop).
+     */
+    boolean blackholes() {
       return true;
     }
   }
@@ -1460,8 +1463,11 @@ public class Prim {
       return new loop(bt);
     }
 
-    /** Return true if this is a halt or loop primitive call. */
-    boolean halts() {
+    /**
+     * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
+     * loop).
+     */
+    boolean blackholes() {
       return true;
     }
   }
@@ -1539,8 +1545,11 @@ public class Prim {
     throw new Failure("primitive \"" + id + "\" not available");
   }
 
-  /** Return true if this is a halt or loop primitive call. */
-  boolean halts() {
+  /**
+   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
+   * loop).
+   */
+  boolean blackholes() {
     return false;
   }
 

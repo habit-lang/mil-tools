@@ -118,9 +118,12 @@ public class Done extends Code {
     return t.detectLoops(src, visited);
   }
 
-  /** Return true if this is a halt or loop primitive call. */
-  boolean halts() {
-    return t.halts();
+  /**
+   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
+   * loop).
+   */
+  boolean blackholes() {
+    return t.blackholes();
   }
 
   /**
@@ -153,11 +156,16 @@ public class Done extends Code {
   }
 
   Code prefixInline(TempSubst s, Temp[] us, Code d) {
-    return new Bind(us, t.apply(s), d);
+    Tail nt = t.apply(s);
+    return nt.blackholes() ? new Done(nt) : new Bind(us, nt, d);
+  }
+
+  int prefixInlineLength() {
+    return 1;
   }
 
   int prefixInlineLength(int len) {
-    return len + 1;
+    return t.blackholes() ? 0 : (len + 1);
   }
 
   /**

@@ -478,7 +478,7 @@ public class Block extends Defn {
 
   boolean canPrefixInline(Block src) {
     if (this.getScc() != src.getScc()) { // Restrict to different SCCs
-      int n = code.prefixInlineLength(0);
+      int n = code.prefixInlineLength();
       return n > 0 && (occurs == 1 || n <= INLINE_LINES_LIMIT);
     }
     return false;

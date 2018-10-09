@@ -166,8 +166,11 @@ public abstract class Code {
     return this;
   }
 
-  /** Return true if this is a halt or loop primitive call. */
-  boolean halts() {
+  /**
+   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
+   * loop).
+   */
+  boolean blackholes() {
     return false;
   }
 
@@ -206,6 +209,10 @@ public abstract class Code {
   Code prefixInline(TempSubst s, Temp[] us, Code d) {
     debug.Internal.error("This code cannot be inlined");
     return this;
+  }
+
+  int prefixInlineLength() {
+    return prefixInlineLength(0);
   }
 
   int prefixInlineLength(int len) {
