@@ -270,16 +270,13 @@ public abstract class Tycon extends Name {
   /** Representation vector for Ix, Ref, Ptr, etc. types that fit in a single word. */
   public static final Type[] wordRep = new Type[] {word.asType()};
 
-  /** Representation vector for NZBit types that fit in a single word. */
-  public static final Type[] nzwordRep = new Type[] {nzword.asType()};
-
   /** Representation vector for Init a types as functions of type [Word] ->> [Unit]. */
   public static final Type[] initRep =
       new Type[] {Type.milfun(Type.tuple(word.asType()), Type.tuple(unit.asType()))};
 
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
-    return (this == addr) ? Tycon.wordRep : null;
+    return (this == addr || this == nzword) ? Tycon.wordRep : null;
   }
 
   /**

@@ -78,6 +78,15 @@ public class NonZero extends Const {
     return val;
   }
 
+  /** Return the representation vector for this Atom. */
+  Type[] repCalc() {
+    return Tycon.wordRep;
+  }
+
+  Atom[] repArg(RepTypeSet set, RepEnv env) {
+    return new Atom[] {new Word(val)};
+  }
+
   /**
    * Calculate a static value for this atom, or return null if the result must be determined at
    * runtime.

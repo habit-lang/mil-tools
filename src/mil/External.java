@@ -1596,7 +1596,7 @@ public class External extends TopDefn {
                     pos,
                     Temp.noTemps,
                     Temp.makeTemps(1),
-                    new Return(new NonZero(v.longValue()))); //  k{} _ = return [v]
+                    new Return(new Word(v.longValue()))); //  k{} _ = return [v]
             return new ClosAlloc(k).withArgs();
           }
         });
