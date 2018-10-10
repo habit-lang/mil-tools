@@ -78,11 +78,6 @@ public abstract class Atom {
     return false;
   }
 
-  /** Test to determine whether this Atom refers to the given non zero word value. */
-  public boolean sameNonZero(NonZero c) {
-    return false;
-  }
-
   /** Test to determine whether this Atom refers to the specified bit vector constant. */
   public boolean sameBits(Bits c) {
     return false;
@@ -317,14 +312,6 @@ public abstract class Atom {
    */
   DataAlloc lookForDataAlloc(Facts facts) {
     return null;
-  }
-
-  /**
-   * Return the nonzero value associated with this atom; a return of zero indicates that the atom
-   * was not a NonZero.
-   */
-  long getNonZero() {
-    return 0;
   }
 
   /**

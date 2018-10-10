@@ -280,9 +280,9 @@ public class PrimCall extends Call {
     }
 
     if (p == Prim.nzdiv) {
-      Atom y = args[1];
-      long d = args[1].getNonZero();
-      if (d > 0) { // Look for a constant denominator
+      Word y = args[1].isWord();
+      long d;
+      if (y != null && (d = y.getVal()) > 0) { // Look for a constant denominator
         Atom x = args[0];
         Word a = x.isWord();
         if (a != null) {
