@@ -153,7 +153,7 @@ public class Prim {
 
   public static final PrimUnOp not = new not();
 
-  private static class not extends PrimUnOp {
+  public static class not extends PrimUnOp {
 
     private not() {
       this(unaryWordType);
@@ -197,7 +197,7 @@ public class Prim {
 
   public static final PrimBinOp and = new and();
 
-  private static class and extends PrimBinOp {
+  public static class and extends PrimBinOp {
 
     private and() {
       this(binaryWordType);
@@ -226,7 +226,7 @@ public class Prim {
 
   public static final PrimBinOp or = new or();
 
-  private static class or extends PrimBinOp {
+  public static class or extends PrimBinOp {
 
     private or() {
       this(binaryWordType);
@@ -255,7 +255,7 @@ public class Prim {
 
   public static final PrimBinOp xor = new xor();
 
-  private static class xor extends PrimBinOp {
+  public static class xor extends PrimBinOp {
 
     private xor() {
       this(binaryWordType);
@@ -284,7 +284,7 @@ public class Prim {
 
   public static final PrimUnFOp bnot = new bnot();
 
-  private static class bnot extends PrimUnFOp {
+  public static class bnot extends PrimUnFOp {
 
     private bnot() {
       this(unaryFlagType);
@@ -328,7 +328,7 @@ public class Prim {
 
   public static final PrimBinFOp band = new band();
 
-  private static class band extends PrimBinFOp {
+  public static class band extends PrimBinFOp {
 
     private band() {
       this(binaryFlagType);
@@ -357,7 +357,7 @@ public class Prim {
 
   public static final PrimBinFOp bor = new bor();
 
-  private static class bor extends PrimBinFOp {
+  public static class bor extends PrimBinFOp {
 
     private bor() {
       this(binaryFlagType);
@@ -386,7 +386,7 @@ public class Prim {
 
   public static final PrimBinFOp bxor = new bxor();
 
-  private static class bxor extends PrimBinFOp {
+  public static class bxor extends PrimBinFOp {
 
     private bxor() {
       this(binaryFlagType);
@@ -423,7 +423,7 @@ public class Prim {
 
   public static final PrimBinFOp beq = new beq();
 
-  private static class beq extends PrimBinFOp {
+  public static class beq extends PrimBinFOp {
 
     private beq() {
       this(binaryFlagType);
@@ -460,7 +460,7 @@ public class Prim {
 
   public static final PrimBinFOp blt = new blt();
 
-  private static class blt extends PrimBinFOp {
+  public static class blt extends PrimBinFOp {
 
     private blt() {
       this(binaryFlagType);
@@ -497,7 +497,7 @@ public class Prim {
 
   public static final PrimBinFOp ble = new ble();
 
-  private static class ble extends PrimBinFOp {
+  public static class ble extends PrimBinFOp {
 
     private ble() {
       this(binaryFlagType);
@@ -534,7 +534,7 @@ public class Prim {
 
   public static final PrimBinFOp bgt = new bgt();
 
-  private static class bgt extends PrimBinFOp {
+  public static class bgt extends PrimBinFOp {
 
     private bgt() {
       this(binaryFlagType);
@@ -571,7 +571,7 @@ public class Prim {
 
   public static final PrimBinFOp bge = new bge();
 
-  private static class bge extends PrimBinFOp {
+  public static class bge extends PrimBinFOp {
 
     private bge() {
       this(binaryFlagType);
@@ -608,7 +608,7 @@ public class Prim {
 
   public static final PrimBinOp shl = new shl();
 
-  private static class shl extends PrimBinOp {
+  public static class shl extends PrimBinOp {
 
     private shl() {
       this(binaryWordType);
@@ -637,7 +637,7 @@ public class Prim {
 
   public static final PrimBinOp lshr = new lshr();
 
-  private static class lshr extends PrimBinOp {
+  public static class lshr extends PrimBinOp {
 
     private lshr() {
       this(binaryWordType);
@@ -666,7 +666,7 @@ public class Prim {
 
   public static final PrimBinOp ashr = new ashr();
 
-  private static class ashr extends PrimBinOp {
+  public static class ashr extends PrimBinOp {
 
     private ashr() {
       this(binaryWordType);
@@ -695,7 +695,7 @@ public class Prim {
 
   public static final PrimUnOp neg = new neg();
 
-  private static class neg extends PrimUnOp {
+  public static class neg extends PrimUnOp {
 
     private neg() {
       this(unaryWordType);
@@ -739,7 +739,7 @@ public class Prim {
 
   public static final PrimBinOp add = new add();
 
-  private static class add extends PrimBinOp {
+  public static class add extends PrimBinOp {
 
     private add() {
       this(binaryWordType);
@@ -768,7 +768,7 @@ public class Prim {
 
   public static final PrimBinOp sub = new sub();
 
-  private static class sub extends PrimBinOp {
+  public static class sub extends PrimBinOp {
 
     private sub() {
       this(binaryWordType);
@@ -797,7 +797,7 @@ public class Prim {
 
   public static final PrimBinOp mul = new mul();
 
-  private static class mul extends PrimBinOp {
+  public static class mul extends PrimBinOp {
 
     private mul() {
       this(binaryWordType);
@@ -826,7 +826,7 @@ public class Prim {
 
   public static final Prim div = new div();
 
-  private static class div extends Prim {
+  public static class div extends Prim {
 
     private div() {
       this(binaryWordType);
@@ -890,7 +890,7 @@ public class Prim {
 
   public static final Prim rem = new rem();
 
-  private static class rem extends Prim {
+  public static class rem extends Prim {
 
     private rem() {
       this(binaryWordType);
@@ -954,7 +954,7 @@ public class Prim {
 
   public static final Prim nzdiv = new nzdiv();
 
-  private static class nzdiv extends Prim {
+  public static class nzdiv extends Prim {
 
     private nzdiv() {
       this(nzdivType);
@@ -1009,7 +1009,7 @@ public class Prim {
 
   public static final PrimRelOp eq = new eq();
 
-  private static class eq extends PrimRelOp {
+  public static class eq extends PrimRelOp {
 
     private eq() {
       this(relopType);
@@ -1046,7 +1046,7 @@ public class Prim {
 
   public static final PrimRelOp neq = new neq();
 
-  private static class neq extends PrimRelOp {
+  public static class neq extends PrimRelOp {
 
     private neq() {
       this(relopType);
@@ -1083,7 +1083,7 @@ public class Prim {
 
   public static final PrimRelOp slt = new slt();
 
-  private static class slt extends PrimRelOp {
+  public static class slt extends PrimRelOp {
 
     private slt() {
       this(relopType);
@@ -1120,7 +1120,7 @@ public class Prim {
 
   public static final PrimRelOp sle = new sle();
 
-  private static class sle extends PrimRelOp {
+  public static class sle extends PrimRelOp {
 
     private sle() {
       this(relopType);
@@ -1157,7 +1157,7 @@ public class Prim {
 
   public static final PrimRelOp sgt = new sgt();
 
-  private static class sgt extends PrimRelOp {
+  public static class sgt extends PrimRelOp {
 
     private sgt() {
       this(relopType);
@@ -1194,7 +1194,7 @@ public class Prim {
 
   public static final PrimRelOp sge = new sge();
 
-  private static class sge extends PrimRelOp {
+  public static class sge extends PrimRelOp {
 
     private sge() {
       this(relopType);
@@ -1231,7 +1231,7 @@ public class Prim {
 
   public static final PrimRelOp ult = new ult();
 
-  private static class ult extends PrimRelOp {
+  public static class ult extends PrimRelOp {
 
     private ult() {
       this(relopType);
@@ -1268,7 +1268,7 @@ public class Prim {
 
   public static final PrimRelOp ule = new ule();
 
-  private static class ule extends PrimRelOp {
+  public static class ule extends PrimRelOp {
 
     private ule() {
       this(relopType);
@@ -1305,7 +1305,7 @@ public class Prim {
 
   public static final PrimRelOp ugt = new ugt();
 
-  private static class ugt extends PrimRelOp {
+  public static class ugt extends PrimRelOp {
 
     private ugt() {
       this(relopType);
@@ -1342,7 +1342,7 @@ public class Prim {
 
   public static final PrimRelOp uge = new uge();
 
-  private static class uge extends PrimRelOp {
+  public static class uge extends PrimRelOp {
 
     private uge() {
       this(relopType);
@@ -1379,7 +1379,7 @@ public class Prim {
 
   public static final PrimFtoW flagToWord = new flagToWord();
 
-  private static class flagToWord extends PrimFtoW {
+  public static class flagToWord extends PrimFtoW {
 
     private flagToWord() {
       this(flagToWordType);
@@ -1420,7 +1420,7 @@ public class Prim {
 
   public static final Prim halt = new halt();
 
-  private static class halt extends Prim {
+  public static class halt extends Prim {
 
     private halt() {
       this(haltType);
@@ -1449,7 +1449,7 @@ public class Prim {
 
   public static final Prim loop = new loop();
 
-  private static class loop extends Prim {
+  public static class loop extends Prim {
 
     private loop() {
       this(haltType);
@@ -1522,7 +1522,7 @@ public class Prim {
 
   public static final Prim printWord = new printWord();
 
-  private static class printWord extends Prim {
+  public static class printWord extends Prim {
 
     private printWord() {
       this(wordToUnitType);
@@ -1665,7 +1665,7 @@ public class Prim {
 
   public static final Prim load8 = new load8();
 
-  private static class load8 extends Prim {
+  public static class load8 extends Prim {
 
     private load8() {
       this(load8type);
@@ -1698,7 +1698,7 @@ public class Prim {
 
   public static final Prim load16 = new load16();
 
-  private static class load16 extends Prim {
+  public static class load16 extends Prim {
 
     private load16() {
       this(load16type);
@@ -1731,7 +1731,7 @@ public class Prim {
 
   public static final Prim load32 = new load32();
 
-  private static class load32 extends Prim {
+  public static class load32 extends Prim {
 
     private load32() {
       this(load32type);
@@ -1764,7 +1764,7 @@ public class Prim {
 
   public static final Prim load64 = new load64();
 
-  private static class load64 extends Prim {
+  public static class load64 extends Prim {
 
     private load64() {
       this(load64type);
@@ -1836,7 +1836,7 @@ public class Prim {
 
   public static final Prim store8 = new store8();
 
-  private static class store8 extends Prim {
+  public static class store8 extends Prim {
 
     private store8() {
       this(store8type);
@@ -1863,7 +1863,7 @@ public class Prim {
 
   public static final Prim store16 = new store16();
 
-  private static class store16 extends Prim {
+  public static class store16 extends Prim {
 
     private store16() {
       this(store16type);
@@ -1890,7 +1890,7 @@ public class Prim {
 
   public static final Prim store32 = new store32();
 
-  private static class store32 extends Prim {
+  public static class store32 extends Prim {
 
     private store32() {
       this(store32type);
@@ -1917,7 +1917,7 @@ public class Prim {
 
   public static final Prim store64 = new store64();
 
-  private static class store64 extends Prim {
+  public static class store64 extends Prim {
 
     private store64() {
       this(store64type);
@@ -1988,7 +1988,7 @@ public class Prim {
 
   public static final Prim initSeq = new initSeq();
 
-  private static class initSeq extends Prim {
+  public static class initSeq extends Prim {
 
     private initSeq() {
       this(initSeqType);
@@ -2039,7 +2039,7 @@ public class Prim {
 
   public static final Prim initSelf = new initSelf();
 
-  private static class initSelf extends Prim {
+  public static class initSelf extends Prim {
 
     private initSelf() {
       this(initSelfType);

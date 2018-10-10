@@ -279,7 +279,10 @@ public class PrimCall extends Call {
               : Prim.ashr.fold(a.getVal(), b.getVal()));
     }
 
-    if (p == Prim.nzdiv) {
+    // TODO: We use instanceof below because representation transformation can replace nzdiv
+    // with a new canonical form that has a different type.  Perhaps we should use instanceof
+    // throughout instead of testing for equality with Prim.XXX?
+    if (p instanceof Prim.nzdiv || p == Prim.div) {
       Word y = args[1].isWord();
       long d;
       if (y != null && (d = y.getVal()) > 0) { // Look for a constant denominator
