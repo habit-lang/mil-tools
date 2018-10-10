@@ -887,9 +887,27 @@ public abstract class Type extends Scheme {
     return nat.intValue();
   }
 
-  /** Return the number of bytes that are needed to hold a value with the specified bitsize. */
+  /**
+   * Return the number of bytes that are needed to hold an in-memory representation of a value with
+   * the specified bitsize. A negative result indicates that there is no in-memory representation
+   * for a value of this width (at least, as a single value).
+   */
   public static int numBytes(int numBits) {
-    return (numBits + 7) / 8;
+    if (numBits < 0) { // negative input ==> no in-memory representation
+      return numBits;
+    }
+    int n = (numBits + 7) / 8;
+    return (n == 0)
+        ? 0 // if BitSize t == 0
+        : (n == 1)
+            ? 1 // if 0  < BitSize t <= 8
+            : (n == 2)
+                ? 2 // if 8  < BitSize t <= 16
+                : (n <= 4)
+                    ? 4 // if 16 < BitSize t <= 32
+                    : (n <= 8)
+                        ? 8 // if 32 < BitSize t <= 64
+                        : (-1); // too big!
   }
 
   /**
@@ -916,29 +934,31 @@ public abstract class Type extends Scheme {
   }
 
   /**
-   * Worker method for calculating ByteSize (Stored this), with the specified type environment tenv,
-   * short-circuiting through indirections and type variables as necessary. Implements the function:
-   * ByteSize (Stored (Ref a)) = WordSize / 8 ByteSize (Stored (Ptr a)) = WordSize / 8 ByteSize
-   * (Stored t) = 0, if BitSize t == 0 = 1, if 0 < BitSize t <= 8 = 2, if 8 < BitSize t <= 16 = 4,
-   * if 16 < BitSize t <= 32 = 8, if 32 < BitSize t <= 64
+   * Worker method for calculating ByteSize (Stored this), with the specified type environment tenv.
    */
   Type byteSizeStored(Type[] tenv) {
+    int n = Type.numBytes(memBitSize(tenv));
+    return (n >= 0) ? new TNat(n) : null;
+  }
+
+  /**
+   * Calculate the number of bits required for an in-memory representation of this type. This is
+   * essentially the same as the bitSize of the type, except for the special case of reference
+   * types, which use a full word. A negative result indicates that there is no in-memory
+   * representation for values of this type.
+   */
+  int memBitSize(Type[] tenv) {
     if (referenceType(tenv)) { // Check cases for Ref and Ptr types first
-      return new TNat(Type.numBytes(Word.size()));
+      return Word.size();
     }
     Type bits = bitSize(tenv); // Otherwise check bit representation of this type
     if (bits != null) {
       BigInteger m = bits.simplifyNatType(null).getNat();
       if (m != null) {
-        int n = Type.numBytes(m.intValue());
-        return (n == 0)
-            ? new TNat(1)
-            : (n == 1)
-                ? new TNat(1)
-                : (n == 2) ? new TNat(2) : (n <= 4) ? new TNat(4) : (n <= 8) ? new TNat(8) : null;
+        return m.intValue();
       }
     }
-    return null;
+    return (-1);
   }
 
   /** Determine if this is a type of the form (Ref a) or (Ptr a) for some area type a. */
@@ -976,27 +996,12 @@ public abstract class Type extends Scheme {
   }
 
   /**
-   * Worker method for calculating Align (Stored this), with the specified type environment tenv,
-   * short-circuiting through indirections and type variables as necessary. Implements the function:
-   * Align (Stored (Ref a)) = WordSize / 8 Align (Stored (Ptr a)) = WordSize / 8 Align (Stored t) =
-   * 1, if BitSize t == 0 = 1, if 0 < BitSize t <= 8 = 2, if 8 < BitSize t <= 16 = 4, if 16 <
-   * BitSize t <= 32 = 8, if 32 < BitSize t <= 64 = 0, otherwise TODO: this is very similar to the
-   * byteStored method: if it weren't for the BitSize t == 0 case, we could just use one function
-   * for both; maybe there is still a nice way to do that?
+   * Worker method for calculating Align (Stored this), with the type environment tenv. Returns an
+   * alignment of 1 if this type has no stored representation, or has a zero width stored
+   * representation.
    */
   long alignmentStored(Type[] tenv) {
-    if (referenceType(tenv)) { // Check cases for Ref and Ptr types first
-      return Type.numBytes(Word.size());
-    }
-    Type bits = bitSize(tenv); // Otherwise check bit representation of this type
-    if (bits != null) {
-      BigInteger m = bits.simplifyNatType(null).getNat();
-      if (m != null) {
-        int n = Type.numBytes(m.intValue());
-        return (n == 0) ? 1 : (n == 1) ? 1 : (n == 2) ? 2 : (n <= 4) ? 4 : (n <= 8) ? 8 : 0;
-      }
-    }
-    return 0;
+    return Math.max(1, Type.numBytes(memBitSize(tenv)));
   }
 
   public long calcAlignment(Position pos, MILEnv milenv, TypeExp alignExp) throws Failure {
