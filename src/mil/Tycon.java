@@ -414,7 +414,8 @@ public abstract class Tycon extends Name {
       int w = a.refWidth(tenv);
       return (w > 0) ? obdd.Pat.all(w) : null;
     } else if (this == bit) {
-      return obdd.Pat.all(a.bitWidth(tenv));
+      int w = a.bitWidth(tenv);
+      return (w >= 0) ? obdd.Pat.all(w) : null;
     } else if (this == nzbit) {
       int w = a.bitWidth(tenv);
       return (w > 0) ? obdd.Pat.nonzero(w) : null;

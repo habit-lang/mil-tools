@@ -390,6 +390,8 @@ public abstract class Type extends Scheme {
 
   public static final int MAX_BIT_WIDTH = 1000;
 
+  public static final BigInteger BIG_MAX_BIT_WIDTH = BigInteger.valueOf(MAX_BIT_WIDTH);
+
   /** Convenience method for making a type of the form Bit n for some type w. */
   public static Type bit(Type w) {
     return Tycon.bit.asType().tap(w);
@@ -611,7 +613,7 @@ public abstract class Type extends Scheme {
    */
   int validWidth() throws External.GeneratorException {
     BigInteger n = validNat();
-    validBelow(n, BigInteger.valueOf(MAX_BIT_WIDTH));
+    validBelow(n, BIG_MAX_BIT_WIDTH);
     return n.intValue();
   }
 
@@ -879,8 +881,8 @@ public abstract class Type extends Scheme {
     BigInteger nat = simplifyNatType(tenv).getNat();
     if (nat == null) {
       debug.Internal.error("Unresolved size parameter " + skeleton(tenv));
-    } else if (nat.signum() < 0 || nat.compareTo(MAX_INT) > 0) {
-      debug.Internal.error("Bit width " + nat + " is out of allowed range");
+    } else if (nat.signum() < 0 || nat.compareTo(Type.BIG_MAX_BIT_WIDTH) > 0) {
+      return (-1);
     }
     return nat.intValue();
   }

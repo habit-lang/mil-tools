@@ -104,11 +104,12 @@ public class BitdataDefn extends TyconDefn {
 
   void checkSizes() throws Failure {
     // Check that we have computed a valid BitSize for this type
+    // TODO: combine with very similar code in Type.bitWidth()?
     Type size = bt.bitSize().simplifyNatType(null);
     BigInteger nat = size.getNat();
     if (nat == null) {
       throw new BitSizeNotDeterminedFailure(pos, bt);
-    } else if (nat.signum() < 0 || nat.compareTo(BigInteger.valueOf(Type.MAX_BIT_WIDTH)) > 0) {
+    } else if (nat.signum() < 0 || nat.compareTo(Type.BIG_MAX_BIT_WIDTH) > 0) {
       throw new InvalidWidthFailure(pos, bt, nat);
     }
     int w = nat.intValue();

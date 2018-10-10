@@ -322,11 +322,14 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
    * out of range.
    */
   public int getInt() throws Failure {
-    if (nat.compareTo(Type.MAX_INT) > 0) {
+    if (nat.compareTo(MAX_INT) > 0) {
       throw new Failure(getPos(), "A small integer constant is required");
     }
     return nat.intValue();
   }
+
+  /** A BigInteger for the largest positive value that can be represented by a (signed) int. */
+  public static final BigInteger MAX_INT = BigInteger.valueOf(Integer.MAX_VALUE);
 
   /**
    * Return the most recently recognized literal as a Word, or throw an exception if the value is
