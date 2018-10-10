@@ -1605,15 +1605,11 @@ public class External extends TopDefn {
     generators.put(
         "primNZBitNonZero",
         new Generator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger w = ts[0].isPosInt(); // Width of bit vector
-            if (bitdataRepresentations // ensures repr. for Maybe (NZBit n) is Word (the same as
-                                       // repr. for Bit n).
-                && w != null
-                && w.compareTo(BigInteger.valueOf(Word.size())) <= 0) {
-              return new Return().makeUnaryFuncClosure(pos, 1);
-            }
-            return null;
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int w = ts[0].validWidth(2); // Width of bit vector
+            validSingleWord(w);
+            validBitdataRepresentations(); // ensures same rep for Maybe (NZBit w), Bit w.
+            return new Return().makeUnaryFuncClosure(pos, 1);
           }
         });
 
@@ -1621,12 +1617,10 @@ public class External extends TopDefn {
     generators.put(
         "primNZBitDiv",
         new Generator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger w = ts[0].isPosInt(); // Width of bit vector (must fit within a single word)
-            if (w != null && w.compareTo(Word.sizeBig()) <= 0) {
-              return new PrimCall(Prim.nzdiv).makeBinaryFuncClosure(pos, 1, 1);
-            }
-            return null;
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int w = ts[0].validWidth(2); // Width of bit vector (must fit within a single word)
+            validSingleWord(w);
+            return new PrimCall(Prim.div).makeBinaryFuncClosure(pos, 1, 1);
           }
         });
   }
