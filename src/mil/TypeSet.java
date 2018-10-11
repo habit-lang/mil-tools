@@ -21,8 +21,10 @@ package mil;
 import compiler.*;
 import core.*;
 import java.io.PrintWriter;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.TreeSet;
 
 public class TypeSet {
 
@@ -253,7 +255,24 @@ public class TypeSet {
 
   /** Write definitions for all the types defined in this TypeSet to a PrintWriter. */
   public void dumpTypeDefinitions(PrintWriter out) {
-    for (Tycon tycon : tycons) {
+    TreeSet<Tycon> sorted =
+        new TreeSet<Tycon>(
+            new Comparator<Tycon>() {
+              // TODO: This comparator returns 0 if the two inputs are equal, but otherwise
+              // returns a code obtained by comparing the Tycon ids.  In the event that the
+              // ids are equal, it arbitrarily returns 1.  As such, this is not really a
+              // valid comparator, but it should be enough to ensure we get a sorted output
+              // without dropping any elements ...
+              public int compare(Tycon l, Tycon r) {
+                if (l.equals(r)) {
+                  return 0;
+                }
+                int c = l.getId().compareTo(r.getId());
+                return (c == 0) ? 1 : c;
+              }
+            });
+    sorted.addAll(tycons);
+    for (Tycon tycon : sorted) {
       tycon.dumpTypeDefinition(out);
     }
   }
