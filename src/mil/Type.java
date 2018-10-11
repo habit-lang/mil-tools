@@ -632,6 +632,17 @@ public abstract class Type extends Scheme {
   }
 
   /**
+   * Determine whether the given number is small enough to fit in a signed long; we assume already
+   * that it is non negative.
+   */
+  static void validSigned(BigInteger n) throws External.GeneratorException {
+    if (n.compareTo(Word.maxSigned()) > 0) {
+      throw new External.GeneratorException(
+          "parameter value " + n + " is too large; must be at most " + Word.maxSigned());
+    }
+  }
+
+  /**
    * Check that the specified type is a natural number that can be used as the argument for an Ix
    * type. Specifically, we require that this type must be in the range [1..maxSigned], which
    * ensures that all Ix n values are nonempty (because n>0) and can be stored within a single Word
@@ -640,10 +651,11 @@ public abstract class Type extends Scheme {
    */
   BigInteger validIndex() throws External.GeneratorException {
     BigInteger n = validNat();
-    if (n.signum() <= 0 || n.compareTo(Word.maxSigned()) > 0) {
+    if (n.signum() <= 0) {
       throw new External.GeneratorException(
-          n + " is not a valid index limit; should be between 1 and " + Word.maxSigned());
+          "parameter value " + n + " is too small; must be at least 1");
     }
+    validSigned(n);
     return n;
   }
 
