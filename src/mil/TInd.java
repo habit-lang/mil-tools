@@ -281,7 +281,7 @@ public class TInd extends Type {
     return bound.referenceType(boundenv, a.with(tenv));
   }
 
-  /** Return the alignment of this type (or zero if there is no alignment. */
+  /** Return the alignment of this type (or zero if there is no alignment). */
   public long alignment(Type[] tenv) {
     return bound.alignment(boundenv);
   }

@@ -307,7 +307,7 @@ public class TGen extends Type {
     return tenv[n].referenceType(null, a.with(tenv));
   }
 
-  /** Return the alignment of this type (or zero if there is no alignment. */
+  /** Return the alignment of this type (or zero if there is no alignment). */
   public long alignment(Type[] tenv) {
     return tenv[n].alignment(null);
   }

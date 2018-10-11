@@ -85,7 +85,7 @@ public abstract class TLit extends TConst {
     return null;
   }
 
-  /** Return the alignment of this type (or zero if there is no alignment. */
+  /** Return the alignment of this type (or zero if there is no alignment). */
   public long alignment(Type[] tenv) {
     debug.Internal.error("No alignment for type literals (kind error)");
     return 0;

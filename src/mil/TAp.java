@@ -353,7 +353,7 @@ public class TAp extends Type {
     return fun.referenceType(tenv, arg);
   }
 
-  /** Return the alignment of this type (or zero if there is no alignment. */
+  /** Return the alignment of this type (or zero if there is no alignment). */
   public long alignment(Type[] tenv) {
     return fun.alignment(tenv, arg);
   }

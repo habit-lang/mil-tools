@@ -426,7 +426,7 @@ public class TTycon extends TConst {
     return tycon.referenceType(tenv, a);
   }
 
-  /** Return the alignment of this type (or zero if there is no alignment. */
+  /** Return the alignment of this type (or zero if there is no alignment). */
   public long alignment(Type[] tenv) {
     return tycon.alignment();
   }

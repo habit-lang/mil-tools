@@ -995,7 +995,7 @@ public abstract class Type extends Scheme {
     return false;
   }
 
-  /** Return the alignment of this type (or zero if there is no alignment. */
+  /** Return the alignment of this type (or zero if there is no alignment). */
   public abstract long alignment(Type[] tenv);
 
   /**

@@ -396,7 +396,7 @@ public final class TVar extends TInd {
     return (bound != null) && bound.referenceType(boundenv, a.with(tenv));
   }
 
-  /** Return the alignment of this type (or zero if there is no alignment. */
+  /** Return the alignment of this type (or zero if there is no alignment). */
   public long alignment(Type[] tenv) {
     return (bound == null) ? 0 : bound.alignment(boundenv);
   }
