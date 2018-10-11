@@ -1633,6 +1633,8 @@ public class Prim {
     }
   }
 
+  public static final Type bit1 = Type.bit(1);
+
   public static final Type bit8 = Type.bit(8);
 
   public static final Type bit16 = Type.bit(16);
@@ -1647,6 +1649,8 @@ public class Prim {
 
   public static final Type unitTuple = Type.tuple(Tycon.unit.asType());
 
+  public static final BlockType load1type = new BlockType(addrTuple, Type.tuple(bit1));
+
   public static final BlockType load8type = new BlockType(addrTuple, Type.tuple(bit8));
 
   public static final BlockType load16type = new BlockType(addrTuple, Type.tuple(bit16));
@@ -1655,6 +1659,8 @@ public class Prim {
 
   public static final BlockType load64type = new BlockType(addrTuple, Type.tuple(bit64));
 
+  public static final BlockType store1type = new BlockType(Type.tuple(addrType, bit1), unitTuple);
+
   public static final BlockType store8type = new BlockType(Type.tuple(addrType, bit8), unitTuple);
 
   public static final BlockType store16type = new BlockType(Type.tuple(addrType, bit16), unitTuple);
@@ -1662,6 +1668,39 @@ public class Prim {
   public static final BlockType store32type = new BlockType(Type.tuple(addrType, bit32), unitTuple);
 
   public static final BlockType store64type = new BlockType(Type.tuple(addrType, bit64), unitTuple);
+
+  public static final Prim load1 = new load1();
+
+  public static class load1 extends Prim {
+
+    private load1() {
+      this(load1type);
+    }
+
+    private load1(BlockType bt) {
+      super("load1", IMPURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new load1(bt);
+    }
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is expected to return a result (that should be captured in the specified lhs), and
+     * then execution is expected to continue on to the specified code, c.
+     */
+    llvm.Code toLLVMPrimCont(
+        LLVMMap lm,
+        VarMap vm,
+        TempSubst s,
+        Atom[] args,
+        boolean isTail,
+        llvm.Local lhs,
+        llvm.Code c) {
+      return loadLLVM(lm, vm, s, args, llvm.Type.i1, lhs, c);
+    }
+  }
 
   public static final Prim load8 = new load8();
 
@@ -1831,6 +1870,33 @@ public class Prim {
         llvm.Local lhs,
         llvm.Code c) {
       return loadLLVM(lm, vm, s, args, llvm.Type.i64, lhs, c);
+    }
+  }
+
+  public static final Prim store1 = new store1();
+
+  public static class store1 extends Prim {
+
+    private store1() {
+      this(store1type);
+    }
+
+    private store1(BlockType bt) {
+      super("store1", IMPURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new store1(bt);
+    }
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is not expected to produce any results, but execution is expected to continue with
+     * the given code.
+     */
+    llvm.Code toLLVMPrimVoid(
+        LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, boolean isTail, llvm.Code c) {
+      return storeLLVM(lm, vm, s, args, llvm.Type.i1, c);
     }
   }
 

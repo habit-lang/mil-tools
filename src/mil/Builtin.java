@@ -81,10 +81,12 @@ public class Builtin extends MILEnvHash {
       addNewPrim(Prim.halt);
       addNewPrim(Prim.loop);
       addNewPrim(Prim.printWord);
+      addNewPrim(Prim.load1);
       addNewPrim(Prim.load8);
       addNewPrim(Prim.load16);
       addNewPrim(Prim.load32);
       addNewPrim(Prim.load64);
+      addNewPrim(Prim.store1);
       addNewPrim(Prim.store8);
       addNewPrim(Prim.store16);
       addNewPrim(Prim.store32);
