@@ -403,9 +403,9 @@ public abstract class Tail {
     return this;
   }
 
+  /** Return a closure k{}, where k{} [x1,...,xn] = this. */
   public Tail constClosure(Position pos, int n) {
-    Temp[] args = Temp.makeTemps(n);
-    return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, this)).withArgs();
+    return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(n), this)).withArgs();
   }
 
   abstract Tail repTransform(RepTypeSet set, RepEnv env);

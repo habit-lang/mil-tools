@@ -623,6 +623,14 @@ public abstract class Type extends Scheme {
     return n;
   }
 
+  int validMemBitSize() throws External.GeneratorException {
+    int w = memBitSize(null);
+    if (w < 0) {
+      throw new External.GeneratorException("No known BitSize for Stored value of type " + this);
+    }
+    return w;
+  }
+
   /**
    * Check that the specified type is a natural number that can be used as the argument for an Ix
    * type. Specifically, we require that this type must be in the range [1..maxSigned], which

@@ -1625,41 +1625,59 @@ public class External extends TopDefn {
         });
   }
 
+  private static class StoredAccess {
+
+    int lo;
+
+    int hi;
+
+    Prim load;
+
+    Prim store;
+
+    /** Default constructor. */
+    private StoredAccess(int lo, int hi, Prim load, Prim store) {
+      this.lo = lo;
+      this.hi = hi;
+      this.load = load;
+      this.store = store;
+    }
+  }
+
+  private static final StoredAccess[] storedAccessTable =
+      new StoredAccess[] {
+        new StoredAccess(1, 1, Prim.load1, Prim.store1),
+        new StoredAccess(2, 8, Prim.load8, Prim.store8),
+        new StoredAccess(9, 16, Prim.load16, Prim.store16),
+        new StoredAccess(17, 32, Prim.load32, Prim.store32),
+        new StoredAccess(33, 64, Prim.load64, Prim.store64)
+      };
+
+  private static StoredAccess findStoredAccess(int width) throws GeneratorException {
+    for (int i = 0; i < storedAccessTable.length; i++) {
+      StoredAccess sa = storedAccessTable[i];
+      if (sa.lo <= width && width <= sa.hi) {
+        return sa;
+      }
+    }
+    throw new GeneratorException("No memory access to stored values of width " + width);
+  }
+
   static {
 
     // primReadRefStored t :: Ref (Stored t) -> Proc t
     generators.put(
         "primReadRefStored",
         new Generator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            Type t = ts[0].byteSizeStored(null); // ByteSize of stored value
-            if (t != null) {
-              BigInteger bytes = t.isNonNegInt();
-              if (bytes != null) {
-                Prim load;
-                switch (bytes.intValue()) { // select the appropriate load primitive
-                  case 1:
-                    load = Prim.load8;
-                    break;
-                  case 2:
-                    load = Prim.load16;
-                    break;
-                  case 4:
-                    load = Prim.load32;
-                    break;
-                  case 8:
-                    load = Prim.load64;
-                    break;
-                  default:
-                    return null;
-                }
-                Temp[] vs = Temp.makeTemps(1);
-                ClosureDefn k =
-                    new ClosureDefn(pos, vs, Temp.noTemps, load.repTransformPrim(set, vs));
-                return new ClosAlloc(k).makeUnaryFuncClosure(pos, 1);
-              }
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int width = ts[0].validMemBitSize();
+            if (width == 0) {
+              return new DataAlloc(Cfun.Unit).withArgs().constClosure(pos, 0).constClosure(pos, 1);
             }
-            return null;
+            Prim load = findStoredAccess(width).load; // select appropriate load primitive
+            Temp[] vs = Temp.makeTemps(1);
+            ClosureDefn k = new ClosureDefn(pos, vs, Temp.noTemps, load.repTransformPrim(set, vs));
+            return new ClosAlloc(k).makeUnaryFuncClosure(pos, 1);
           }
         });
 
@@ -1667,36 +1685,20 @@ public class External extends TopDefn {
     generators.put(
         "primWriteRefStored",
         new Generator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            Type bs = ts[0].byteSizeStored(null); // ByteSize of stored value
-            if (bs != null) {
-              BigInteger bytes = bs.isNonNegInt();
-              if (bytes != null) {
-                Prim store;
-                switch (bytes.intValue()) { // select the appropriate store primitive
-                  case 1:
-                    store = Prim.store8;
-                    break;
-                  case 2:
-                    store = Prim.store16;
-                    break;
-                  case 4:
-                    store = Prim.store32;
-                    break;
-                  case 8:
-                    store = Prim.store64;
-                    break;
-                  default:
-                    return null;
-                }
-                int n = ts[0].repLen();
-                Temp[] vs = Temp.makeTemps(1 + n); // Temps to hold the address and value
-                ClosureDefn k =
-                    new ClosureDefn(pos, vs, Temp.noTemps, store.repTransformPrim(set, vs));
-                return new ClosAlloc(k).makeBinaryFuncClosure(pos, 1, n);
-              }
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int width = ts[0].validMemBitSize();
+            if (width == 0) {
+              return new DataAlloc(Cfun.Unit)
+                  .withArgs()
+                  .constClosure(pos, 0)
+                  .constClosure(pos, 1)
+                  .constClosure(pos, 1);
             }
-            return null;
+            Prim store = findStoredAccess(width).store; // select appropriate store primitive
+            int n = ts[0].repLen();
+            Temp[] vs = Temp.makeTemps(1 + n); // Temps to hold the address and value
+            ClosureDefn k = new ClosureDefn(pos, vs, Temp.noTemps, store.repTransformPrim(set, vs));
+            return new ClosAlloc(k).makeBinaryFuncClosure(pos, 1, n);
           }
         });
 
@@ -1704,39 +1706,18 @@ public class External extends TopDefn {
     generators.put(
         "primInitStored",
         new Generator(1) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            Type bs = ts[0].byteSizeStored(null); // ByteSize of stored value
-            if (bs != null) {
-              BigInteger bytes = bs.isNonNegInt();
-              if (bytes != null) {
-                Prim store;
-                // TODO: abstract logic for calculating store primitive into sep function and use
-                // for both write and init.
-                switch (bytes.intValue()) { // select the appropriate store primitive
-                  case 1:
-                    store = Prim.store8;
-                    break;
-                  case 2:
-                    store = Prim.store16;
-                    break;
-                  case 4:
-                    store = Prim.store32;
-                    break;
-                  case 8:
-                    store = Prim.store64;
-                    break;
-                  default:
-                    return null;
-                }
-                int n = ts[0].repLen();
-                Temp[] vs = Temp.makeTemps(n); // Temps to hold the initial value
-                Temp[] a = Temp.makeTemps(1); // Temp to hold the address/reference
-                ClosureDefn k =
-                    new ClosureDefn(pos, vs, a, store.repTransformPrim(set, Temp.append(a, vs)));
-                return new ClosAlloc(k).makeUnaryFuncClosure(pos, n);
-              }
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int width = ts[0].validMemBitSize();
+            if (width == 0) {
+              return binaryUnit(pos);
             }
-            return null;
+            Prim store = findStoredAccess(width).store; // select appropriate store primitive
+            int n = ts[0].repLen();
+            Temp[] vs = Temp.makeTemps(n); // Temps to hold the initial value
+            Temp[] a = Temp.makeTemps(1); // Temp to hold the address/reference
+            ClosureDefn k =
+                new ClosureDefn(pos, vs, a, store.repTransformPrim(set, Temp.append(a, vs)));
+            return new ClosAlloc(k).makeUnaryFuncClosure(pos, n);
           }
         });
   }
