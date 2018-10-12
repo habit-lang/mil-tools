@@ -827,46 +827,6 @@ public abstract class Type extends Scheme {
     return null;
   }
 
-  /** A BigInteger for the largest positive value that can be represented by a (signed) int. */
-  public static final BigInteger MAX_INT = BigInteger.valueOf(Integer.MAX_VALUE);
-
-  /**
-   * Test whether this is a natural number type in the range [0..MAX_INT]. (If a value v passes this
-   * test, then an intValue() call on the resulting BigInteger will produce the correct int result
-   * with no loss of information.)
-   */
-  BigInteger isNonNegInt() {
-    return inRange(BigInteger.ZERO, MAX_INT);
-  }
-
-  /**
-   * Test whether this is a natural number type in the range [1..MAX_INT]. (If a value v passes this
-   * test, then an intValue() call on the resulting BigInteger will produce the correct int result
-   * with no loss of information.)
-   */
-  BigInteger isPosInt() {
-    return inRange(BigInteger.ONE, MAX_INT);
-  }
-
-  /**
-   * Test whether this is a natural number type with a value that can fit in a Word (i.e., a value
-   * in the range [0..maxUnsigned]).
-   */
-  BigInteger isNonNegWord() {
-    return inRange(BigInteger.ZERO, Word.maxUnsigned());
-  }
-
-  /**
-   * Test whether this is a natural number type in the range [1..maxUnsigned], suitable for use as
-   * an argument to Ix. (This will ensure that all Ix values can be represented in a single word.)
-   * Note that we exclude Ix 0 because that would be an empty type. Technically, we could include
-   * maxUnsigned+1 (i.e., 1L<<WordSize) here but choose not to do that so that all Maybe (Ix n)
-   * types can be represented in a single word.
-   */
-  BigInteger isPosWord() {
-    return inRange(BigInteger.ONE, Word.maxUnsigned());
-  }
-
   /**
    * Return the natural number type that specifies the BitSize of this type (required to be of kind
    * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should

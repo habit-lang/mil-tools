@@ -326,16 +326,12 @@ public class External extends TopDefn {
           throw new Failure(
               pos, "Generator for " + ref + " needs at least " + gen.needs + " arguments");
         }
-        try {
-          Tail t = gen.generate(pos, ts, set); // ... and try to produce an implementation
-          if (t != null) { // TODO: eliminate this when all generators use GeneratorException
-            topLevelImpl(id, reps, t, isEntrypoint);
-            return;
-          }
-          throw new GeneratorException("invalid parameters");
+        try { // ... and try to produce an implementation
+          topLevelImpl(id, reps, gen.generate(pos, ts, set), isEntrypoint);
         } catch (GeneratorException e) {
           throw new Failure(pos, "No generated implementation: " + e.getReason());
         }
+        return;
       }
       if (ts.length > 0) {
         throw new Failure(pos, "No generator for " + ref);
