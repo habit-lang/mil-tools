@@ -1728,25 +1728,21 @@ public class External extends TopDefn {
     generators.put(
         "@",
         new Generator(2) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger n = ts[0].getNat(); // Array length
-            Type bs = ts[1].byteSize(null); // Size of array elements
-            BigInteger s;
-            if (n != null && bs != null && (s = bs.getNat()) != null) {
-              int size = s.intValue(); // TODO: check that size is in a reasonable range?
-              Temp[] ri = Temp.makeTemps(2);
-              Temp v = new Temp();
-              Block b =
-                  new Block(
-                      pos,
-                      ri, // b[r,i]
-                      new Bind(
-                          v,
-                          Prim.mul.withArgs(ri[1], size), //  = v <- mul((i, size))
-                          new Done(Prim.add.withArgs(ri[0], v)))); //    add((r, v))
-              return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
-            }
-            return null;
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            BigInteger n = ts[0].validNat(); // Array length
+            Type.validSigned(n);
+            long size = ts[1].validArrayArea(); // Size of array elements
+            Temp[] ri = Temp.makeTemps(2);
+            Temp v = new Temp();
+            Block b =
+                new Block(
+                    pos,
+                    ri, // b[r,i]
+                    new Bind(
+                        v,
+                        Prim.mul.withArgs(ri[1], size), //  = v <- mul((i, size))
+                        new Done(Prim.add.withArgs(ri[0], v)))); //    add((r, v))
+            return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
           }
         });
   }
@@ -1757,17 +1753,12 @@ public class External extends TopDefn {
     generators.put(
         "primInitArray",
         new Generator(2) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
-            BigInteger n = ts[0].isPosWord(); // Array length
-            Type bs = ts[1].byteSize(null); // Size of array elements
-            BigInteger s;
-            if (n != null && bs != null && (s = bs.getNat()) != null) {
-              int len =
-                  n.intValue(); // TODO: calls to intValue produce wrong results for large n, s
-              int size = s.intValue();
-              return (len <= 4) ? initArrayUnroll(pos, len, size) : initArrayLoop(pos, len, size);
-            }
-            return null;
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            BigInteger n = ts[0].validNat(); // Array length
+            Type.validSigned(n);
+            long len = n.longValue();
+            long size = ts[1].validArrayArea(); // Size of array elements
+            return (len <= 4) ? initArrayUnroll(pos, len, size) : initArrayLoop(pos, len, size);
           }
         });
   }
@@ -1782,7 +1773,7 @@ public class External extends TopDefn {
    *
    * <p>(Assumes implementation: Init a = [Ref a] ->> [Unit])
    */
-  private static Tail initArrayLoop(Position pos, int len, int size) {
+  private static Tail initArrayLoop(Position pos, long len, long size) {
     Block done = new Block(pos, Temp.noTemps, new Done(Cfun.Unit.withArgs())); // bdone[] = Unit()
     Temp[] fsj = Temp.makeTemps(3);
     Block loop = new Block(pos, fsj, null); // bloop[f, s, j] = ...
@@ -1831,12 +1822,12 @@ public class External extends TopDefn {
    * <p>initArray <- k0{} k0{} f = k1{f} k1{f} r = work[f, r] work[f, r] = g0 <- f @ 0 x0 <- f0 @ r
    * //... r1 <- add((r0, size)) g1 <- f @ 1 x1 <- g1 @ r1 //... Unit()
    */
-  private static Tail initArrayUnroll(Position pos, int len, int size) {
+  private static Tail initArrayUnroll(Position pos, long len, long size) {
     Code code = new Done(Cfun.Unit.withArgs());
     Temp f = new Temp();
     Temp r = new Temp();
     if (len > 0) {
-      int i = len - 1;
+      long i = len - 1;
       for (; ; ) {
         Temp g = new Temp();
         code = new Bind(g, new Enter(f, new Word(i)), new Bind(new Temp(), new Enter(g, r), code));
@@ -1859,21 +1850,24 @@ public class External extends TopDefn {
     generators.put(
         "primStructSelect",
         new Generator(3) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             StructType st = ts[0].structType(); // Structure type
-            String lab = ts[1].getLabel(); // Field label
-            Type t = ts[2]; // Field area type; not currently used
-            if (st != null && lab != null) {
-              StructField[] fields = st.getFields();
-              int i = Name.index(lab, fields);
-              if (i >= 0) {
-                Temp[] vs = Temp.makeTemps(1);
-                Tail tail = Prim.add.withArgs(vs[0], fields[i].getOffset());
-                ClosureDefn k = new ClosureDefn(pos, vs, Temp.makeTemps(1), tail);
-                return new ClosAlloc(k).makeUnaryFuncClosure(pos, 1);
-              }
+            if (st == null) {
+              throw new GeneratorException(ts[0] + " is not a structure type");
             }
-            return null;
+            String lab = ts[1].getLabel(); // Field label
+            if (lab == null) {
+              throw new GeneratorException(ts[1] + " is not a field label");
+            }
+            StructField[] fields = st.getFields();
+            int i = Name.index(lab, fields);
+            if (i < 0) {
+              throw new GeneratorException("There is no \"" + lab + "\" field in " + st);
+            }
+            Temp[] vs = Temp.makeTemps(1);
+            Tail tail = Prim.add.withArgs(vs[0], fields[i].getOffset());
+            ClosureDefn k = new ClosureDefn(pos, vs, Temp.makeTemps(1), tail);
+            return new ClosAlloc(k).makeUnaryFuncClosure(pos, 1);
           }
         });
   }

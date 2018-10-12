@@ -690,6 +690,25 @@ public abstract class Type extends Scheme {
     return (r == null) ? 1 : r.length;
   }
 
+  long validArrayArea() throws External.GeneratorException {
+    Type bs = byteSize(null);
+    if (bs == null) {
+      throw new External.GeneratorException("Cannot determine ByteSize for " + this);
+    }
+    BigInteger s = bs.validNat();
+    validSigned(s);
+    long align = alignment(null);
+    if (align == 0) {
+      throw new External.GeneratorException("Cannot determine alignment for " + this);
+    }
+    long size = s.longValue();
+    if ((size % align) != 0) {
+      throw new External.GeneratorException(
+          "Element size " + size + " is not divisible by alignment " + align);
+    }
+    return size;
+  }
+
   /**
    * Continue the work of generatePrim() in the special case where we have found a type of the form
    * [d1,...,dn] ->> rt. The type rt is the receiver here and the types d1,...,dn are in the array
