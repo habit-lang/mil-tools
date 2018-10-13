@@ -149,7 +149,7 @@ public class ClosureDefn extends Defn {
   private Type rng;
 
   /**
-   * Type check the body of this definition, but reporting rather than throwing' an exception error
+   * Type check the body of this definition, but reporting rather than throwing an exception error
    * if the given handler is not null.
    */
   void checkBody(Handler handler) throws Failure {
