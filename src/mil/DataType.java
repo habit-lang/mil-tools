@@ -138,10 +138,8 @@ public class DataType extends DataName {
     if (arity <= args && isNewtype()) { // newtype with enough arguments to expand?
       Type t = cfuns[0].getAllocType().storedType(0); // find skeleton for stored value
       return t.canonType(set.pop(arity), set, args - arity); // find canonical type
-    } else if (args == 0
-        && isSingleton() // Singleton (non unit) type with no arguments
-        && this != Tycon.unit) {
-      return Tycon.unit.asType();
+    } else if (args == 0 && isSingleton() && this != Tycon.unit) {
+      return Tycon.unit.asType(); // Singleton (non unit) type with no arguments
     }
     return null;
   }
@@ -164,7 +162,7 @@ public class DataType extends DataName {
    * use the Unit type to provide a representation.
    */
   boolean isSingleton() {
-    return cfuns != null && cfuns.length == 1 && cfuns[0].getArity() == 0;
+    return arity == 0 && cfuns != null && cfuns.length == 1 && cfuns[0].getArity() == 0;
   }
 
   /**
