@@ -24,16 +24,16 @@ import mil.*;
 
 public class AreaDefn extends TopDefn {
 
-  private AreaVar[] areas;
+  private AreaVar[] areaVars;
 
   private TypeExp typeExp;
 
   private TypeExp alignExp;
 
   /** Default constructor. */
-  public AreaDefn(Position pos, AreaVar[] areas, TypeExp typeExp, TypeExp alignExp) {
+  public AreaDefn(Position pos, AreaVar[] areaVars, TypeExp typeExp, TypeExp alignExp) {
     super(pos);
-    this.areas = areas;
+    this.areaVars = areaVars;
     this.typeExp = typeExp;
     this.alignExp = alignExp;
   }
@@ -61,8 +61,8 @@ public class AreaDefn extends TopDefn {
       debug.Log.println("area type is " + areaType + ", alignment=" + alignment);
 
       initType = Type.init(areaType); // Calculate and save type for initializers
-      for (int i = 0; i < areas.length; i++) {
-        areas[i].addToEnv(handler, milenv, alignment, areaType, refType);
+      for (int i = 0; i < areaVars.length; i++) {
+        areaVars[i].addToEnv(handler, milenv, alignment, areaType, refType);
       }
     } catch (Failure f) {
       handler.report(f);
@@ -75,28 +75,28 @@ public class AreaDefn extends TopDefn {
    * visible in the current environment.
    */
   void scopeTopDefn(Handler handler, MILEnv milenv, Env env) throws Failure {
-    for (int i = 0; i < areas.length; i++) {
-      areas[i].scopeTopDefn(handler, milenv, env);
+    for (int i = 0; i < areaVars.length; i++) {
+      areaVars[i].scopeTopDefn(handler, milenv, env);
     }
   }
 
   /** Check types of expressions appearing in top-level definitions. */
   void inferTypes(Handler handler) throws Failure {
-    for (int i = 0; i < areas.length; i++) {
-      areas[i].inferTypes(handler, initType);
+    for (int i = 0; i < areaVars.length; i++) {
+      areaVars[i].inferTypes(handler, initType);
     }
   }
 
   void liftTopDefn(LiftEnv lenv) {
-    for (int i = 0; i < areas.length; i++) {
-      areas[i].liftTopDefn(lenv);
+    for (int i = 0; i < areaVars.length; i++) {
+      areaVars[i].liftTopDefn(lenv);
     }
   }
 
   /** Generate code, if necessary, for top-level definitions. */
   void compileTopDefn() {
-    for (int i = 0; i < areas.length; i++) {
-      areas[i].compileAreaVar(initType);
+    for (int i = 0; i < areaVars.length; i++) {
+      areaVars[i].compileAreaVar(initType);
     }
   }
 

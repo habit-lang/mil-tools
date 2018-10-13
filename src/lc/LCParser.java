@@ -78,11 +78,11 @@ public class LCParser extends CoreParser implements LCTokens {
         {
           Position pos = lexer.getPos();
           lexer.nextToken(/* AREA */ );
-          AreaVar[] areas = areaVars(0);
+          AreaVar[] areaVars = areaVars(0);
           require(COCO);
           TypeExp areaType = typeExp();
           TypeExp alignExp = lexer.match(ALIGNED) ? typeExp() : null;
-          prog.add(new AreaDefn(pos, areas, areaType, alignExp));
+          prog.add(new AreaDefn(pos, areaVars, areaType, alignExp));
           lexer.itemEnd("area declaration");
           return true;
         }
@@ -125,10 +125,10 @@ public class LCParser extends CoreParser implements LCTokens {
    * this definition so that we can allocate an array of the appropriate size.
    */
   private AreaVar[] areaVars(int i) throws Failure {
-    AreaVar area = areaVar();
-    AreaVar[] areas = lexer.match(COMMA) ? areaVars(i + 1) : new AreaVar[i + 1];
-    areas[i] = area;
-    return areas;
+    AreaVar areaVar = areaVar();
+    AreaVar[] areaVars = lexer.match(COMMA) ? areaVars(i + 1) : new AreaVar[i + 1];
+    areaVars[i] = areaVar;
+    return areaVars;
   }
 
   /**
