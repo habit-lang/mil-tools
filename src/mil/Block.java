@@ -1089,7 +1089,7 @@ public class Block extends Defn {
       llvm.Code[] cs,
       Label[] succs) {
     cs[0] = dvm.loadGlobals(new llvm.Goto(succs[0].label()));
-    return new llvm.FuncDefn(!isEntrypoint, retType(lm), label(), formals, ss, cs);
+    return new llvm.FuncDefn(llvm.Mods.entry(isEntrypoint), retType(lm), label(), formals, ss, cs);
   }
 
   /**

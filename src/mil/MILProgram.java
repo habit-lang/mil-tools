@@ -505,7 +505,7 @@ public class MILProgram {
     if (!llvm.FuncDefn.mainFunctionName.equals("")) {
       prog.add(
           new llvm.FuncDefn(
-              false, // make sure this function is externally visible.  TODO: "false" is too generic
+              llvm.Mods.NONE,
               initType(lm),
               llvm.FuncDefn.mainFunctionName,
               new llvm.Local[0],

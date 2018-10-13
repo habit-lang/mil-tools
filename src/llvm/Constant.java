@@ -20,8 +20,11 @@ package llvm;
 
 import java.io.PrintWriter;
 
-/** Represents a private constant definition. */
-public class PrivConst extends Defn {
+/** Represents a constant definition. */
+public class Constant extends Defn {
+
+  /** Modifiers. */
+  private int mods;
 
   /** The name of the new item. */
   private String name;
@@ -30,14 +33,15 @@ public class PrivConst extends Defn {
   private Value val;
 
   /** Default constructor. */
-  public PrivConst(String name, Value val) {
+  public Constant(int mods, String name, Value val) {
+    this.mods = mods;
     this.name = name;
     this.val = val;
   }
 
   /** Print full text for this definition on the specified PrintWriter. */
   void print(PrintWriter out) {
-    out.println("@" + name + " = private constant " + val);
+    out.println("@" + name + " = " + Mods.toString(mods) + "constant " + val);
     out.println();
   }
 

@@ -333,8 +333,10 @@ public class Area extends TopDefn {
     llvm.ArrayType at = new llvm.ArrayType(bigsize.longValue(), llvm.Type.i8);
     String rawName = prog.freshName("raw");
     llvm.Global rawGlobal = new llvm.Global(at.ptr(), rawName);
-    prog.add(new llvm.GlobalVarDefn(true, rawName, at.defaultValue(), alignment));
-    prog.add(new llvm.Alias(!isEntrypoint, id, new llvm.BitcastVal(rawGlobal, llvm.Type.i8.ptr())));
+    prog.add(new llvm.GlobalVarDefn(llvm.Mods.INTERNAL, rawName, at.defaultValue(), alignment));
+    prog.add(
+        new llvm.Alias(
+            llvm.Mods.entry(isEntrypoint), id, new llvm.BitcastVal(rawGlobal, llvm.Type.i8.ptr())));
     staticValue = new llvm.PtrToIntVal(new llvm.Global(llvm.Type.i8.ptr(), id), llvm.Type.word());
   }
 

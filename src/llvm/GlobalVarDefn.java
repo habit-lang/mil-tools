@@ -23,8 +23,8 @@ import java.io.PrintWriter;
 /** Represents an LLVM global variable definition. */
 public class GlobalVarDefn extends Defn {
 
-  /** Internal flag (true=>access only in this module). */
-  private boolean internal;
+  /** Modifiers. */
+  private int mods;
 
   /** The name of the global variable. */
   private String name;
@@ -36,8 +36,8 @@ public class GlobalVarDefn extends Defn {
   private long alignment;
 
   /** Default constructor. */
-  public GlobalVarDefn(boolean internal, String name, Value initial, long alignment) {
-    this.internal = internal;
+  public GlobalVarDefn(int mods, String name, Value initial, long alignment) {
+    this.mods = mods;
     this.name = name;
     this.initial = initial;
     this.alignment = alignment;
@@ -45,7 +45,7 @@ public class GlobalVarDefn extends Defn {
 
   /** Print full text for this definition on the specified PrintWriter. */
   void print(PrintWriter out) {
-    out.print("@" + name + " = " + (internal ? "internal " : "") + "global " + initial);
+    out.print("@" + name + " = " + Mods.toString(mods) + "global " + initial);
     if (alignment != 0) {
       out.print(", align " + alignment);
     }
@@ -58,7 +58,7 @@ public class GlobalVarDefn extends Defn {
    * interface description.
    */
   boolean includeInInterface() {
-    return !internal;
+    return !Mods.isLocal(mods);
   }
 
   /**
@@ -66,7 +66,7 @@ public class GlobalVarDefn extends Defn {
    * this.includeInInterface() == true.
    */
   void printInterface(PrintWriter out) {
-    out.print("@" + name + " = global " + initial.getType());
+    out.print("@" + name + " = " + Mods.toString(mods) + "global " + initial.getType());
     if (alignment != 0) {
       out.print(", align " + alignment);
     }

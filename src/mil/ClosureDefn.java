@@ -798,6 +798,6 @@ public class ClosureDefn extends Defn {
               "load stored values from closure",
               new llvm.Op(ptr, new llvm.Bitcast(formals[0], ptrt), cs[0]));
     }
-    return new llvm.FuncDefn(!isEntrypoint, retType(lm), label(), formals, ss, cs);
+    return new llvm.FuncDefn(llvm.Mods.entry(isEntrypoint), retType(lm), label(), formals, ss, cs);
   }
 }

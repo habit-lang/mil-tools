@@ -23,8 +23,8 @@ import java.io.PrintWriter;
 /** Represents an LLVM function definition. */
 public class FuncDefn extends Defn {
 
-  /** Internal flag (true=>access only in this module). */
-  private boolean internal;
+  /** Modifiers. */
+  private int mods;
 
   /** The return type for the function. */
   private Type retType;
@@ -43,13 +43,8 @@ public class FuncDefn extends Defn {
 
   /** Default constructor. */
   public FuncDefn(
-      boolean internal,
-      Type retType,
-      String name,
-      Local[] formals,
-      String[] labels,
-      Code[] bodies) {
-    this.internal = internal;
+      int mods, Type retType, String name, Local[] formals, String[] labels, Code[] bodies) {
+    this.mods = mods;
     this.retType = retType;
     this.name = name;
     this.formals = formals;
@@ -67,9 +62,7 @@ public class FuncDefn extends Defn {
   /** Print full text for this definition on the specified PrintWriter. */
   void print(PrintWriter out) {
     out.print("define ");
-    if (internal) {
-      out.print("internal ");
-    }
+    out.print(Mods.toString(mods));
     out.print(retType.toString());
     out.print(" @" + name + "(");
     for (int i = 0; i < formals.length; i++) {
@@ -99,7 +92,7 @@ public class FuncDefn extends Defn {
    * interface description.
    */
   boolean includeInInterface() {
-    return !internal;
+    return !Mods.isLocal(mods);
   }
 
   /**
@@ -108,6 +101,7 @@ public class FuncDefn extends Defn {
    */
   void printInterface(PrintWriter out) {
     out.print("define ");
+    out.print(Mods.toString(mods));
     out.print(retType.toString());
     out.print(" @" + name + "(");
     for (int i = 0; i < formals.length; i++) {

@@ -114,12 +114,14 @@ public abstract class Allocator extends Call {
       llvm.Program prog, llvm.Value[] vals, llvm.Type layoutType, llvm.Type genPtrType) {
     // Create a private constant containing all the fields for this object:
     String layoutName = prog.freshName("layout");
-    prog.add(new llvm.PrivConst(layoutName, new llvm.Struct(layoutType, vals)));
+    prog.add(new llvm.Constant(llvm.Mods.PRIVATE, layoutName, new llvm.Struct(layoutType, vals)));
     llvm.Global layoutGlobal = new llvm.Global(layoutType.ptr(), layoutName);
 
     // Create an alias that casts the specific constructor to the general type for this object:
     String valueName = prog.freshName("val");
-    prog.add(new llvm.Alias(true, valueName, new llvm.BitcastVal(layoutGlobal, genPtrType)));
+    prog.add(
+        new llvm.Alias(
+            llvm.Mods.INTERNAL, valueName, new llvm.BitcastVal(layoutGlobal, genPtrType)));
     return new llvm.Global(genPtrType, valueName);
   }
 

@@ -523,9 +523,9 @@ public class TopLevel extends TopDefn {
       for (int i = 0; i < lhs.length; i++) {
         if (lhs[i].nonUnit()) {
           if (staticValue == null || staticValue[i] == null) {
-            prog.add(lhs[i].globalVarDefn(lm, !isEntrypoint));
+            prog.add(lhs[i].globalVarDefn(lm, llvm.Mods.entry(isEntrypoint)));
           } else if (isEntrypoint) {
-            prog.add(lhs[i].globalVarDefn(lm, false, staticValue[i]));
+            prog.add(lhs[i].globalVarDefn(lm, llvm.Mods.NONE, staticValue[i]));
           }
         }
       }

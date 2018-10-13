@@ -23,8 +23,8 @@ import java.io.PrintWriter;
 /** Represents an LLVM alias definition. */
 public class Alias extends Defn {
 
-  /** Internal flag (true=>access only in this module). */
-  private boolean internal;
+  /** Modifiers. */
+  private int mods;
 
   /** The name of the new item. */
   private String name;
@@ -33,8 +33,8 @@ public class Alias extends Defn {
   private Value val;
 
   /** Default constructor. */
-  public Alias(boolean internal, String name, Value val) {
-    this.internal = internal;
+  public Alias(int mods, String name, Value val) {
+    this.mods = mods;
     this.name = name;
     this.val = val;
   }
@@ -42,14 +42,7 @@ public class Alias extends Defn {
   /** Print full text for this definition on the specified PrintWriter. */
   void print(PrintWriter out) {
     out.println(
-        "@"
-            + name
-            + " = "
-            + (internal ? "internal " : "")
-            + "alias "
-            + val.getType().ptsTo()
-            + ", "
-            + val);
+        "@" + name + " = " + Mods.toString(mods) + "alias " + val.getType().ptsTo() + ", " + val);
     out.println();
   }
 
@@ -58,7 +51,7 @@ public class Alias extends Defn {
    * interface description.
    */
   boolean includeInInterface() {
-    return !internal;
+    return !Mods.isLocal(mods);
   }
 
   /**
@@ -66,7 +59,7 @@ public class Alias extends Defn {
    * this.includeInInterface() == true.
    */
   void printInterface(PrintWriter out) {
-    out.println("@" + name + " = alias " + val.getType().ptsTo());
+    out.println("@" + name + " = " + Mods.toString(mods) + "alias " + val.getType().ptsTo());
     out.println();
   }
 }

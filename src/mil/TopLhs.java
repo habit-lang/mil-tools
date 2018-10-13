@@ -227,8 +227,8 @@ public class TopLhs {
    * Create a global variable definition for a component of a TopLevel definition that is
    * initialized to the specified value.
    */
-  llvm.GlobalVarDefn globalVarDefn(LLVMMap lm, boolean internal, llvm.Value val) {
-    return new llvm.GlobalVarDefn(internal, id, val, 0);
+  llvm.GlobalVarDefn globalVarDefn(LLVMMap lm, int mods, llvm.Value val) {
+    return new llvm.GlobalVarDefn(mods, id, val, 0);
   }
 
   /**
@@ -236,8 +236,8 @@ public class TopLhs {
    * runtime; in this case, we set the initial value to a simple default that is appropriate to the
    * type of the variable.
    */
-  llvm.GlobalVarDefn globalVarDefn(LLVMMap lm, boolean internal) {
-    return globalVarDefn(lm, internal, lm.toLLVM(defining).defaultValue());
+  llvm.GlobalVarDefn globalVarDefn(LLVMMap lm, int mods) {
+    return globalVarDefn(lm, mods, lm.toLLVM(defining).defaultValue());
   }
 
   /** Make a new temporary to hold a value for this left hand side. */
