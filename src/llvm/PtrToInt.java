@@ -20,15 +20,15 @@ package llvm;
 
 
 /** Pointer to integer casts. */
-public class PtrToInt extends CastOp {
+public class PtrToInt extends Cast {
 
   /** Default constructor. */
-  public PtrToInt(Value v, Type type) {
-    super(v, type);
+  public PtrToInt(Value v, Type ty) {
+    super(v, ty);
   }
 
-  /** Append a printable string for this instruction to the specified buffer. */
-  public void append(StringBuilder buf) {
-    append(buf, "ptrtoint");
+  /** Return the LLVM opcode for this cast operation. */
+  String castString() {
+    return "ptrtoint";
   }
 }

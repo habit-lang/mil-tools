@@ -46,9 +46,9 @@ public abstract class BinOp extends Rhs {
     return ty;
   }
 
-  /** Generate a string for this right hand side using the given string as the operation name. */
-  void append(StringBuilder buf, String op) {
-    buf.append(op);
+  /** Append a printable string for this instruction to the specified buffer. */
+  public void append(StringBuilder buf) {
+    buf.append(binOpString());
     buf.append(" ");
     ty.append(buf);
     buf.append(" ");
@@ -56,4 +56,7 @@ public abstract class BinOp extends Rhs {
     buf.append(", ");
     r.appendName(buf);
   }
+
+  /** Return the LLVM opcode for this binary operation. */
+  public abstract String binOpString();
 }

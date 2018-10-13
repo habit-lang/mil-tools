@@ -20,15 +20,15 @@ package llvm;
 
 
 /** Zero extension to a larger bitsize. */
-public class Zext extends CastOp {
+public class Zext extends Cast {
 
   /** Default constructor. */
-  public Zext(Value v, Type type) {
-    super(v, type);
+  public Zext(Value v, Type ty) {
+    super(v, ty);
   }
 
-  /** Append a printable string for this instruction to the specified buffer. */
-  public void append(StringBuilder buf) {
-    append(buf, "zext");
+  /** Return the LLVM opcode for this cast operation. */
+  String castString() {
+    return "zext";
   }
 }

@@ -27,8 +27,8 @@ public class UDiv extends IntBinOp {
     super(ty, l, r);
   }
 
-  /** Append a printable string for this instruction to the specified buffer. */
-  public void append(StringBuilder buf) {
-    append(buf, "udiv");
+  /** Return the LLVM opcode for this binary operation. */
+  public String binOpString() {
+    return "udiv";
   }
 }

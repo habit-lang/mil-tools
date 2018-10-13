@@ -20,15 +20,15 @@ package llvm;
 
 
 /** Bitcast operators. */
-public class Bitcast extends CastOp {
+public class Bitcast extends Cast {
 
   /** Default constructor. */
-  public Bitcast(Value v, Type type) {
-    super(v, type);
+  public Bitcast(Value v, Type ty) {
+    super(v, ty);
   }
 
-  /** Append a printable string for this instruction to the specified buffer. */
-  public void append(StringBuilder buf) {
-    append(buf, "bitcast");
+  /** Return the LLVM opcode for this cast operation. */
+  String castString() {
+    return "bitcast";
   }
 }

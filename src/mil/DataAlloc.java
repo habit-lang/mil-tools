@@ -237,6 +237,6 @@ public class DataAlloc extends Allocator {
         objt,
         obj,
         new llvm.Word(cf.getNum()),
-        new llvm.Op(lhs, new llvm.Bitcast(obj, cf.retType(lm)), c));
+        new llvm.Op(lhs, new llvm.Eval(new llvm.Bitcast(obj, cf.retType(lm))), c));
   }
 }

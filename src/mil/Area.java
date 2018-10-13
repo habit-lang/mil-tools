@@ -336,8 +336,8 @@ public class Area extends TopDefn {
     prog.add(new llvm.GlobalVarDefn(llvm.Mods.INTERNAL, rawName, at.defaultValue(), alignment));
     prog.add(
         new llvm.Alias(
-            llvm.Mods.entry(isEntrypoint), id, new llvm.BitcastVal(rawGlobal, llvm.Type.i8.ptr())));
-    staticValue = new llvm.PtrToIntVal(new llvm.Global(llvm.Type.i8.ptr(), id), llvm.Type.word());
+            llvm.Mods.entry(isEntrypoint), id, new llvm.Bitcast(rawGlobal, llvm.Type.i8.ptr())));
+    staticValue = new llvm.PtrToInt(new llvm.Global(llvm.Type.i8.ptr(), id), llvm.Type.word());
   }
 
   /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */

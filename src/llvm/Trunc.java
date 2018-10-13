@@ -20,15 +20,15 @@ package llvm;
 
 
 /** Truncate operators. */
-public class Trunc extends CastOp {
+public class Trunc extends Cast {
 
   /** Default constructor. */
-  public Trunc(Value v, Type type) {
-    super(v, type);
+  public Trunc(Value v, Type ty) {
+    super(v, ty);
   }
 
-  /** Append a printable string for this instruction to the specified buffer. */
-  public void append(StringBuilder buf) {
-    append(buf, "trunc");
+  /** Return the LLVM opcode for this cast operation. */
+  String castString() {
+    return "trunc";
   }
 }

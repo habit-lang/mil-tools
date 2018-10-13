@@ -27,8 +27,8 @@ public class SRem extends IntBinOp {
     super(ty, l, r);
   }
 
-  /** Append a printable string for this instruction to the specified buffer. */
-  public void append(StringBuilder buf) {
-    append(buf, "srem");
+  /** Return the LLVM opcode for this binary operation. */
+  public String binOpString() {
+    return "srem";
   }
 }

@@ -120,8 +120,7 @@ public abstract class Allocator extends Call {
     // Create an alias that casts the specific constructor to the general type for this object:
     String valueName = prog.freshName("val");
     prog.add(
-        new llvm.Alias(
-            llvm.Mods.INTERNAL, valueName, new llvm.BitcastVal(layoutGlobal, genPtrType)));
+        new llvm.Alias(llvm.Mods.INTERNAL, valueName, new llvm.Bitcast(layoutGlobal, genPtrType)));
     return new llvm.Global(genPtrType, valueName);
   }
 
@@ -165,10 +164,13 @@ public abstract class Allocator extends Call {
             new llvm.Getelementptr(new llvm.Null(objt), new llvm.Word(1)),
             new llvm.Op(
                 size,
-                new llvm.PtrToInt(past, size.getType()),
+                new llvm.Eval(new llvm.PtrToInt(past, size.getType())),
                 new llvm.CodeComment(
                     "allocate memory for the object",
-                    new llvm.Op(raw, call, new llvm.Op(obj, new llvm.Bitcast(raw, objt), c))))));
+                    new llvm.Op(
+                        raw,
+                        call,
+                        new llvm.Op(obj, new llvm.Eval(new llvm.Bitcast(raw, objt)), c))))));
   }
 
   /** Generate code to execute lhs[n] = v; c */

@@ -1410,7 +1410,8 @@ public class Prim {
         boolean isTail,
         llvm.Local lhs,
         llvm.Code c) {
-      return new llvm.Op(lhs, new llvm.Zext(args[0].toLLVMAtom(lm, vm, s), llvm.Type.word()), c);
+      return new llvm.Op(
+          lhs, new llvm.Eval(new llvm.Zext(args[0].toLLVMAtom(lm, vm, s), llvm.Type.word())), c);
     }
   }
 
@@ -2296,9 +2297,9 @@ public class Prim {
       c = new llvm.Store(v, p, c);
     } else { // truncate and store if types do not match
       llvm.Local r = vm.reg(ty); // register to hold truncated value
-      c = new llvm.Op(r, new llvm.Trunc(v, ty), new llvm.Store(r, p, c));
+      c = new llvm.Op(r, new llvm.Eval(new llvm.Trunc(v, ty)), new llvm.Store(r, p, c));
     }
-    return new llvm.Op(p, new llvm.IntToPtr(args[0].toLLVMAtom(lm, vm, s), pt), c);
+    return new llvm.Op(p, new llvm.Eval(new llvm.IntToPtr(args[0].toLLVMAtom(lm, vm, s), pt)), c);
   }
 
   /**
@@ -2315,8 +2316,12 @@ public class Prim {
       c = new llvm.Op(lhs, new llvm.Load(p), c);
     } else { // zero extend loaded value if types do not match (assumes lhs type is wider than ty)
       llvm.Local v = vm.reg(ty); // register to hold value
-      c = new llvm.Op(v, new llvm.Load(p), new llvm.Op(lhs, new llvm.Zext(v, lhs.getType()), c));
+      c =
+          new llvm.Op(
+              v,
+              new llvm.Load(p),
+              new llvm.Op(lhs, new llvm.Eval(new llvm.Zext(v, lhs.getType())), c));
     }
-    return new llvm.Op(p, new llvm.IntToPtr(args[0].toLLVMAtom(lm, vm, s), pt), c);
+    return new llvm.Op(p, new llvm.Eval(new llvm.IntToPtr(args[0].toLLVMAtom(lm, vm, s), pt)), c);
   }
 }

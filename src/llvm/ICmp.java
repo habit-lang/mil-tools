@@ -41,8 +41,8 @@ public class ICmp extends BinOp {
     return Type.i1;
   }
 
-  /** Append a printable string for this instruction to the specified buffer. */
-  public void append(StringBuilder buf) {
-    append(buf, "icmp " + cond);
+  /** Return the LLVM opcode for this binary operation. */
+  public String binOpString() {
+    return "icmp " + cond;
   }
 }

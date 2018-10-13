@@ -293,7 +293,7 @@ public class Sel extends Tail {
         vm.reg(lhs.getType().ptr()); // register to hold pointer to the nth component of this.c
     return new llvm.Op(
         base,
-        new llvm.Bitcast(a.toLLVMAtom(lm, vm, s), objt),
+        new llvm.Eval(new llvm.Bitcast(a.toLLVMAtom(lm, vm, s), objt)),
         new llvm.Op(
             addr,
             new llvm.Getelementptr(base, llvm.Word.ZERO, new llvm.Word(n + 1)),

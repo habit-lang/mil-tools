@@ -19,27 +19,18 @@
 package llvm;
 
 
-/** Cast operators that convert a value to a different type. */
-public abstract class CastOp extends Rhs {
+/** Evaluate an Expr. */
+public class Eval extends Rhs {
 
-  /** The value to be recast. */
-  private Value v;
-
-  /** The desired result type. */
-  private Type type;
+  private Expr expr;
 
   /** Default constructor. */
-  public CastOp(Value v, Type type) {
-    this.v = v;
-    this.type = type;
+  public Eval(Expr expr) {
+    this.expr = expr;
   }
 
-  /** Generate a string for this right hand side using the given string as the operation name. */
-  void append(StringBuilder buf, String op) {
-    buf.append(op);
-    buf.append(" ");
-    v.append(buf);
-    buf.append(" to ");
-    type.append(buf);
+  /** Append a printable string for this instruction to the specified buffer. */
+  public void append(StringBuilder buf) {
+    expr.appendEval(buf);
   }
 }

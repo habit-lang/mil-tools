@@ -19,15 +19,9 @@
 package llvm;
 
 
-/** Pointer to integer casts. */
-public class PtrToIntVal extends CastVal {
+/** Used to represent constant expressions/operations that can be executed using Eval. */
+public abstract class Expr extends Value {
 
-  /** Default constructor. */
-  public PtrToIntVal(Value val, Type ty) {
-    super(val, ty);
-  }
-
-  String castString() {
-    return "ptrtoint";
-  }
+  /** Generate a string for executing this expression as a right hand side. */
+  abstract void appendEval(StringBuilder buf);
 }

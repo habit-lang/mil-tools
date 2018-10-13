@@ -19,21 +19,18 @@
 package llvm;
 
 
-/**
- * Represents LLVM values that are cast to a different type. TODO: can we avoid overlap with the
- * CastOp class and subclasses?
- */
-public abstract class CastVal extends Value {
+/** Cast operators that convert a value to a different type. */
+public abstract class Cast extends Expr {
 
-  /** The original value. */
-  protected Value val;
+  /** The value to be recast. */
+  private Value v;
 
-  /** The type that it is cast to. */
-  protected Type ty;
+  /** The desired result type. */
+  private Type ty;
 
   /** Default constructor. */
-  public CastVal(Value val, Type ty) {
-    this.val = val;
+  public Cast(Value v, Type ty) {
+    this.v = v;
     this.ty = ty;
   }
 
@@ -46,11 +43,21 @@ public abstract class CastVal extends Value {
   public void appendName(StringBuilder buf) {
     buf.append(castString());
     buf.append("(");
-    val.append(buf);
+    v.append(buf);
     buf.append(" to ");
     ty.append(buf);
     buf.append(")");
   }
 
+  /** Return the LLVM opcode for this cast operation. */
   abstract String castString();
+
+  /** Generate a string for executing this expression as a right hand side. */
+  void appendEval(StringBuilder buf) {
+    buf.append(castString());
+    buf.append(" ");
+    v.append(buf);
+    buf.append(" to ");
+    ty.append(buf);
+  }
 }
