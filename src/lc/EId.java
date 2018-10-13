@@ -111,9 +111,4 @@ class EId extends EVar {
     this.v = v;
     this.type = type;
   }
-
-  /** Compile an expression into an Atom. */
-  Code compAtom(final CGEnv env, final AtomCont ka) {
-    return ka.with(v.lookup(env));
-  }
 }

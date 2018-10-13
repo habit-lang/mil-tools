@@ -65,6 +65,17 @@ abstract class ELit extends PosExpr {
     return this;
   }
 
+  /** Compile an expression into a Tail. */
+  Code compTail(final CGEnv env, final Block abort, final TailCont kt) {
+    return this.compAtom(
+        env,
+        new AtomCont() {
+          Code with(final Atom la) {
+            return kt.with(new Return(la));
+          }
+        });
+  }
+
   /** Compile a monadic expression into a Tail. */
   Code compTailM(final CGEnv env, final Block abort, final TailCont kt) { //  literal
     debug.Internal.error("Literals do not have monadic type");

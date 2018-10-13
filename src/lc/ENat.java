@@ -58,9 +58,4 @@ class ENat extends ELit {
   Code compAtom(final CGEnv env, final AtomCont ka) {
     return ka.with(new Word(num));
   }
-
-  /** Compile an expression into a Tail. */
-  Code compTail(final CGEnv env, final Block abort, final TailCont kt) { //  integer literal
-    return kt.with(new Return(new Word(num)));
-  }
 }

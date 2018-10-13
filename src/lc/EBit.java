@@ -63,9 +63,4 @@ class EBit extends ELit {
   Code compAtom(final CGEnv env, final AtomCont ka) {
     return ka.with(new Bits(nat, width));
   }
-
-  /** Compile an expression into a Tail. */
-  Code compTail(final CGEnv env, final Block abort, final TailCont kt) { //  bit literal
-    return kt.with(new Return(new Bits(nat, width)));
-  }
 }

@@ -100,9 +100,20 @@ class EVar extends PosExpr {
     return (l == null) ? this : l.replacement(pos, type);
   }
 
+  /** Compile an expression into an Atom. */
+  Code compAtom(final CGEnv env, final AtomCont ka) {
+    return ka.with(v.lookup(env));
+  }
+
   /** Compile an expression into a Tail. */
-  Code compTail(final CGEnv env, final Block abort, final TailCont kt) { //  id
-    return kt.with(new Return(v.lookup(env)));
+  Code compTail(final CGEnv env, final Block abort, final TailCont kt) {
+    return this.compAtom(
+        env,
+        new AtomCont() {
+          Code with(final Atom la) {
+            return kt.with(new Return(la));
+          }
+        });
   }
 
   /** Compile a monadic expression into a Tail. */
