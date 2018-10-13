@@ -295,21 +295,6 @@ public class External extends TopDefn {
    */
   private static HashMap<String, Generator> generators = new HashMap();
 
-  /** Captures the reason why a generator failed. */
-  static class GeneratorException extends Exception {
-
-    private String reason;
-
-    /** Default constructor. */
-    GeneratorException(String reason) {
-      this.reason = reason;
-    }
-
-    public String getReason() {
-      return reason;
-    }
-  }
-
   /**
    * Use the ref and ts fields to determine if we can generate an implementation, post
    * representation transformation, for an external primitive, or if the external should be replaced
@@ -396,9 +381,9 @@ public class External extends TopDefn {
     debug.Log.println("Generated new top level definition for " + impl);
   }
 
-  static void validPowerOfTwo(long m) throws External.GeneratorException {
+  static void validPowerOfTwo(long m) throws GeneratorException {
     if ((m & (m - 1)) != 0) {
-      throw new External.GeneratorException(m + " is not a power of two");
+      throw new GeneratorException(m + " is not a power of two");
     }
   }
 

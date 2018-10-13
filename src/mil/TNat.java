@@ -124,7 +124,7 @@ public class TNat extends TLit {
     return Word.numWords(num.intValue()) == 1 ? Tycon.wordRep : null;
   }
 
-  BigInteger validNat() throws External.GeneratorException {
+  BigInteger validNat() throws GeneratorException {
     return num;
   }
 

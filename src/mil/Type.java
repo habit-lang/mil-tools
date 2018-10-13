@@ -603,30 +603,30 @@ public abstract class Type extends Scheme {
     return null;
   }
 
-  BigInteger validNat() throws External.GeneratorException {
-    throw new External.GeneratorException(this + " is not a natural number");
+  BigInteger validNat() throws GeneratorException {
+    throw new GeneratorException(this + " is not a natural number");
   }
 
   /**
    * Check that the specified type is a natural number that can be used as the argument for a Bit
    * type.
    */
-  int validWidth() throws External.GeneratorException {
+  int validWidth() throws GeneratorException {
     BigInteger n = validNat();
     validBelow(n, BIG_MAX_BIT_WIDTH);
     return n.intValue();
   }
 
-  int validWidth(int lo) throws External.GeneratorException {
+  int validWidth(int lo) throws GeneratorException {
     int n = validWidth();
     validNotBelow(n, lo);
     return n;
   }
 
-  int validMemBitSize() throws External.GeneratorException {
+  int validMemBitSize() throws GeneratorException {
     int w = memBitSize(null);
     if (w < 0) {
-      throw new External.GeneratorException("No known BitSize for Stored value of type " + this);
+      throw new GeneratorException("No known BitSize for Stored value of type " + this);
     }
     return w;
   }
@@ -635,9 +635,9 @@ public abstract class Type extends Scheme {
    * Determine whether the given number is small enough to fit in a signed long; we assume already
    * that it is non negative.
    */
-  static void validSigned(BigInteger n) throws External.GeneratorException {
+  static void validSigned(BigInteger n) throws GeneratorException {
     if (n.compareTo(Word.maxSigned()) > 0) {
-      throw new External.GeneratorException(
+      throw new GeneratorException(
           "parameter value " + n + " is too large; must be at most " + Word.maxSigned());
     }
   }
@@ -649,34 +649,31 @@ public abstract class Type extends Scheme {
    * (because n<=maxSigned). If this test pasts, then it is safe to use longValue() on the result
    * without loss of information.
    */
-  BigInteger validIndex() throws External.GeneratorException {
+  BigInteger validIndex() throws GeneratorException {
     BigInteger n = validNat();
     if (n.signum() <= 0) {
-      throw new External.GeneratorException(
-          "parameter value " + n + " is too small; must be at least 1");
+      throw new GeneratorException("parameter value " + n + " is too small; must be at least 1");
     }
     validSigned(n);
     return n;
   }
 
-  static void validBelow(BigInteger v, BigInteger tooBig) throws External.GeneratorException {
+  static void validBelow(BigInteger v, BigInteger tooBig) throws GeneratorException {
     if (v.compareTo(tooBig) >= 0) {
-      throw new External.GeneratorException(
-          "parameter " + v + " is too large; must be less than " + tooBig);
+      throw new GeneratorException("parameter " + v + " is too large; must be less than " + tooBig);
     }
   }
 
-  static void validInRange(int v, int lo, int hi) throws External.GeneratorException {
+  static void validInRange(int v, int lo, int hi) throws GeneratorException {
     if (v < lo || v > hi) {
-      throw new External.GeneratorException(
+      throw new GeneratorException(
           "parameter " + v + " not accepted; value must be in the range " + lo + " to " + hi);
     }
   }
 
-  static void validNotBelow(long n, long lo) throws External.GeneratorException {
+  static void validNotBelow(long n, long lo) throws GeneratorException {
     if (n < lo) {
-      throw new External.GeneratorException(
-          "parameter " + n + " is too low; must be at least " + lo);
+      throw new GeneratorException("parameter " + n + " is too low; must be at least " + lo);
     }
   }
 
@@ -690,20 +687,20 @@ public abstract class Type extends Scheme {
     return (r == null) ? 1 : r.length;
   }
 
-  long validArrayArea() throws External.GeneratorException {
+  long validArrayArea() throws GeneratorException {
     Type bs = byteSize(null);
     if (bs == null) {
-      throw new External.GeneratorException("Cannot determine ByteSize for " + this);
+      throw new GeneratorException("Cannot determine ByteSize for " + this);
     }
     BigInteger s = bs.validNat();
     validSigned(s);
     long align = alignment(null);
     if (align == 0) {
-      throw new External.GeneratorException("Cannot determine alignment for " + this);
+      throw new GeneratorException("Cannot determine alignment for " + this);
     }
     long size = s.longValue();
     if ((size % align) != 0) {
-      throw new External.GeneratorException(
+      throw new GeneratorException(
           "Element size " + size + " is not divisible by alignment " + align);
     }
     return size;
