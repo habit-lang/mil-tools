@@ -201,6 +201,10 @@ public abstract class Tail {
     return true;
   }
 
+  boolean noinline() {
+    return false;
+  }
+
   /**
    * Captures a recurring pattern: t.thisUnless(tr) just returns this unless a non-null replacement
    * Tail, tr, is provided.

@@ -1553,6 +1553,25 @@ public class Prim {
     return false;
   }
 
+  protected static final BlockType nopType = new BlockType(Type.empty, Type.empty);
+
+  public static final PrimNop noinline = new noinline();
+
+  public static class noinline extends PrimNop {
+
+    private noinline() {
+      this(nopType);
+    }
+
+    private noinline(BlockType bt) {
+      super("noinline", IMPURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new noinline(bt);
+    }
+  }
+
   /**
    * Find the dual for this primitive under bnot. In other words, return a primitive p such that:
    * bnot(this(args)) == p(args), or null if there is no such primitive.

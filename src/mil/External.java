@@ -1764,8 +1764,8 @@ public class External extends TopDefn {
    * is as follows: (len=array length, size=element size)
    *
    * <p>initArray <- k0{} k0{} f = k1{f} k1{f} r = loop[f, r, 0] loop[f, r, j] = v <- ult((j, len))
-   * if v then step[f, r, j] else done[] step[f, r, i] = g <- f @ i x <- g @ r j <- add((i, i)) s <-
-   * add((r, size)) loop[f, s, j] done[] = Unit()
+   * if v then step[f, r, j] else done[] step[f, r, i] = [] <- noinline(()) g <- f @ i x <- g @ r j
+   * <- add((i, i)) s <- add((r, size)) loop[f, s, j] done[] = Unit()
    *
    * <p>(Assumes implementation: Init a = [Ref a] ->> [Unit])
    */
@@ -1789,18 +1789,21 @@ public class External extends TopDefn {
     Temp s = new Temp();
     step.setCode(
         new Bind(
-            g,
-            new Enter(fri[0], fri[2]),
+            Temp.noTemps,
+            Prim.noinline.withArgs(),
             new Bind(
-                x,
-                new Enter(g, fri[1]),
+                g,
+                new Enter(fri[0], fri[2]),
                 new Bind(
-                    j,
-                    Prim.add.withArgs(fri[2], 1),
+                    x,
+                    new Enter(g, fri[1]),
                     new Bind(
-                        s,
-                        Prim.add.withArgs(fri[1], size),
-                        new Done(new BlockCall(loop, new Atom[] {fri[0], s, j})))))));
+                        j,
+                        Prim.add.withArgs(fri[2], 1),
+                        new Bind(
+                            s,
+                            Prim.add.withArgs(fri[1], size),
+                            new Done(new BlockCall(loop, new Atom[] {fri[0], s, j}))))))));
 
     Temp[] f = Temp.makeTemps(1);
     Temp[] r = Temp.makeTemps(1);

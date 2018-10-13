@@ -208,7 +208,7 @@ public class Bind extends Code {
   }
 
   int prefixInlineLength(int len) {
-    return t.blackholes() ? 0 : c.prefixInlineLength(len + 1);
+    return (t.blackholes() || t.noinline()) ? 0 : c.prefixInlineLength(len + 1);
   }
 
   /**
@@ -218,7 +218,7 @@ public class Bind extends Code {
    * 0 for the first call.
    */
   int suffixInlineLength(int len) {
-    return c.suffixInlineLength(len + 1);
+    return t.noinline() ? (-1) : c.suffixInlineLength(len + 1);
   }
 
   /**

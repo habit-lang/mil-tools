@@ -106,6 +106,10 @@ public class PrimCall extends Call {
     return p.blackholes();
   }
 
+  boolean noinline() {
+    return p == Prim.noinline;
+  }
+
   /**
    * Skip goto blocks in a Tail (for a ClosureDefn or TopLevel). TODO: can this be simplified now
    * that ClosureDefns hold Tails rather than Calls?
