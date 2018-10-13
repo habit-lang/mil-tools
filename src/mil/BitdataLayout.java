@@ -96,10 +96,7 @@ public class BitdataLayout extends DataName {
     }
   }
 
-  /**
-   * Find the Bitdata Layout associated with values of this type, if there is one, or else return
-   * null.
-   */
+  /** Find the Bitdata Layout associated with values of this type, or else return null. */
   public BitdataLayout bitdataLayout() {
     return this;
   }

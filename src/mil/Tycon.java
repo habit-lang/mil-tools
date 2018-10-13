@@ -181,10 +181,7 @@ public abstract class Tycon extends Name {
     return null;
   }
 
-  /**
-   * Find the Bitdata Layout associated with values of this type, if there is one, or else return
-   * null.
-   */
+  /** Find the Bitdata Layout associated with values of this type, or else return null. */
   public BitdataLayout bitdataLayout() {
     return null;
   }

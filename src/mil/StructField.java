@@ -59,7 +59,7 @@ public class StructField extends Name {
     debug.Log.println(id + " :: " + type + " -- offset=" + offset + ", width=" + width);
   }
 
-  /** Print a definition for this structure type using source level syntax. */
+  /** Print a definition for this structure type using (an approximation to) source level syntax. */
   void dumpTypeDefinition(PrintWriter out) {
     out.print(id);
     out.print(" :: ");

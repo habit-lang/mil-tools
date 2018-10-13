@@ -77,7 +77,7 @@ public class StructType extends Tycon {
     }
   }
 
-  /** Print a definition for this structure type using source level syntax. */
+  /** Print a definition for this structure type using (an approximation to) source level syntax. */
   void dumpTypeDefinition(PrintWriter out) {
     out.print("struct ");
     out.print(id);
