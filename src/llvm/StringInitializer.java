@@ -43,7 +43,7 @@ public class StringInitializer extends Value {
     buf.append("c\""); // Begin string literal
     for (int i = 0; i < str.length(); i++) {
       int c = str.charAt(i);
-      if (i >= ' ' && i < 128 && i != '\\') {
+      if (i >= 32 && i <= 126 && i != '\\') { // printable chars: [32..126]
         buf.append((char) c);
       } else {
         buf.append('\\');
