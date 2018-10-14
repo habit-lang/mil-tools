@@ -239,6 +239,6 @@ public class ClosAlloc extends Allocator {
         objt,
         obj,
         lm.globalFor(k),
-        new llvm.Op(lhs, new llvm.Eval(new llvm.Bitcast(obj, k.closurePtrType(lm))), c));
+        new llvm.Op(lhs, new llvm.Bitcast(obj, k.closurePtrType(lm)), c));
   }
 }

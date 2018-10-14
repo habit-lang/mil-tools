@@ -785,18 +785,18 @@ public class ClosureDefn extends Defn {
       llvm.Type ptrt = lm.closureLayoutType(this).ptr(); // type identifies components of closure
       llvm.Local ptr = dvm.reg(ptrt); // holds a pointer to the closure object
       for (int n = nuparams.length; --n >= 0; ) { // extract stored parameters
-        llvm.Local pptr =
-            dvm.reg(nuparams[n].lookupType(lm).ptr()); // holds pointer to stored parameter
+        llvm.Type pt = nuparams[n].lookupType(lm).ptr();
+        llvm.Local pptr = dvm.reg(pt); // holds pointer to stored parameter
         cs[0] =
             new llvm.Op(
                 pptr,
-                new llvm.Getelementptr(ptr, new llvm.Word(0), new llvm.Word(n + 1)),
+                new llvm.Getelementptr(pt, ptr, new llvm.Word(0), new llvm.Word(n + 1)),
                 new llvm.Op(dvm.lookup(lm, nuparams[n]), new llvm.Load(pptr), cs[0]));
       }
       cs[0] =
           new llvm.CodeComment(
               "load stored values from closure",
-              new llvm.Op(ptr, new llvm.Eval(new llvm.Bitcast(formals[0], ptrt)), cs[0]));
+              new llvm.Op(ptr, new llvm.Bitcast(formals[0], ptrt), cs[0]));
     }
     return new llvm.FuncDefn(llvm.Mods.entry(isEntrypoint), retType(lm), label(), formals, ss, cs);
   }

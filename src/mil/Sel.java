@@ -289,14 +289,14 @@ public class Sel extends Tail {
       LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Local lhs, llvm.Code c) { // cf n a
     llvm.Type objt = lm.cfunLayoutType(this.cf).ptr();
     llvm.Local base = vm.reg(objt); // register to hold a pointer to a structure for cfun this.cf
-    llvm.Local addr =
-        vm.reg(lhs.getType().ptr()); // register to hold pointer to the nth component of this.c
+    llvm.Type at = lhs.getType().ptr();
+    llvm.Local addr = vm.reg(at); // register to hold pointer to the nth component of this.c
     return new llvm.Op(
         base,
-        new llvm.Eval(new llvm.Bitcast(a.toLLVMAtom(lm, vm, s), objt)),
+        new llvm.Bitcast(a.toLLVMAtom(lm, vm, s), objt),
         new llvm.Op(
             addr,
-            new llvm.Getelementptr(base, llvm.Word.ZERO, new llvm.Word(n + 1)),
+            new llvm.Getelementptr(at, base, llvm.Word.ZERO, new llvm.Word(n + 1)),
             new llvm.Op(lhs, new llvm.Load(addr), c)));
   }
 }

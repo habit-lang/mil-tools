@@ -42,6 +42,10 @@ public class Op extends Code {
     this.next = next;
   }
 
+  public Op(Local lhs, Expr expr, Code next) {
+    this(lhs, new Eval(expr), next);
+  }
+
   /** Print out this code sequence to the specified PrintWriter. */
   public void print(PrintWriter out) {
     out.println("  " + lhs.getName() + " = " + rhs);

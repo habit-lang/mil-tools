@@ -299,13 +299,12 @@ public class Enter extends Call {
     // represented by a value of type %t.layout*, where:
     //     type %t.layout = { %t.entry* }     -- layout of a generic dom ->> rng closure in memory
     //     type %t.entry  = rng' (%t.layout*, dom')  -- rng' and dom' corresponding to rng and dom
+    llvm.Type ct = cptr.getType().ptr();
     llvm.Local cptrptr =
-        vm.reg(
-            cptr.getType()
-                .ptr()); // a register to hold the address where the code pointer is stored
+        vm.reg(ct); // a register to hold the address where the code pointer is stored
     return new llvm.Op(
         cptrptr,
-        new llvm.Getelementptr(clo, llvm.Word.ZERO, llvm.Word.ZERO), // 0th field of 0th closure
+        new llvm.Getelementptr(ct, clo, llvm.Word.ZERO, llvm.Word.ZERO), // 0th field of 0th closure
         new llvm.Op(
             cptr,
             new llvm.Load(cptrptr), // load function address

@@ -161,25 +161,23 @@ public abstract class Allocator extends Call {
         "calculate the number of bytes that we need to allocate",
         new llvm.Op(
             past,
-            new llvm.Getelementptr(new llvm.Null(objt), new llvm.Word(1)),
+            new llvm.Getelementptr(objt, new llvm.Null(objt), new llvm.Word(1)),
             new llvm.Op(
                 size,
-                new llvm.Eval(new llvm.PtrToInt(past, size.getType())),
+                new llvm.PtrToInt(past, size.getType()),
                 new llvm.CodeComment(
                     "allocate memory for the object",
-                    new llvm.Op(
-                        raw,
-                        call,
-                        new llvm.Op(obj, new llvm.Eval(new llvm.Bitcast(raw, objt)), c))))));
+                    new llvm.Op(raw, call, new llvm.Op(obj, new llvm.Bitcast(raw, objt), c))))));
   }
 
   /** Generate code to execute lhs[n] = v; c */
   static llvm.Code storeField(
       VarMap vm, TempSubst s, llvm.Value lhs, int n, llvm.Value v, llvm.Code c) {
-    llvm.Local addr = vm.reg(v.getType().ptr());
+    llvm.Type at = v.getType().ptr();
+    llvm.Local addr = vm.reg(at);
     return new llvm.Op(
         addr,
-        new llvm.Getelementptr(lhs, llvm.Word.ZERO, new llvm.Word(n)),
+        new llvm.Getelementptr(at, lhs, llvm.Word.ZERO, new llvm.Word(n)),
         new llvm.Store(v, addr, c));
   }
 }

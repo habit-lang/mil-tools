@@ -20,7 +20,10 @@ package llvm;
 
 
 /** Represents a getelementptr instruction. */
-public class Getelementptr extends Rhs {
+public class Getelementptr extends Expr {
+
+  /** The type of the result. */
+  private Type ty;
 
   /** Base pointer. */
   private Value ptr;
@@ -29,25 +32,44 @@ public class Getelementptr extends Rhs {
   private Value[] offsets;
 
   /** Default constructor. */
-  public Getelementptr(Value ptr, Value[] offsets) {
+  public Getelementptr(Type ty, Value ptr, Value[] offsets) {
+    this.ty = ty;
     this.ptr = ptr;
     this.offsets = offsets;
   }
 
-  public Getelementptr(Value ptr, Value o1) {
-    this(ptr, new Value[] {o1});
+  public Getelementptr(Type ty, Value ptr, Value o1) {
+    this(ty, ptr, new Value[] {o1});
   }
 
-  public Getelementptr(Value ptr, Value o1, Value o2) {
-    this(ptr, new Value[] {o1, o2});
+  public Getelementptr(Type ty, Value ptr, Value o1, Value o2) {
+    this(ty, ptr, new Value[] {o1, o2});
   }
 
-  public Getelementptr(Value ptr, Value o1, Value o2, Value o3) {
-    this(ptr, new Value[] {o1, o2, o3});
+  public Getelementptr(Type ty, Value ptr, Value o1, Value o2, Value o3) {
+    this(ty, ptr, new Value[] {o1, o2, o3});
   }
 
-  /** Append a printable string for this instruction to the specified buffer. */
-  public void append(StringBuilder buf) {
+  /** Return the LLVM type of this value. */
+  public Type getType() {
+    return ty;
+  }
+
+  /** Append the name for this value to the specified buffer. */
+  public void appendName(StringBuilder buf) {
+    buf.append("getelementptr inbounds (");
+    ptr.getType().ptsTo().append(buf);
+    buf.append(", ");
+    ptr.append(buf);
+    for (int i = 0; i < offsets.length; i++) {
+      buf.append(", ");
+      offsets[i].append(buf);
+    }
+    buf.append(")");
+  }
+
+  /** Generate a string for executing this expression as a right hand side. */
+  void appendEval(StringBuilder buf) {
     buf.append("getelementptr inbounds ");
     ptr.getType().ptsTo().append(buf);
     buf.append(", ");

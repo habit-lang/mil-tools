@@ -349,12 +349,13 @@ public class Alt {
       }
       llvm.Type dt = LLVMMap.tagType(); // the type of the tag
       llvm.Local tag = vm.reg(dt); // a register to hold the tag
-      llvm.Local addr = vm.reg(dt.ptr()); // a register that points to the tag
+      llvm.Type at = dt.ptr(); // the type of pointers to the tag
+      llvm.Local addr = vm.reg(at); // a register that points to the tag
       return new llvm.CodeComment(
           "read the tag for a data object",
           new llvm.Op(
               addr,
-              new llvm.Getelementptr(v, llvm.Word.ZERO, llvm.Word.ZERO),
+              new llvm.Getelementptr(at, v, llvm.Word.ZERO, llvm.Word.ZERO),
               new llvm.Op(
                   tag,
                   new llvm.Load(addr),
