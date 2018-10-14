@@ -43,7 +43,7 @@ class AreaDefnExp extends DefnExp {
     this.alignExp = alignExp;
   }
 
-  private Area a;
+  private MemArea a;
 
   /**
    * Worker function for addTo(handler, milenv) that throws an exception if an error is detected.
@@ -53,7 +53,7 @@ class AreaDefnExp extends DefnExp {
     typeExp.checkKind(KAtom.AREA);
     Type areaType = typeExp.toType(null).skeleton();
     long alignment = areaType.calcAlignment(pos, milenv, alignExp);
-    a = new Area(pos, id, alignment, areaType);
+    a = new MemArea(pos, id, alignment, areaType);
     if (milenv.addTop(id, new TopArea(a)) != null) {
       MILEnv.multipleDefns(pos, "top level/area symbol", id);
     }

@@ -194,7 +194,7 @@ public class MILSpec extends TypeSet {
   }
 
   /** Request a version of a definition that is specialized to a given monomorphic type. */
-  public Area specializedArea(Area d, Scheme inst) {
+  public MemArea specializedMemArea(MemArea d, Scheme inst) {
     debug.Log.println("Requesting specialization of " + d + " :: " + inst);
     // Get the list of previous specializations:
     Defns specs = specialized.get(d);
@@ -202,7 +202,7 @@ public class MILSpec extends TypeSet {
 
     // Search previous specializations for a matching type:
     for (Defns ds = specs; ds != null; ds = ds.next) {
-      Area prev = ds.head.isAreaOfType(inst);
+      MemArea prev = ds.head.isMemAreaOfType(inst);
       if (prev != null) {
         return prev;
       }
@@ -211,10 +211,10 @@ public class MILSpec extends TypeSet {
 
     // Create a new item, insert in specialized table, and add a request to complete the definition
     // later:
-    Area newDefn = new Area(d, num);
+    MemArea newDefn = new MemArea(d, num);
     newDefn.setDeclared(inst);
     specialized.put(d, new Defns(newDefn, specs));
-    requested = new SpecReqs(new SpecArea(d, newDefn), requested);
+    requested = new SpecReqs(new SpecMemArea(d, newDefn), requested);
     return newDefn;
   }
 

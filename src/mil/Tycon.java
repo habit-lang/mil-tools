@@ -176,6 +176,8 @@ public abstract class Tycon extends Name {
 
   public static final Tycon stored = new PrimTycon("Stored", starToArea, 1);
 
+  public static final Tycon string = new PrimTycon("String", KAtom.AREA, 0);
+
   /** Find the name of the associated bitdata type, if any. */
   public BitdataType bitdataType() {
     return null;

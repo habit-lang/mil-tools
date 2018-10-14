@@ -24,29 +24,18 @@ import compiler.Handler;
 import compiler.Position;
 import core.*;
 import java.io.PrintWriter;
-import java.math.BigInteger;
 
-public class Area extends TopDefn {
+public abstract class Area extends TopDefn {
 
-  private String id;
-
-  private long alignment;
-
-  private Type areaType;
+  protected String id;
 
   /** Default constructor. */
-  public Area(Position pos, String id, long alignment, Type areaType) {
+  public Area(Position pos, String id) {
     super(pos);
     this.id = id;
-    this.alignment = alignment;
-    this.areaType = areaType;
   }
 
-  private Scheme declared;
-
-  private Type size;
-
-  private Atom init;
+  protected Scheme declared;
 
   /**
    * Return references to all components of this top level definition in an array of
@@ -75,16 +64,10 @@ public class Area extends TopDefn {
     return id;
   }
 
-  /** Find the list of Defns that this Defn depends on. */
-  public Defns dependencies() {
-    return (init == null) ? null : init.dependencies(null);
-  }
-
   String dotAttrs() {
     return "style=filled, fillcolor=darkolivegreen1";
   }
 
-  /** Display a printable representation of this definition on the specified PrintWriter. */
   /** Display a printable representation of this definition on the specified PrintWriter. */
   void dump(PrintWriter out, boolean isEntrypoint) {
     if (declared != null) {
@@ -93,12 +76,6 @@ public class Area extends TopDefn {
       }
       out.println(id + " :: " + declared);
     }
-
-    out.print(id + " <- area " + areaType.toString(TypeWriter.ALWAYS));
-    if (init != null) {
-      out.print(" " + init);
-    }
-    out.println(" aligned " + alignment);
   }
 
   /** Return a type for an instantiated version of this item when used as Atom (input operand). */
@@ -114,49 +91,9 @@ public class Area extends TopDefn {
     /* Nothing to do here */
   }
 
-  /**
-   * Type check the body of this definition, but reporting rather than throwing an exception error
-   * if the given handler is not null.
-   */
-  void checkBody(Handler handler) throws Failure {
-    if (init != null) {
-      init.instantiate().unify(pos, Type.init(areaType));
-    }
-  }
-
   /** Type check the body of this definition, throwing an exception if there is an error. */
   void checkBody(Position pos) throws Failure {
     /* Nothing to do here */
-  }
-
-  /**
-   * Calculate a generalized type for this binding, adding universal quantifiers for any unbound
-   * type variable in the inferred type. (There are no "fixed" type variables here because all mil
-   * definitions are at the top level.)
-   */
-  void generalizeType(Handler handler) throws Failure {
-    // Check that area has a known ByteSize
-    // TODO: shouldn't this calculation be done just once when this Area is constructed?
-    size = areaType.byteSize(null);
-    if (size == null || size.getNat() == null) {
-      throw new Failure(
-          pos, "Cannot determine size in bytes for values of type \"" + areaType + "\"");
-    }
-
-    // Validate declared type:
-    Type inferred = (init == null) ? Tycon.word.asType() : Type.ref(areaType);
-    if (declared != null && !declared.alphaEquiv(inferred)) {
-      throw new Failure(
-          pos,
-          "Declared type \""
-              + declared
-              + "\" for \""
-              + id
-              + "\" does not match inferred type \""
-              + inferred
-              + "\"");
-    }
-    declared = inferred;
   }
 
   void findAmbigTVars(Handler handler, TVars gens) {
@@ -203,16 +140,6 @@ public class Area extends TopDefn {
     /* Nothing to do here */
   }
 
-  void collect(TypeSet set) {
-    areaType = areaType.canonType(set);
-    if (declared != null) {
-      declared = declared.canonScheme(set);
-    }
-    if (init != null) {
-      init.collect(set);
-    }
-  }
-
   /** Apply constructor function simplifications to this program. */
   void cfunSimplify() {
     /* Nothing to do here */
@@ -222,53 +149,7 @@ public class Area extends TopDefn {
     out.println(id + " :: " + declared);
   }
 
-  /** Test to determine if this is an appropriate definition to match the given type. */
-  Area isAreaOfType(Scheme inst) {
-    return declared.alphaEquiv(inst) ? this : null;
-  }
-
-  Area(Area a, int num) {
-    this(a.pos, mkid(a.id, num), a.alignment, a.areaType);
-  }
-
-  /**
-   * Fill in the initializer for this area with a specialized version of the original's initializer.
-   */
-  void specialize(MILSpec spec, Area aorig) {
-    // Although the area itself will have a monomorphic type, we still need to ensure that
-    // specialization is applied to the initializer.
-    debug.Log.println(
-        "Area specialize: "
-            + aorig
-            + " :: "
-            + aorig.declared
-            + "  ~~>  "
-            + this
-            + " :: "
-            + this.declared);
-    this.init = aorig.init.specializeAtom(spec, null, null);
-  }
-
-  /**
-   * Generate a specialized version of an entry point. This requires a monomorphic definition (to
-   * ensure that the required specialization is uniquely determined, and to allow the specialized
-   * version to share the same name as the original).
-   */
-  Defn specializeEntry(MILSpec spec) throws Failure {
-    Type t = declared.isMonomorphic();
-    if (t != null) {
-      Area a = spec.specializedArea(this, t);
-      a.id = this.id;
-      return a;
-    }
-    throw new PolymorphicEntrypointFailure("area", this);
-  }
-
-  /** Update all declared types with canonical versions. */
-  void canonDeclared(MILSpec spec) {
-    declared = declared.canonScheme(spec);
-    areaType = areaType.canonType(spec);
-  }
+  abstract Atom specializeArea(MILSpec spec, Type inst);
 
   void bitdataRewrite(BitdataMap m) {
     /* Nothing to do here */
@@ -278,17 +159,6 @@ public class Area extends TopDefn {
     declared = Tycon.word.asType();
   }
 
-  /** Rewrite the components of this definition to account for changes in representation. */
-  void repTransform(Handler handler, RepTypeSet set) {
-    areaType = areaType.canonType(set);
-    declared = declared.canonScheme(set);
-    if (init != null) {
-      set.addInitializer(new Enter(init.repArg(set, null)[0], new TopArea(this)));
-      init = null; // Clear away initializer
-      declared = null; // Reset "declared" type due to change in representation
-    }
-  }
-
   public void setDeclared(Handler handler, Position pos, Scheme scheme) {
     if (declared != null) {
       handler.report(new Failure(pos, "Multiple type annotations for \"" + id + "\""));
@@ -296,17 +166,11 @@ public class Area extends TopDefn {
     declared = scheme;
   }
 
-  public void inScopeOf(Handler handler, MILEnv milenv, AtomExp init) throws Failure {
-    this.init = init.inScopeOf(handler, milenv, null);
-  }
+  public abstract void inScopeOf(Handler handler, MILEnv milenv, AtomExp init) throws Failure;
 
   /** Add this exported definition to the specified MIL environment. */
   void addExport(MILEnv exports) {
     exports.addTop(id, new TopArea(this));
-  }
-
-  public void setInit(Atom init) {
-    this.init = init;
   }
 
   /**
@@ -318,26 +182,14 @@ public class Area extends TopDefn {
     return null;
   }
 
-  private llvm.Value staticValue;
+  protected llvm.Value staticValue;
 
   public llvm.Value staticValue() {
     return staticValue;
   }
 
-  /** Calculate a staticValue (which could be null) for each top level definition. */
-  void calcStaticValues(LLVMMap lm, llvm.Program prog) {
-    BigInteger bigsize = size.getNat();
-    if (bigsize == null || bigsize.signum() < 0) { // TODO: add upper bound test
-      debug.Internal.error("Unable to determine size of area " + id);
-    }
-    llvm.ArrayType at = new llvm.ArrayType(bigsize.longValue(), llvm.Type.i8);
-    String rawName = prog.freshName("raw");
-    llvm.Global rawGlobal = new llvm.Global(at.ptr(), rawName);
-    prog.add(new llvm.GlobalVarDefn(llvm.Mods.INTERNAL, rawName, at.defaultValue(), alignment));
-    prog.add(
-        new llvm.Alias(
-            llvm.Mods.entry(isEntrypoint), id, new llvm.Bitcast(rawGlobal, llvm.Type.i8.ptr())));
-    staticValue = new llvm.PtrToInt(new llvm.Global(llvm.Type.i8.ptr(), id), llvm.Type.word());
+  protected llvm.Value calcStaticValue(String id) {
+    return new llvm.PtrToInt(new llvm.Global(llvm.Type.i8.ptr(), id), llvm.Type.word());
   }
 
   /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */

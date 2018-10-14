@@ -418,7 +418,7 @@ public abstract class Defn {
   }
 
   /** Test to determine if this is an appropriate definition to match the given type. */
-  Area isAreaOfType(Scheme inst) {
+  MemArea isMemAreaOfType(Scheme inst) {
     return null;
   }
 

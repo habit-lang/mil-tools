@@ -21,14 +21,14 @@ package mil;
 import compiler.*;
 import core.*;
 
-class SpecArea extends SpecReq {
+class SpecMemArea extends SpecReq {
 
-  private Area aorig;
+  private MemArea aorig;
 
-  private Area aspec;
+  private MemArea aspec;
 
   /** Default constructor. */
-  SpecArea(Area aorig, Area aspec) {
+  SpecMemArea(MemArea aorig, MemArea aspec) {
     this.aorig = aorig;
     this.aspec = aspec;
   }
