@@ -226,6 +226,7 @@ public class Enter extends Call {
     return this.f.alphaAtom(thisvars, that.f, thatvars) && this.alphaArgs(thisvars, that, thatvars);
   }
 
+  /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
     if (outputs != null) {
       outputs = outputs.canonType(set);

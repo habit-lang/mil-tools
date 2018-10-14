@@ -31,7 +31,7 @@ public class Store extends Code {
   /** The location where it will be stored. */
   Value addr;
 
-  /** Points to the rest of the code in this basic block. */
+  /** The rest of the code in this basic block. */
   private Code next;
 
   /** Default constructor. */

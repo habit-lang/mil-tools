@@ -32,10 +32,10 @@ public class Switch extends Code {
   /** The list of numeric options to match against. */
   private Value[] nums;
 
-  /** A list of labels of blocks to branch to, one for each option in nums. */
+  /** A list of block labels, one for each option in nums. */
   private String[] bs;
 
-  /** The the label of the default block to branch to if no other applies. */
+  /** The label of the default block if no other applies. */
   private String def;
 
   /** Default constructor. */

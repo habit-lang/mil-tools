@@ -278,6 +278,7 @@ public class If extends Code {
     ifFalse.eliminateDuplicates();
   }
 
+  /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
     a.collect(set);
     ifTrue.collect(set);

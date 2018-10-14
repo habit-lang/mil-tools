@@ -192,6 +192,7 @@ public class DefnSCC {
     }
   }
 
+  /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
     for (Defns ds = bindings; ds != null; ds = ds.next) {
       ds.head.collect(set);

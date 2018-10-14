@@ -32,7 +32,7 @@ public class CallVoid extends Code {
   /** The values that will be passed as arguments. */
   private Value[] args;
 
-  /** Points to the rest of the code in this basic block. */
+  /** The rest of the code in this basic block. */
   private Code next;
 
   /** Default constructor. */

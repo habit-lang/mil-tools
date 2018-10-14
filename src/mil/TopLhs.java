@@ -109,6 +109,7 @@ public class TopLhs {
 
   void findAmbigTVars(Handler handler, TVars gens) {}
 
+  /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
     if (declared != null) {
       declared = declared.canonScheme(set);

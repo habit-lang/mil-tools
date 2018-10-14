@@ -1588,6 +1588,7 @@ public class Prim {
     return id.hashCode();
   }
 
+  /** Generate a new version of this primitive that has canonical types wrt the given set. */
   Prim canonPrim(TypeSet set) {
     Prim newP = set.getPrim(this);
     if (newP == null) {
@@ -1604,6 +1605,10 @@ public class Prim {
     return newP;
   }
 
+  /**
+   * Generate a specialized version of this primitive at a given monotype. Reuses previously
+   * specialized versions if available, or returns original primitive if type is monomorphic.
+   */
   Prim specializePrim(MILSpec spec, BlockType type, TVarSubst s) {
     BlockType inst = type.apply(s).canonBlockType(spec);
     if (inst.alphaEquiv(this.blockType)) {

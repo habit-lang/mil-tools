@@ -26,7 +26,7 @@ public class CodeComment extends Code {
   /** The comment string to insert. */
   private String comment;
 
-  /** Points to the rest of the code in this basic block. */
+  /** The rest of the code in this basic block. */
   private Code next;
 
   /** Default constructor. */

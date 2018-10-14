@@ -353,6 +353,7 @@ public class BlockCall extends Call {
     }
   }
 
+  /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
     if (type != null) {
       type = type.canonBlockType(set);

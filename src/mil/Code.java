@@ -336,6 +336,7 @@ public abstract class Code {
 
   abstract void eliminateDuplicates();
 
+  /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   abstract void collect(TypeSet set);
 
   /** Simplify uses of constructor functions in this code sequence. */

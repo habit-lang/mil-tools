@@ -565,6 +565,7 @@ public class ClosureDefn extends Defn {
     tail.eliminateDuplicates();
   }
 
+  /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
     if (declared != null) {
       declared = declared.canonAllocType(set);

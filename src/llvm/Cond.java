@@ -29,10 +29,10 @@ public class Cond extends Code {
   /** The value to use in making the branch decision. */
   private Value v;
 
-  /** The the label of the block to branch to if the value is true. */
+  /** The label of the block to branch to if v is true. */
   private String ifTrue;
 
-  /** The the label of the block to branch to if the value is false. */
+  /** The label of the block to branch to if v is false. */
   private String ifFalse;
 
   /** Default constructor. */

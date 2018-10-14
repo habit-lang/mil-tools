@@ -50,6 +50,7 @@ public abstract class Const extends Atom {
     return this;
   }
 
+  /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
     instantiate().canonType(set);
   }

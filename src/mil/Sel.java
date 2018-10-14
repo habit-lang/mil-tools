@@ -212,6 +212,7 @@ public class Sel extends Tail {
     return this.cf == that.cf && this.n == that.n && this.a.alphaAtom(thisvars, that.a, thatvars);
   }
 
+  /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
     a.collect(set);
     if (outputs != null) {

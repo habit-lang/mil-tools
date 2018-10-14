@@ -176,6 +176,7 @@ public class Return extends Call {
     return this.alphaArgs(thisvars, that, thatvars);
   }
 
+  /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) { // Sufficient for Return
     if (outputs != null) {
       outputs = outputs.canonType(set);

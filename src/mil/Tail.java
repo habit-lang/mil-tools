@@ -390,6 +390,7 @@ public abstract class Tail {
     /* nothing to do in most cases */
   }
 
+  /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   abstract void collect(TypeSet set);
 
   /**

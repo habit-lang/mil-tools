@@ -153,6 +153,7 @@ public class DataAlloc extends Allocator {
     return this.cf == that.cf && this.alphaArgs(thisvars, that, thatvars);
   }
 
+  /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
     if (type != null) {
       type = type.canonAllocType(set);

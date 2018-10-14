@@ -336,6 +336,7 @@ public abstract class Atom {
     return null;
   }
 
+  /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   abstract void collect(TypeSet set);
 
   static void collect(Atom[] args, TypeSet set) {

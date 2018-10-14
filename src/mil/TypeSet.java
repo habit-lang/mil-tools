@@ -277,6 +277,7 @@ public class TypeSet {
     }
   }
 
+  /** Cache a mapping of primitives to their canonical versions in this TypeSet. */
   private HashMap<Prim, Prim> primMap = new HashMap();
 
   Prim getPrim(Prim p) {

@@ -389,6 +389,7 @@ public abstract class Defn {
 
   abstract void eliminateDuplicates();
 
+  /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   abstract void collect(TypeSet set);
 
   /** Apply constructor function simplifications to this program. */

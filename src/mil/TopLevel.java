@@ -328,6 +328,7 @@ public class TopLevel extends TopDefn {
     tail.eliminateDuplicates();
   }
 
+  /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
     for (int i = 0; i < lhs.length; i++) {
       lhs[i].collect(set);

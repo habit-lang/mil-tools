@@ -309,6 +309,7 @@ public class MILProgram {
     }
   }
 
+  /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   public void collect(TypeSet set) {
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       dsccs.head.collect(set);
