@@ -1820,6 +1820,7 @@ public class External extends TopDefn {
           Temp r1 = new Temp();
           code = new Bind(r, Prim.add.withArgs(r1, size), code);
           r = r1;
+          i--;
         } else {
           break;
         }
