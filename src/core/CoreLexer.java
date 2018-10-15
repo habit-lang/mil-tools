@@ -517,13 +517,13 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
         }
         for (int i = 0; i < escCodes.length; i++) {
           String str = escCodes[i];
-          int len = str.length();
+          int len = str.length() - 2; // subtract one for init char, one for space
           if (str.regionMatches(2, line, col, len)) {
             nextChar(len);
             return str.charAt(0);
           }
         }
-        throw new Failure(getPos(), "Incorrect syntax for character escape");
+        throw new Failure(getPos(), "Unrecognized character escape");
     }
   }
 
