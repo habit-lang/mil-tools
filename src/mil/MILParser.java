@@ -563,6 +563,13 @@ public class MILParser extends CoreParser implements MILTokens {
           lexer.nextToken(/* BITLIT */ );
           return e;
         }
+
+      case STRLIT:
+        {
+          StringExp e = new StringExp(lexer.getPos(), lexer.getLexeme());
+          lexer.nextToken(/* STRLIT */ );
+          return e;
+        }
     }
     return null;
   }
