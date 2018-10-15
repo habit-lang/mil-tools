@@ -142,10 +142,13 @@ public class StringArea extends Area {
     declared = declared.canonScheme(spec);
   }
 
+  void topLevelRepTransform(Handler handler, RepTypeSet set) {
+    declared = expected = Tycon.word.asType();
+  }
+
   /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {
-    expected = expected.canonType(set);
-    declared = declared.canonScheme(set);
+    declared = expected = expected.canonType(set); // TODO: likely unnecessary; always Word
   }
 
   public void inScopeOf(Handler handler, MILEnv milenv, AtomExp init) throws Failure {

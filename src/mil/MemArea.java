@@ -161,10 +161,14 @@ public class MemArea extends Area {
     areaType = areaType.canonType(spec);
   }
 
+  void topLevelRepTransform(Handler handler, RepTypeSet set) {
+    declared = Tycon.word.asType();
+  }
+
   /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {
     areaType = areaType.canonType(set);
-    declared = declared.canonScheme(set);
+    declared = declared.canonScheme(set); // TODO: likely unnecessary; always Word
     if (init != null) {
       set.addInitializer(new Enter(init.repArg(set, null)[0], new TopArea(this)));
       init = null; // Clear away initializer

@@ -155,10 +155,6 @@ public abstract class Area extends TopDefn {
     /* Nothing to do here */
   }
 
-  void topLevelRepTransform(Handler handler, RepTypeSet set) {
-    declared = Tycon.word.asType();
-  }
-
   public void setDeclared(Handler handler, Position pos, Scheme scheme) {
     if (declared != null) {
       handler.report(new Failure(pos, "Multiple type annotations for \"" + id + "\""));
