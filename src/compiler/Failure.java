@@ -19,8 +19,8 @@
 package compiler;
 
 /**
- * Represents an error diagnostic. To avoid a clash with java.lang.Error, we resisted the temptation
- * to call this class Error.
+ * Represents an error diagnostic. To avoid a clash with java.lang.Error, we resist the temptation
+ * to use the name "Error".
  */
 public class Failure extends Diagnostic {
 

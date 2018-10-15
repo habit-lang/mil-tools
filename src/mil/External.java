@@ -1684,7 +1684,7 @@ public class External extends TopDefn {
           }
         });
 
-    // primInitStored t :: t -> Init t (loosely equiv to: [t] ->> [[Word] ->> [Unit]]
+    // primInitStored t :: t -> Init (Stored t) (loosely equiv to: [t] ->> [[Word] ->> [Unit]]
     generators.put(
         "primInitStored",
         new Generator(1) {

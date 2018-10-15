@@ -118,9 +118,7 @@ public class JavaSource extends Source {
               skip();
             }
             if (i != 4) {
-              /* TODO: fix the zero column number in the
-               * following error diagnostic message ...
-               */
+              // TODO: fix the zero column number in the following diagnostic message ...
               report(
                   new Warning(
                       new SourcePosition(this, lineNumber, 0), "Error in Unicode escape sequence"));
