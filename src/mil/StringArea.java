@@ -158,7 +158,6 @@ public class StringArea extends Area {
   /** Calculate a staticValue (which could be null) for each top level definition. */
   void calcStaticValues(LLVMMap lm, llvm.Program prog) {
     llvm.StringInitializer si = new llvm.StringInitializer(str);
-    llvm.Type st = si.getType();
     String strName = prog.freshName("str");
     prog.add(new llvm.Constant(llvm.Mods.PRIVATE | llvm.Mods.UNNAMED_ADDR, strName, si));
     prog.add(
@@ -166,7 +165,10 @@ public class StringArea extends Area {
             llvm.Mods.entry(isEntrypoint),
             id,
             new llvm.Getelementptr(
-                st, new llvm.Global(st.ptr(), strName), llvm.Word.ZERO, llvm.Word.ZERO)));
+                llvm.Type.i8.ptr(),
+                new llvm.Global(si.getType().ptr(), strName),
+                llvm.Word.ZERO,
+                llvm.Word.ZERO)));
     staticValue = calcStaticValue(id);
   }
 }

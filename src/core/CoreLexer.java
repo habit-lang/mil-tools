@@ -510,7 +510,7 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
 
       default:
         if (Character.digit((char) c, 10) >= 0) {
-          digits("hexadecimal character escape", 16);
+          digits("decimal character escape", 10);
           return getInt();
         }
         for (int i = 0; i < escCodes.length; i++) {

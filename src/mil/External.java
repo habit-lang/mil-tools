@@ -344,12 +344,11 @@ public class External extends TopDefn {
 
   private void generatePrim(String id, Scheme declared) throws Failure {
     Tail t = declared.generatePrim(pos, id);
-    ;
     if (t != null) {
-      TopLhs lhs = new TopLhs(id);
+      TopLhs lhs = new TopLhs(this.id);
       lhs.setDeclared(declared);
       impl = new TopLevel(pos, new TopLhs[] {lhs}, t);
-      if (isEntrypoint) { // test delayed until impl has been initialized
+      if (isEntrypoint && id.equals(this.id)) { // test delayed until impl has been initialized
         throw new Failure(
             pos,
             "External "
@@ -358,7 +357,14 @@ public class External extends TopDefn {
                 + " name so cannot be declared as an entrypoint.");
       }
     } else {
-      impl = new External(pos, id, declared, null, null);
+      External ext = new External(pos, id, declared, null, null);
+      if (id.equals(this.id)) {
+        impl = ext;
+      } else {
+        TopLhs lhs = new TopLhs(this.id);
+        lhs.setDeclared(declared);
+        impl = new TopLevel(pos, new TopLhs[] {lhs}, new Return(new TopExt(ext)));
+      }
       impl.setIsEntrypoint(isEntrypoint);
     }
   }
