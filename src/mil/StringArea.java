@@ -53,7 +53,39 @@ public class StringArea extends Area {
   /** Display a printable representation of this definition on the specified PrintWriter. */
   void dump(PrintWriter out, boolean isEntrypoint) {
     super.dump(out, isEntrypoint);
-    out.println(id + " <- \"" + str + "\""); // TODO: use escapes for nonprintable chars
+    out.print(id + " <- \"");
+    for (int i = 0; i < str.length(); i++) {
+      char c = str.charAt(i);
+      // TODO: This code deals with details of concrete syntax that seem out of place here ...
+      switch (c) {
+        case '"':
+          out.print("\\\"");
+          break;
+        case '\\':
+          out.print("\\\\");
+          break;
+        case '\n':
+          out.print("\\n");
+          break;
+        case '\r':
+          out.print("\\r");
+          break;
+        case '\t':
+          out.print("\\t");
+          break;
+        default:
+          if (c >= 32 && c <= 126) {
+            out.print(c);
+          } else {
+            out.print("\\");
+            out.print((int) c);
+            if (i + 1 < str.length() && Character.isDigit(str.charAt(i + 1))) {
+              out.print("\\&");
+            }
+          }
+      }
+    }
+    out.println("\"");
   }
 
   /**
