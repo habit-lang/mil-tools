@@ -558,6 +558,13 @@ public class LCParser extends CoreParser implements LCTokens {
           return e;
         }
 
+      case STRLIT:
+        {
+          e = new EStr(lexer.getPos(), lexer.getLexeme());
+          lexer.nextToken(/* STRLIT */ );
+          return e;
+        }
+
       case POPEN:
         {
           if (lexer.nextToken(/* ( */ ) == VARSYM) {
