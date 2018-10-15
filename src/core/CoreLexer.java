@@ -451,10 +451,8 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
       } else if (c == '\\') {
         if (nextChar() == '&') {
           nextChar();
-        } else if (isWhitespace(c)) {
-          while (isWhitespace(nextChar())) {
-            // skip gap
-          }
+        } else if (isWhitespace(c) || c == EOL) {
+          skipWhitespace(); // skip gap
           if (c == '\\') {
             nextChar();
           } else {
