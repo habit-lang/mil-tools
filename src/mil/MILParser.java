@@ -185,6 +185,15 @@ public class MILParser extends CoreParser implements MILTokens {
       TypeExp alignExp = lexer.match(ALIGNED) ? typeExp() : null; // Read (optional) alignment
       lexer.itemEnd("area definition");
       return new AreaDefnExp(pos, ids[0], typeExp, init, alignExp);
+    } else if (lexer.getToken() == STRLIT) {
+      if (ids.length != 1) {
+        throw new Failure(
+            lexer.getPos(), "A string area definition can only bind a single identifier");
+      }
+      String str = lexer.getLexeme();
+      lexer.nextToken(/* STRLIT */ );
+      lexer.itemEnd("string area definition");
+      return new StringAreaDefnExp(pos, ids[0], str);
     } else {
       String[] args;
       if (lexer.match(BOPEN)) {
