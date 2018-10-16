@@ -388,12 +388,6 @@ public class External extends TopDefn {
     debug.Log.println("Generated new top level definition for " + impl);
   }
 
-  static void validPowerOfTwo(long m) throws GeneratorException {
-    if ((m & (m - 1)) != 0) {
-      throw new GeneratorException(m + " is not a power of two");
-    }
-  }
-
   /** Flag to indicate whether bitdata representations (e.g., for Maybe (Ix 15)) are in use. */
   private static boolean bitdataRepresentations = false;
 
@@ -428,8 +422,13 @@ public class External extends TopDefn {
         new Generator(1) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int w = ts[0].validWidth();
-            Type.validInRange(
-                w, 2, Word.size()); // TODO: provide implementations for Bit 0 and Bit 1?
+            if (w < 2 || w > Word.size()) { // TODO: provide implementations for Bit 0 and Bit 1?
+              throw new GeneratorException(
+                  "parameter "
+                      + w
+                      + " not accepted; value must be in the range 2 to "
+                      + Word.size());
+            }
             return new Return().makeUnaryFuncClosure(pos, 1);
           }
         });

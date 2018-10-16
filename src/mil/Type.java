@@ -661,13 +661,6 @@ public abstract class Type extends Scheme {
     }
   }
 
-  static void validInRange(int v, int lo, int hi) throws GeneratorException {
-    if (v < lo || v > hi) {
-      throw new GeneratorException(
-          "parameter " + v + " not accepted; value must be in the range " + lo + " to " + hi);
-    }
-  }
-
   static void validNotBelow(long n, long lo) throws GeneratorException {
     if (n < lo) {
       throw new GeneratorException("parameter " + n + " is too low; must be at least " + lo);
