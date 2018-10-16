@@ -997,7 +997,20 @@ public abstract class Type extends Scheme {
     return Math.max(1, Type.numBytes(memBitSize(tenv)));
   }
 
-  public long calcAlignment(Position pos, MILEnv milenv, TypeExp alignExp) throws Failure {
+  /** Check that an area of this type has a known ByteSize. */
+  public Type calcAreaSize(Position pos) throws Failure {
+    Type size = byteSize(null);
+    if (size == null || size.getNat() == null) {
+      throw new Failure(pos, "Cannot determine ByteSize for type \"" + this + "\"");
+    }
+    return size;
+  }
+
+  /**
+   * Check that an area of this type has a valid alignment, consistent with declared value, if
+   * given.
+   */
+  public long calcAreaAlignment(Position pos, MILEnv milenv, TypeExp alignExp) throws Failure {
     long alignment = this.alignment(null);
     if (alignment < 1) {
       throw new Failure(pos, "Unable to determine alignment for " + this);

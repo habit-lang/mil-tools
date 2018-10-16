@@ -56,13 +56,14 @@ public class AreaDefn extends TopDefn {
       }
       areaType = areaType.skeleton();
 
-      // Determine alignment, validating declared value if given:
-      long alignment = areaType.calcAlignment(pos, milenv, alignExp);
+      // Determine size and alignment, validating declared value if given:
+      Type size = areaType.calcAreaSize(pos);
+      long alignment = areaType.calcAreaAlignment(pos, milenv, alignExp);
       debug.Log.println("area type is " + areaType + ", alignment=" + alignment);
 
       initType = Type.init(areaType); // Calculate and save type for initializers
       for (int i = 0; i < areaVars.length; i++) {
-        areaVars[i].addToEnv(handler, milenv, alignment, areaType, refType);
+        areaVars[i].addToEnv(handler, milenv, alignment, areaType, size, refType);
       }
     } catch (Failure f) {
       handler.report(f);

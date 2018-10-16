@@ -52,8 +52,9 @@ class AreaDefnExp extends DefnExp {
     typeExp.scopeType(null, milenv.getTyconEnv(), 0);
     typeExp.checkKind(KAtom.AREA);
     Type areaType = typeExp.toType(null).skeleton();
-    long alignment = areaType.calcAlignment(pos, milenv, alignExp);
-    a = new MemArea(pos, id, alignment, areaType);
+    Type size = areaType.calcAreaSize(pos);
+    long alignment = areaType.calcAreaAlignment(pos, milenv, alignExp);
+    a = new MemArea(pos, id, alignment, areaType, size);
     if (milenv.addTop(id, new TopArea(a)) != null) {
       MILEnv.multipleDefns(pos, "top level/area symbol", id);
     }

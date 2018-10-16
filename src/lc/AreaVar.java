@@ -35,17 +35,16 @@ public class AreaVar extends Name {
   /** Identifies the MIL Area corresponding to this area variable declaration. */
   private MemArea area;
 
-  void addToEnv(Handler handler, MILEnv milenv, long alignment, Type areaType, Type refType)
+  void addToEnv(
+      Handler handler, MILEnv milenv, long alignment, Type areaType, Type size, Type refType)
       throws Failure {
     if (milenv.findTop(id) != null) {
       handler.report(
           new Failure(
               pos, "area definition conflicts with previous definition for \"" + id + "\""));
     } else {
-      area =
-          new MemArea(
-              pos, id, alignment,
-              areaType); // Create new area with an initializer to be filled in later ...
+      // Create new area with an initializer to be filled in later ...
+      area = new MemArea(pos, id, alignment, areaType, size);
       area.setDeclared(handler, pos, refType);
       milenv.addTop(id, new TopArea(refType, area)); // ... and add it to the MIL environment
     }

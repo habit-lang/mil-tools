@@ -32,16 +32,21 @@ public class MemArea extends Area {
 
   private Type areaType;
 
+  private Type size;
+
   /** Default constructor. */
-  public MemArea(Position pos, String id, long alignment, Type areaType) {
+  public MemArea(Position pos, String id, long alignment, Type areaType, Type size) {
     super(pos, id);
     this.alignment = alignment;
     this.areaType = areaType;
+    this.size = size;
   }
 
-  private Type size;
-
   private Atom init;
+
+  public void setInit(Atom init) {
+    this.init = init;
+  }
 
   /** Find the list of Defns that this Defn depends on. */
   public Defns dependencies() {
@@ -74,14 +79,6 @@ public class MemArea extends Area {
    * definitions are at the top level.)
    */
   void generalizeType(Handler handler) throws Failure {
-    // Check that area has a known ByteSize
-    // TODO: shouldn't this calculation be done just once when this MemArea is constructed?
-    size = areaType.byteSize(null);
-    if (size == null || size.getNat() == null) {
-      throw new Failure(
-          pos, "Cannot determine size in bytes for values of type \"" + areaType + "\"");
-    }
-
     // Validate declared type:
     Type inferred = (init == null) ? Tycon.word.asType() : Type.ref(areaType);
     if (declared != null && !declared.alphaEquiv(inferred)) {
@@ -115,7 +112,7 @@ public class MemArea extends Area {
   }
 
   MemArea(MemArea a, int num) {
-    this(a.pos, mkid(a.id, num), a.alignment, a.areaType);
+    this(a.pos, mkid(a.id, num), a.alignment, a.areaType, a.size);
   }
 
   /**
@@ -178,10 +175,6 @@ public class MemArea extends Area {
 
   public void inScopeOf(Handler handler, MILEnv milenv, AtomExp init) throws Failure {
     this.init = init.inScopeOf(handler, milenv, null);
-  }
-
-  public void setInit(Atom init) {
-    this.init = init;
   }
 
   /** Calculate a staticValue (which could be null) for each top level definition. */
