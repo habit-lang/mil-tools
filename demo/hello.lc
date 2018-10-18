@@ -1,0 +1,4 @@
+require "io.mil"
+
+export main
+main = printString "hello, world\n"

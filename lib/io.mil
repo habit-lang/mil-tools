@@ -11,3 +11,6 @@ export printWord :: Word -> Proc Unit
 printWord <- {w} c <- printWord1{w}; Proc(c)
 printWord1{w} [] = [] <- printWord((w)); Unit()
 
+export printString
+external printString :: Ref String -> Proc Unit
+
