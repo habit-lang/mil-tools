@@ -448,6 +448,28 @@ public class External extends TopDefn {
                 .makeBinaryFuncClosure(pos, Word.numWords(m), Word.numWords(n));
           }
         });
+
+    // primBitSelect m n o :: Bit m -> Bit n, where o is the offset, o+n<=m
+    generators.put(
+        "primBitSelect",
+        new Generator(3) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int m = ts[0].validWidth(); // Width of input bit vector
+            int n = ts[1].validWidth(); // Width of output bit vector
+            int o = ts[2].validWidth(); // Offset to output bits within the input vector
+            if ((o + n) > m) {
+              throw new GeneratorException(
+                  "A field of width "
+                      + n
+                      + " at offset "
+                      + o
+                      + " will not fit in a bit vector of width "
+                      + m);
+            }
+            return new BlockCall(BitdataField.generateBitSelector(pos, true, o, n, m))
+                .makeUnaryFuncClosure(pos, Word.numWords(m));
+          }
+        });
   }
 
   static {

@@ -93,7 +93,10 @@ public class BitdataField extends Name {
    * Generate code for a selector for this field, given total size of the enclosing bitdata type.
    */
   void generateSelector(BitdataLayout layout) {
-    int total = layout.getWidth(); // number of bits in output
+    selectorBlock = generateBitSelector(pos, type.useBitdataLo(), offset, width, layout.getWidth());
+  }
+
+  static Block generateBitSelector(Position pos, boolean useLo, int offset, int width, int total) {
     Temp[] params;
     Code code;
     if (width == 0) {
@@ -106,11 +109,11 @@ public class BitdataField extends Name {
       code =
           width == 1
               ? selectorBit(offset, total, params, ws, code)
-              : type.useBitdataLo()
+              : useLo
                   ? selectorLo(offset, width, total, params, ws, code)
                   : selectorHi(offset, width, total, params, ws, code);
     }
-    selectorBlock = new Block(pos, "select_" + id, params, code); // create the new block
+    return new Block(pos, params, code); // create the new block
   }
 
   /**
