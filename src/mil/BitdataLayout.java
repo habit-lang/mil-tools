@@ -53,13 +53,6 @@ public class BitdataLayout extends DataName {
     this.tagbits = tagbits;
     this.fields = fields;
     this.pat = pat;
-
-    Type[] stored = new Type[fields.length];
-    for (int i = 0; i < fields.length; i++) {
-      stored[i] = fields[i].getType();
-    }
-    cfuns =
-        new Cfun[] {new Cfun(pos, bt + "." + id, this, 0, new AllocType(stored, this.asType()))};
   }
 
   public BitdataField[] getFields() {
@@ -104,6 +97,18 @@ public class BitdataLayout extends DataName {
   /** Return the bit pattern for this object. */
   public obdd.Pat getPat() {
     return pat;
+  }
+
+  /**
+   * Add the constructor for this BitdataLayout using the details specified in the array of fields.
+   */
+  public void addCfun() {
+    Type[] stored = new Type[fields.length];
+    for (int i = 0; i < fields.length; i++) {
+      stored[i] = fields[i].getType();
+    }
+    cfuns =
+        new Cfun[] {new Cfun(pos, bt + "." + id, this, 0, new AllocType(stored, this.asType()))};
   }
 
   /** Return the constructor function for this layout. */

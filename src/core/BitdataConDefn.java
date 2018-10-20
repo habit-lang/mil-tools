@@ -93,6 +93,7 @@ class BitdataConDefn extends Name {
     }
 
     layout = new BitdataLayout(pos, id, bt, tagbits, fields, pat);
+    layout.addCfun();
     return pat;
   }
 

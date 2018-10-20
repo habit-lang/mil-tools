@@ -267,6 +267,7 @@ public class Cfun extends Name {
       offset += width;
     }
     BitdataLayout layout = new BitdataLayout(pos, id, bt, tagbits, fields, p);
+    layout.addCfun();
     layout.setMaskTest(mt);
     return layout;
   }
