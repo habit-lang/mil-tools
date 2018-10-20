@@ -66,4 +66,9 @@ public class PrimTycon extends Tycon {
   void dumpTypeDefinition(PrintWriter out) {
     /* do nothing */
   }
+
+  /** Return the canonical version of a Tycon wrt to the given set. */
+  Tycon canonTycon(TypeSet set) {
+    return this;
+  }
 }

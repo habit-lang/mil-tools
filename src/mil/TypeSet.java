@@ -42,9 +42,9 @@ public class TypeSet {
   /** Write a description of this TypeSet to a PrintWriter. */
   public void dump(PrintWriter out) {
     out.println("Tycon mapping: --------------------------");
-    for (DataType dt : remapDataTypes.keySet()) {
-      DataName dn = remapDataTypes.get(dt);
-      out.println("  " + dt + " --> " + dn);
+    for (Tycon tycon : tyconMap.keySet()) {
+      Tycon ntycon = tyconMap.get(tycon);
+      out.println("  " + tycon + " --> " + ntycon);
     }
 
     out.println("Tycon uses: -----------------------------");
@@ -233,24 +233,46 @@ public class TypeSet {
     return us;
   }
 
+  /**
+   * Holds a mapping from Tycons in the input program to corresponding canonical versions in the
+   * output.
+   */
+  private HashMap<Tycon, Tycon> tyconMap = new HashMap();
+
+  /** Records the set of Tycons that are used in the output program. */
   private HashSet<Tycon> tycons = new HashSet();
 
-  boolean containsTycon(Tycon tycon) {
-    return tycons.contains(tycon);
+  /**
+   * Add an entry to the tyconMap, associating a given Tycon with its canonical version in this
+   * TypeSet.
+   */
+  void mapTycon(Tycon tycon, Tycon ntycon) {
+    tyconMap.put(tycon, ntycon);
+    addTycon(ntycon);
   }
 
+  /**
+   * Register the specified Tycon as being used in the output program. This method is used to
+   * register tycons that do not necessarily appear in the range of the tyconMap (because they are
+   * simple enumerations, for example, whose definitions do not change when we compute canonical
+   * versions ... which is useful in turn for ensuring that we do not attempt to duplicate important
+   * builtin types like Unit and Bool.
+   */
   void addTycon(Tycon tycon) {
     tycons.add(tycon);
   }
 
-  private HashMap<DataType, DataName> remapDataTypes = new HashMap();
-
-  DataName getDataName(DataType dt) {
-    return remapDataTypes.get(dt);
+  /** Test if the given Tycon is already used in the output program. */
+  boolean containsTycon(Tycon tycon) {
+    return tycons.contains(tycon);
   }
 
-  void putDataName(DataType dt, DataName dn) {
-    remapDataTypes.put(dt, dn);
+  /**
+   * Return the canonical version of this tycon that is stored in this TypeSet, or null if there is
+   * none.
+   */
+  Tycon mapsTyconTo(Tycon tycon) {
+    return tyconMap.get(tycon);
   }
 
   /** Write definitions for all the types defined in this TypeSet to a PrintWriter. */

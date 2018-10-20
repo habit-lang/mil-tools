@@ -72,6 +72,14 @@ public class BitdataField extends Name {
     return offset;
   }
 
+  /** Make a new version of this bitdata field with a type that is canonical wrt the given set. */
+  BitdataField makeCanonBitdataField(TypeSet set) {
+    BitdataField field = new BitdataField(pos, id, type.canonType(set), offset, width);
+    field.selectorBlock = selectorBlock;
+    field.updatePrim = updatePrim;
+    return field;
+  }
+
   Tail repTransformSel(RepTypeSet set, RepEnv env, Atom a) {
     return new BlockCall(selectorBlock, a.repAtom(set, env));
   }

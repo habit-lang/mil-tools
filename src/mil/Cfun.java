@@ -57,6 +57,10 @@ public class Cfun extends Name {
     return allocType.getArity();
   }
 
+  /**
+   * Get the array of constructor functions associated with this object, or return null if this is
+   * not a DataName.
+   */
   public Cfun[] getCfuns() {
     return dn.getCfuns();
   }
@@ -196,10 +200,11 @@ public class Cfun extends Name {
 
   /**
    * Return the canonical version of this constructor function (by looking it up in the associated
-   * canonical DataName).
+   * canonical Tycon, which---by an invariant not currently captured in the types---must be a
+   * DataName).
    */
   Cfun canonCfun(TypeSet set) {
-    return dn.canonDataName(set).getCfuns()[num];
+    return dn.canonTycon(set).getCfuns()[num];
   }
 
   /**

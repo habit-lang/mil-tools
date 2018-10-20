@@ -34,6 +34,14 @@ public abstract class Tycon extends Name {
     super(pos, id);
   }
 
+  /**
+   * Get the array of constructor functions associated with this object, or return null if this is
+   * not a DataName.
+   */
+  public Cfun[] getCfuns() {
+    return null;
+  }
+
   /** Return the kind of this type constructor. */
   public abstract Kind getKind();
 
@@ -209,9 +217,7 @@ public abstract class Tycon extends Name {
   }
 
   /** Return the canonical version of a Tycon wrt to the given set. */
-  Tycon canonTycon(TypeSet set) {
-    return this;
-  }
+  abstract Tycon canonTycon(TypeSet set);
 
   /**
    * Attempt to translate a type with this type constructor at its head and some number of arguments
@@ -235,7 +241,7 @@ public abstract class Tycon extends Name {
    * Find out if there is a specialized version of the type with this Tycon as its head and the set
    * of args (canonical) arguments on the stack of this MILSpec object.
    */
-  Type specInst(MILSpec spec, int args) {
+  Tycon specInst(MILSpec spec, int args) {
     return null;
   }
 

@@ -75,8 +75,8 @@ public class MILSpec extends TypeSet {
    * unparameterized types.
    */
   protected Type canon(Tycon h, int args) {
-    Type t = h.specInst(this, args);
-    return (t == null) ? super.canon(h, args) : t;
+    Tycon t = h.specInst(this, args);
+    return (t == null) ? super.canon(h, args) : t.asType();
   }
 
   /**

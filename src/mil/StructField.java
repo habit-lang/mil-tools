@@ -68,6 +68,13 @@ public class StructField extends Name {
   }
 
   /**
+   * Make a new version of this structure field with a types that is canonical wrt the given set.
+   */
+  StructField makeCanonStructField(TypeSet set) {
+    return new StructField(pos, id, type.canonType(set), offset, width);
+  }
+
+  /**
    * Stores a field initializer primitive of type [Init T] >>= [Init S] for this field (of type T)
    * in a structure (of type S).
    */

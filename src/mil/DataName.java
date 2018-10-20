@@ -35,10 +35,6 @@ public abstract class DataName extends Tycon {
   /** Holds the list of constructor functions for this DataName. */
   protected Cfun[] cfuns;
 
-  public Cfun[] getCfuns() {
-    return cfuns;
-  }
-
   public void setCfuns(Cfun[] cfuns) {
     this.cfuns = cfuns;
   }
@@ -56,6 +52,14 @@ public abstract class DataName extends Tycon {
     return isRecursive;
   }
 
+  /**
+   * Get the array of constructor functions associated with this object, or return null if this is
+   * not a DataName.
+   */
+  public Cfun[] getCfuns() {
+    return cfuns;
+  }
+
   public obdd.Pat getPat(int num) {
     debug.Internal.error("DataName does not have a bit pattern");
     return null;
@@ -63,15 +67,22 @@ public abstract class DataName extends Tycon {
 
   /** Return the canonical version of a Tycon wrt to the given set. */
   Tycon canonTycon(TypeSet set) {
-    return canonDataName(set);
+    Tycon ntycon = set.mapsTyconTo(this);
+    if (ntycon != null) { // Use previously computed canonical version if available
+      return ntycon;
+    } else if (set.containsTycon(
+        this)) { // Tycon is already in the target?  (TODO: is this still necessary?)
+      return this;
+    }
+    return makeCanonTycon(set); // But otherwise, make a new canonical version
   }
 
   /**
-   * Return the canonical version of a DataName wrt the given set, replacing component types with
-   * canonical versions as necessary. This is extracted as a separate method from canonTycon so that
-   * it can be used in canonCfun, with a return type that guarantees a DataName result.
+   * Make a canonical version of a type definition wrt the given set, replacing component types with
+   * canonical versions as necessary. We only need implementations of this method for StructType and
+   * (subclasses of) DataName.
    */
-  abstract DataName canonDataName(TypeSet set);
+  abstract Tycon makeCanonTycon(TypeSet set);
 
   /**
    * Return true if this is a newtype constructor (i.e., a single argument constructor function for
@@ -86,8 +97,8 @@ public abstract class DataName extends Tycon {
     return false;
   }
 
-  DataName specializeDataName(MILSpec spec, Type inst) {
-    return this;
+  Tycon specializeDataName(MILSpec spec, Type inst) {
+    return canonTycon(spec);
   }
 
   DataType dataType() {

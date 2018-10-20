@@ -135,8 +135,39 @@ public class StructType extends Tycon {
 
   /** Return the canonical version of a Tycon wrt to the given set. */
   Tycon canonTycon(TypeSet set) {
-    set.addTycon(this);
-    return this;
+    Tycon ntycon = set.mapsTyconTo(this);
+    if (ntycon != null) { // Use previously computed canonical version if available
+      return ntycon;
+    } else if (set.containsTycon(
+        this)) { // Tycon is already in the target?  (TODO: is this still necessary?)
+      return this;
+    }
+    return makeCanonTycon(set); // But otherwise, make a new canonical version
+  }
+
+  /**
+   * Make a canonical version of a type definition wrt the given set, replacing component types with
+   * canonical versions as necessary. We only need implementations of this method for StructType and
+   * (subclasses of) DataName.
+   */
+  Tycon makeCanonTycon(TypeSet set) {
+    if (fields.length == 0) { // Do not make copies of structures with no fields
+      set.addTycon(this); // (but still register them as being in use)
+      return this;
+    } else {
+      debug.Log.println("making new version of structure type " + id);
+      StructType newSt = new StructType(pos, id);
+      set.mapTycon(
+          this, newSt); // Add mapping before attempting to find canonical versions of fields.
+      debug.Log.println("new version of StructType " + id + " is " + newSt);
+      newSt.byteSize = byteSize;
+      newSt.alignment = alignment;
+      newSt.fields = new StructField[fields.length];
+      for (int i = 0; i < fields.length; i++) {
+        newSt.fields[i] = fields[i].makeCanonStructField(set);
+      }
+      return newSt;
+    }
   }
 
   /**

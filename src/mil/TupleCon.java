@@ -93,6 +93,11 @@ public class TupleCon extends Tycon {
     /* do nothing */
   }
 
+  /** Return the canonical version of a Tycon wrt to the given set. */
+  Tycon canonTycon(TypeSet set) {
+    return this;
+  }
+
   /**
    * Rewrite the argument stack in the given RepTypeSet to account for a change of representation if
    * this is a tuple type with any arguments whose representation is changed. Returns the number of

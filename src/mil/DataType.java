@@ -81,27 +81,21 @@ public class DataType extends DataName {
   }
 
   /**
-   * Return the canonical version of a DataName wrt the given set, replacing component types with
-   * canonical versions as necessary. This is extracted as a separate method from canonTycon so that
-   * it can be used in canonCfun, with a return type that guarantees a DataName result.
+   * Make a canonical version of a type definition wrt the given set, replacing component types with
+   * canonical versions as necessary. We only need implementations of this method for StructType and
+   * (subclasses of) DataName.
    */
-  DataName canonDataName(TypeSet set) {
-    DataName dn = set.getDataName(this);
-    if (dn != null) { // already mapped?
-      return dn;
-    } else if (set.containsTycon(this)) { // already in the target?
-      return this;
-    } else if (isEnumeration()) { // do not make new versions of enumerations
-      set.addTycon(this);
+  Tycon makeCanonTycon(TypeSet set) {
+    if (isEnumeration()) { // Do not make copies of enumerations
+      set.addTycon(this); // (but still register them as being in use)
       return this;
     }
     DataType newDt =
-        new DataType(pos, id, kind, arity); // make new type, copying attributes of original
+        new DataType(pos, id, kind, arity); // Make new type, copying attributes of original
     newDt.isRecursive = this.isRecursive;
-    set.addTycon(newDt); // register the new DataType
-    set.putDataName(this, newDt); // add mapping from old to new
+    set.mapTycon(this, newDt); // Add mapping from old to new
     debug.Log.println("new version of DataType " + id + " is " + newDt);
-    newDt.cfuns = new Cfun[cfuns.length]; // add canonical versions of constructors
+    newDt.cfuns = new Cfun[cfuns.length]; // Add canonical versions of constructors
     for (int i = 0; i < cfuns.length; i++) {
       newDt.cfuns[i] = cfuns[i].makeCanonCfun(set, newDt);
     }
@@ -112,7 +106,7 @@ public class DataType extends DataName {
    * Determine whether a given type is an "enumeration", by which we mean that it has no parameters,
    * and no non-nullary constructors. Examples of such types include the Unit type, and simple
    * enumerations like the Booleans. It is not necessary to generate a new version of an enumeration
-   * type in canonDataName: the result would be the same as the original, except for the change in
+   * type in canonTycon: the result would be the same as the original, except for the change in
    * name.
    */
   boolean isEnumeration() {
@@ -169,15 +163,15 @@ public class DataType extends DataName {
    * Find out if there is a specialized version of the type with this Tycon as its head and the set
    * of args (canonical) arguments on the stack of this MILSpec object.
    */
-  Type specInst(MILSpec spec, int args) {
+  Tycon specInst(MILSpec spec, int args) {
     return (args == arity)
-        ? this.specializeDataName(spec, spec.rebuild(this.asType(), args)).asType()
+        ? this.specializeDataName(spec, spec.rebuild(this.asType(), args))
         : null;
   }
 
   private static int count = 0;
 
-  DataName specializeDataName(MILSpec spec, Type inst) {
+  Tycon specializeDataName(MILSpec spec, Type inst) {
     if (spec.containsTycon(this)) { // Already specialized type
       return this;
     }
@@ -294,8 +288,7 @@ public class DataType extends DataName {
       br = generalTagging(m, maxWidth, pats, numNullary, numNonNullary);
     }
     if (br != null) { // If we found a new representation, add it to m
-      m.putDataName(this, br);
-      m.addTycon(br);
+      m.mapTycon(this, br);
       debug.Log.println("added mapping from " + this + " to bitdata " + br);
       return 1;
     }

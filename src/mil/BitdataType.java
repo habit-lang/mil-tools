@@ -105,18 +105,46 @@ public class BitdataType extends DataName {
   }
 
   /**
-   * Return the canonical version of a DataName wrt the given set, replacing component types with
-   * canonical versions as necessary. This is extracted as a separate method from canonTycon so that
-   * it can be used in canonCfun, with a return type that guarantees a DataName result.
+   * Make a canonical version of a type definition wrt the given set, replacing component types with
+   * canonical versions as necessary. We only need implementations of this method for StructType and
+   * (subclasses of) DataName.
    */
-  DataName canonDataName(TypeSet set) {
-    // We do not need to calculate a new version of bitdata types because we know that none of the
-    // Cfun types will change (they are all of the form T.Lab -> T).  It is sufficient just to
-    // register
-    // occurrences in the tycons set so that we have a full record of which tycons are actually
-    // used.
-    set.addTycon(this);
-    return this;
+  Tycon makeCanonTycon(TypeSet set) {
+    if (isEnumeration()) { // Do not make copies of enumerations
+      set.addTycon(this); // (but still register them as being in use)
+      return this;
+    }
+    BitdataType newBt = new BitdataType(pos, id); // Make new type, copying attributes of original
+    newBt.bitSize = bitSize;
+    newBt.pat = pat;
+    set.mapTycon(this, newBt); // Add mapping from old to new
+    debug.Log.println("new version of BitdataType " + id + " is " + newBt);
+    newBt.layouts = new BitdataLayout[layouts.length];
+    for (int i = 0; i < layouts.length; i++) { // Create skeletons for canonical versions of layouts
+      newBt.layouts[i] = layouts[i].makeCanonBitdataLayout(set, newBt);
+    }
+    newBt.cfuns = new Cfun[cfuns.length]; // Add canonical versions of constructors ...
+    for (int i = 0; i < cfuns.length; i++) {
+      newBt.cfuns[i] = cfuns[i].makeCanonCfun(set, newBt);
+      newBt.layouts[i].makeCanonFields(set); // ... and fill in field types with canonical versions
+    }
+    return newBt;
+  }
+
+  /**
+   * Determine whether a given type is an "enumeration", by which we mean that it has no parameters,
+   * and no non-nullary constructors. Examples of such types include the Unit type, and simple
+   * enumerations like the Booleans. It is not necessary to generate a new version of an enumeration
+   * type in canonTycon: the result would be the same as the original, except for the change in
+   * name.
+   */
+  boolean isEnumeration() {
+    for (int i = 0; i < layouts.length; i++) {
+      if (layouts[i] == null || layouts[i].getFields().length != 0) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /** Return the representation vector for values of this type. */

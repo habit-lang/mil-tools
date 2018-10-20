@@ -130,6 +130,11 @@ public class Synonym extends Tycon {
     return expansion.canonType(null, set, args);
   }
 
+  /** Return the canonical version of a Tycon wrt to the given set. */
+  Tycon canonTycon(TypeSet set) {
+    return this;
+  }
+
   Type canonArgs(Type[] tenv, TypeSet set, int args) {
     return expansion.canonArgs(null, set, args);
   }
