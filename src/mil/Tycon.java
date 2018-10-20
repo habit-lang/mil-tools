@@ -243,6 +243,7 @@ public abstract class Tycon extends Name {
     return set.rebuild(this.asType(), args);
   }
 
+  /** Find the bitdata representation for this object, or null if there is none. */
   BitdataRep findRep(BitdataMap m) {
     return null;
   }

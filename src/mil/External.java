@@ -243,7 +243,7 @@ public class External extends TopDefn {
     Type t = declared.isMonomorphic();
     if (t != null) {
       External e = spec.specializedExternal(this, t);
-      e.id = this.id;
+      e.id = this.id; // use the same name as in the original program
       return e;
     }
     throw new PolymorphicEntrypointFailure("external", this);

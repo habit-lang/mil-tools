@@ -119,10 +119,6 @@ public class BitdataType extends DataName {
     return this;
   }
 
-  BitdataRep findRep(BitdataMap m) {
-    return null;
-  }
-
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     return Type.repBits(pat.getWidth());

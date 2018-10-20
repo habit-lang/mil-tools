@@ -145,9 +145,9 @@ public class MemArea extends Area {
   Defn specializeEntry(MILSpec spec) throws Failure {
     Type t = declared.isMonomorphic();
     if (t != null) {
-      MemArea a = spec.specializedMemArea(this, t);
-      a.id = this.id;
-      return a;
+      MemArea e = spec.specializedMemArea(this, t);
+      e.id = this.id; // use the same name as in the original program
+      return e;
     }
     throw new PolymorphicEntrypointFailure("area", this);
   }

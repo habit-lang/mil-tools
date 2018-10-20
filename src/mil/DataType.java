@@ -109,7 +109,7 @@ public class DataType extends DataName {
   }
 
   /**
-   * Determine whether a given name is an "enumeration", by which we mean that it has no parameters,
+   * Determine whether a given type is an "enumeration", by which we mean that it has no parameters,
    * and no non-nullary constructors. Examples of such types include the Unit type, and simple
    * enumerations like the Booleans. It is not necessary to generate a new version of an enumeration
    * type in canonDataName: the result would be the same as the original, except for the change in
@@ -204,6 +204,7 @@ public class DataType extends DataName {
     return newDt;
   }
 
+  /** Find the bitdata representation for this object, or null if there is none. */
   BitdataRep findRep(BitdataMap m) {
     return m.findRep(this);
   }

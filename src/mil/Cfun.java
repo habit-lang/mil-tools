@@ -240,6 +240,7 @@ public class Cfun extends Name {
     return dn.specializeDataName(spec, inst).getCfuns()[num];
   }
 
+  /** Find the bitdata representation for this object, or null if there is none. */
   BitdataRep findRep(BitdataMap m) {
     return dn.findRep(m);
   }

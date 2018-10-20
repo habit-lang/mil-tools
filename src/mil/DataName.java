@@ -90,8 +90,6 @@ public abstract class DataName extends Tycon {
     return this;
   }
 
-  abstract BitdataRep findRep(BitdataMap m);
-
   DataType dataType() {
     return null;
   }

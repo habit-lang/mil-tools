@@ -187,10 +187,6 @@ public class BitdataLayout extends DataName {
     return this;
   }
 
-  BitdataRep findRep(BitdataMap m) {
-    return null;
-  }
-
   static Cfun[] calcCfuns(BitdataLayout[] layouts) {
     Cfun[] cfuns = new Cfun[layouts.length];
     for (int i = 0; i < layouts.length; i++) {

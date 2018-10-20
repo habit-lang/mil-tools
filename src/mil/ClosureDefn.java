@@ -626,11 +626,11 @@ public class ClosureDefn extends Defn {
    * version to share the same name as the original).
    */
   Defn specializeEntry(MILSpec spec) throws Failure {
-    AllocType at = declared.isMonomorphic();
-    if (at != null) {
-      ClosureDefn k = spec.specializedClosureDefn(this, at);
-      k.id = this.id; // use the same name as in the original program
-      return k;
+    AllocType t = declared.isMonomorphic();
+    if (t != null) {
+      ClosureDefn e = spec.specializedClosureDefn(this, t);
+      e.id = this.id; // use the same name as in the original program
+      return e;
     }
     throw new PolymorphicEntrypointFailure("closure definition", this);
   }

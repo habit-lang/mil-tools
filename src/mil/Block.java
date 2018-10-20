@@ -900,11 +900,11 @@ public class Block extends Defn {
    * version to share the same name as the original).
    */
   Defn specializeEntry(MILSpec spec) throws Failure {
-    BlockType bt = declared.isMonomorphic();
-    if (bt != null) {
-      Block b = spec.specializedBlock(this, bt);
-      b.id = this.id; // use the same name as in the original program
-      return b;
+    BlockType t = declared.isMonomorphic();
+    if (t != null) {
+      Block e = spec.specializedBlock(this, t);
+      e.id = this.id; // use the same name as in the original program
+      return e;
     }
     throw new PolymorphicEntrypointFailure("block", this);
   }
