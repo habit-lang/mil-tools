@@ -254,7 +254,7 @@ public class BitdataLayout extends DataName {
   }
 
   Tail repTransformDataAlloc(RepTypeSet set, Cfun cf, Atom[] args) {
-    return new BlockCall(constructorBlock, args);
+    return construct(args);
   }
 
   Tail repTransformSel(RepTypeSet set, RepEnv env, Cfun cf, int n, Atom a) {
@@ -271,6 +271,11 @@ public class BitdataLayout extends DataName {
   }
 
   private Block constructorBlock;
+
+  /** Return a call to the constructor block for this layout. */
+  public BlockCall construct(Atom[] args) {
+    return new BlockCall(constructorBlock, args);
+  }
 
   /** Generate code for a constructor for this layout. */
   public void generateConstructor(Cfun cf) {

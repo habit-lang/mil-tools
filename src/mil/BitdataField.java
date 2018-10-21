@@ -224,7 +224,7 @@ public class BitdataField extends Name {
   }
 
   /**
-   * Generate code for an update operator for this field, given total size of the enclosing bitdata
+   * Generate code for an update operator for this field, given the layout of the enclosing bitdata
    * type.
    */
   public void generateUpdate(BitdataLayout layout) {
@@ -242,11 +242,19 @@ public class BitdataField extends Name {
         code = new Done(new Return(ws));
       } else { // If width>0, do the proper logic to update the field
         args = Temp.makeTemps(Word.numWords(width));
-        code =
-            genMaskField(
-                total,
-                ws,
-                genUpdateZeroedField(total, ws, args, new Done(new Return(Temp.clone(ws)))));
+        if (layout.getFields().length
+            == 1) { // An update for a layout with just one field can be implemented
+          code =
+              new Done(
+                  layout.construct(
+                      args)); // as a construction from scratch (without needing initial masking).
+        } else {
+          code =
+              genMaskField(
+                  total,
+                  ws,
+                  genUpdateZeroedField(total, ws, args, new Done(new Return(Temp.clone(ws)))));
+        }
       }
       impl = new Block(pos, Temp.append(ws, args), code);
     }
