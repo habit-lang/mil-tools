@@ -270,6 +270,13 @@ public class BitdataLayout extends DataName {
     return bt.bitSize();
   }
 
+  /**
+   * Determine whether a selector from this layout will (in general) require a masking operation.
+   */
+  boolean selectNeedsMask() {
+    return tagbits.signum() != 0 || fields.length != 1;
+  }
+
   private Block constructorBlock;
 
   /** Return a call to the constructor block for this layout. */

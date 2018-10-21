@@ -487,7 +487,7 @@ public class External extends TopDefn {
                       + " will not fit in a bit vector of width "
                       + m);
             }
-            return new BlockCall(BitdataField.generateBitSelector(pos, true, o, n, m))
+            return new BlockCall(BitdataField.generateBitSelector(pos, true, n < m, o, n, m))
                 .makeUnaryFuncClosure(pos, Word.numWords(m));
           }
         });

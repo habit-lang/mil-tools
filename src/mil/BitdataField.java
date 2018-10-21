@@ -101,10 +101,21 @@ public class BitdataField extends Name {
    * Generate code for a selector for this field, given total size of the enclosing bitdata type.
    */
   void generateSelector(BitdataLayout layout) {
-    selectorBlock = generateBitSelector(pos, type.useBitdataLo(), offset, width, layout.getWidth());
+    selectorBlock =
+        generateBitSelector(
+            pos, type.useBitdataLo(), layout.selectNeedsMask(), offset, width, layout.getWidth());
   }
 
-  static Block generateBitSelector(Position pos, boolean useLo, int offset, int width, int total) {
+  /**
+   * Generate a block of code that will extract a bit field of the given offset and width from a bit
+   * vector of the specified total length. The useLo flag indicates whether a lo or hi bits
+   * representation is expected for the result. The needMask flag indicates whether the result
+   * should be masked to eliminate other bits from the input; masking is not necessary, for example,
+   * if the field we are selecting is the full input bit vector, or if any other bits outside the
+   * field are known to be zero.
+   */
+  static Block generateBitSelector(
+      Position pos, boolean useLo, boolean needMask, int offset, int width, int total) {
     Temp[] params;
     Code code;
     if (width == 0) {
@@ -118,8 +129,8 @@ public class BitdataField extends Name {
           width == 1
               ? selectorBit(offset, total, params, ws, code)
               : useLo
-                  ? selectorLo(offset, width, total, params, ws, code)
-                  : selectorHi(offset, width, total, params, ws, code);
+                  ? selectorLo(needMask, offset, width, total, params, ws, code)
+                  : selectorHi(needMask, offset, width, total, params, ws, code);
     }
     return new Block(pos, params, code); // create the new block
   }
@@ -145,14 +156,14 @@ public class BitdataField extends Name {
 
   /** Generate selector code for a bitdata field whose type uses the lo bits representation. */
   private static Code selectorLo(
-      int offset, int width, int total, Temp[] params, Temp[] ws, Code code) {
+      boolean needMask, int offset, int width, int total, Temp[] params, Temp[] ws, Code code) {
     int wordsize = Word.size();
     int n = ws.length; // number of words in output
     int w = n * wordsize - width; // unused bits in most sig output word
     int o = offset % wordsize; // offset within each word
     int j = offset / wordsize; // starting word offset in params
 
-    if (width + offset < total && 0 < w) { // add mask on msw, if needed
+    if (needMask && width + offset < total && 0 < w) { // add mask on msw, if needed
       code = prim(ws, n - 1, Prim.and, new Word((1L << (wordsize - w)) - 1), code);
     }
 
@@ -182,14 +193,14 @@ public class BitdataField extends Name {
 
   /** Generate selector code for a bitdata field whose type uses the hi bits representation. */
   private static Code selectorHi(
-      int offset, int width, int total, Temp[] params, Temp[] ws, Code code) {
+      boolean needMask, int offset, int width, int total, Temp[] params, Temp[] ws, Code code) {
     int wordsize = Word.size();
     int n = ws.length; // number of words in output
     int w = n * wordsize - width; // unused bits in least sig word
     int o = (wordsize - (width + offset) % wordsize) % wordsize; // offset to msb in input
     int j = (width + offset - 1) / wordsize - (n - 1); // offset from output to input
 
-    if (0 < w) { // add mask on lsw, if needed
+    if (needMask && 0 < w) { // add mask on lsw, if needed
       code = prim(ws, 0, Prim.and, new Word((~0) << w), code);
     }
 
