@@ -463,6 +463,40 @@ public class External extends TopDefn {
           }
         });
 
+    // primWordToBit w :: Word -> Bit w
+    generators.put(
+        "primWordToBit",
+        new Generator(1) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int width = ts[0].validWidth();
+            switch (width) {
+              case 0:
+                return new DataAlloc(Cfun.Unit).withArgs().constClosure(pos, 1);
+
+              case 1:
+                {
+                  Temp[] vs = Temp.makeTemps(1);
+                  Tail t = Prim.neq.withArgs(vs[0], Word.Zero);
+                  return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, vs, t)).withArgs();
+                }
+
+              default:
+                if (width < 0 || width > Word.size()) {
+                  throw new GeneratorException(
+                      "parameter "
+                          + width
+                          + " not accepted; value must be in the range 0 to "
+                          + Word.size());
+                } else if (width != Word.size()) {
+                  Temp[] vs = Temp.makeTemps(1);
+                  Tail t = Prim.and.withArgs(vs[0], (1L << width) - 1);
+                  return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, vs, t)).withArgs();
+                }
+                return new Return().makeUnaryFuncClosure(pos, 1);
+            }
+          }
+        });
+
     // primBitConcat m n p :: Bit m -> Bit n -> Bit p,  where m+n = p
     generators.put(
         ":#",
