@@ -309,14 +309,6 @@ public class TAp extends Type {
   }
 
   /**
-   * Returns true if bitdata values of this type use the lo bits representation, or false for hi
-   * bits. This method should only be used for types that have an associated bit size.
-   */
-  boolean useBitdataLo() {
-    return fun.useBitdataLo(arg);
-  }
-
-  /**
    * Return the natural number type that specifies the BitSize of this type (required to be of kind
    * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should
    * only be used with a limited collection of classes (we only expect to use it with top-level,
@@ -364,6 +356,14 @@ public class TAp extends Type {
    */
   long alignment(Type[] tenv, Type a) {
     return fun.alignment(tenv, arg, a);
+  }
+
+  /**
+   * Returns true if bitdata values of this type use the lo bits representation, or false for hi
+   * bits. This method should only be used for types that have an associated bit size.
+   */
+  boolean useBitdataLo() {
+    return fun.useBitdataLo(arg);
   }
 
   /**

@@ -600,102 +600,6 @@ public abstract class Type extends Scheme {
     return null;
   }
 
-  BigInteger validNat() throws GeneratorException {
-    throw new GeneratorException(this + " is not a natural number");
-  }
-
-  /**
-   * Check that the specified type is a natural number that can be used as the argument for a Bit
-   * type.
-   */
-  int validWidth() throws GeneratorException {
-    BigInteger n = validNat();
-    validBelow(n, BIG_MAX_BIT_WIDTH);
-    return n.intValue();
-  }
-
-  int validWidth(int lo) throws GeneratorException {
-    int n = validWidth();
-    validNotBelow(n, lo);
-    return n;
-  }
-
-  int validMemBitSize() throws GeneratorException {
-    int w = memBitSize(null);
-    if (w < 0) {
-      throw new GeneratorException("No known BitSize for Stored value of type " + this);
-    }
-    return w;
-  }
-
-  /**
-   * Determine whether the given number is small enough to fit in a signed long; we assume already
-   * that it is non negative.
-   */
-  static void validSigned(BigInteger n) throws GeneratorException {
-    if (n.compareTo(Word.maxSigned()) > 0) {
-      throw new GeneratorException(
-          "parameter value " + n + " is too large; must be at most " + Word.maxSigned());
-    }
-  }
-
-  /**
-   * Check that the specified type is a natural number that can be used as the argument for an Ix
-   * type. Specifically, we require that this type must be in the range [1..maxSigned], which
-   * ensures that all Ix n values are nonempty (because n>0) and can be stored within a single Word
-   * (because n<=maxSigned). If this test pasts, then it is safe to use longValue() on the result
-   * without loss of information.
-   */
-  BigInteger validIndex() throws GeneratorException {
-    BigInteger n = validNat();
-    if (n.signum() <= 0) {
-      throw new GeneratorException("parameter value " + n + " is too small; must be at least 1");
-    }
-    validSigned(n);
-    return n;
-  }
-
-  static void validBelow(BigInteger v, BigInteger tooBig) throws GeneratorException {
-    if (v.compareTo(tooBig) >= 0) {
-      throw new GeneratorException("parameter " + v + " is too large; must be less than " + tooBig);
-    }
-  }
-
-  static void validNotBelow(long n, long lo) throws GeneratorException {
-    if (n < lo) {
-      throw new GeneratorException("parameter " + n + " is too low; must be at least " + lo);
-    }
-  }
-
-  /**
-   * Find the number of words (parameter slots) that are needed to represent a value of this type.
-   * If there is a change of representation, then use the length of the associated representation
-   * vector; otherwise, one parameter maps to one word.
-   */
-  int repLen() {
-    Type[] r = repCalc();
-    return (r == null) ? 1 : r.length;
-  }
-
-  long validArrayArea() throws GeneratorException {
-    Type bs = byteSize(null);
-    if (bs == null) {
-      throw new GeneratorException("Cannot determine ByteSize for " + this);
-    }
-    BigInteger s = bs.validNat();
-    validSigned(s);
-    long align = alignment(null);
-    if (align == 0) {
-      throw new GeneratorException("Cannot determine alignment for " + this);
-    }
-    long size = s.longValue();
-    if ((size % align) != 0) {
-      throw new GeneratorException(
-          "Element size " + size + " is not divisible by alignment " + align);
-    }
-    return size;
-  }
-
   /**
    * Continue the work of generatePrim() in the special case where we have found a type of the form
    * [d1,...,dn] ->> rt. The type rt is the receiver here and the types d1,...,dn are in the array
@@ -791,26 +695,6 @@ public abstract class Type extends Scheme {
    * of a ->> function.
    */
   Code liftToCode0(Block b, Temp[] us, Atom f, Temp[] vs) {
-    return null;
-  }
-
-  /**
-   * Returns true if bitdata values of this type use the lo bits representation, or false for hi
-   * bits. This method should only be used for types that have an associated bit size.
-   */
-  boolean useBitdataLo() {
-    return true;
-  }
-
-  boolean useBitdataLo(Type s) {
-    return true;
-  }
-
-  /**
-   * Determine whether this type is a natural number that falls within the specified range,
-   * inclusive of bounds.
-   */
-  BigInteger inRange(BigInteger lo, BigInteger hi) {
     return null;
   }
 
@@ -988,6 +872,114 @@ public abstract class Type extends Scheme {
    */
   long alignmentStored(Type[] tenv) {
     return Math.max(1, Type.numBytes(memBitSize(tenv)));
+  }
+
+  /**
+   * Returns true if bitdata values of this type use the lo bits representation, or false for hi
+   * bits. This method should only be used for types that have an associated bit size.
+   */
+  boolean useBitdataLo() {
+    return true;
+  }
+
+  boolean useBitdataLo(Type s) {
+    return true;
+  }
+
+  BigInteger validNat() throws GeneratorException {
+    throw new GeneratorException(this + " is not a natural number");
+  }
+
+  /**
+   * Check that the specified type is a natural number that can be used as the argument for a Bit
+   * type.
+   */
+  int validWidth() throws GeneratorException {
+    BigInteger n = validNat();
+    validBelow(n, BIG_MAX_BIT_WIDTH);
+    return n.intValue();
+  }
+
+  int validWidth(int lo) throws GeneratorException {
+    int n = validWidth();
+    validNotBelow(n, lo);
+    return n;
+  }
+
+  int validMemBitSize() throws GeneratorException {
+    int w = memBitSize(null);
+    if (w < 0) {
+      throw new GeneratorException("No known BitSize for Stored value of type " + this);
+    }
+    return w;
+  }
+
+  /**
+   * Determine whether the given number is small enough to fit in a signed long; we assume already
+   * that it is non negative.
+   */
+  static void validSigned(BigInteger n) throws GeneratorException {
+    if (n.compareTo(Word.maxSigned()) > 0) {
+      throw new GeneratorException(
+          "parameter value " + n + " is too large; must be at most " + Word.maxSigned());
+    }
+  }
+
+  /**
+   * Check that the specified type is a natural number that can be used as the argument for an Ix
+   * type. Specifically, we require that this type must be in the range [1..maxSigned], which
+   * ensures that all Ix n values are nonempty (because n>0) and can be stored within a single Word
+   * (because n<=maxSigned). If this test pasts, then it is safe to use longValue() on the result
+   * without loss of information.
+   */
+  BigInteger validIndex() throws GeneratorException {
+    BigInteger n = validNat();
+    if (n.signum() <= 0) {
+      throw new GeneratorException("parameter value " + n + " is too small; must be at least 1");
+    }
+    validSigned(n);
+    return n;
+  }
+
+  static void validBelow(BigInteger v, BigInteger tooBig) throws GeneratorException {
+    if (v.compareTo(tooBig) >= 0) {
+      throw new GeneratorException("parameter " + v + " is too large; must be less than " + tooBig);
+    }
+  }
+
+  static void validNotBelow(long n, long lo) throws GeneratorException {
+    if (n < lo) {
+      throw new GeneratorException("parameter " + n + " is too low; must be at least " + lo);
+    }
+  }
+
+  /**
+   * Find the number of words (parameter slots) that are needed to represent a value of this type.
+   * If there is a change of representation, then use the length of the associated representation
+   * vector; otherwise, one parameter maps to one word.
+   */
+  int repLen() {
+    Type[] r = repCalc();
+    return (r == null) ? 1 : r.length;
+  }
+
+  long validArrayArea() throws GeneratorException {
+    Type bs = byteSize(null);
+    if (bs == null) {
+      throw new GeneratorException("Cannot determine ByteSize for " + this);
+    }
+    BigInteger s = bs.validNat();
+    validSigned(s);
+    long align = alignment(null);
+    if (align == 0) {
+      throw new GeneratorException("Cannot determine alignment for " + this);
+    }
+    long size = s.longValue();
+    if ((size % align) != 0) {
+      throw new GeneratorException(
+          "Element size " + size + " is not divisible by alignment " + align);
+    }
+    return size;
   }
 
   /** Check that an area of this type has a known ByteSize. */

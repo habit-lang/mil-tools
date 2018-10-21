@@ -408,11 +408,6 @@ public abstract class Tail {
     return this;
   }
 
-  /** Return a closure k{}, where k{} [x1,...,xn] = this. */
-  public Tail constClosure(Position pos, int n) {
-    return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(n), this)).withArgs();
-  }
-
   abstract Tail repTransform(RepTypeSet set, RepEnv env);
 
   /**
@@ -425,6 +420,11 @@ public abstract class Tail {
    */
   Code repTransform(RepTypeSet set, RepEnv env, Temp[] vs, Code c) {
     return new Bind(vs, this.repTransform(set, env), c);
+  }
+
+  /** Return a closure k{}, where k{} [x1,...,xn] = this. */
+  public Tail constClosure(Position pos, int n) {
+    return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(n), this)).withArgs();
   }
 
   /**

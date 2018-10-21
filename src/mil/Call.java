@@ -486,6 +486,10 @@ public abstract class Call extends Tail {
   /** Generate a specialized version of this Call. */
   abstract Call specializeCall(MILSpec spec, TVarSubst s, SpecEnv env);
 
+  Tail repTransform(RepTypeSet set, RepEnv env) {
+    return callDup(Atom.repArgs(set, env, args));
+  }
+
   /**
    * Wrap this Call in a closure definition that assumes m stored arguments and n new arguments
    * (with the assumption that this call requires (m+n) arguments), returning a new Call for the
@@ -525,9 +529,5 @@ public abstract class Call extends Tail {
   Tail makeTernaryFuncClosure(Position pos, int m, int n, int p) {
     return makeClosure(pos, m + n, p) //    k0{a1,...,b1,...} [c1,...] = ...(a1,...,b1,....,c1,...)
         .makeBinaryFuncClosure(pos, m, n);
-  }
-
-  Tail repTransform(RepTypeSet set, RepEnv env) {
-    return callDup(Atom.repArgs(set, env, args));
   }
 }

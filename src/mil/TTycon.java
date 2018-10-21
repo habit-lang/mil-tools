@@ -352,10 +352,6 @@ public class TTycon extends TConst {
     return tycon.liftToCode0(b, us, f, vs);
   }
 
-  boolean useBitdataLo(Type s) {
-    return tycon != Tycon.ref && tycon != Tycon.ptr;
-  }
-
   /**
    * Return the natural number type that specifies the BitSize of this type (required to be of kind
    * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should
@@ -443,6 +439,10 @@ public class TTycon extends TConst {
    */
   long alignment(Type[] tenv, Type a, Type b) {
     return tycon.alignment(tenv, a, b);
+  }
+
+  boolean useBitdataLo(Type s) {
+    return tycon != Tycon.ref && tycon != Tycon.ptr;
   }
 
   boolean nonUnit(Type[] tenv) {

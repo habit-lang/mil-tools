@@ -265,6 +265,11 @@ public class BitdataLayout extends DataName {
     return new Bind(vs, repTransformSel(set, env, cf, n, a), c);
   }
 
+  /** Return the nat that specifies the bit size of the type produced by this type constructor. */
+  public Type bitSize() {
+    return bt.bitSize();
+  }
+
   private Block constructorBlock;
 
   /** Generate code for a constructor for this layout. */
@@ -426,10 +431,5 @@ public class BitdataLayout extends DataName {
     for (int i = 0; i < fields.length; i++) {
       fields[i].calculateBitdataBlocks(this);
     }
-  }
-
-  /** Return the nat that specifies the bit size of the type produced by this type constructor. */
-  public Type bitSize() {
-    return bt.bitSize();
   }
 }

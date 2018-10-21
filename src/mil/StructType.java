@@ -170,16 +170,6 @@ public class StructType extends Tycon {
     }
   }
 
-  /**
-   * Return a primitive for turning an initializer for the ith field of this structure into an
-   * initializer for the full structure. This primitive is used exclusively in the code that is
-   * generated for structure initializers, which ensures that it will be part of a set of
-   * initializers that, together, initialize the full structure.
-   */
-  public Prim initStructFieldPrim(int i) {
-    return fields[i].initStructFieldPrim(this);
-  }
-
   /** Return the nat that specifies the byte size of the type produced by this type constructor. */
   public Type byteSize() {
     return byteSize;
@@ -188,5 +178,15 @@ public class StructType extends Tycon {
   /** Return the alignment associated with this type constructor. */
   public long alignment() {
     return alignment;
+  }
+
+  /**
+   * Return a primitive for turning an initializer for the ith field of this structure into an
+   * initializer for the full structure. This primitive is used exclusively in the code that is
+   * generated for structure initializers, which ensures that it will be part of a set of
+   * initializers that, together, initialize the full structure.
+   */
+  public Prim initStructFieldPrim(int i) {
+    return fields[i].initStructFieldPrim(this);
   }
 }

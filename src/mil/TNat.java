@@ -127,12 +127,4 @@ public class TNat extends TLit {
   BigInteger validNat() throws GeneratorException {
     return num;
   }
-
-  /**
-   * Determine whether this type is a natural number that falls within the specified range,
-   * inclusive of bounds.
-   */
-  BigInteger inRange(BigInteger lo, BigInteger hi) {
-    return (num.compareTo(lo) >= 0 && num.compareTo(hi) <= 0) ? num : null;
-  }
 }
