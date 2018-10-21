@@ -442,15 +442,24 @@ public class External extends TopDefn {
         "primBitToWord",
         new Generator(1) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-            int w = ts[0].validWidth();
-            if (w < 2 || w > Word.size()) { // TODO: provide implementations for Bit 0 and Bit 1?
-              throw new GeneratorException(
-                  "parameter "
-                      + w
-                      + " not accepted; value must be in the range 2 to "
-                      + Word.size());
+            int width = ts[0].validWidth();
+            switch (width) {
+              case 0:
+                return new Return(Word.Zero).constClosure(pos, 1);
+
+              case 1:
+                return new PrimCall(Prim.flagToWord).makeUnaryFuncClosure(pos, 1);
+
+              default:
+                if (width < 0 || width > Word.size()) {
+                  throw new GeneratorException(
+                      "parameter "
+                          + width
+                          + " not accepted; value must be in the range 0 to "
+                          + Word.size());
+                }
+                return new Return().makeUnaryFuncClosure(pos, 1);
             }
-            return new Return().makeUnaryFuncClosure(pos, 1);
           }
         });
 
