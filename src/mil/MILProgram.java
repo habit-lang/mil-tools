@@ -382,10 +382,23 @@ public class MILProgram {
    * uncurried block.
    */
   void makeEntryBlocks() {
-    for (Defns es = entries; es != null; es = es.next) {
+    for (Defns es = entries;
+        es != null;
+        es = es.next) { // Make entry blocks for entrypoints, where possible
       es.head = es.head.makeEntryBlock();
     }
-    if (main != null) {
+    Defns prev = null; // Filter entrypoints that are no longer marked as such
+    for (Defns es = entries; es != null; ) {
+      if (es.head.isEntrypoint) {
+        prev = es;
+        es = es.next;
+      } else if (prev != null) {
+        prev.next = es = es.next;
+      } else {
+        entries = es = es.next;
+      }
+    }
+    if (main != null) { // Make an entrypoint for main, if defined
       main = main.makeEntryBlock();
     }
   }

@@ -312,11 +312,30 @@ public class External extends TopDefn {
           throw new Failure(
               pos, "Generator for " + ref + " needs at least " + gen.needs + " arguments");
         }
-        try { // ... and try to produce an implementation
-          topLevelImpl(id, reps, gen.generate(pos, ts, set), isEntrypoint);
+        Tail t; // ... and try to produce an implementation
+        try {
+          t = gen.generate(pos, ts, set);
         } catch (GeneratorException e) {
           throw new Failure(pos, "No generated implementation: " + e.getReason());
         }
+        TopLhs[] lhs; // Generate a suitable left hand side
+        if (reps == null) { // No change in representation
+          lhs = new TopLhs[] {new TopLhs(id)}; // ==> single left hand side
+          lhs[0].setDeclared(declared);
+        } else { // Change in representation
+          lhs = new TopLhs[reps.length]; // ==> may require multiple left hand sides
+          for (int i = 0; i < reps.length; i++) {
+            lhs[i] = new TopLhs(mkid(id, i));
+            lhs[i].setDeclared(reps[i]);
+          }
+        }
+        // TODO: it seems inconsistent to use a HashMap for topLevelRepMap, while using a field here
+        // ...
+        impl =
+            new TopLevel(
+                pos, lhs, t); // Make new top level to use as the replacement for this External
+        impl.setIsEntrypoint(isEntrypoint);
+        debug.Log.println("Generated new top level definition for " + impl);
         return;
       }
       if (ts.length > 0) {
@@ -332,13 +351,16 @@ public class External extends TopDefn {
     } else if (reps.length == 1) {
       generatePrim(id, reps[0]);
     } else {
-      Atom[] exts = new Atom[reps.length];
+      TopLhs[] lhs = new TopLhs[reps.length];
+      Atom[] rhs = new Atom[reps.length];
       for (int i = 0; i < reps.length; i++) {
         External ext = new External(pos, mkid(id, i), reps[i], null, null);
         ext.setIsEntrypoint(isEntrypoint);
-        exts[i] = new TopExt(ext);
+        rhs[i] = new TopExt(ext);
+        lhs[i] = id.equals(this.id) ? new TopLhs() : new TopLhs(mkid(id, i));
       }
-      topLevelImpl(id, reps, new Return(exts), false);
+      impl = new TopLevel(pos, lhs, new Return(rhs));
+      impl.setIsEntrypoint(isEntrypoint && !id.equals(this.id));
     }
   }
 
@@ -365,27 +387,8 @@ public class External extends TopDefn {
         lhs.setDeclared(declared);
         impl = new TopLevel(pos, new TopLhs[] {lhs}, new Return(new TopExt(ext)));
       }
-      impl.setIsEntrypoint(isEntrypoint);
     }
-  }
-
-  private void topLevelImpl(String id, Type[] reps, Tail t, boolean isEntrypoint) {
-    TopLhs[] lhs; // Create a left hand side for the new top level definition
-    if (reps == null) { // No change in type representation:
-      lhs = new TopLhs[] {new TopLhs(id)};
-      lhs[0].setDeclared(declared);
-    } else { // Create new left hand sides that reflect change in representation
-      lhs = new TopLhs[reps.length];
-      for (int i = 0; i < reps.length; i++) {
-        lhs[i] = new TopLhs(mkid(id, i));
-        lhs[i].setDeclared(reps[i]);
-      }
-    }
-    // TODO: it seems inconsistent to use a HashMap for topLevelRepMap, while using a field here ...
-    impl =
-        new TopLevel(pos, lhs, t); // Make new top level to use as the replacement for this External
     impl.setIsEntrypoint(isEntrypoint);
-    debug.Log.println("Generated new top level definition for " + impl);
   }
 
   /**
