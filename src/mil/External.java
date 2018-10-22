@@ -560,9 +560,9 @@ public class External extends TopDefn {
           }
         });
 
-    // primIxToBits m w :: Ix m -> Bit w
+    // primIxToBit m w :: Ix m -> Bit w
     generators.put(
-        "primIxToBits",
+        "primIxToBit",
         new Generator(2) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger m = ts[0].validIndex(); // Modulus for index type
