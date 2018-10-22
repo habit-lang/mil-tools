@@ -299,6 +299,9 @@ public class TopLevel extends TopDefn {
       int idx = this.summary % topLevels.length;
       if (idx < 0) idx += topLevels.length;
       for (TopLevels ts = topLevels[idx]; ts != null; ts = ts.next) {
+        if (this == ts.head) {
+          return;
+        }
         if (ts.head.summary == this.summary
             && this.tail.alphaTail(null, ts.head.tail, null)
             && this.lhs.length == ts.head.lhs.length) {

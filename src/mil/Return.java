@@ -154,8 +154,12 @@ public class Return extends Call {
     if (i < 0 || i >= args.length) {
       debug.Internal.error("Index for shortTopLevel is out of bounds");
     }
-    MILProgram.report("replacing reference to top level " + d + " with " + args[i]);
-    return args[i];
+    if (args[i].sameAtom(d)) {
+      return d;
+    } else {
+      MILProgram.report("replacing reference to top level " + d + " with " + args[i]);
+      return args[i];
+    }
   }
 
   /**
