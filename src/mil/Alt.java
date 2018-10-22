@@ -294,7 +294,7 @@ public class Alt {
         }
         ts = Temps.add(as, tb.add(ts)); // find free Temps in code
         Temp[] ps = Temps.toArray(ts); // turn in to an array
-        Temp[] vs = new Temp[ps.length]; // fresh variables
+        Temp[] vs = Temp.makeTemps(ps.length); // fresh variables
         // TODO: do a better job finding a position here ...
         Block b = new Block(BuiltinPosition.pos, vs, code.apply(TempSubst.extend(ps, vs, null)));
         eb = new BlockCall(b, ps);
