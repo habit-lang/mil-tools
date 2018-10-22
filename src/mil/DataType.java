@@ -441,13 +441,11 @@ public class DataType extends DataName {
         Cfun cf = cfuns[i];
         BigInteger tagbits;
         Pat[] fpats;
-        MaskTestPat mt;
         Pat q;
         if (cf.getArity() == 0) { // nullary constructor
           tagbits = BigInteger.valueOf(nullaryTag << tagWidth); // tag value
           fpats = null;
           q = Pat.intmod(width, tagbits, 0);
-          mt = new MaskTestPat(q, false);
           nullaryTag++;
         } else { // non-nullary constructor
           tagbits = BigInteger.valueOf(nonNullaryTag);
@@ -457,9 +455,9 @@ public class DataType extends DataName {
             q = q.concat(Pat.intmod(tagWidth, tagbits, 0));
           }
           q = q.padLeftTo(width);
-          mt = new MaskTestPat(Pat.intmod(width, tagbits, 0), false);
           nonNullaryTag++;
         }
+        MaskTestPat mt = new MaskTestPat(q, false);
         layouts[i] = cf.makeLayout(m, br, tagbits, tagWidth, fpats, q, mt);
         p = p.or(q);
       }
