@@ -1221,6 +1221,63 @@ public class External extends TopDefn {
   }
 
   /**
+   * A general method for generating implementations for lexicographic orderings on SIGNED Bit
+   * vector values. The The primitive pf is used in the special case for bit vectors of width 1, and
+   * the bz block is used to generate code for width==0. TODO: Extend to work on widths outside the
+   * range 0 <= width <= WordSize.
+   */
+  static void genSignedRelBinOp(
+      String ref, final PrimRelOp comp, final PrimBinFOp pf, final Block bz) {
+    // primBit... w ... :: Bit w -> Bit w -> Flag
+    generators.put(
+        ref,
+        new Generator(1) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int width = ts[0].validWidth(); // Width of bit vector
+            switch (width) {
+              case 0:
+                return new BlockCall(bz).withArgs().constClosure(pos, 1).constClosure(pos, 1);
+
+              case 1:
+                return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
+
+              default:
+                {
+                  validSingleWord(width);
+                  int shift = Word.size() - width;
+                  Call c;
+                  if (shift > 0) {
+                    Temp[] args = Temp.makeTemps(2);
+                    Temp l = new Temp();
+                    Temp r = new Temp();
+                    return new BlockCall(
+                            new Block(
+                                pos,
+                                args,
+                                new Bind(
+                                    l,
+                                    Prim.shl.withArgs(args[0], shift),
+                                    new Bind(
+                                        r,
+                                        Prim.shl.withArgs(args[1], shift),
+                                        new Done(comp.withArgs(l, r))))))
+                        .makeBinaryFuncClosure(pos, 1, 1);
+                  }
+                  return new PrimCall(comp).makeBinaryFuncClosure(pos, 1, 1);
+                }
+            }
+          }
+        });
+  }
+
+  static {
+    genSignedRelBinOp("primBitSGt", Prim.sgt, Prim.bgt, Block.returnFalse);
+    genSignedRelBinOp("primBitSGe", Prim.sge, Prim.bge, Block.returnTrue);
+    genSignedRelBinOp("primBitSLt", Prim.slt, Prim.blt, Block.returnFalse);
+    genSignedRelBinOp("primBitSLe", Prim.sle, Prim.ble, Block.returnTrue);
+  }
+
+  /**
    * Provides a framework for generating implementations of functions that take (at least) an Ix w
    * argument and produce a Bit w result; this includes BitManip operations like bitBit, setBit, and
    * testBit, as well as shift operations like bitShiftL. In each case, the implementation consists
