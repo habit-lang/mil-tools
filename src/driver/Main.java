@@ -275,7 +275,7 @@ class Main {
 
       passes =
           (llvmOutput.isSet() || llvmInterfaceOutput.isSet())
-              ? "cosboro"
+              ? "cosboros"
               : execOutput.isSet()
                   ? "cosboro"
                   : repTypeSetOutput.isSet() ? "cosor" : specTypeSetOutput.isSet() ? "cos" : "co";
