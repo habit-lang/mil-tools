@@ -130,7 +130,8 @@ public class MemArea extends Area {
             + this
             + " :: "
             + this.declared);
-    this.init = aorig.init.specializeAtom(spec, null, null);
+    // Initializer may be null if this area has already been specialized
+    this.init = (aorig.init == null) ? null : aorig.init.specializeAtom(spec, null, null);
   }
 
   Atom specializeArea(MILSpec spec, Type inst) {
