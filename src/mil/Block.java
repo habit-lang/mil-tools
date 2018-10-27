@@ -981,7 +981,12 @@ public class Block extends Defn {
   }
 
   llvm.Global blockGlobalCalc(LLVMMap lm) {
-    return new llvm.Global(declared.toLLVM(lm), label());
+    return new llvm.Global(declared.toLLVM(lm), functionName());
+  }
+
+  /** Return the name for the LLVM function corresponding to this definition. */
+  String functionName() {
+    return isEntrypoint ? id : ("func_" + id);
   }
 
   int numberCalls;
@@ -1046,11 +1051,6 @@ public class Block extends Defn {
 
   private static final int SMALL_STEPS = 4;
 
-  /** Return a string label that can be used to identify this node. */
-  String label() {
-    return isEntrypoint ? id : ("func_" + id);
-  }
-
   CFG makeCFG() {
     if (numberCalls == 0) {
       return null;
@@ -1090,7 +1090,8 @@ public class Block extends Defn {
       llvm.Code[] cs,
       Label[] succs) {
     cs[0] = dvm.loadGlobals(new llvm.Goto(succs[0].label()));
-    return new llvm.FuncDefn(llvm.Mods.entry(isEntrypoint), retType(lm), label(), formals, ss, cs);
+    return new llvm.FuncDefn(
+        llvm.Mods.entry(isEntrypoint), retType(lm), functionName(), formals, ss, cs);
   }
 
   /**

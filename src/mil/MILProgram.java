@@ -523,7 +523,7 @@ public class MILProgram {
               initType(lm),
               llvm.FuncDefn.mainFunctionName,
               new llvm.Local[0],
-              new String[] {"entry"},
+              new String[] {"0"},
               new llvm.Code[] {llvm.Code.reverseOnto(code, initCode(lm, ivm))}));
     } else if (code != null || main != null) {
       throw new Failure(

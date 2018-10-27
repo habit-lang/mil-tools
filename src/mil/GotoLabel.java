@@ -30,7 +30,9 @@ class GotoLabel extends Label {
     this.lab = lab;
   }
 
-  /** Return a string label that can be used to identify this node. */
+  /**
+   * Return a string that can be used as a label for the generated code corresponding to this node.
+   */
   String label() {
     return "g" + num;
   }

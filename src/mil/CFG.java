@@ -46,15 +46,22 @@ abstract class CFG extends Node {
    */
   void display() {
     if (labels != null) {
-      StringBuilder buf = new StringBuilder(this.label());
+      StringBuilder buf = new StringBuilder(this.nodeName());
       buf.append(": {");
       for (Labels ls = labels; ls != null; ls = ls.next) {
         buf.append(" ");
-        buf.append(ls.head.label());
+        buf.append(ls.head.nodeName());
       }
       buf.append(" }");
       System.out.println(buf.toString());
     }
+  }
+
+  /**
+   * Return a string that can be used as a label for the generated code corresponding to this node.
+   */
+  String label() {
+    return "0";
   }
 
   /** Generate dot code for this CFG on the specified PrintWriter. */
@@ -132,7 +139,7 @@ abstract class CFG extends Node {
     int n = Labels.length(labels);
     String[] ss = new String[1 + n];
     llvm.Code[] cs = new llvm.Code[1 + n];
-    ss[0] = "entry";
+    ss[0] = label();
     int i = 1;
     for (Labels ls = labels; ls != null; ls = ls.next) {
       ss[i] = ls.head.label();

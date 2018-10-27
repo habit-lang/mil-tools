@@ -30,9 +30,9 @@ class ClosureDefnCFG extends CFG {
     this.k = k;
   }
 
-  /** Return a string label that can be used to identify this node. */
-  String label() {
-    return k.label();
+  /** Return a string that can be used as the name of this node in debugging output. */
+  String nodeName() {
+    return k.functionName();
   }
 
   /** Return a string with the options (e.g., fillcolor) for displaying this CFG node. */

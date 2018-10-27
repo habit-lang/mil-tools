@@ -36,12 +36,20 @@ abstract class Node {
    */
   protected Label[] succs;
 
-  /** Return a string label that can be used to identify this node. */
+  /**
+   * Return a string that can be used as a label for the generated code corresponding to this node.
+   */
   abstract String label();
+
+  /** Return a string that can be used as the name of this node in debugging output. */
+  String nodeName() {
+    return label();
+  }
 
   /** Generate dot code for this CFG node on the specified PrintWriter. */
   public void toDot(PrintWriter out) {
-    out.println(num + "[label=\"" + label() + "\"," + dotAttrs() + "];"); // Output the node itself
+    out.println(
+        num + "[label=\"" + nodeName() + "\"," + dotAttrs() + "];"); // Output the node itself
     for (int i = 0; i < succs.length; i++) { // Add edges to successors
       out.println(num + " -> " + succs[i].num + ";");
     }

@@ -710,7 +710,12 @@ public class ClosureDefn extends Defn {
   }
 
   llvm.Global closureGlobalCalc(LLVMMap lm) {
-    return new llvm.Global(codePtrType(lm), label());
+    return new llvm.Global(codePtrType(lm), functionName());
+  }
+
+  /** Return the name for the LLVM function corresponding to this definition. */
+  String functionName() {
+    return isEntrypoint ? id : ("clos_" + id);
   }
 
   /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
@@ -736,11 +741,6 @@ public class ClosureDefn extends Defn {
    */
   Blocks identifyBlocks() {
     return tail.identifyBlocks(this, null);
-  }
-
-  /** Return a string label that can be used to identify this node. */
-  String label() {
-    return isEntrypoint ? id : ("clos_" + id);
   }
 
   CFG makeCFG() {
@@ -799,6 +799,7 @@ public class ClosureDefn extends Defn {
               "load stored values from closure",
               new llvm.Op(ptr, new llvm.Bitcast(formals[0], ptrt), cs[0]));
     }
-    return new llvm.FuncDefn(llvm.Mods.entry(isEntrypoint), retType(lm), label(), formals, ss, cs);
+    return new llvm.FuncDefn(
+        llvm.Mods.entry(isEntrypoint), retType(lm), functionName(), formals, ss, cs);
   }
 }
