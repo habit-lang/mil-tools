@@ -537,6 +537,36 @@ public class External extends TopDefn {
                 .makeUnaryFuncClosure(pos, Word.numWords(m));
           }
         });
+
+    // primBitsHi m n :: Bit m -> Bit n, where n<=m
+    generators.put(
+        "primBitsHi",
+        new Generator(2) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int m = ts[0].validWidth(); // Width of input bit vector
+            int n = ts[1].validWidth(); // Width of output bit vector
+            if (n > m) {
+              throw new GeneratorException("Width of output exceeds width of input");
+            }
+            return new BlockCall(BitdataField.generateBitSelector(pos, true, n < m, m - n, n, m))
+                .makeUnaryFuncClosure(pos, Word.numWords(m));
+          }
+        });
+
+    // primBitsLo m n :: Bit m -> Bit n, where n<=m
+    generators.put(
+        "primBitsLo",
+        new Generator(2) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int m = ts[0].validWidth(); // Width of input bit vector
+            int n = ts[1].validWidth(); // Width of output bit vector
+            if (n > m) {
+              throw new GeneratorException("Width of output exceeds width of input");
+            }
+            return new BlockCall(BitdataField.generateBitSelector(pos, true, n < m, 0, n, m))
+                .makeUnaryFuncClosure(pos, Word.numWords(m));
+          }
+        });
   }
 
   static {
