@@ -262,9 +262,10 @@ public class Alt {
 
   static Code repTransformBitdataCase(
       RepTypeSet set, RepEnv env, BitdataType bt, Atom a, Alt[] alts, BlockCall def) {
-    //  Find the last relevant alternative
+    // Find the last relevant alternative.  We assume that we do not have to match patterns
+    // outside the set that is valid for this type (corresponding to the initial value for pat).
     int last = 0;
-    for (obdd.Pat pat = obdd.Pat.empty(bt.getPat().getWidth()); last < alts.length; last++) {
+    for (obdd.Pat pat = bt.getPat().not(); last < alts.length; last++) {
       pat = alts[last].cf.getPat().or(pat);
       if (pat.isAll()) { // No need to progress further once all bit patterns have been matched.
         break;
