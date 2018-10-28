@@ -181,7 +181,7 @@ public class Word extends Const {
 
   /** Return the number of words that are needed to hold a value with the specified bitsize. */
   public static int numWords(int numBits) {
-    return (numBits + size - 1) / size;
+    return (numBits == 0) ? 1 : ((numBits + size - 1) / size);
   }
 
   /**

@@ -119,7 +119,7 @@ public class BitdataField extends Name {
     Temp[] params;
     Code code;
     if (width == 0) {
-      params = Temp.makeTemps(total == 0 ? 1 : Word.numWords(total));
+      params = Temp.makeTemps(Word.numWords(total));
       code = new Done(new DataAlloc(Cfun.Unit).withArgs());
     } else {
       params = Temp.makeTemps(Word.numWords(total)); // input parameters
