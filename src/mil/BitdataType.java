@@ -102,6 +102,9 @@ public class BitdataType extends DataName {
       layouts[i].dumpBitdataLayout(out);
     }
     out.println();
+    out.println("-- bit pattern:");
+    pat.dump(out);
+    out.println();
   }
 
   /**

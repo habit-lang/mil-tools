@@ -18,6 +18,7 @@
 */
 package obdd;
 
+import java.io.PrintWriter;
 import java.math.BigInteger;
 
 /** A main program for @Pat@, for the purposes of testing and illustration. */
@@ -274,15 +275,12 @@ public class Pat {
 
   public void toDot(String name) {
     bdd.toDot("tmp/" + name + ".dot");
-    System.out.println();
-    System.out.println(name + ":");
-    display();
   }
 
-  public void display() {
+  public void dump(PrintWriter out) {
     String[] lines = this.showBits();
     for (int i = 0; i < lines.length; i++) {
-      System.out.println("  " + lines[i]);
+      out.println("--  " + lines[i]);
     }
   }
 
