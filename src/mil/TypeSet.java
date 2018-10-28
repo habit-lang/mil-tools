@@ -319,7 +319,7 @@ public class TypeSet {
     DataTypes cands = null;
     for (Tycon tycon : tycons) {
       DataType dt = tycon.bitdataCandidate();
-      if (dt != null) {
+      if (dt != null && dt != Tycon.unit) {
         debug.Log.println("DataType " + dt + " is a candidate for bitdata representation");
         cands = new DataTypes(dt, cands);
       }
