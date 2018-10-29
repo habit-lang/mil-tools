@@ -1,0 +1,139 @@
+require "prelude.lc"
+
+type WordSize = 32
+type NumPrio  = 256
+type Priority = Ix NumPrio
+
+-- entrypoint priosetSize, prioset, prioidx
+area priosetSize <- initStored 0 :: Ref (Stored Word)
+area prioset     <- zeroArray    :: Ref (Array NumPrio (Stored Priority)) aligned 256
+area prioidx     <- zeroArray    :: Ref (Array NumPrio (Stored (Ix NumPrio))) aligned 256
+
+entrypoint clearPrioset
+clearPrioset = writeRef priosetSize 0
+
+-- Update priority set to save priority value at index i:
+prioSet        :: Ix NumPrio -> Priority -> Proc Unit
+prioSet i prio  = do writeRefPriority (at prioset i) prio
+                     writeRefPriority (at prioidx prio) i
+
+entrypoint insertPriority :: Priority -> Proc Unit
+insertPriority prio
+  = do s <- readRef priosetSize
+       writeRef priosetSize (add s 1)
+       heapRepairUp (modIx s) prio
+
+heapRepairUp :: Ix NumPrio -> Priority -> Proc Unit
+heapRepairUp i prio
+  = case decIx i of
+      Nothing -> prioSet zero prio
+      Just j  -> do parent <- return (lshrIx j oneBit)
+                    pprio  <- readRefPriority (at prioset parent)
+                    if ltIx pprio prio then
+                      prioSet i pprio
+                      heapRepairUp parent prio
+                    else
+                      prioSet i prio
+
+heapRepairDown :: Ix NumPrio -> Priority -> Ix NumPrio -> Proc Unit
+heapRepairDown i prio last
+ = let u = word i in
+   case leqIx (add (mul 2 u) 1) last of          -- Look for a left child
+    Nothing -> prioSet i prio                    -- i has no children
+    Just l  ->                                   -- i has a left child
+      do lprio <- readRefPriority (at prioset l)
+         case leqIx (add (mul 2 u) 2) last of    -- Look for a right child
+           Nothing ->                            -- i has no right child
+             if gtIx lprio prio then
+               prioSet i lprio
+               prioSet l prio
+             else
+               prioSet i prio
+           Just r  ->                            -- i has two children
+             do rprio <- readRefPriority (at prioset r)
+                if gtIx prio lprio && gtIx prio rprio then
+                  prioSet i prio
+                else if gtIx lprio rprio then
+                       prioSet i lprio -- left is higher
+                       heapRepairDown l prio last
+                     else
+                       prioSet i rprio -- right is higher
+                       heapRepairDown r prio last
+
+entrypoint removePriority :: Priority -> Proc Unit
+removePriority prio
+  = do s <- readRef priosetSize
+       writeRef priosetSize (sub s 1)
+       rprio <- readRefPriority (at prioset (modIx (sub s 1)))
+       if neIx prio rprio then
+         i <- readRefPriority (at prioidx prio)
+         heapRepairDown i rprio (modIx (sub s 2))
+         nprio <- readRefPriority (at prioset i)
+         heapRepairUp i nprio
+
+entrypoint highestPriority1 :: Proc Word
+highestPriority1 = case<- highestPriority of
+                     Nothing -> return (neg 1)
+                     Just i  -> return (bitToWord (ixToBit i))
+
+highestPriority :: Proc (Maybe Priority)
+highestPriority = do s <- readRef priosetSize
+                     if eq s 0 then
+                       return Nothing
+                      else
+                       prio <- readRefPriority (at prioset zero)
+                       return (Just prio)
+
+-------------------
+
+zero, one :: Ix NumPrio
+zero       = ix0 Unit
+one        = ix1 Unit
+
+oneBit    :: Ix 8
+oneBit     = ix1_8 Unit
+
+zeroArray :: Init (Array NumPrio (Stored Priority))
+zeroArray  = initArray (\ix -> initStoredPriority (ix0 Unit))
+
+external initStored {primInitStored Word}     :: Word -> Init (Stored Word)
+external readRef    {primReadRefStored Word}  :: Ref (Stored Word) -> Proc Word
+external writeRef   {primWriteRefStored Word} :: Ref (Stored Word) -> Word -> Proc Unit
+
+external initStoredPriority {primInitStored Priority}     :: Priority -> Init (Stored Priority)
+external readRefPriority    {primReadRefStored Priority}  :: Ref (Stored Priority) -> Proc Priority
+external writeRefPriority   {primWriteRefStored Priority} :: Ref (Stored Priority) -> Priority -> Proc Unit
+
+external initArray {primInitArray NumPrio (Stored Priority)}
+  :: (Ix NumPrio -> Init (Stored Priority)) -> Init (Array NumPrio (Stored Priority))
+external at {@ NumPrio (Stored Priority)}
+  :: Ref (Array NumPrio (Stored Priority)) -> Ix NumPrio -> Ref (Stored Priority)
+
+external ix0       {primIxFromLiteral 0 NumPrio}  :: Unit -> Ix NumPrio
+external ix1       {primIxFromLiteral 1 NumPrio}  :: Unit -> Ix NumPrio
+external ix1_8     {primIxFromLiteral 1 8}        :: Unit -> Ix 8
+external lshrIx    {primIxShiftR NumPrio 8}       :: Ix NumPrio -> Ix 8  -> Ix NumPrio
+external neIx      {primIxNe NumPrio}             :: Ix NumPrio -> Ix NumPrio -> Bool
+external ltIx      {primIxLt NumPrio}             :: Ix NumPrio -> Ix NumPrio -> Bool
+external gtIx      {primIxGt NumPrio}             :: Ix NumPrio -> Ix NumPrio -> Bool
+external bitToWord {primBitToWord WordSize}       :: Bit WordSize -> Word
+external wordToBit {primWordToBit WordSize}       :: Word -> Bit WordSize
+external modIxW    {primModIx WordSize NumPrio}   :: Bit WordSize -> Ix NumPrio
+external ixToBit   {primIxToBit NumPrio WordSize} :: Ix NumPrio -> Bit WordSize
+
+type MN = Maybe (Ix NumPrio)
+external genDecIx  {primGenDecIx MN NumPrio}     :: MN -> (Ix NumPrio -> MN) -> Ix NumPrio -> MN
+external genLeqIx  {primGenLeqIx MN NumPrio}     :: MN -> (Ix NumPrio -> MN) -> Word -> Ix NumPrio -> MN
+
+decIx  :: Ix NumPrio -> Maybe (Ix NumPrio)
+decIx   = genDecIx Nothing Just
+
+leqIx  :: Word -> Ix NumPrio -> Maybe (Ix NumPrio)
+leqIx   = genLeqIx Nothing Just
+
+modIx  :: Word -> Ix NumPrio
+modIx w = modIxW (wordToBit w)
+
+word   :: Ix NumPrio -> Word
+word i  = bitToWord (ixToBit i)
+
