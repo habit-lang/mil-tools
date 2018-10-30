@@ -105,6 +105,10 @@ public class MILParser extends CoreParser implements MILTokens {
           lexer.nextToken(/* ENTRYPOINT */ );
           String[] ids = parseIds1();
           prog.add(new Entrypoint(pos, ids));
+          if (lexer.getToken() == COCO) {
+            lexer.nextToken(/* COCO */ );
+            prog.add(parseTypeAnn(pos, ids));
+          }
           lexer.itemEnd("entrypoint declaration");
           return true;
         }
@@ -235,7 +239,7 @@ public class MILParser extends CoreParser implements MILTokens {
     }
     String id = lexer.getLexeme();
     lexer.nextToken(/* var */ );
-    int purity = Prim.PURE; // set default purity
+    int purity = Prim.IMPURE; // set default purity
     if (lexer.getToken() == VARID) { // look for a purity label
       if ((purity = Prim.purityFromLabel(lexer.getLexeme())) < 0) {
         throw new Failure(

@@ -41,7 +41,7 @@ public class LCParser extends CoreParser implements LCTokens {
           if (defn != null) {
             prog.add(defn);
           } else if (!handleTopDefn(prog)) {
-            LCDefn d = maybeParseDefn();
+            LCDefn d = maybeLCDefn();
             if (d != null) {
               prog.add(d);
               lexer.itemEnd("definition");
@@ -146,12 +146,12 @@ public class LCParser extends CoreParser implements LCTokens {
   }
 
   /** Parse a non-empty list of definitions. */
-  private LCDefns parseDefns() throws Failure {
+  private LCDefns parseLCDefns() throws Failure {
     LCDefns defns = null;
     lexer.enterSection();
     for (; ; ) {
       if (!lexer.match(SEMI)) {
-        LCDefn d = maybeParseDefn();
+        LCDefn d = maybeLCDefn();
         if (d == null) {
           lexer.leaveSection();
           return defns; // TODO: reverse?
@@ -162,8 +162,8 @@ public class LCParser extends CoreParser implements LCTokens {
   }
 
   /** Parse a single definition. */
-  private LCDefn maybeParseDefn() throws Failure {
-    Expr e = maybeParseAExpr(); // Look for an atomic expression
+  private LCDefn maybeLCDefn() throws Failure {
+    Expr e = maybeAExpr(); // Look for an atomic expression
     if (e != null) {
       e = parseInfixExpr(e); // Extend to an infix expression
       switch (lexer.getToken()) {
@@ -236,15 +236,15 @@ public class LCParser extends CoreParser implements LCTokens {
 
   /** Parse an expression, possibly followed by a type signature, or throw a parser exception. */
   private Expr parseTExpr() throws Failure {
-    return failIfMissing(maybeParseTExpr());
+    return failIfMissing(maybeTExpr());
   }
 
   /**
    * Try to parse an expression with an optional type annotation, TExpr ::= CExpr [ :: Type ], n>=1,
    * returning null if there is no expression.
    */
-  private Expr maybeParseTExpr() throws Failure {
-    Expr e = maybeParseCExpr();
+  private Expr maybeTExpr() throws Failure {
+    Expr e = maybeCExpr();
     if (e != null && lexer.getToken() == COCO) {
       Position pos = lexer.getPos();
       lexer.nextToken(/* :: */ );
@@ -258,10 +258,10 @@ public class LCParser extends CoreParser implements LCTokens {
    * IfExpr | DoExpr | InfixExpr
    */
   private Expr parseCExpr() throws Failure {
-    return failIfMissing(maybeParseCExpr());
+    return failIfMissing(maybeCExpr());
   }
 
-  private Expr maybeParseCExpr() throws Failure {
+  private Expr maybeCExpr() throws Failure {
     switch (lexer.getToken()) {
       case LAMBDA:
         {
@@ -276,7 +276,7 @@ public class LCParser extends CoreParser implements LCTokens {
         {
           Position pos = lexer.getPos();
           lexer.nextToken(/* LET */ );
-          LCDefns defns = parseDefns();
+          LCDefns defns = parseLCDefns();
           require(IN);
           return new ELet(pos, defns, parseExpr());
         }
@@ -291,7 +291,7 @@ public class LCParser extends CoreParser implements LCTokens {
       case CASE:
         return parseCase(false);
     }
-    return maybeParseInfixExpr();
+    return maybeInfixExpr();
   }
 
   /** Parse a block of statements in a do expression. */
@@ -303,10 +303,10 @@ public class LCParser extends CoreParser implements LCTokens {
   }
 
   private Expr parseStmts() throws Failure {
-    return failIfMissing(maybeParseStmts());
+    return failIfMissing(maybeStmts());
   }
 
-  private Expr maybeParseStmts() throws Failure {
+  private Expr maybeStmts() throws Failure {
     while (lexer.match(SEMI)) {
       /* skip semicolons/empty statements */
     }
@@ -315,7 +315,7 @@ public class LCParser extends CoreParser implements LCTokens {
         {
           Position pos = lexer.getPos();
           lexer.nextToken(/* LET */ );
-          LCDefns defns = parseDefns();
+          LCDefns defns = parseLCDefns();
           if (lexer.match(IN)) {
             return parseExprStmts(new ELet(pos, defns, parseBlock()));
           } else {
@@ -337,7 +337,7 @@ public class LCParser extends CoreParser implements LCTokens {
 
       default:
         {
-          Expr e = maybeParseTExpr();
+          Expr e = maybeTExpr();
           if (e == null) {
             return null;
           } else if (lexer.match(FROM)) {
@@ -361,7 +361,7 @@ public class LCParser extends CoreParser implements LCTokens {
   private Expr parseExprStmts(Expr e) throws Failure { // stmts -> exp _ [ ; stmts ]
     lexer.itemEnd("expression");
     if (lexer.match(SEMI)) {
-      Expr s = maybeParseStmts();
+      Expr s = maybeStmts();
       return (s == null) ? e : new EFrom(e.getPos(), new FreshVar(), e, s);
     }
     return e;
@@ -464,7 +464,7 @@ public class LCParser extends CoreParser implements LCTokens {
    * arguments that have already been seen.
    */
   private LamVar[] parseVars(int i) throws Failure {
-    Expr e = maybeParseAExpr();
+    Expr e = maybeAExpr();
     if (e != null) {
       LamVar[] vs = parseVars(i + 1);
       vs[i] = e.asLamVar(null);
@@ -478,15 +478,15 @@ public class LCParser extends CoreParser implements LCTokens {
    * suitable initial token is found.
    */
   private Expr parseInfixExpr() throws Failure {
-    return failIfMissing(maybeParseInfixExpr());
+    return failIfMissing(maybeInfixExpr());
   }
 
   /**
    * Parse an infix expression or return null if the current token is not in the appropriate FIRST
    * set.
    */
-  private Expr maybeParseInfixExpr() throws Failure {
-    Expr e = maybeParseAExpr();
+  private Expr maybeInfixExpr() throws Failure {
+    Expr e = maybeAExpr();
     return (e == null) ? null : parseInfixExpr(e);
   }
 
@@ -497,7 +497,7 @@ public class LCParser extends CoreParser implements LCTokens {
   private Expr parseInfixExpr(Expr e) throws Failure {
     // Parse an applicative expression (a sequence of juxtaposed aexprs) with the first aexpr
     // already in e
-    for (Expr arg; (arg = maybeParseAExpr()) != null; ) {
+    for (Expr arg; (arg = maybeAExpr()) != null; ) {
       e = new EAp(e, arg);
     }
     // Parse an infix operator followed by another infix expression, if present:
@@ -518,7 +518,7 @@ public class LCParser extends CoreParser implements LCTokens {
   }
 
   /** Parse an atomic expression (aexpr), or return null if no valid expression is found. */
-  private Expr maybeParseAExpr() throws Failure {
+  private Expr maybeAExpr() throws Failure {
     Expr e = null;
 
     switch (lexer.getToken()) {
