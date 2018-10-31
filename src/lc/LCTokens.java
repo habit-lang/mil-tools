@@ -27,4 +27,8 @@ interface LCTokens extends CoreTokens {
   int DO = 49;
 
   int LAMBDA = 50;
+
+  int AMPAMP = 51;
+
+  int BARBAR = 52;
 }

@@ -501,18 +501,29 @@ public class LCParser extends CoreParser implements LCTokens {
       e = new EAp(e, arg);
     }
     // Parse an infix operator followed by another infix expression, if present:
-    if (lexer.getToken() == VARSYM) {
-      Position pos = lexer.getPos();
-      String id = lexer.getLexeme();
-      lexer.nextToken(/* VARSYM */ );
-      Expr f = parseInfixExpr();
-      if (id.equals("&&")) {
-        return Expr.ifthenelse(pos, e, pos, f, pos, Expr.falseCon);
-      } else if (id.equals("||")) {
-        return Expr.ifthenelse(pos, e, pos, Expr.trueCon, pos, f);
-      } else {
-        return new EAp(new EAp(new EId(pos, id), e), f);
-      }
+    switch (lexer.getToken()) {
+      case VARSYM:
+      case CONSYM:
+        {
+          Position pos = lexer.getPos();
+          String id = lexer.getLexeme();
+          lexer.nextToken(/* SYM */ );
+          return new EAp(new EAp(new EId(pos, id), e), parseInfixExpr());
+        }
+
+      case AMPAMP:
+        {
+          Position pos = lexer.getPos();
+          lexer.nextToken(/* && */ );
+          return Expr.ifthenelse(pos, e, pos, parseInfixExpr(), pos, Expr.falseCon);
+        }
+
+      case BARBAR:
+        {
+          Position pos = lexer.getPos();
+          lexer.nextToken(/* || */ );
+          return Expr.ifthenelse(pos, e, pos, Expr.trueCon, pos, parseInfixExpr());
+        }
     }
     return e;
   }
@@ -548,30 +559,35 @@ public class LCParser extends CoreParser implements LCTokens {
           } finally {
             lexer.nextToken(/* NATLIT */ );
           }
-          return e;
+          break;
         }
 
       case BITLIT:
         {
           e = new EBit(lexer.getPos(), lexer.getNat(), lexer.getNumBits());
           lexer.nextToken(/* BITLIT */ );
-          return e;
+          break;
         }
 
       case STRLIT:
         {
           e = new EStr(lexer.getPos(), lexer.getLexeme());
           lexer.nextToken(/* STRLIT */ );
-          return e;
+          break;
         }
 
       case POPEN:
         {
-          if (lexer.nextToken(/* ( */ ) == VARSYM) {
-            e = new EId(lexer.getPos(), lexer.getLexeme());
-            lexer.nextToken(/* VARSYM */ );
-          } else {
-            e = parseExpr();
+          switch (lexer.nextToken(/* ( */ )) {
+            case VARSYM:
+            case CONSYM:
+              e = new EId(lexer.getPos(), lexer.getLexeme());
+              lexer.nextToken(/* SYM */ );
+              break;
+
+            default:
+              e = parseExpr();
+              break;
           }
           require(PCLOSE);
           break;

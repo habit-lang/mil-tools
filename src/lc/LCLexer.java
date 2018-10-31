@@ -29,6 +29,8 @@ public class LCLexer extends LayoutLexer implements LCTokens {
     super(handler, optional, source);
     reserved.put("do", new Integer(DO));
     reserved.put("\\", new Integer(LAMBDA));
+    reserved.put("&&", new Integer(AMPAMP));
+    reserved.put("||", new Integer(BARBAR));
     nextToken(); // Start the token stream
   }
 
@@ -39,6 +41,10 @@ public class LCLexer extends LayoutLexer implements LCTokens {
         return "\"do\" keyword";
       case LAMBDA:
         return "\\ (lambda)";
+      case AMPAMP:
+        return "&& (logical and)";
+      case BARBAR:
+        return "|| (logical or)";
       default:
         return super.describeToken(token, lexeme);
     }
