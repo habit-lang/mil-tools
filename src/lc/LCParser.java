@@ -447,16 +447,19 @@ public class LCParser extends CoreParser implements LCTokens {
 
   /** Parse a single alternative. */
   private EAlt parseAlt(boolean isMonadic) throws Failure {
-    if (lexer.getToken() == CONID) {
-      Position pos = lexer.getPos();
-      String c = lexer.getLexeme();
-      lexer.nextToken(/* CONID */ );
-      LamVar[] vs = parseVars(0);
-      require(TO);
-      return new EAlt(pos, c, vs, isMonadic ? parseBlock() : parseTExpr());
-    } else {
-      throw new ParseFailure(lexer.getPos(), "Missing CONID for alternative");
+    switch (lexer.getToken()) {
+      case CONID:
+      case CONSYM:
+        {
+          Position pos = lexer.getPos();
+          String c = lexer.getLexeme();
+          lexer.nextToken(/* CONID|CONSYM */ );
+          LamVar[] vs = parseVars(0);
+          require(TO);
+          return new EAlt(pos, c, vs, isMonadic ? parseBlock() : parseTExpr());
+        }
     }
+    throw new ParseFailure(lexer.getPos(), "Missing CONID for alternative");
   }
 
   /**
