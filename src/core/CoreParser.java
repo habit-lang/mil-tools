@@ -529,14 +529,19 @@ public class CoreParser extends Phase implements CoreTokens {
       throw missing("bitdata type name");
     }
     String id = lexer.getLexeme();
-    TypeExp sizeExp = null;
-    if (lexer.nextToken(/* CONID */ ) == VARSYM && lexer.getLexeme().equals("/")) {
-      lexer.nextToken(/* / */ );
-      sizeExp = typeExp();
-    }
+    TypeExp sizeExp = parseSize();
     BitdataConDefn[] constrs =
         (lexer.getToken() == EQ) ? bitdataConDefns(0) : new BitdataConDefn[0];
     return new BitdataDefn(pos, id, sizeExp, constrs);
+  }
+
+  /** Parse a size type for a bitdata or struct definition. */
+  private TypeExp parseSize() {
+    if (lexer.nextToken(/* CONID */ ) == VARSYM && lexer.getLexeme().equals("/")) {
+      lexer.nextToken(/* / */ );
+      return notMissing(maybeTypeSelExp());
+    }
+    return null;
   }
 
   /**
@@ -667,11 +672,7 @@ public class CoreParser extends Phase implements CoreTokens {
       throw missing("struct type name");
     }
     String id = lexer.getLexeme();
-    TypeExp sizeExp = null;
-    if (lexer.nextToken(/* CONID */ ) == VARSYM && lexer.getLexeme().equals("/")) {
-      lexer.nextToken(/* / */ );
-      sizeExp = typeExp();
-    }
+    TypeExp sizeExp = parseSize();
     require(SOPEN);
     StructRegionExp[] regexps =
         (lexer.getToken() == SCLOSE) ? new StructRegionExp[0] : structRegions(0);
