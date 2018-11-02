@@ -19,8 +19,6 @@
 package mil;
 
 import compiler.*;
-import compiler.Failure;
-import compiler.Handler;
 import core.*;
 
 public class MILLoader extends core.Loader {

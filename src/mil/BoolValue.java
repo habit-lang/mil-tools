@@ -19,7 +19,6 @@
 package mil;
 
 import compiler.*;
-import compiler.Failure;
 import core.*;
 
 class BoolValue extends Value {

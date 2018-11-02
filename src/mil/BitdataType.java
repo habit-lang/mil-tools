@@ -19,7 +19,6 @@
 package mil;
 
 import compiler.*;
-import compiler.Position;
 import core.*;
 import java.io.PrintWriter;
 import obdd.Pat;

@@ -19,9 +19,6 @@
 package mil;
 
 import compiler.*;
-import compiler.BuiltinPosition;
-import compiler.Failure;
-import compiler.SimpleHandler;
 import core.*;
 
 public class LinearEqnTest {

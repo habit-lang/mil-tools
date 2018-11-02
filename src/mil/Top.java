@@ -19,10 +19,6 @@
 package mil;
 
 import compiler.*;
-import compiler.BuiltinPosition;
-import compiler.Failure;
-import compiler.Handler;
-import compiler.Position;
 import core.*;
 
 public abstract class Top extends Atom {

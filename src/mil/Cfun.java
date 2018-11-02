@@ -19,9 +19,6 @@
 package mil;
 
 import compiler.*;
-import compiler.BuiltinPosition;
-import compiler.Failure;
-import compiler.Position;
 import core.*;
 import java.io.PrintWriter;
 import java.math.BigInteger;

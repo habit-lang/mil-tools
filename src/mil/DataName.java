@@ -19,9 +19,6 @@
 package mil;
 
 import compiler.*;
-import compiler.Failure;
-import compiler.Handler;
-import compiler.Position;
 import core.*;
 
 /** Represents a type constructor that has an associated list of constructor functions. */

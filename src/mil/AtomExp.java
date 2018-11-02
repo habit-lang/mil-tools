@@ -19,7 +19,6 @@
 package mil;
 
 import compiler.*;
-import compiler.Handler;
 import core.*;
 
 abstract class AtomExp {

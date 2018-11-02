@@ -19,8 +19,6 @@
 package mil;
 
 import compiler.*;
-import compiler.BuiltinPosition;
-import compiler.Failure;
 import core.*;
 import java.util.HashMap;
 

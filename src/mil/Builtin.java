@@ -19,8 +19,6 @@
 package mil;
 
 import compiler.*;
-import compiler.BuiltinPosition;
-import compiler.Failure;
 import core.*;
 
 public class Builtin extends MILEnvHash {

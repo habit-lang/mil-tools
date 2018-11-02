@@ -19,8 +19,6 @@
 package mil;
 
 import compiler.*;
-import compiler.BuiltinPosition;
-import compiler.Position;
 import core.*;
 import java.io.PrintWriter;
 

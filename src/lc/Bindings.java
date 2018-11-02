@@ -19,7 +19,6 @@
 package lc;
 
 import compiler.*;
-import compiler.Handler;
 import core.*;
 import debug.Screen;
 import mil.*;

@@ -19,8 +19,6 @@
 package mil;
 
 import compiler.*;
-import compiler.Handler;
-import compiler.Position;
 import core.*;
 
 class VarExp extends AtomExp {

@@ -19,7 +19,6 @@
 package mil;
 
 import compiler.*;
-import compiler.Position;
 import core.*;
 
 /** Represents a block that was derived by adding a trailing enter to its code sequence. */

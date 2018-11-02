@@ -19,7 +19,6 @@
 package mil;
 
 import compiler.*;
-import compiler.Position;
 import core.*;
 
 public abstract class TopDefn extends Defn {

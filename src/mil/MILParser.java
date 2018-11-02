@@ -19,9 +19,6 @@
 package mil;
 
 import compiler.*;
-import compiler.Failure;
-import compiler.Handler;
-import compiler.Position;
 import core.*;
 
 public class MILParser extends CoreParser implements MILTokens {

@@ -19,7 +19,6 @@
 package mil;
 
 import compiler.*;
-import compiler.Position;
 import core.*;
 
 /** Represents a named entity with a source code position and an identifying name. */
