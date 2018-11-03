@@ -115,19 +115,6 @@ class EField extends Name {
       final int hi,
       final TailCont kt) {
     if (lo == hi) {
-      // TODO: The generated code here is not correct:  We are trying to build an initializer for
-      // some
-      // structure type S, but the expression e :: Init T is an initializer for a single field f ::
-      // T of S.
-      // What we need here is an external or primitive of type  Init T -> #f -> Init S  that is
-      // valid for
-      // any combination of T, f, S such that f ::T is a field of S.  (Assuming Init a = [Ref a] ->>
-      // [Unit],
-      // the implementation of this function is straightforward:  \init. \#f. \r -> init (r + O),
-      // where
-      // O is the offset for f in S.  But we will need to add abstract syntax for #f types to be
-      // able to
-      // use this ...
       return fields[lo].e.compTail(
           env,
           abort,
