@@ -96,6 +96,49 @@ public class Prim {
     return (-1);
   }
 
+  private static int numPrims;
+
+  private static Prim[] table;
+
+  private int index;
+
+  int getIndex() {
+    return index;
+  }
+
+  int addToPrimTable(Prim val) {
+    if (table == null) {
+      table = new Prim[40];
+    } else if (numPrims >= table.length) {
+      Prim[] newarray = new Prim[2 * table.length];
+      for (int i = 0; i < table.length; i++) {
+        newarray[i] = table[i];
+      }
+      table = newarray;
+    }
+    table[numPrims] = val;
+    return numPrims++;
+  }
+
+  /** Write a list of primitives to the specified PrintWriter. */
+  public static void dumpPrimitives(PrintWriter out) {
+    out.println("Primitives: -----------------------------");
+    for (int i = 0; i < numPrims; i++) {
+      table[i].dump(out);
+    }
+    out.println(numPrims + " primitives listed");
+    out.println("-----------------------------------------");
+  }
+
+  /** Write a description of this primitive to the specified PrintWriter. */
+  void dump(PrintWriter out) {
+    out.print("primitive ");
+    out.print(id);
+    out.print(" ");
+    out.print(purityLabel());
+    out.println(" :: " + blockType);
+  }
+
   public Call withArgs(Atom[] args) {
     return new PrimCall(this).withArgs(args);
   }
@@ -1473,46 +1516,15 @@ public class Prim {
     return blockType.instantiate();
   }
 
-  private static int count;
-
-  private static Prim[] table;
-
-  private int index;
-
-  int getIndex() {
-    return index;
-  }
-
-  int addToPrimTable(Prim val) {
-    if (table == null) {
-      table = new Prim[40];
-    } else if (count >= table.length) {
-      Prim[] newarray = new Prim[2 * table.length];
-      for (int i = 0; i < table.length; i++) {
-        newarray[i] = table[i];
-      }
-      table = newarray;
-    }
-    table[count] = val;
-    return count++;
-  }
-
   static void exec(PrintWriter out, int prim, int fp, Value[] stack) throws Failure {
-    if (prim < 0 || prim >= count) {
+    if (prim < 0 || prim >= numPrims) {
       throw new Failure("primitive number " + prim + " is not defined");
     }
     table[prim].exec(out, fp, stack);
   }
 
   static String showPrim(int i) {
-    return (i >= 0 && i < count && table[i].id != null) ? table[i].id : ("?prim_" + i);
-  }
-
-  public static void printTable() {
-    for (int i = 0; i < count; i++) {
-      System.out.println(i + ") " + table[i].getId() + " :: " + table[i].getBlockType());
-    }
-    System.out.println("[total: " + count + " primitives]");
+    return (i >= 0 && i < numPrims && table[i].id != null) ? table[i].id : ("?prim_" + i);
   }
 
   protected static final BlockType wordToUnitType = new BlockType(wordTuple, Type.empty);

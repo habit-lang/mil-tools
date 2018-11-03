@@ -57,7 +57,8 @@ class Main {
     System.err.println("         -c[filename]   type set");
     System.err.println("         -s[filename]   specialization type set (requires s)");
     System.err.println("         -r[filename]   representation type set (requires r)");
-    System.err.println("         -e[filename]   external generators");
+    System.err.println("         -e[filename]   list external generators");
+    System.err.println("         -h[filename]   list primitives");
     System.err.println("         -l[filename]   LLVM code (requires s)");
     System.err.println("         -f[filename]   LLVM interface (requires s)");
     System.err.println("         -b[filename]   bytecode text");
@@ -95,7 +96,9 @@ class Main {
 
   private FilenameOption repTypeSetOutput = new FilenameOption("representation type set output");
 
-  private FilenameOption generatorsOutput = new FilenameOption("external generators");
+  private FilenameOption generatorsOutput = new FilenameOption("list external generators");
+
+  private FilenameOption primitivesOutput = new FilenameOption("list primitives");
 
   private FilenameOption llvmOutput = new FilenameOption("llvm output");
 
@@ -167,6 +170,9 @@ class Main {
             return;
           case 'e':
             generatorsOutput.setName(str, i);
+            return;
+          case 'h':
+            primitivesOutput.setName(str, i);
             return;
           case 'l':
             llvmOutput.setName(str, i);
@@ -269,6 +275,13 @@ class Main {
           new Action() {
             void run(PrintWriter out) {
               External.dumpGenerators(out);
+            }
+          });
+
+      primitivesOutput.run(
+          new Action() {
+            void run(PrintWriter out) {
+              Prim.dumpPrimitives(out);
             }
           });
 
