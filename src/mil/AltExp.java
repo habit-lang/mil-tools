@@ -27,12 +27,15 @@ class AltExp {
 
   private String id;
 
+  private String subid;
+
   private BlockCallExp bc;
 
   /** Default constructor. */
-  AltExp(Position pos, String id, BlockCallExp bc) {
+  AltExp(Position pos, String id, String subid, BlockCallExp bc) {
     this.pos = pos;
     this.id = id;
+    this.subid = subid;
     this.bc = bc;
   }
 
@@ -51,6 +54,6 @@ class AltExp {
    */
   Alt inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
     return new Alt(
-        milenv.mustFindCfun(handler, pos, id), bc.blockCallInScopeOf(handler, milenv, tenv));
+        milenv.mustFindCfun(handler, pos, id, subid), bc.blockCallInScopeOf(handler, milenv, tenv));
   }
 }

@@ -45,10 +45,6 @@ public abstract class MILEnv {
 
   public abstract void print();
 
-  public static Failure notFound(Position pos, String id) {
-    return new Failure(pos, "No definition for \"" + id + "\"");
-  }
-
   /**
    * Look for an element corresponding to the given identifier at any layer within this environment.
    */
@@ -60,14 +56,6 @@ public abstract class MILEnv {
    * Look for an element corresponding to the given identifier in this specific environment layer.
    */
   abstract Cfun findCfunInThis(String id);
-
-  public Cfun mustFindCfun(Handler handler, Position pos, String id) {
-    Cfun x = findCfun(id);
-    if (x == null) {
-      handler.report(notFound(pos, id));
-    }
-    return x;
-  }
 
   public Cfun addCfun(Cfun x) {
     return addCfun(x.getId(), x);
@@ -87,14 +75,6 @@ public abstract class MILEnv {
    */
   abstract Prim findPrimInThis(String id);
 
-  public Prim mustFindPrim(Handler handler, Position pos, String id) {
-    Prim x = findPrim(id);
-    if (x == null) {
-      handler.report(notFound(pos, id));
-    }
-    return x;
-  }
-
   public Prim addPrim(Prim x) {
     return addPrim(x.getId(), x);
   }
@@ -112,14 +92,6 @@ public abstract class MILEnv {
    * Look for an element corresponding to the given identifier in this specific environment layer.
    */
   abstract Block findBlockInThis(String id);
-
-  public Block mustFindBlock(Handler handler, Position pos, String id) {
-    Block x = findBlock(id);
-    if (x == null) {
-      handler.report(notFound(pos, id));
-    }
-    return x;
-  }
 
   public Block addBlock(Block x) {
     return addBlock(x.getId(), x);
@@ -139,14 +111,6 @@ public abstract class MILEnv {
    */
   abstract ClosureDefn findClosureDefnInThis(String id);
 
-  public ClosureDefn mustFindClosureDefn(Handler handler, Position pos, String id) {
-    ClosureDefn x = findClosureDefn(id);
-    if (x == null) {
-      handler.report(notFound(pos, id));
-    }
-    return x;
-  }
-
   public ClosureDefn addClosureDefn(ClosureDefn x) {
     return addClosureDefn(x.getId(), x);
   }
@@ -164,14 +128,6 @@ public abstract class MILEnv {
    * Look for an element corresponding to the given identifier in this specific environment layer.
    */
   abstract Top findTopInThis(String id);
-
-  public Top mustFindTop(Handler handler, Position pos, String id) {
-    Top x = findTop(id);
-    if (x == null) {
-      handler.report(notFound(pos, id));
-    }
-    return x;
-  }
 
   public Top addTop(Top x) {
     return addTop(x.getId(), x);
@@ -197,5 +153,58 @@ public abstract class MILEnv {
    */
   public static void multipleDefns(Position pos, String what, String id) throws Failure {
     throw new Failure(pos, "Multiple definitions for " + what + " \"" + id + "\"");
+  }
+
+  public Prim mustFindPrim(Handler handler, Position pos, String id) {
+    Prim x = findPrim(id);
+    if (x == null) {
+      handler.report(notFound(pos, id));
+    }
+    return x;
+  }
+
+  public Block mustFindBlock(Handler handler, Position pos, String id) {
+    Block x = findBlock(id);
+    if (x == null) {
+      handler.report(notFound(pos, id));
+    }
+    return x;
+  }
+
+  public ClosureDefn mustFindClosureDefn(Handler handler, Position pos, String id) {
+    ClosureDefn x = findClosureDefn(id);
+    if (x == null) {
+      handler.report(notFound(pos, id));
+    }
+    return x;
+  }
+
+  public Top mustFindTop(Handler handler, Position pos, String id) {
+    Top x = findTop(id);
+    if (x == null) {
+      handler.report(notFound(pos, id));
+    }
+    return x;
+  }
+
+  public Cfun mustFindCfun(Handler handler, Position pos, String id, String subid) {
+    Cfun cf = findCfun((subid != null) ? subid : id);
+    if (cf == null) {
+      handler.report(notFound(pos, id));
+    } else if (subid != null) { // Layout constructor name of the form T.C
+      BitdataType bt = cf.bitdataType();
+      if (bt == null) {
+        handler.report(new Failure(pos, "\"" + cf + "\" is not a bitdata constructor"));
+      } else if (!bt.answersTo(id)) {
+        handler.report(new Failure(pos, "\"" + cf + "\" is not a constructor for " + bt));
+      } else {
+        return bt.getLayouts()[cf.getNum()].getCfun();
+      }
+    }
+    return cf;
+  }
+
+  public static Failure notFound(Position pos, String id) {
+    return new Failure(pos, "No definition for \"" + id + "\"");
   }
 }

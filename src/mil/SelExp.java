@@ -27,14 +27,17 @@ class SelExp extends TailExp {
 
   private String id;
 
+  private String subid;
+
   private int n;
 
   private AtomExp a;
 
   /** Default constructor. */
-  SelExp(Position pos, String id, int n, AtomExp a) {
+  SelExp(Position pos, String id, String subid, int n, AtomExp a) {
     this.pos = pos;
     this.id = id;
+    this.subid = subid;
     this.n = n;
     this.a = a;
   }
@@ -44,6 +47,7 @@ class SelExp extends TailExp {
    * scope and returning a corresponding mil Tail.
    */
   public Tail inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
-    return new Sel(milenv.mustFindCfun(handler, pos, id), n, a.inScopeOf(handler, milenv, tenv));
+    return new Sel(
+        milenv.mustFindCfun(handler, pos, id, subid), n, a.inScopeOf(handler, milenv, tenv));
   }
 }

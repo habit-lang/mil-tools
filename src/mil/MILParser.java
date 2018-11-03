@@ -389,9 +389,9 @@ public class MILParser extends CoreParser implements MILTokens {
     if (token == CONID || token == CONSYM) {
       String id = lexer.getLexeme(); // constructor name
       Position pos = lexer.getPos();
-      lexer.nextToken(/* con */ );
+      String subid = (lexer.nextToken(/* con */ ) == DOT) ? parseDotId() : null;
       require(TO);
-      return new AltExp(pos, id, parseBlockCall());
+      return new AltExp(pos, id, subid, parseBlockCall());
     } else {
       return null;
     }
@@ -404,10 +404,9 @@ public class MILParser extends CoreParser implements MILTokens {
     int token = lexer.getToken();
     if (token == CONID || token == CONSYM) {
       String id = lexer.getLexeme();
-      if (lexer.nextToken(/* con */ ) == SEMI) { // skip optional semicolon
-        lexer.nextToken(/* SEMI */ );
-      }
-      return new AssertExp(pos, a, id, parseCode());
+      String subid = (lexer.nextToken(/* con */ ) == DOT) ? parseDotId() : null;
+      lexer.match(SEMI); // skip optional semicolon
+      return new AssertExp(pos, a, id, subid, parseCode());
     }
     return parseCodeError(pos);
   }
@@ -466,16 +465,15 @@ public class MILParser extends CoreParser implements MILTokens {
     switch (lexer.getToken()) {
       case POPEN:
         {
-          TailExp t;
           if (lexer.nextToken(/* POPEN */ ) == POPEN) {
             lexer.nextToken(/* POPEN */ );
-            t = new PrimCallExp(pos, id, parseAtoms());
+            TailExp t = new PrimCallExp(pos, id, parseAtoms());
             require(PCLOSE);
+            require(PCLOSE);
+            return t;
           } else {
-            t = new DataAllocExp(pos, id, parseAtoms());
+            return parseConstr(pos, id, null);
           }
-          require(PCLOSE);
-          return t;
         }
 
       case SOPEN:
@@ -499,19 +497,61 @@ public class MILParser extends CoreParser implements MILTokens {
         return new EnterExp(new VarExp(pos, id), parseAtomsTuple());
 
       case NATLIT:
+        return parseSel(pos, id, null);
+
+      case DOT:
         {
-          int n;
-          try {
-            n = lexer.getInt();
-          } finally {
-            lexer.nextToken(/* NATLIT */ );
+          String subid = parseDotId();
+          switch (lexer.getToken()) {
+            case POPEN:
+              lexer.nextToken(/* POPEN */ );
+              return parseConstr(pos, id, subid);
+
+            case NATLIT:
+              return parseSel(pos, id, subid);
+
+            default:
+              return parseTailError();
           }
-          return new SelExp(pos, id, n, parseAtom());
         }
 
       default:
         return parseTailError();
     }
+  }
+
+  /** Parse an identifier after a "." (DOT), having detected the DOT. */
+  private String parseDotId() throws Failure {
+    switch (lexer.nextToken(/* DOT */ )) {
+      case VARID:
+      case VARSYM:
+      case CONID:
+      case CONSYM:
+        {
+          String subid = lexer.getLexeme();
+          lexer.nextToken(/* Id */ );
+          return subid;
+        }
+    }
+    throw missing("identifier");
+  }
+
+  /** Parse a construction, having already passed the name and opening parenthesis. */
+  private TailExp parseConstr(Position pos, String id, String subid) throws Failure {
+    TailExp t = new DataAllocExp(pos, id, parseAtoms(), subid);
+    require(PCLOSE);
+    return t;
+  }
+
+  /** Parse a selection, having already passed the name and detected a NATLIT. */
+  private TailExp parseSel(Position pos, String id, String subid) throws Failure {
+    int n;
+    try {
+      n = lexer.getInt();
+    } finally {
+      lexer.nextToken(/* NATLIT */ );
+    }
+    return new SelExp(pos, id, subid, n, parseAtom());
   }
 
   /** Parse a return Tail, with return as the current token. */

@@ -27,13 +27,16 @@ class AssertExp extends CodeExp {
 
   private String id;
 
+  private String subid;
+
   private CodeExp cexp;
 
   /** Default constructor. */
-  AssertExp(Position pos, AtomExp a, String id, CodeExp cexp) {
+  AssertExp(Position pos, AtomExp a, String id, String subid, CodeExp cexp) {
     super(pos);
     this.a = a;
     this.id = id;
+    this.subid = subid;
     this.cexp = cexp;
   }
 
@@ -45,7 +48,7 @@ class AssertExp extends CodeExp {
   public Code inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
     return new Assert(
         a.inScopeOf(handler, milenv, tenv),
-        milenv.mustFindCfun(handler, pos, id),
+        milenv.mustFindCfun(handler, pos, id, subid),
         cexp.inScopeOf(handler, milenv, tenv));
   }
 }

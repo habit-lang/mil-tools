@@ -23,9 +23,12 @@ import core.*;
 
 class DataAllocExp extends CallExp {
 
+  private String subid;
+
   /** Default constructor. */
-  DataAllocExp(Position pos, String id, AtomExp[] as) {
+  DataAllocExp(Position pos, String id, AtomExp[] as, String subid) {
     super(pos, id, as);
+    this.subid = subid;
   }
 
   /**
@@ -34,6 +37,6 @@ class DataAllocExp extends CallExp {
    * appropriate list of arguments in the implementation of inScopeOf() for CallExp objects.
    */
   Call calleeInScopeOf(Handler handler, MILEnv milenv) {
-    return new DataAlloc(milenv.mustFindCfun(handler, pos, id));
+    return new DataAlloc(milenv.mustFindCfun(handler, pos, id, subid));
   }
 }
