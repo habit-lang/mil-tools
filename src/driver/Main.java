@@ -107,6 +107,8 @@ class Main {
 
   private String milMain = "";
 
+  private int numSourceFiles = 0;
+
   /** Simple command line argument processing. */
   private void options(Handler handler, String str, LCLoader loader, boolean nested)
       throws Failure {
@@ -188,8 +190,11 @@ class Main {
       } else if (!optionsFromFile(handler, str, loader, true)) {
         throw new Failure("Error reading options from \"" + str + "\"; file not accessible");
       }
-    } else if (!loader.loadMIL(str)) { // Try to load as mil
-      loader.require(str); // But otherwise load as lc
+    } else { // Treat as a source file name
+      if (!loader.loadMIL(str)) { // Try first to load as mil ...
+        loader.require(str); // ... but otherwise load as lc
+      }
+      numSourceFiles++; // Either way, it counts as a source file
     }
   }
 
@@ -231,47 +236,46 @@ class Main {
     }
   }
 
-  public void run(String[] args) {
-    Handler handler = new SimpleHandler();
-    try {
-      process(handler, load(handler, args));
-    } catch (Failure f) {
-      handler.report(f);
-      System.exit(-1);
-    }
-  }
-
   /**
    * Process command line arguments and load the requested source files, compiling as necessary to
    * produce a single MIL program.
    */
-  private MILProgram load(Handler handler, String[] args) throws Failure {
-    // TODO: initial messages will not appear so long as trace is initialized to false :-)
-    LCLoader loader = new LCLoader();
-    if (optionsFromFile(handler, ".milc", loader, false)) {
-      message("Read options from .milc ..."); // Process options in .milc file, if present
+  public void run(String[] args) {
+    Handler handler = new SimpleHandler();
+    try {
+      // TODO: initial messages will not appear so long as trace is initialized to false :-)
+      LCLoader loader = new LCLoader();
+      if (optionsFromFile(handler, ".milc", loader, false)) {
+        message("Read options from .milc ..."); // Process options in .milc file, if present
+      }
+      ;
+      message("Reading command line arguments ..."); // Process command line arguments
+      for (int i = 0; i < args.length; i++) {
+        options(handler, args[i], loader, false);
+      }
+      handler.abortOnFailures();
+
+      if (numSourceFiles > 0) {
+        message("Loading source files ..."); // Load and compile everything
+        MILProgram mil = loader.load(handler, milMain);
+
+        message("Running type checker ..."); // Sanity check/dependency analysis
+        mil.typeChecking(handler);
+
+        process(handler, mil);
+      }
+
+      generatorsOutput.run(
+          new Action() {
+            void run(PrintWriter out) {
+              External.dumpGenerators(out);
+            }
+          });
+
+    } catch (Failure f) {
+      handler.report(f);
+      System.exit(-1);
     }
-    ;
-    message("Reading command line arguments ..."); // Process command line arguments
-    for (int i = 0; i < args.length; i++) {
-      options(handler, args[i], loader, false);
-    }
-    handler.abortOnFailures();
-
-    generatorsOutput.run(
-        new Action() {
-          void run(PrintWriter out) {
-            External.dumpGenerators(out);
-          }
-        });
-
-    message("Loading source files ..."); // Load and compile everything
-    MILProgram mil = loader.load(handler, milMain);
-
-    message("Running type checker ..."); // Sanity check/dependency analysis
-    mil.typeChecking(handler);
-
-    return mil;
   }
 
   private void process(Handler handler, MILProgram mil) throws Failure {
