@@ -23,6 +23,7 @@ import core.*;
 import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.TreeSet;
 
 public class External extends TopDefn {
 
@@ -286,12 +287,40 @@ public class External extends TopDefn {
      * types.
      */
     abstract Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException;
+
+    void dump(PrintWriter out, String ref, int width) {
+      out.print(ref);
+      for (int i = ref.length(); i < width; i++) {
+        out.print(' ');
+      }
+      out.println("/" + needs);
+    }
   }
 
   /**
    * Stores a mapping from String references to generators for external function implementations.
    */
   private static HashMap<String, Generator> generators = new HashMap();
+
+  /** Write the current list of external generators to the given PrintWriter. */
+  public static void dumpGenerators(PrintWriter out) {
+    TreeSet<String> refs = new TreeSet<String>();
+    // Find the number of external generators:
+    int width = 0;
+    for (String ref : generators.keySet()) {
+      int len = ref.length();
+      if (len > width) {
+        width = len;
+      }
+      refs.add(ref);
+    }
+    out.println("External generators: --------------------");
+    for (String ref : refs) {
+      generators.get(ref).dump(out, ref, width);
+    }
+    out.println(refs.size() + " external generators listed");
+    out.println("-----------------------------------------");
+  }
 
   /**
    * Use the ref and ts fields to determine if we can generate an implementation, post

@@ -57,6 +57,7 @@ class Main {
     System.err.println("         -c[filename]   type set");
     System.err.println("         -s[filename]   specialization type set (requires s)");
     System.err.println("         -r[filename]   representation type set (requires r)");
+    System.err.println("         -e[filename]   external generators");
     System.err.println("         -l[filename]   LLVM code (requires s)");
     System.err.println("         -f[filename]   LLVM interface (requires s)");
     System.err.println("         -b[filename]   bytecode text");
@@ -93,6 +94,8 @@ class Main {
   private FilenameOption specTypeSetOutput = new FilenameOption("specialization type set output");
 
   private FilenameOption repTypeSetOutput = new FilenameOption("representation type set output");
+
+  private FilenameOption generatorsOutput = new FilenameOption("external generators");
 
   private FilenameOption llvmOutput = new FilenameOption("llvm output");
 
@@ -159,6 +162,9 @@ class Main {
             return;
           case 'r':
             repTypeSetOutput.setName(str, i);
+            return;
+          case 'e':
+            generatorsOutput.setName(str, i);
             return;
           case 'l':
             llvmOutput.setName(str, i);
@@ -251,6 +257,13 @@ class Main {
       options(handler, args[i], loader, false);
     }
     handler.abortOnFailures();
+
+    generatorsOutput.run(
+        new Action() {
+          void run(PrintWriter out) {
+            External.dumpGenerators(out);
+          }
+        });
 
     message("Loading source files ..."); // Load and compile everything
     MILProgram mil = loader.load(handler, milMain);
