@@ -287,12 +287,25 @@ public class External extends TopDefn {
     }
 
     /** Check that a given list of arguments is valid for this generator. */
-    void checkArguments(Position pos, String ref, Type[] ts) throws Failure {
+    void checkArguments(Position pos, String ref, Type[] ts) throws GeneratorException {
       int n = prefix.numGenerics();
-      if (ts.length < n) {
-        throw new Failure(pos, "Generator for " + ref + " needs at least " + n + " arguments");
+      if (ts.length < n) { // Check that there are enough arguments
+        throw new GeneratorException(ref + " requires (at least) " + n + " arguments");
       }
-      // TODO: check kinds for ts ...
+      for (int i = 0; i < n; i++) { // Check that the arguments have the expected kinds
+        Kind ekind = prefix.getGen(i).getKind(); // expected kind
+        Kind tkind = ts[i].calcKind(null); // actual kind of parameter
+        if (tkind == null || !ekind.same(tkind)) {
+          throw new GeneratorException(
+              "Argument "
+                  + (i + 1)
+                  + " ("
+                  + ts[i]
+                  + ") does not have expected kind ("
+                  + ekind
+                  + ")");
+        }
+      }
     }
 
     /**
@@ -347,10 +360,10 @@ public class External extends TopDefn {
     } else if (ts != null) {
       Generator gen = generators.get(ref); // Otherwise, look for a generator ...
       if (gen != null) {
-        gen.checkArguments(pos, ref, ts); // ... with enough arguments
-        Tail t; // ... and try to produce an implementation
+        Tail t;
         try {
-          t = gen.generate(pos, ts, set);
+          gen.checkArguments(pos, ref, ts); // ... with valid arguments
+          t = gen.generate(pos, ts, set); // ... and try to produce an implementation
         } catch (GeneratorException e) {
           throw new Failure(pos, "No generated implementation: " + e.getReason());
         }
