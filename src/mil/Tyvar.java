@@ -46,6 +46,8 @@ public class Tyvar extends Name {
 
   public static final Tyvar nat = new Tyvar(BuiltinPosition.pos, "", KAtom.NAT);
 
+  public static final Tyvar lab = new Tyvar(BuiltinPosition.pos, "", KAtom.LAB);
+
   /** Return the kind of this type constructor. */
   public Kind getKind() {
     return kind;

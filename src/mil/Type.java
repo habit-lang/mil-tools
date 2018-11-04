@@ -390,24 +390,44 @@ public abstract class Type extends Scheme {
 
   public static final BigInteger BIG_MAX_BIT_WIDTH = BigInteger.valueOf(MAX_BIT_WIDTH);
 
-  /** Convenience method for making a type of the form Bit n for some type w. */
-  public static Type bit(Type w) {
-    return Tycon.bit.asType().tap(w);
+  /** Convenience method for making types of the form Bit n for some type n. */
+  public static Type bit(Type n) {
+    return Tycon.bit.asType().tap(n);
   }
 
-  /** Convenience method for making a type of the form Bit n for some known integer value n. */
-  public static Type bit(int w) {
-    return Type.bit(new TNat(w));
+  /** Convenience method for making types of the form Bit n for some known integer value n. */
+  public static Type bit(int n) {
+    return Type.bit(new TNat(n));
   }
 
-  /** Convenience method for making a type of the form Ref a for some area type a. */
+  /** Convenience method for making types of the form NZBit n for some type n. */
+  public static Type nzbit(Type n) {
+    return Tycon.nzbit.asType().tap(n);
+  }
+
+  /** Convenience method for making types of the form Ix n for some type n. */
+  public static Type ix(Type n) {
+    return Tycon.ix.asType().tap(n);
+  }
+
+  /** Convenience method for making types of the form Ref a for some area type a. */
   public static Type ref(Type areaType) {
     return Tycon.ref.asType().tap(areaType);
   }
 
-  /** Convenience method for making a type of the form Init a for some area type a. */
+  /** Convenience method for making types of the form Stored t for some type t. */
+  public static Type stored(Type t) {
+    return Tycon.stored.asType().tap(t);
+  }
+
+  /** Convenience method for making types of the form Init a for some area type a. */
   public static Type init(Type a) {
     return Tycon.init.asType().tap(a);
+  }
+
+  /** Convenience method for making types of the form Array n a for some nat n and area type a. */
+  public static Type array(Type n, Type a) {
+    return Tycon.array.asType().tap(n, a);
   }
 
   /** Find the name of the associated bitdata type, if any. */
