@@ -274,12 +274,25 @@ public class External extends TopDefn {
 
   protected abstract static class Generator {
 
-    /** Minimum number of type arguments needed to use this generator. */
-    int needs;
+    /** Prefix describing parameters needed to use this generator. */
+    protected Prefix prefix;
+
+    /** Type skeleton for generated value (or close approximation). */
+    protected Type type;
 
     /** Default constructor. */
-    protected Generator(int needs) {
-      this.needs = needs;
+    protected Generator(Prefix prefix, Type type) {
+      this.prefix = prefix;
+      this.type = type;
+    }
+
+    /** Check that a given list of arguments is valid for this generator. */
+    void checkArguments(Position pos, String ref, Type[] ts) throws Failure {
+      int n = prefix.numGenerics();
+      if (ts.length < n) {
+        throw new Failure(pos, "Generator for " + ref + " needs at least " + n + " arguments");
+      }
+      // TODO: check kinds for ts ...
     }
 
     /**
@@ -293,7 +306,7 @@ public class External extends TopDefn {
       for (int i = ref.length(); i < width; i++) {
         out.print(' ');
       }
-      out.println("/" + needs);
+      out.println(prefix.forall(type).toString());
     }
   }
 
@@ -334,10 +347,7 @@ public class External extends TopDefn {
     } else if (ts != null) {
       Generator gen = generators.get(ref); // Otherwise, look for a generator ...
       if (gen != null) {
-        if (ts.length < gen.needs) { // ... with enough arguments
-          throw new Failure(
-              pos, "Generator for " + ref + " needs at least " + gen.needs + " arguments");
-        }
+        gen.checkArguments(pos, ref, ts); // ... with enough arguments
         Tail t; // ... and try to produce an implementation
         try {
           t = gen.generate(pos, ts, set);
@@ -452,12 +462,92 @@ public class External extends TopDefn {
     return unaryUnit(pos).constClosure(pos, 1);
   }
 
+  public static final Prefix star = new Prefix(new Tyvar[] {Tyvar.star});
+
+  public static final Prefix nat = new Prefix(new Tyvar[] {Tyvar.nat});
+
+  public static final Prefix nat_nat = new Prefix(new Tyvar[] {Tyvar.nat, Tyvar.nat});
+
+  public static final Prefix star_nat = new Prefix(new Tyvar[] {Tyvar.star, Tyvar.nat});
+
+  public static final Prefix nat_area = new Prefix(new Tyvar[] {Tyvar.nat, Tyvar.area});
+
+  public static final Prefix nat_nat_nat =
+      new Prefix(new Tyvar[] {Tyvar.nat, Tyvar.nat, Tyvar.nat});
+
+  public static final Prefix area_lab_area =
+      new Prefix(new Tyvar[] {Tyvar.area, Tyvar.lab, Tyvar.area});
+
+  public static final TGen gA = Type.gen(0);
+
+  public static final TGen gB = Type.gen(1);
+
+  public static final TGen gC = Type.gen(2);
+
+  public static final Type word = Tycon.word.asType();
+
+  public static final Type flag = Tycon.flag.asType();
+
+  public static final Type unit = Tycon.unit.asType();
+
+  public static final Type todo = new PrimTycon("TODO", KAtom.STAR, 0).asType();
+
+  public static final Type bool = todo;
+
+  public static final Type proc = todo;
+
+  public static final Type maybeIx = todo;
+
+  public static final Type fun(Type d, Type r) {
+    return Type.fun(d, r);
+  }
+
+  public static final Type fun(Type d1, Type d2, Type r) {
+    return fun(d1, fun(d2, r));
+  }
+
+  public static final Type fun(Type d1, Type d2, Type d3, Type r) {
+    return fun(d1, fun(d2, d3, r));
+  }
+
+  public static final Type fun(Type d1, Type d2, Type d3, Type d4, Type r) {
+    return fun(d1, fun(d2, d3, d4, r));
+  }
+
+  public static Type proxy(Type w) {
+    return unit;
+  }
+
+  public static Type bitA = Type.bit(gA);
+
+  public static Type bitB = Type.bit(gB);
+
+  public static Type bitC = Type.bit(gC);
+
+  public static Type bitAbitA = fun(bitA, bitA);
+
+  public static Type bitAbitB = fun(bitA, bitB);
+
+  public static Type bitAbitAbitA = fun(bitA, fun(bitA, bitA));
+
+  public static Type bitAbitABool = fun(bitA, bitA, bool);
+
+  public static Type ixA = Type.ix(gA);
+
+  public static Type ixB = Type.ix(gB);
+
+  public static Type bitAixAbitA = fun(bitA, ixA, bitA);
+
+  public static Type ixAixBixA = fun(ixA, ixB, ixA);
+
+  public static Type arrayAB = Type.array(gA, gB);
+
   static {
 
     // primBitFromLiteral v w ... :: Proxy v -> Bit w
     generators.put(
         "primBitFromLiteral",
-        new Generator(2) {
+        new Generator(nat_nat, fun(proxy(gA), bitB)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger v = ts[0].validNat(); // Value of literal
             int w = ts[1].validWidth(); // Width of bit vector
@@ -469,7 +559,7 @@ public class External extends TopDefn {
     // primBitToWord w :: Bit w -> Word
     generators.put(
         "primBitToWord",
-        new Generator(1) {
+        new Generator(nat, fun(bitA, word)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validWidth();
             switch (width) {
@@ -495,7 +585,7 @@ public class External extends TopDefn {
     // primWordToBit w :: Word -> Bit w
     generators.put(
         "primWordToBit",
-        new Generator(1) {
+        new Generator(nat, fun(word, bitA)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validWidth();
             switch (width) {
@@ -529,7 +619,7 @@ public class External extends TopDefn {
     // primBitConcat m n p :: Bit m -> Bit n -> Bit p,  where m+n = p
     generators.put(
         ":#",
-        new Generator(3) {
+        new Generator(nat_nat_nat, fun(bitA, bitB, bitC)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int m = ts[0].validWidth(1); // Width of first input (most significant bits)
             int n = ts[1].validWidth(1); // Width of second input (least significant bits)
@@ -543,9 +633,10 @@ public class External extends TopDefn {
         });
 
     // primBitSelect m n o :: Bit m -> Bit n, where o is the offset, o+n<=m
+    // TODO: Add a proxy type argument ...
     generators.put(
         "primBitSelect",
-        new Generator(3) {
+        new Generator(nat_nat_nat, bitAbitB) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int m = ts[0].validWidth(); // Width of input bit vector
             int n = ts[1].validWidth(); // Width of output bit vector
@@ -567,7 +658,7 @@ public class External extends TopDefn {
     // primBitsHi m n :: Bit m -> Bit n, where n<=m
     generators.put(
         "primBitsHi",
-        new Generator(2) {
+        new Generator(nat_nat, bitAbitB) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int m = ts[0].validWidth(); // Width of input bit vector
             int n = ts[1].validWidth(); // Width of output bit vector
@@ -582,7 +673,7 @@ public class External extends TopDefn {
     // primBitsLo m n :: Bit m -> Bit n, where n<=m
     generators.put(
         "primBitsLo",
-        new Generator(2) {
+        new Generator(nat_nat, bitAbitB) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int m = ts[0].validWidth(); // Width of input bit vector
             int n = ts[1].validWidth(); // Width of output bit vector
@@ -600,7 +691,7 @@ public class External extends TopDefn {
     // primIxFromLiteral v m :: Proxy v -> Ix m
     generators.put(
         "primIxFromLiteral",
-        new Generator(2) {
+        new Generator(nat_nat, fun(proxy(gA), ixB)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger v = ts[0].validNat(); // Value of literal
             BigInteger m = ts[1].validIndex(); // Modulus for index type
@@ -612,7 +703,7 @@ public class External extends TopDefn {
     // primIxMaxBound m :: Ix m
     generators.put(
         "primIxMaxBound",
-        new Generator(1) {
+        new Generator(nat, ixA) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger m = ts[0].validIndex(); // Modulus for index type
             return new Return(new Word(m.longValue() - 1));
@@ -622,7 +713,7 @@ public class External extends TopDefn {
     // primIxToBit m w :: Ix m -> Bit w
     generators.put(
         "primIxToBit",
-        new Generator(2) {
+        new Generator(nat_nat, fun(ixA, bitB)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger m = ts[0].validIndex(); // Modulus for index type
             int w = ts[1].validWidth(); // Width of bitdata type
@@ -648,7 +739,7 @@ public class External extends TopDefn {
     // primIxShiftL n p :: Ix n -> Ix p -> Ix n,  where n=2^p
     generators.put(
         "primIxShiftL",
-        new Generator(2) {
+        new Generator(nat_nat, ixAixBixA) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger n = ts[0].validIndex(); // Modulus for index type
             int p = validIxShift(ts[1], n); // Modulus for shift amount such that n = 2^p
@@ -661,7 +752,7 @@ public class External extends TopDefn {
     // primIxShiftR n p :: Ix n -> Ix p -> Ix n,  where n=2^p
     generators.put(
         "primIxShiftR",
-        new Generator(2) {
+        new Generator(nat_nat, ixAixBixA) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger n = ts[0].validIndex(); // Modulus for index type
             int p = validIxShift(ts[1], n); // Modulus for shift amount such that n = 2^p
@@ -692,7 +783,7 @@ public class External extends TopDefn {
     // primModIx w m :: Bit w -> Ix m
     generators.put(
         "primModIx",
-        new Generator(2) {
+        new Generator(nat_nat, fun(bitA, ixB)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int w = ts[0].validWidth(2); // Width of bitdata type
             long m = ts[1].validIndex().longValue(); // Modulus for index type
@@ -715,7 +806,7 @@ public class External extends TopDefn {
     // primRelaxIx n m :: Ix n -> Ix m
     generators.put(
         "primRelaxIx",
-        new Generator(2) {
+        new Generator(nat_nat, fun(ixA, ixB)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger n = ts[0].validIndex(); // Smaller index modulus
             BigInteger m = ts[1].validIndex(); // Larger index modulus
@@ -736,7 +827,7 @@ public class External extends TopDefn {
     // primGenIncIx a m :: a -> (Ix m -> a) -> Ix m -> a
     generators.put(
         "primGenIncIx",
-        new Generator(2) {
+        new Generator(star_nat, fun(gA, fun(ixB, gA), ixB, gA)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
             BigInteger m = ts[1].validIndex(); // Index modulus, will be > 0
@@ -761,7 +852,7 @@ public class External extends TopDefn {
     // Special case: requires bitdataRepresentations, and m < 2^WordSize
     generators.put(
         "primIncIx",
-        new Generator(1) {
+        new Generator(nat, fun(ixA, maybeIx)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             long m = ts[0].validIndex().longValue(); // Index modulus, must be > 0
             validBitdataRepresentations(); // ensure Maybe (Ix m) and Ix (m+1) have same
@@ -776,7 +867,7 @@ public class External extends TopDefn {
     // primGenDecIx n :: a -> (Ix n -> a) -> Ix n -> a
     generators.put(
         "primGenDecIx",
-        new Generator(2) {
+        new Generator(star_nat, fun(gA, fun(ixB, gA), ixB, gA)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
             BigInteger m = ts[1].validIndex(); // Index modulus, must be > 0
@@ -802,7 +893,7 @@ public class External extends TopDefn {
     // limit
     generators.put(
         "primDecIx",
-        new Generator(1) {
+        new Generator(nat, fun(ixA, maybeIx)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             long m = ts[0].validIndex().longValue(); // Index modulus, must be > 0
             if (((m + 1) & m) != 0) { // ... with a successor that is a power of two
@@ -826,7 +917,7 @@ public class External extends TopDefn {
     // primMaybeIx a n :: a -> (Ix n -> a) -> Word -> a
     generators.put(
         "primGenMaybeIx",
-        new Generator(2) {
+        new Generator(star_nat, fun(gA, fun(ixB, gA), word, gA)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
             long m = ts[1].validIndex().longValue(); // Index modulus
@@ -843,7 +934,7 @@ public class External extends TopDefn {
     // primGenLeqIx a n :: a -> (Ix n -> a) -> Word -> Ix n -> a
     generators.put(
         "primGenLeqIx",
-        new Generator(2) {
+        new Generator(star_nat, fun(gA, fun(ixB, gA), word, ixB, gA)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
             ts[1].validIndex(); // Check for valid index modulus
@@ -927,7 +1018,7 @@ public class External extends TopDefn {
     // primIx... m :: Ix m -> Ix m -> Bool
     generators.put(
         ref,
-        new Generator(1) {
+        new Generator(nat, fun(ixA, ixA, bool)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             ts[0].validIndex(); // Index upper bound
             return new PrimCall(cmp).makeBinaryFuncClosure(pos, 1, 1);
@@ -949,7 +1040,7 @@ public class External extends TopDefn {
     // primBitNot w :: Bit w -> Bit w
     generators.put(
         "primBitNot",
-        new Generator(1) {
+        new Generator(nat, bitAbitA) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validWidth(); // Width of bit vector
             switch (width) {
@@ -998,7 +1089,7 @@ public class External extends TopDefn {
     // primBitRef w :: Bit w -> Bit w -> Bit w
     generators.put(
         ref,
-        new Generator(1) {
+        new Generator(nat, bitAbitAbitA) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validWidth(); // Width of bit vector
             switch (width) {
@@ -1038,7 +1129,7 @@ public class External extends TopDefn {
     // primBitNegate w :: Bit w -> Bit w
     generators.put(
         "primBitNegate",
-        new Generator(1) {
+        new Generator(nat, bitAbitA) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validWidth(); // Width of bit vector
             switch (width) {
@@ -1088,7 +1179,7 @@ public class External extends TopDefn {
     // primBitRef w :: Bit w -> Bit w -> Bit w
     generators.put(
         ref,
-        new Generator(1) {
+        new Generator(nat, bitAbitAbitA) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validWidth(); // Width of bit vector
             switch (width) {
@@ -1130,7 +1221,7 @@ public class External extends TopDefn {
     // primBitRef w :: Bit w -> Bit w -> Flag
     generators.put(
         ref,
-        new Generator(1) {
+        new Generator(nat, bitAbitABool) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validWidth(); // Width of bit vector
             switch (width) {
@@ -1203,7 +1294,7 @@ public class External extends TopDefn {
     // primBit... w ... :: Bit w -> Bit w -> Flag
     generators.put(
         ref,
-        new Generator(1) {
+        new Generator(nat, bitAbitABool) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validWidth(); // Width of bit vector
             switch (width) {
@@ -1287,7 +1378,7 @@ public class External extends TopDefn {
     // primBit... w ... :: Bit w -> Bit w -> Flag
     generators.put(
         ref,
-        new Generator(1) {
+        new Generator(nat, bitAbitABool) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validWidth(); // Width of bit vector
             switch (width) {
@@ -1344,8 +1435,8 @@ public class External extends TopDefn {
   protected abstract static class BitPosGenerator extends Generator {
 
     /** Default constructor. */
-    protected BitPosGenerator(int needs) {
-      super(needs);
+    protected BitPosGenerator(Prefix prefix, Type type) {
+      super(prefix, type);
     }
 
     /**
@@ -1390,8 +1481,8 @@ public class External extends TopDefn {
   protected abstract static class BitmanipGenerator extends BitPosGenerator {
 
     /** Default constructor. */
-    protected BitmanipGenerator(int needs) {
-      super(needs);
+    protected BitmanipGenerator(Prefix prefix, Type type) {
+      super(prefix, type);
     }
 
     /**
@@ -1427,8 +1518,8 @@ public class External extends TopDefn {
   protected abstract static class ConstructBitmanipGenerator extends BitmanipGenerator {
 
     /** Default constructor. */
-    protected ConstructBitmanipGenerator(int needs) {
-      super(needs);
+    protected ConstructBitmanipGenerator(Prefix prefix, Type type) {
+      super(prefix, type);
     }
 
     Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
@@ -1441,8 +1532,8 @@ public class External extends TopDefn {
   protected abstract static class ConsumeBitmanipGenerator extends BitmanipGenerator {
 
     /** Default constructor. */
-    protected ConsumeBitmanipGenerator(int needs) {
-      super(needs);
+    protected ConsumeBitmanipGenerator(Prefix prefix, Type type) {
+      super(prefix, type);
     }
 
     Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
@@ -1464,7 +1555,7 @@ public class External extends TopDefn {
   static {
     generators.put(
         "primBitBit",
-        new ConstructBitmanipGenerator(1) {
+        new ConstructBitmanipGenerator(nat, fun(ixA, bitA)) {
           Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
             Atom[] as = new Atom[n];
             for (int i = 0; i < n; i++) {
@@ -1476,7 +1567,7 @@ public class External extends TopDefn {
 
     generators.put(
         "primBitSetBit",
-        new ConsumeBitmanipGenerator(1) {
+        new ConsumeBitmanipGenerator(nat, bitAixAbitA) {
           Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
             Temp w = new Temp();
             return new Bind(
@@ -1488,7 +1579,7 @@ public class External extends TopDefn {
 
     generators.put(
         "primBitClearBit",
-        new ConsumeBitmanipGenerator(1) {
+        new ConsumeBitmanipGenerator(nat, bitAixAbitA) {
           Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
             Temp w = new Temp();
             Temp x = new Temp();
@@ -1504,7 +1595,7 @@ public class External extends TopDefn {
 
     generators.put(
         "primBitFlipBit",
-        new ConsumeBitmanipGenerator(1) {
+        new ConsumeBitmanipGenerator(nat, bitAixAbitA) {
           Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
             Temp w = new Temp();
             return new Bind(
@@ -1516,7 +1607,7 @@ public class External extends TopDefn {
 
     generators.put(
         "primBitTestBit",
-        new ConsumeBitmanipGenerator(1) {
+        new ConsumeBitmanipGenerator(nat, fun(bitA, ixA, bool)) {
           Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
             Temp w = new Temp();
             return new Bind(
@@ -1526,7 +1617,7 @@ public class External extends TopDefn {
 
     generators.put(
         "primBitBitSize",
-        new Generator(1) { // :: Bit w -> Ix w
+        new Generator(nat, fun(bitA, ixA)) { // :: Bit w -> Ix w
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validWidth(1); // Bit vector width
             int n = Word.numWords(width);
@@ -1550,7 +1641,7 @@ public class External extends TopDefn {
     // primBitShiftL w :: Bit w -> Ix w -> Bit w,  for w>1
     generators.put(
         "primBitShiftL",
-        new BitPosGenerator(1) {
+        new BitPosGenerator(nat, bitAixAbitA) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width =
                 ts[0].validWidth(
@@ -1667,7 +1758,7 @@ public class External extends TopDefn {
     // primBitShiftRu w :: Bit w -> Ix w -> Bit w,  for w>1
     generators.put(
         "primBitShiftRu",
-        new BitPosGenerator(1) {
+        new BitPosGenerator(nat, bitAixAbitA) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width =
                 ts[0].validWidth(
@@ -1764,7 +1855,7 @@ public class External extends TopDefn {
     // primNZBitFromLiteral v w ... :: Proxy v -> NZBit w
     generators.put(
         "primNZBitFromLiteral",
-        new Generator(2) {
+        new Generator(nat_nat, fun(proxy(gA), Type.nzbit(gB))) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger v = ts[0].validNat(); // Value of literal (must be nonzero!)
             int w = ts[1].validWidth(); // Width of bit vector
@@ -1785,7 +1876,7 @@ public class External extends TopDefn {
     // primNZBitNonZero w :: Bit w -> Maybe (NZBit w)
     generators.put(
         "primNZBitNonZero",
-        new Generator(1) {
+        new Generator(nat, fun(bitA, maybeIx)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int w = ts[0].validWidth(2); // Width of bit vector
             validSingleWord(w);
@@ -1797,7 +1888,7 @@ public class External extends TopDefn {
     // primNZBitDiv w :: Bit w -> NZBit w -> Bit w
     generators.put(
         "primNZBitDiv",
-        new Generator(1) {
+        new Generator(nat, fun(bitA, Type.nzbit(gA), bitA)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int w = ts[0].validWidth(2); // Width of bit vector (must fit within a single word)
             validSingleWord(w);
@@ -1849,7 +1940,7 @@ public class External extends TopDefn {
     // primReadRefStored t :: Ref (Stored t) -> Proc t
     generators.put(
         "primReadRefStored",
-        new Generator(1) {
+        new Generator(star, fun(Type.ref(Type.stored(gA)), proc)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validMemBitSize();
             if (width == 0) {
@@ -1865,7 +1956,7 @@ public class External extends TopDefn {
     // primWriteRefStored t :: Ref (Stored t) -> t -> Proc Unit
     generators.put(
         "primWriteRefStored",
-        new Generator(1) {
+        new Generator(star, fun(Type.ref(Type.stored(gA)), gA, proc)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validMemBitSize();
             if (width == 0) {
@@ -1886,7 +1977,7 @@ public class External extends TopDefn {
     // primInitStored t :: t -> Init (Stored t) (loosely equiv to: [t] ->> [[Word] ->> [Unit]]
     generators.put(
         "primInitStored",
-        new Generator(1) {
+        new Generator(star, fun(gA, Type.init(Type.stored(gA)))) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validMemBitSize();
             if (width == 0) {
@@ -1908,7 +1999,7 @@ public class External extends TopDefn {
     // (@) n a :: Ref (Array n a) -> Ix n -> Ref a
     generators.put(
         "@",
-        new Generator(2) {
+        new Generator(nat_area, fun(Type.ref(arrayAB), ixA, Type.ref(gB))) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger n = ts[0].validNat(); // Array length
             Type.validSigned(n);
@@ -1933,7 +2024,7 @@ public class External extends TopDefn {
     // primInitArray n a :: (Ix n -> Init a) -> Init (Array n a)
     generators.put(
         "primInitArray",
-        new Generator(2) {
+        new Generator(nat_area, fun(fun(ixA, Type.init(gB)), Type.init(arrayAB))) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger n = ts[0].validNat(); // Array length
             Type.validSigned(n);
@@ -2034,7 +2125,7 @@ public class External extends TopDefn {
     // primStructSelect st lab t :: Ref st -> #lab -> Ref t
     generators.put(
         "primStructSelect",
-        new Generator(3) {
+        new Generator(area_lab_area, fun(Type.ref(gA), proxy(gB), Type.ref(gC))) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             StructType st = ts[0].structType(); // Structure type
             if (st == null) {
