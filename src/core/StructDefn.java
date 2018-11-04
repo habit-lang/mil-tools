@@ -172,6 +172,7 @@ public class StructDefn extends TyconDefn {
                 + ")");
       }
       alignment = lcm(alignment, align); // Update minimal alignment
+      f.generateSelector(st); // Construct an update primitive
       debug.Log.println("Field " + f.getId() + ": offset=" + offset + ", alignment=" + align);
     }
 

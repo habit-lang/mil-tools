@@ -70,7 +70,23 @@ public class StructField extends Name {
    * Make a new version of this structure field with a types that is canonical wrt the given set.
    */
   StructField makeCanonStructField(TypeSet set) {
-    return new StructField(pos, id, type.canonType(set), offset, width);
+    StructField field = new StructField(pos, id, type.canonType(set), offset, width);
+    field.selectPrim = selectPrim.canonPrim(set);
+    return field;
+  }
+
+  private Prim selectPrim;
+
+  public Prim getSelectPrim() {
+    return selectPrim;
+  }
+
+  /** Generate code for a selection operator for this field. */
+  public void generateSelector(StructType st) {
+    Temp[] args = Temp.makeTemps(1);
+    Block impl = new Block(pos, args, new Done(Prim.add.withArgs(args[0], offset)));
+    BlockType bt = new BlockType(Type.tuple(Type.ref(st.asType())), Type.tuple(Type.ref(type)));
+    selectPrim = new Prim.blockImpl("select_" + id, Prim.PURE, bt, impl);
   }
 
   /**

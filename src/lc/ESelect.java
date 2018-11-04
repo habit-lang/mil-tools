@@ -58,6 +58,8 @@ class ESelect extends PosExpr {
 
   private int index;
 
+  private StructField sf;
+
   /**
    * Perform scope analysis on this expression, creating a Temp for each variable binding, checking
    * that all of the identifiers it references correspond to bound variables, and returning the set
@@ -95,7 +97,20 @@ class ESelect extends PosExpr {
     if (bt == null) {
       layout = et.bitdataLayout();
       if (layout == null) {
-        throw new Failure(pos, "Invalid selector: no layout for " + et);
+        TVar tv = new TVar(Tyvar.area); // Is e a reference to a structure?
+        if (Type.ref(tv).match(null, et, null)) {
+          StructType st = tv.skeleton().structType();
+          if (st != null) {
+            StructField[] fields = st.getFields();
+            index = Name.index(lab, fields);
+            if (index >= 0) {
+              sf = fields[index];
+              return Type.ref(sf.getType());
+            }
+          }
+        }
+        throw new Failure(
+            pos, "Invalid selector for field \"" + lab + "\" from value of type " + et);
       }
       cf = null; // et is a layout type, so no outer constructor is involved
     } else {
@@ -126,7 +141,9 @@ class ESelect extends PosExpr {
         env,
         new AtomCont() {
           Code with(final Atom a) {
-            if (cf == null) { // operating directly on layout
+            if (sf != null) { // structure field selection
+              return kt.with(sf.getSelectPrim().withArgs(a));
+            } else if (cf == null) { // operating directly on layout
               return kt.with(new Sel(lcf, index, a));
             } else {
               Temp t = new Temp();

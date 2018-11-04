@@ -824,7 +824,7 @@ public class External extends TopDefn {
             BigInteger n = ts[0].validIndex(); // Smaller index modulus
             BigInteger m = ts[1].validIndex(); // Larger index modulus
             if (n.compareTo(m) > 0) {
-              throw new GeneratorException("First parameter must not be larger than the second");
+              throw new GeneratorException("First argument must not be larger than the second");
             }
             // We implement relaxIx as the identity function (Ix n and Ix m values are both
             // represented as Word values).
@@ -2154,7 +2154,7 @@ public class External extends TopDefn {
               throw new GeneratorException("There is no \"" + lab + "\" field in " + st);
             }
             Temp[] vs = Temp.makeTemps(1);
-            Tail tail = Prim.add.withArgs(vs[0], fields[i].getOffset());
+            Tail tail = fields[i].getSelectPrim().repTransformPrim(set, vs);
             ClosureDefn k = new ClosureDefn(pos, vs, Temp.makeTemps(1), tail);
             return new ClosAlloc(k).makeUnaryFuncClosure(pos, 1);
           }
