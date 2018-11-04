@@ -154,7 +154,7 @@ The following are tokens in core/mil/lc:
 
     Some symbols are treated as reserved; these will be written
     between double quotes in the following, such as `"|"`.  The
-    remaining symols are classified as either `CONSYM` (if the
+    remaining symbols are classified as either `CONSYM` (if the
     first character is a colon) or as `VARSYM` (all other
     symbols).
 
@@ -162,7 +162,7 @@ The following are tokens in core/mil/lc:
 
 Layout information is used, in the same way as it is in Haskell,
 as a substitute for explicit use of the `"{"`, `";"` and `"}"`
-punctutation that is used to describe lists in program syntax.
+punctuation that is used to describe lists in program syntax.
 
 Note, however, that the lexer will not insert a `";"` symbol if
 the next token is `"then"`, `"else"`, `"of"`, or `"in"`.
@@ -280,7 +280,7 @@ region of memory:
 
 To be valid, all fields of a structure must be accessible via
 appropriately aligned addresses.  To ensure this, the alignment of
-the structure must be divisible by the aligment for each of the
+the structure must be divisible by the alignment for each of the
 fields in the structure (the least common multiple is used as the
 default if no explicit alignment is specified).  In addition, the
 offset of every field (in bytes, from the start of the structure),
@@ -314,7 +314,7 @@ values whose definition will be provided elsewhere (in general,
                   | STRLIT
 
 The optional portion (in braces) after each identifier name in an
-`external definition` is used to provide extra information about
+`external` definition is used to provide extra information about
 how the definition of the value will be provided, but the details
 are not currently well-documented.
 
@@ -343,7 +343,7 @@ translations into standard MIL code, are described below.
 
 MIL extends the core language with a new form of "tuple type" that
 groups a list of zero or more types, written between a pair of
-square brackts, into a type expression of kind `tuple`.  There is
+square brackets, into a type expression of kind `tuple`.  There is
 also a corresponding function type constructor, written `->>`,
 which has kind `tuple -> tuple -> *` and describes first-class
 function values (i.e., closures) that map a list of inputs
@@ -781,7 +781,7 @@ the overall value of the expression:
 
 The grammar above includes (at least) one ambiguity, allowing
 expressions of the form `CONID []` to be interpreted either as a
-bitdata constructor or as a structure intializer.  The current
+bitdata constructor or as a structure initializer.  The current
 implementation always assumes the first of these two options.
 (The implementation could potentially do a better job here by
 using static analysis to determine whether the given `CONID`
