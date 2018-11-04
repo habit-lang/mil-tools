@@ -939,7 +939,7 @@ public abstract class Type extends Scheme {
   static void validSigned(BigInteger n) throws GeneratorException {
     if (n.compareTo(Word.maxSigned()) > 0) {
       throw new GeneratorException(
-          "parameter value " + n + " is too large; must be at most " + Word.maxSigned());
+          "Argument value " + n + " is too large; must be at most " + Word.maxSigned());
     }
   }
 
@@ -953,7 +953,7 @@ public abstract class Type extends Scheme {
   BigInteger validIndex() throws GeneratorException {
     BigInteger n = validNat();
     if (n.signum() <= 0) {
-      throw new GeneratorException("parameter value " + n + " is too small; must be at least 1");
+      throw new GeneratorException("Argument value " + n + " is too small; must be at least 1");
     }
     validSigned(n);
     return n;
@@ -961,13 +961,14 @@ public abstract class Type extends Scheme {
 
   static void validBelow(BigInteger v, BigInteger tooBig) throws GeneratorException {
     if (v.compareTo(tooBig) >= 0) {
-      throw new GeneratorException("parameter " + v + " is too large; must be less than " + tooBig);
+      throw new GeneratorException(
+          "Argument value " + v + " is too large; must be less than " + tooBig);
     }
   }
 
   static void validNotBelow(long n, long lo) throws GeneratorException {
     if (n < lo) {
-      throw new GeneratorException("parameter " + n + " is too low; must be at least " + lo);
+      throw new GeneratorException("Argument value " + n + " is too low; must be at least " + lo);
     }
   }
 

@@ -463,7 +463,7 @@ public class External extends TopDefn {
 
   private static void validBitdataRepresentations() throws GeneratorException {
     if (!bitdataRepresentations) {
-      throw new GeneratorException("bitdata representations (\"b\" pass) required");
+      throw new GeneratorException("Bitdata representations (\"b\" pass) required");
     }
   }
 
@@ -585,7 +585,7 @@ public class External extends TopDefn {
               default:
                 if (width < 0 || width > Word.size()) {
                   throw new GeneratorException(
-                      "parameter "
+                      "Argument value "
                           + width
                           + " not accepted; value must be in the range 0 to "
                           + Word.size());
@@ -615,7 +615,7 @@ public class External extends TopDefn {
               default:
                 if (width < 0 || width > Word.size()) {
                   throw new GeneratorException(
-                      "parameter "
+                      "Argument value "
                           + width
                           + " not accepted; value must be in the range 0 to "
                           + Word.size());
@@ -732,7 +732,7 @@ public class External extends TopDefn {
             int w = ts[1].validWidth(); // Width of bitdata type
             if (BigInteger.ONE.shiftLeft(w).compareTo(m) < 0) {
               throw new GeneratorException(
-                  "width " + w + " is not large enough for index value " + m);
+                  "Width " + w + " is not large enough for index value " + m);
             }
             Temp[] vs = Temp.makeTemps(1); // Argument holds incoming index
             int n = Word.numWords(w);
@@ -807,7 +807,7 @@ public class External extends TopDefn {
               return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t)).withArgs();
             } else if (n != 1) {
               throw new GeneratorException(
-                  "modulus must be a power of two, or bit vector must fit in one word.");
+                  "Modulus must be a power of two, or bit vector must fit in one word.");
             }
             Temp[] args =
                 Temp.makeTemps(n); // TODO: add support for n>1, mod not a power of two ...
@@ -824,7 +824,7 @@ public class External extends TopDefn {
             BigInteger n = ts[0].validIndex(); // Smaller index modulus
             BigInteger m = ts[1].validIndex(); // Larger index modulus
             if (n.compareTo(m) > 0) {
-              throw new GeneratorException("first parameter must not be larger than the second");
+              throw new GeneratorException("First parameter must not be larger than the second");
             }
             // We implement relaxIx as the identity function (Ix n and Ix m values are both
             // represented as Word values).
@@ -1167,7 +1167,7 @@ public class External extends TopDefn {
   private static void validSingleWord(int width) throws GeneratorException {
     if (Word.numWords(width) != 1) {
       throw new GeneratorException(
-          "bit vector of width " + width + " does not fit in a single word");
+          "Bit vector of width " + width + " does not fit in a single word");
     }
   }
 
