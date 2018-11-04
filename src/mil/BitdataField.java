@@ -75,7 +75,7 @@ public class BitdataField extends Name {
   BitdataField makeCanonBitdataField(TypeSet set) {
     BitdataField field = new BitdataField(pos, id, type.canonType(set), offset, width);
     field.selectorBlock = selectorBlock;
-    field.updatePrim = updatePrim;
+    field.updatePrim = updatePrim.canonPrim(set);
     return field;
   }
 
