@@ -491,8 +491,6 @@ public class External extends TopDefn {
 
   public static final Type bool = todo;
 
-  public static final Type proc = todo;
-
   public static final Type maybeIx = todo;
 
   public static final Type fun(Type d, Type r) {
@@ -1937,7 +1935,7 @@ public class External extends TopDefn {
     // primReadRefStored t :: Ref (Stored t) -> Proc t
     generators.put(
         "primReadRefStored",
-        new Generator(Prefix.star, fun(Type.ref(Type.stored(gA)), proc)) {
+        new Generator(Prefix.star, fun(Type.ref(Type.stored(gA)), Type.proc(gA))) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validMemBitSize();
             if (width == 0) {
@@ -1953,7 +1951,7 @@ public class External extends TopDefn {
     // primWriteRefStored t :: Ref (Stored t) -> t -> Proc Unit
     generators.put(
         "primWriteRefStored",
-        new Generator(Prefix.star, fun(Type.ref(Type.stored(gA)), gA, proc)) {
+        new Generator(Prefix.star, fun(Type.ref(Type.stored(gA)), gA, Type.proc(unit))) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validMemBitSize();
             if (width == 0) {

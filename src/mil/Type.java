@@ -382,7 +382,7 @@ public abstract class Type extends Scheme {
     return (-1);
   }
 
-  public static Type procOf(Type res) {
+  public static Type proc(Type res) {
     return new TAp(Tycon.proc.asType(), res);
   }
 

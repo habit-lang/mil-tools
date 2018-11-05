@@ -83,7 +83,7 @@ public class Cfun extends Name {
   private static final AllocType procType =
       new PolyAllocType(
           new Type[] {Type.milfun(Type.empty, Type.tuple(Type.gen(0)))},
-          Type.procOf(Type.gen(0)),
+          Type.proc(Type.gen(0)),
           Prefix.star);
 
   public static final Cfun Proc = new Cfun("Proc", Tycon.proc, 0, procType);
