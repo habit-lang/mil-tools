@@ -1455,8 +1455,7 @@ public class Prim {
   }
 
   /** Represents the polymorphic block type forall (r::tuple). [] >>= r. */
-  public static final BlockType haltType =
-      new PolyBlockType(Type.empty, Type.gen(0), new Prefix(new Tyvar[] {Tyvar.tuple}));
+  public static final BlockType haltType = new PolyBlockType(Type.empty, Type.gen(0), Prefix.tuple);
 
   public static final Prim halt = new halt();
 
@@ -2080,10 +2079,7 @@ public class Prim {
   public static final Type init0Type = Type.init(Type.gen(0));
 
   public static final BlockType initSeqType =
-      new PolyBlockType(
-          Type.tuple(init0Type, init0Type),
-          Type.tuple(init0Type),
-          new Prefix(new Tyvar[] {Tyvar.area}));
+      new PolyBlockType(Type.tuple(init0Type, init0Type), Type.tuple(init0Type), Prefix.area);
 
   public static final Prim initSeq = new initSeq();
 
@@ -2132,9 +2128,7 @@ public class Prim {
 
   public static final BlockType initSelfType =
       new PolyBlockType(
-          Type.tuple(Type.milfun(ref0Type, init0Type)),
-          Type.tuple(init0Type),
-          new Prefix(new Tyvar[] {Tyvar.nat, Tyvar.area}));
+          Type.tuple(Type.milfun(ref0Type, init0Type)), Type.tuple(init0Type), Prefix.nat_area);
 
   public static final Prim initSelf = new initSelf();
 

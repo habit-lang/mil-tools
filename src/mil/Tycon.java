@@ -156,13 +156,13 @@ public abstract class Tycon extends Name {
 
   public static final Kind natToAreaToArea = new KFun(KAtom.NAT, areaToArea);
 
-  public static final Tycon word = new PrimTycon("Word", Kind.simple(0), 0);
+  public static final Tycon word = new PrimTycon("Word", KAtom.STAR, 0);
 
-  public static final Tycon nzword = new PrimTycon("NZWord", Kind.simple(0), 0);
+  public static final Tycon nzword = new PrimTycon("NZWord", KAtom.STAR, 0);
 
-  public static final Tycon addr = new PrimTycon("Addr", Kind.simple(0), 0);
+  public static final Tycon addr = new PrimTycon("Addr", KAtom.STAR, 0);
 
-  public static final Tycon flag = new PrimTycon("Flag", Kind.simple(0), 0);
+  public static final Tycon flag = new PrimTycon("Flag", KAtom.STAR, 0);
 
   public static final Tycon bit = new PrimTycon("Bit", natToStar, 1);
 

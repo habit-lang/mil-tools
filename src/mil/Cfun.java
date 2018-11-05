@@ -72,7 +72,7 @@ public class Cfun extends Name {
       new PolyAllocType(
           new Type[] {Type.milfunTuple(Type.gen(0), Type.gen(1))},
           Type.fun(Type.gen(0), Type.gen(1)),
-          new Prefix(new Tyvar[] {Tyvar.star, Tyvar.star}));
+          Prefix.star_star);
 
   public static final Cfun Func = new Cfun("Func", Tycon.arrow, 0, funcType);
 
@@ -84,7 +84,7 @@ public class Cfun extends Name {
       new PolyAllocType(
           new Type[] {Type.milfun(Type.empty, Type.tuple(Type.gen(0)))},
           Type.procOf(Type.gen(0)),
-          new Prefix(new Tyvar[] {Tyvar.star}));
+          Prefix.star);
 
   public static final Cfun Proc = new Cfun("Proc", Tycon.proc, 0, procType);
 

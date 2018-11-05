@@ -84,6 +84,28 @@ public class Prefix {
     return (numGenerics > 0) ? new Forall(this, type) : type;
   }
 
+  public static final Prefix star = new Prefix(new Tyvar[] {Tyvar.star});
+
+  public static final Prefix nat = new Prefix(new Tyvar[] {Tyvar.nat});
+
+  public static final Prefix area = new Prefix(new Tyvar[] {Tyvar.area});
+
+  public static final Prefix tuple = new Prefix(new Tyvar[] {Tyvar.tuple});
+
+  public static final Prefix nat_nat = new Prefix(new Tyvar[] {Tyvar.nat, Tyvar.nat});
+
+  public static final Prefix star_star = new Prefix(new Tyvar[] {Tyvar.star, Tyvar.star});
+
+  public static final Prefix star_nat = new Prefix(new Tyvar[] {Tyvar.star, Tyvar.nat});
+
+  public static final Prefix nat_area = new Prefix(new Tyvar[] {Tyvar.nat, Tyvar.area});
+
+  public static final Prefix nat_nat_nat =
+      new Prefix(new Tyvar[] {Tyvar.nat, Tyvar.nat, Tyvar.nat});
+
+  public static final Prefix area_lab_area =
+      new Prefix(new Tyvar[] {Tyvar.area, Tyvar.lab, Tyvar.area});
+
   public Type[] instantiate() {
     Type[] tenv = new Type[numGenerics];
     for (int i = 0; i < numGenerics; i++) {
