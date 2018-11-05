@@ -82,6 +82,8 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
         return "comma, \",\"";
       case SEMI:
         return "semicolon, \";\"";
+      case BACKTICK:
+        return "backtick, \"`\"";
       case VARID:
       case CONID:
         return "identifier \"" + lexeme + "\"";
@@ -185,6 +187,9 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
         case ';':
           nextChar();
           return token = SEMI;
+        case '`':
+          nextChar();
+          return token = BACKTICK;
 
         case '\"':
           try {

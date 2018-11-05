@@ -514,6 +514,14 @@ public class LCParser extends CoreParser implements LCTokens {
           return new EAp(new EAp(new EId(pos, id), e), parseInfixExpr());
         }
 
+      case BACKTICK:
+        {
+          lexer.nextToken(/* BACKTICK */ );
+          Expr op = failIfMissing(maybeAExpr());
+          require(BACKTICK);
+          return new EAp(new EAp(op, e), parseInfixExpr());
+        }
+
       case AMPAMP:
         {
           Position pos = lexer.getPos();

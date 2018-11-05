@@ -41,63 +41,65 @@ public interface CoreTokens {
 
   int SEMI = 16;
 
-  int VARID = 17;
+  int BACKTICK = 17;
 
-  int CONID = 18;
+  int VARID = 18;
 
-  int VARSYM = 19;
+  int CONID = 19;
 
-  int CONSYM = 20;
+  int VARSYM = 20;
 
-  int NATLIT = 21;
+  int CONSYM = 21;
 
-  int BITLIT = 22;
+  int NATLIT = 22;
 
-  int STRLIT = 23;
+  int BITLIT = 23;
 
-  int EQ = 24;
+  int STRLIT = 24;
 
-  int COCO = 25;
+  int EQ = 25;
 
-  int BAR = 26;
+  int COCO = 26;
 
-  int DOT = 27;
+  int BAR = 27;
 
-  int FROM = 28;
+  int DOT = 28;
 
-  int TO = 29;
+  int FROM = 29;
 
-  int REQUIRE = 30;
+  int TO = 30;
 
-  int EXPORT = 31;
+  int REQUIRE = 31;
 
-  int ENTRYPOINT = 32;
+  int EXPORT = 32;
 
-  int EXTERNAL = 33;
+  int ENTRYPOINT = 33;
 
-  int DATA = 34;
+  int EXTERNAL = 34;
 
-  int TYPE = 35;
+  int DATA = 35;
 
-  int AREA = 36;
+  int TYPE = 36;
 
-  int STRUCT = 37;
+  int AREA = 37;
 
-  int BITDATA = 38;
+  int STRUCT = 38;
 
-  int ALIGNED = 39;
+  int BITDATA = 39;
 
-  int CASE = 40;
+  int ALIGNED = 40;
 
-  int OF = 41;
+  int CASE = 41;
 
-  int IF = 42;
+  int OF = 42;
 
-  int THEN = 43;
+  int IF = 43;
 
-  int ELSE = 44;
+  int THEN = 44;
 
-  int LET = 45;
+  int ELSE = 45;
 
-  int IN = 46;
+  int LET = 46;
+
+  int IN = 47;
 }
