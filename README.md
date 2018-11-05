@@ -15,6 +15,12 @@ source files in future releases!)
 A draft paper with more details about MIL is available from 
 https://web.cecs.pdx.edu/~mpj/pubs/mil.pdf.
 
+### Acknowledgements:
+
+Work on mil-tools during the period 2014-2018 has been supported
+in part by funding from the National Science Foundation, Award
+No. CNS-1422979.
+
 ### Requirements:
 
 The following items are required to use the code in this repository:

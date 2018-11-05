@@ -12,8 +12,8 @@ The document is in four parts:
 
 2. The core language:  This is a subset of both the MIL and LC
    languages that provides a common syntax for kinds and types, as
-   well as the syntax for `data`, `bitdata`, `struct`, `type`, and
-   `external` definitions.
+   well as the syntax for `data`, `bitdata`, `struct`, and `type`
+   definitions and `external` declarations.
 
 3. MIL: This section describes the notation that is used for MIL
    programs (in `.mil` or `.lmil` files).
@@ -171,7 +171,7 @@ the next token is `"then"`, `"else"`, `"of"`, or `"in"`.
 ## 2 - The core language:
 
 The mil-tools core language provides a common syntax for kinds,
-types, type definitions, and external definitions in both MIL and
+types, type definitions, and external declarations in both MIL and
 LC programs.  It is not intended to be used as a standalone
 language.
 
@@ -221,13 +221,13 @@ Core definitions are used to introduce new types (`data`,
 `bitdata`, and `struct` definitions), to introduce new names for
 existing types (`type` definitions), or to specify the names and
 types of values defined outside the current program (`external`
-definitions):
+declarations):
 
     CoreDefn      = DataDefn
                   | BitdataDefn
                   | StructDefn
                   | TypeDefn
-                  | ExternalDefn
+                  | ExternalDecl
 
 ### Data type definitions:
 
@@ -301,20 +301,20 @@ types.
     TypeDefn      = "type" CONID "=" Type               -- Type synonym
                   | "type" CONID Opt(NATLIT) "::" Kind  -- Primitive type
 
-### External definitions:
+### External declarations:
 
-External definitions introduce names and corresponding types for
+External declarations introduce names and corresponding types for
 values whose definition will be provided elsewhere (in general,
 "outside" the current program, hence the term "external").
 
-    ExternalDefn  = "external" Sep(ExternalId, ",") "::" Type
+    ExternalDecl  = "external" Sep(ExternalId, ",") "::" Type
     ExternalId    = Id Opt("{" ExternalRef List(TypeAtom) "}")
     ExternalRef   = Id
                   | NATLIT
                   | STRLIT
 
 The optional portion (in braces) after each identifier name in an
-`external` definition is used to provide extra information about
+`external` declaration is used to provide extra information about
 how the definition of the value will be provided, but the details
 are not currently well-documented.
 
@@ -752,6 +752,7 @@ more than one equation for a single function name.
                   | CaseExpr
                   | InfixExpr
     InfixExpr     = AExpr Sym  InfixExpr
+                  | AExpr "`" AExpr "`" InfixExpr
                   | AExpr "&&" InfixExpr
                   | AExpr "||" InfixExpr
                   | AExpr
