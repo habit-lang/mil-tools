@@ -21,14 +21,14 @@ package core;
 import compiler.*;
 import mil.*;
 
-public class ExternalDefn extends CoreDefn {
+public class ExternalDecl extends CoreDefn {
 
   private ExternalId[] extids;
 
   private TypeExp texp;
 
   /** Default constructor. */
-  public ExternalDefn(Position pos, ExternalId[] extids, TypeExp texp) {
+  public ExternalDecl(Position pos, ExternalId[] extids, TypeExp texp) {
     super(pos);
     this.extids = extids;
     this.texp = texp;

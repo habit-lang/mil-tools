@@ -397,7 +397,7 @@ public class CoreParser extends Phase implements CoreTokens {
 
       case EXTERNAL:
         {
-          CoreDefn d = externalDefn();
+          CoreDefn d = externalDecl();
           lexer.itemEnd("external declaration");
           return d;
         }
@@ -407,12 +407,12 @@ public class CoreParser extends Phase implements CoreTokens {
     }
   }
 
-  private ExternalDefn externalDefn() throws Failure {
+  private ExternalDecl externalDecl() throws Failure {
     Position pos = lexer.getPos();
     lexer.nextToken(/* EXTERNAL */ );
     ExternalId[] extids = parseExternalIds(0);
     require(COCO);
-    return new ExternalDefn(pos, extids, typeExp());
+    return new ExternalDecl(pos, extids, typeExp());
   }
 
   private ExternalId[] parseExternalIds(int i) throws Failure {
