@@ -130,10 +130,11 @@ class BitdataConDefn extends Name {
 
     // Return one of the surviving mask-test predicates:
     obdd.MaskTestPat test;
+    int wordsize = Word.size();
     if (ceq < 0) {
-      test = eq.blur(bnot);
+      test = eq.blur(bnot, wordsize);
     } else if (cneq < 0) {
-      test = neq.blur(bnot);
+      test = neq.blur(bnot, wordsize);
     } else {
       throw new NoMaskTestPredicateFailure(ci, constrs[ceq], constrs[cneq]);
     }

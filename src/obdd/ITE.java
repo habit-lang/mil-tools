@@ -208,4 +208,18 @@ class ITE extends OBDD {
   OBDD blur() {
     return ifTrue.or(ifFalse);
   }
+
+  OBDD blurGeq(int n) {
+    return (var >= n) ? blur() : null;
+  }
+
+  OBDD blurWord(int wordsize) {
+    int n = var - (var % wordsize);
+    OBDD bdd = this.blur();
+    OBDD cand;
+    while ((cand = bdd.blurGeq(n)) != null) {
+      bdd = cand;
+    }
+    return bdd;
+  }
 }

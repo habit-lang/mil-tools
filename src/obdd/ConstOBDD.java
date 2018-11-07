@@ -128,4 +128,12 @@ class ConstOBDD extends OBDD {
   OBDD blur() {
     return null;
   }
+
+  OBDD blurGeq(int n) {
+    return null;
+  }
+
+  OBDD blurWord(int wordsize) {
+    return null;
+  }
 }

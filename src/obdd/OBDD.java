@@ -176,4 +176,8 @@ public abstract class OBDD {
   abstract OBDD masktest(boolean op);
 
   abstract OBDD blur();
+
+  abstract OBDD blurGeq(int n);
+
+  abstract OBDD blurWord(int wordsize);
 }

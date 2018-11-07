@@ -51,6 +51,14 @@ public class MaskTestPat extends Pat {
     return op;
   }
 
+  /**
+   * Test if this mask test pattern uses a full mask (all bits set), corresponding to a simple
+   * equality test, with no masking.
+   */
+  boolean fullMask() {
+    return BigInteger.ZERO.setBit(width).subtract(mask).compareTo(BigInteger.ONE) == 0;
+  }
+
   public String toString(String name) {
     StringBuilder buf = new StringBuilder();
     buf.append("pred");
@@ -60,10 +68,7 @@ public class MaskTestPat extends Pat {
     buf.append(") = ");
     if (mask.signum() == 0) {
       buf.append(op ^ (bits.signum() == 0) ? "true" : "false");
-    } else if (BigInteger.ZERO.setBit(width).subtract(mask).compareTo(BigInteger.ONE) == 0) {
-      // If all bits are included in the mask, then we don't show it here.  But note that
-      // some masking will still be required in a practical implementation if the pattern
-      // width is not an exact multiple of the wordsize.
+    } else if (fullMask()) {
       buf.append("x ");
       buf.append(op ? "!=" : "==");
       buf.append(" 0b");
@@ -79,12 +84,18 @@ public class MaskTestPat extends Pat {
     return buf.toString();
   }
 
-  public MaskTestPat blur(Pat butnot) {
+  public MaskTestPat blur(Pat butnot, int wordsize) {
     OBDD nbdd = bdd;
     OBDD cand;
-    while ((cand = nbdd.blur()) != null && cand.and(butnot.bdd).isConst(false)) {
-      nbdd = cand;
+    if (fullMask()) {
+      while ((cand = nbdd.blurWord(wordsize)) != null && cand.and(butnot.bdd).isConst(false)) {
+        nbdd = cand;
+      }
+    } else {
+      while ((cand = nbdd.blur()) != null && cand.and(butnot.bdd).isConst(false)) {
+        nbdd = cand;
+      }
     }
-    return nbdd == bdd ? this : new MaskTestPat(width, nbdd, op);
+    return (nbdd == bdd) ? this : new MaskTestPat(width, nbdd, op);
   }
 }

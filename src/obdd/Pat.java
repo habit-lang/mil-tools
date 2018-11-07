@@ -299,7 +299,7 @@ public class Pat {
       }
     }
     test.toDot(id + "-test.dot");
-    test = test.blur(butnot);
+    test = test.blur(butnot, 32);
     test.toDot(id + "-blurred.dot");
     return test;
   }
