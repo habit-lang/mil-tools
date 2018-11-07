@@ -380,7 +380,7 @@ public class BitdataLayout extends DataName {
       maskTestBlock = new Block(cf.getPos(), "masktest_" + cf, vs, new Done(t));
     } else {
       int n = Word.numWords(total); // number of words in output
-      Atom[] mask = Const.atoms(maskNat, total);
+      Atom[] mask = Const.atoms(maskNat, total, true);
       Atom[] bits = Const.atoms(bitsNat, total);
       maskTestBlock = eq ? Block.returnFalse : Block.returnTrue; // base case, if no data to compare
 

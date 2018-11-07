@@ -70,6 +70,10 @@ public abstract class Const extends Atom {
 
   /** Construct an array of Atoms that represents the bit vector with the given value and width. */
   public static Atom[] atoms(BigInteger v, int w) {
+    return atoms(v, w, false);
+  }
+
+  public static Atom[] atoms(BigInteger v, int w, boolean wantMask) {
     if (w == 0) {
       return new Atom[] {Top.Unit};
     } else if (w == 1) {
@@ -81,7 +85,11 @@ public abstract class Const extends Atom {
       while (w > 0) { // while there are still bits to write
         long bits = Word.fromBig(v); // get least significant bits
         if ((w -= wordsize) < 0) { // truncate if necessary
-          bits &= (1L << (wordsize + w)) - 1;
+          long m = (1L << (wordsize + w)) - 1;
+          bits &= m;
+          if (wantMask && bits == m) {
+            bits = ~0L;
+          }
         }
         as[i++] = new Word(bits); // save word value
         v = v.shiftRight(wordsize); // discard least significant bits
