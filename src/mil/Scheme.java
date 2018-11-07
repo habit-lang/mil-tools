@@ -54,13 +54,19 @@ public abstract class Scheme {
     return toString(TypeWriter.NEVER);
   }
 
-  public abstract String toString(int prec);
+  public abstract String toString(int prec, StringTypeWriter tw);
+
+  public String toString(int prec) {
+    return toString(prec, new StringTypeWriter(getPrefix()));
+  }
 
   /**
    * Create a fresh instance of this type scheme, allocating an environment of new type variables as
    * necessary for Forall schemes.
    */
   public abstract Type instantiate();
+
+  public abstract Prefix getPrefix();
 
   public abstract Type getType();
 

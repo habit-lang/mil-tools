@@ -71,6 +71,10 @@ public class PrimTyconDefn extends TyconDefn {
     /* Nothing to do here */
   }
 
+  /**
+   * Extend the specified MIL environment with entries for any functions/values introduced in this
+   * definition.
+   */
   public void addToMILEnv(Handler handler, MILEnv milenv) {
     /* Nothing to do here! */
   }

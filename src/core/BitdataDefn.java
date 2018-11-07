@@ -147,8 +147,19 @@ public class BitdataDefn extends TyconDefn {
     BitdataConDefn.calcCfuns(bt, constrs);
   }
 
+  /**
+   * Extend the specified MIL environment with entries for any functions/values introduced in this
+   * definition.
+   */
   public void addToMILEnv(Handler handler, MILEnv milenv) {
-    bt.addCfunsTo(handler, milenv);
+    Cfun[] cfuns = getTycon().getCfuns();
+    for (int i = 0; i < cfuns.length; i++) {
+      try {
+        milenv.addCfunAndTop(cfuns[i]);
+      } catch (Failure f) {
+        handler.report(f);
+      }
+    }
   }
 
   public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {

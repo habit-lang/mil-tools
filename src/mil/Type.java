@@ -121,9 +121,8 @@ public abstract class Type extends Scheme {
     tw.close(prec >= TypeWriter.ALWAYS);
   }
 
-  public String toString(int prec) {
-    StringTypeWriter tw = new StringTypeWriter(new Prefix());
-    this.write(tw, prec, 0);
+  public String toString(int prec, StringTypeWriter tw) {
+    write(tw, prec, 0);
     return tw.toString();
   }
 
@@ -158,6 +157,10 @@ public abstract class Type extends Scheme {
    */
   public Type instantiate() {
     return this;
+  }
+
+  public Prefix getPrefix() {
+    return new Prefix();
   }
 
   public Type getType() {

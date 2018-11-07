@@ -64,11 +64,9 @@ public class Forall extends Scheme {
     return this.type.alphaType(left, corresp);
   }
 
-  public String toString(int prec) {
-    StringTypeWriter tw = new StringTypeWriter(prefix);
+  public String toString(int prec, StringTypeWriter tw) {
     tw.writeQuantifiers();
-    type.write(tw, prec, 0);
-    return tw.toString();
+    return type.toString(prec, tw);
   }
 
   /**
@@ -79,9 +77,12 @@ public class Forall extends Scheme {
     return (prefix.numGenerics() > 0) ? type.with(prefix.instantiate()) : type;
   }
 
+  public Prefix getPrefix() {
+    return prefix;
+  }
+
   public Type getType() {
-    debug.Internal.error("getType on type scheme");
-    return null;
+    return type;
   }
 
   /**

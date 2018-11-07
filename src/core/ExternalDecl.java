@@ -34,6 +34,14 @@ public class ExternalDecl extends CoreDefn {
     this.texp = texp;
   }
 
+  /**
+   * Return the Tycon associated with this definition, if any. TODO: this method is only used in one
+   * place, and it's awkward ... look for opportunities to rewrite
+   */
+  public Tycon getTycon() {
+    return null;
+  }
+
   public void introduceTycons(Handler handler, TyconEnv env) {
     /* No tycons introduced here ... */
   }
@@ -55,6 +63,10 @@ public class ExternalDecl extends CoreDefn {
     /* Nothing to do here */
   }
 
+  /**
+   * Extend the specified MIL environment with entries for any functions/values introduced in this
+   * definition.
+   */
   public void addToMILEnv(Handler handler, MILEnv milenv) {
     try {
       Scheme scheme = texp.toScheme(milenv.getTyconEnv());

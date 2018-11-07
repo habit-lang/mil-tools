@@ -109,7 +109,7 @@ public class Prefix {
   public Type[] instantiate() {
     Type[] tenv = new Type[numGenerics];
     for (int i = 0; i < numGenerics; i++) {
-      tenv[i] = new TVar(getGen(i));
+      tenv[i] = new TVar(vars[i]);
     }
     return tenv;
   }

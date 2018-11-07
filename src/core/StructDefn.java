@@ -204,8 +204,12 @@ public class StructDefn extends TyconDefn {
     st.debugDump();
   }
 
+  /**
+   * Extend the specified MIL environment with entries for any functions/values introduced in this
+   * definition.
+   */
   public void addToMILEnv(Handler handler, MILEnv milenv) {
-    // TODO: fill this in!
+    /* Nothing to do here! */
   }
 
   public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {

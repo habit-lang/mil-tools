@@ -94,6 +94,10 @@ public class CoreProgram {
     return tenv;
   }
 
+  /**
+   * Extend the specified MIL environment with a new layer that includes entries for all of the
+   * symbols that are introduced by core definitions in this program.
+   */
   public MILEnv newmil(Handler handler, TyconEnv tenv, MILEnv milenv) {
     milenv = new MILEnvChain(tenv, milenv);
     for (CoreDefns ds = coreDefns; ds != null; ds = ds.next) {

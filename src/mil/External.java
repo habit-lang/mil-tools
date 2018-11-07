@@ -50,6 +50,10 @@ public class External extends TopDefn {
     this(pos, "e" + count++, declared, ref, ts);
   }
 
+  public External(Position pos, String id, Scheme declared) {
+    this(pos, id, declared, null, Type.noTypes);
+  }
+
   /**
    * Return references to all components of this top level definition in an array of
    * atoms/arguments.
@@ -403,7 +407,7 @@ public class External extends TopDefn {
       TopLhs[] lhs = new TopLhs[reps.length];
       Atom[] rhs = new Atom[reps.length];
       for (int i = 0; i < reps.length; i++) {
-        External ext = new External(pos, mkid(id, i), reps[i], null, null);
+        External ext = new External(pos, mkid(id, i), reps[i]);
         ext.setIsEntrypoint(isEntrypoint);
         rhs[i] = new TopExt(ext);
         lhs[i] = id.equals(this.id) ? new TopLhs() : new TopLhs(mkid(id, i));
@@ -428,7 +432,7 @@ public class External extends TopDefn {
                 + " name so cannot be declared as an entrypoint.");
       }
     } else {
-      External ext = new External(pos, id, declared, null, null);
+      External ext = new External(pos, id, declared);
       if (id.equals(this.id)) {
         impl = ext;
       } else {

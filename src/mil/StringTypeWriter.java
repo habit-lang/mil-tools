@@ -38,4 +38,8 @@ public class StringTypeWriter extends PrefixTypeWriter {
   public String toString() {
     return buf.toString();
   }
+
+  public void reset() {
+    buf.setLength(0);
+  }
 }

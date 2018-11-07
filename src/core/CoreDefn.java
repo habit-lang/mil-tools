@@ -40,9 +40,7 @@ public abstract class CoreDefn {
    * Return the Tycon associated with this definition, if any. TODO: this method is only used in one
    * place, and it's awkward ... look for opportunities to rewrite
    */
-  public Tycon getTycon() {
-    return null;
-  }
+  public abstract Tycon getTycon();
 
   /** Records the successors/callees of this node. */
   private CoreDefns callees = null;
@@ -152,6 +150,10 @@ public abstract class CoreDefn {
   /** Calculate types for each of the values that are introduced by this definition. */
   public abstract void calcCfuns(Handler handler);
 
+  /**
+   * Extend the specified MIL environment with entries for any functions/values introduced in this
+   * definition.
+   */
   public abstract void addToMILEnv(Handler handler, MILEnv milenv);
 
   public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {

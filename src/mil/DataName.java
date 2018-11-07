@@ -115,14 +115,4 @@ public abstract class DataName extends Tycon {
 
   abstract Code repTransformSel(
       RepTypeSet set, RepEnv env, Temp[] vs, Cfun cf, int n, Atom a, Code c);
-
-  public void addCfunsTo(Handler handler, MILEnv milenv) {
-    for (int i = 0; i < cfuns.length; i++) {
-      try {
-        milenv.addCfunAndTop(cfuns[i]);
-      } catch (Failure f) {
-        handler.report(f);
-      }
-    }
-  }
 }
