@@ -34,16 +34,26 @@ class ExternalId extends Name {
     this.spec = spec;
   }
 
-  External toExternal(MILEnv milenv, Scheme declared) throws Failure {
-    Type[] ts = Type.noTypes;
-    if (ref != null && spec != null) {
-      ts = new Type[spec.length];
+  /** Check that all of the type arguments used in this external id, if any, are well-scoped. */
+  void scopeExternalId(TyvarEnv params, TyconEnv env) throws Failure {
+    if (ref != null) {
       for (int i = 0; i < spec.length; i++) {
-        spec[i].scopeType(null, milenv.getTyconEnv(), 0);
-        spec[i].inferKind(); // TODO: is some form of fixKinds() required here?
-        ts[i] = spec[i].toType(null);
+        spec[i].scopeType(params, env, 0); // Scope analysis
+        spec[i].inferKind(); // Check for a valid kind
       }
     }
-    return new External(pos, id, declared, ref, ts);
+  }
+
+  /** Calculate a MIL External object corresponding to this ExternalId. */
+  External toExternal(Prefix prefix, Scheme declared) throws Failure {
+    if (ref == null) {
+      return new External(pos, id, declared);
+    } else {
+      Type[] ts = new Type[spec.length];
+      for (int i = 0; i < spec.length; i++) {
+        ts[i] = spec[i].toType(prefix);
+      }
+      return new External(pos, id, declared, ref, ts);
+    }
   }
 }

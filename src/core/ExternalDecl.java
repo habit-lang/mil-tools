@@ -69,9 +69,17 @@ public class ExternalDecl extends CoreDefn {
    */
   public void addToMILEnv(Handler handler, MILEnv milenv) {
     try {
-      Scheme scheme = texp.toScheme(milenv.getTyconEnv());
+      TyvarEnv params = new TyvarEnv(); // Environment for implicitly quantified tyvars
+      TyconEnv env = milenv.getTyconEnv(); // Environment for tycons
+      texp.scopeType(params, env, 0); // Validate type component of declaration
+      texp.checkKind(KAtom.STAR);
+      for (int i = 0; i < extids.length; i++) { // Validate any generator arguments
+        extids[i].scopeExternalId(params, env);
+      }
+      Prefix prefix = params.toPrefix(); // Calculate the prefix for this declaration
+      Scheme scheme = prefix.forall(texp.toType(prefix));
       for (int i = 0; i < extids.length; i++) {
-        Top ext = new TopExt(extids[i].toExternal(milenv, scheme));
+        Top ext = new TopExt(extids[i].toExternal(prefix, scheme));
         if (milenv.addTop(ext.getId(), ext) != null) {
           MILEnv.multipleDefns(pos, "external value", ext.getId());
         }

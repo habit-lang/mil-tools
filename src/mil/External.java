@@ -96,15 +96,17 @@ public class External extends TopDefn {
       out.print("export ");
     }
     out.print("external " + id);
+    StringTypeWriter tw = new StringTypeWriter(declared.getPrefix());
     if (ref != null) {
       out.print(" {" + ref);
       for (int i = 0; i < ts.length; i++) {
         out.print(" ");
-        out.print(ts[i].toString(TypeWriter.ALWAYS));
+        out.print(ts[i].toString(TypeWriter.ALWAYS, tw));
+        tw.reset();
       }
       out.print("}");
     }
-    out.println(" :: " + declared);
+    out.println(" :: " + declared.toString(TypeWriter.NEVER, tw));
   }
 
   /** Return a type for an instantiated version of this item when used as Atom (input operand). */
@@ -228,9 +230,13 @@ public class External extends TopDefn {
             + " :: "
             + this.declared);
     if (ts != null) {
+      Type[] tenv = eorig.declared.getPrefix().instantiate();
+      if (!eorig.declared.getType().match(tenv, (Type) this.declared, null)) {
+        debug.Internal.error("Could not match " + eorig.declared + " with " + this.declared);
+      }
       Type[] nts = new Type[ts.length];
       for (int i = 0; i < ts.length; i++) {
-        nts[i] = ts[i].canonType(spec);
+        nts[i] = ts[i].canonType(tenv, spec);
       }
       ts = nts;
     }
@@ -254,6 +260,11 @@ public class External extends TopDefn {
   /** Update all declared types with canonical versions. */
   void canonDeclared(MILSpec spec) {
     declared = declared.canonScheme(spec);
+    if (ts != null) {
+      for (int i = 0; i < ts.length; i++) {
+        ts[i] = ts[i].canonType(spec);
+      }
+    }
   }
 
   void bitdataRewrite(BitdataMap m) {
