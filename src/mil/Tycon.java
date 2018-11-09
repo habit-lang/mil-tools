@@ -176,13 +176,13 @@ public abstract class Tycon extends Name {
 
   public static final Tycon ref = new PrimTycon("Ref", areaToStar, 1);
 
-  public static final Tycon ptr = new PrimTycon("Ptr", areaToStar, 1);
-
   public static final Tycon init = new PrimTycon("Init", areaToStar, 1);
 
   public static final Tycon stored = new PrimTycon("Stored", starToArea, 1);
 
   public static final Tycon string = new PrimTycon("String", KAtom.AREA, 0);
+
+  public static final DataType ptr = new Ptr("Ptr", areaToStar, 1);
 
   /** Find the name of the associated bitdata type, if any. */
   public BitdataType bitdataType() {
@@ -290,7 +290,7 @@ public abstract class Tycon extends Name {
    * here?
    */
   Type[] repCalc(Type a) {
-    return (this == ref || this == ptr)
+    return (this == ref)
         ? Tycon.wordRep
         : (this == bit)
             ? a.simplifyNatType(null).bitvectorRep()
@@ -492,7 +492,7 @@ public abstract class Tycon extends Name {
    * valid area type (but kind checking should have done that already) or else look to eliminate it.
    */
   boolean referenceType(Type[] tenv, Type a) {
-    return (this == ref || this == ptr);
+    return (this == ref);
   }
 
   /** Return the alignment associated with this type constructor. */

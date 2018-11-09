@@ -257,6 +257,41 @@ public class Alt {
     return new Alt(cf.canonCfun(set), bc.repTransformBlockCall(set, env));
   }
 
+  static Code repTransformPtrCase(RepTypeSet set, RepEnv env, Atom a, Alt[] alts, BlockCall def) {
+    Atom[] ar = a.repAtom(set, env); // Find the atom to test
+    if (ar == null || ar.length != 1) {
+      debug.Internal.error("Unexpected atom in Ptr pattern match");
+    }
+    BlockCall ifNull, ifRef;
+    if (alts[0].cf == Cfun.Null) { // First alternative tests for Null?
+      ifNull = alts[0].bc;
+      ifRef = def;
+      for (int i = 1; i < alts.length; i++) { // Find the first alternative that tests for Ref ...
+        if (alts[i].cf == Cfun.Ref) {
+          ifRef = alts[i].bc;
+          break;
+        }
+      }
+    } else if (alts[0].cf == Cfun.Ref) { // First alternative tests for Ref?
+      ifRef = alts[0].bc;
+      ifNull = def;
+      for (int i = 1; i < alts.length; i++) { // Find the first alternative that tests for Null ...
+        if (alts[i].cf == Cfun.Null) {
+          ifNull = alts[i].bc;
+          break;
+        }
+      }
+    } else {
+      debug.Internal.error("Constructor " + alts[0].cf + " cannot match pointer value");
+      return null;
+    }
+    Temp t = new Temp();
+    return new Bind(
+        t,
+        Prim.eq.withArgs(ar[0], Word.Zero),
+        new If(t, ifNull.repTransformBlockCall(set, env), ifRef.repTransformBlockCall(set, env)));
+  }
+
   static Code repTransformBitdataCase(
       RepTypeSet set, RepEnv env, BitdataType bt, Atom a, Alt[] alts, BlockCall def) {
     // Find the last relevant alternative.  We assume that we do not have to match patterns

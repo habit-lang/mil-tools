@@ -43,7 +43,11 @@ public class RepTypeSet extends TypeSet {
    */
   Type[] canonTypes(Type[] ts, Type[] tenv) {
     if (tenv != null) {
-      debug.Internal.error("canon for RepTypeSet with tenv!=null");
+      Type[] nts = new Type[ts.length];
+      for (int i = 0; i < ts.length; i++) {
+        nts[i] = ts[i].with(tenv);
+      }
+      ts = nts;
     }
 
     Type[][] reps = null; // Look for changes in representation

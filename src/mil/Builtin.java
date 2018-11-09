@@ -38,6 +38,8 @@ public class Builtin extends MILEnvHash {
     try {
       // Add definitions for built-in constructor functions:
       addCfunAndTop(Cfun.Unit);
+      addCfunAndTop(Cfun.Null);
+      addCfunAndTop(Cfun.Ref);
       addCfunAndTop(Cfun.Func); // TODO: maybe we shouldn't add the Top here ...
       addCfunAndTop(Cfun.Proc); // TODO: maybe we shouldn't add the Top here ...
 

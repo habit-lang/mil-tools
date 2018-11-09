@@ -102,6 +102,22 @@ public class Cfun extends Name {
     Tycon.unit.setCfuns(new Cfun[] {Cfun.Unit});
   }
 
+  private static final Type ptrA = new TAp(Tycon.ptr.asType(), Type.gen(0));
+
+  private static final AllocType nullType = new PolyAllocType(Type.noTypes, ptrA, Prefix.area);
+
+  public static final Cfun Null = new Cfun("Null", Tycon.ptr, 0, nullType);
+
+  private static final Type[] refAarr = new Type[] {Type.ref(Type.gen(0))};
+
+  private static final AllocType refType = new PolyAllocType(refAarr, ptrA, Prefix.area);
+
+  public static final Cfun Ref = new Cfun("Ref", Tycon.ptr, 1, refType);
+
+  static {
+    Tycon.ptr.setCfuns(new Cfun[] {Cfun.Null, Cfun.Ref});
+  }
+
   /** Find the name of the associated bitdata type, if any. */
   public BitdataType bitdataType() {
     return dn.bitdataType();
@@ -297,19 +313,23 @@ public class Cfun extends Name {
   }
 
   Code repTransformAssert(RepTypeSet set, Atom a, Code c) {
-    return dn.repTransformAssert(set, this, a, c);
+    return (this == Ref) ? c : dn.repTransformAssert(set, this, a, c);
   }
 
   Block maskTestBlock() {
     return dn.maskTestBlock(num);
   }
 
-  Tail repTransformDataAlloc(RepTypeSet set, Atom[] args) {
-    return dn.repTransformDataAlloc(set, this, args);
+  Tail repTransformDataAlloc(RepTypeSet set, RepEnv env, Atom[] args) {
+    return (this == Null)
+        ? new Return(Word.Zero)
+        : (this == Ref) ? new Return(args) : dn.repTransformDataAlloc(set, this, args);
   }
 
   Tail repTransformSel(RepTypeSet set, RepEnv env, int n, Atom a) {
-    return dn.repTransformSel(set, env, this, n, a);
+    return (this == Ref)
+        ? new Return(a.repAtom(set, env))
+        : dn.repTransformSel(set, env, this, n, a);
   }
 
   Code repTransformSel(RepTypeSet set, RepEnv env, Temp[] vs, int n, Atom a, Code c) {
