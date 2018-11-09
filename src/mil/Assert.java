@@ -269,7 +269,7 @@ public class Assert extends Code {
 
   Code bitdataRewrite(BitdataMap m) {
     BitdataRep r = cf.findRep(m);
-    return (r == null) ? this : new Assert(a, cf.bitdataRewrite(r), c.bitdataRewrite(m));
+    return new Assert(a, (r == null ? cf : cf.bitdataRewrite(r)), c.bitdataRewrite(m));
   }
 
   Code repTransform(RepTypeSet set, RepEnv env) {
