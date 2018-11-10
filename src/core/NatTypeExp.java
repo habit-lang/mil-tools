@@ -34,10 +34,10 @@ public class NatTypeExp extends PosTypeExp {
 
   /**
    * Scope analysis on type expressions in a context where we expect all of the type constructor to
-   * be defined, but will treat undefined type variables as implicitly bound, universally quantified
-   * type variables.
+   * be defined, but (if canAdd is true) we will treat undefined type variables as implicitly bound,
+   * universally quantified type variables.
    */
-  public void scopeType(TyvarEnv params, TyconEnv env, int arity) throws Failure {
+  public void scopeType(boolean canAdd, TyvarEnv params, TyconEnv env, int arity) throws Failure {
     // Nothing to do here.
   }
 

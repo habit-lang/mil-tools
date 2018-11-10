@@ -35,14 +35,16 @@ public class VaridTypeExp extends PosTypeExp {
 
   /**
    * Scope analysis on type expressions in a context where we expect all of the type constructor to
-   * be defined, but will treat undefined type variables as implicitly bound, universally quantified
-   * type variables.
+   * be defined, but (if canAdd is true) we will treat undefined type variables as implicitly bound,
+   * universally quantified type variables.
    */
-  public void scopeType(TyvarEnv params, TyconEnv env, int arity) throws Failure {
-    if (params == null) {
-      throw new NotInScopeTyvarFailure(pos, id);
-    } else if ((tyvar = params.find(id)) == null) { // bind an implicitly quantified type variable
-      params.add(tyvar = new Tyvar(pos, id, new KVar()));
+  public void scopeType(boolean canAdd, TyvarEnv params, TyconEnv env, int arity) throws Failure {
+    if (params == null || (tyvar = params.find(id)) == null) {
+      if (canAdd) {
+        params.add(tyvar = new Tyvar(pos, id, new KVar()));
+      } else {
+        throw new NotInScopeTyvarFailure(pos, id);
+      }
     }
   }
 

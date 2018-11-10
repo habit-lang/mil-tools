@@ -29,10 +29,11 @@ public abstract class TypeExp {
 
   /**
    * Scope analysis on type expressions in a context where we expect all of the type constructor to
-   * be defined, but will treat undefined type variables as implicitly bound, universally quantified
-   * type variables.
+   * be defined, but (if canAdd is true) we will treat undefined type variables as implicitly bound,
+   * universally quantified type variables.
    */
-  public abstract void scopeType(TyvarEnv params, TyconEnv env, int arity) throws Failure;
+  public abstract void scopeType(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
+      throws Failure;
 
   public abstract Kind inferKind() throws KindMismatchFailure;
 
@@ -49,7 +50,7 @@ public abstract class TypeExp {
 
   public Scheme toScheme(TyconEnv env) throws Failure {
     TyvarEnv params = new TyvarEnv(); // An environment to collect implicitly quantified variables.
-    scopeType(params, env, 0); // Run scope analysis on the type expression
+    scopeType(true, params, env, 0); // Run scope analysis on the type expression
     checkKind(KAtom.STAR); // Run kind inference
     Prefix prefix = params.toPrefix(); // Calculate a prefix for the type scheme
     return prefix.forall(toType(prefix));

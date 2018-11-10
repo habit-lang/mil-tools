@@ -200,8 +200,8 @@ public class BlockType {
   /** Construct a BlockType from a pair of type expressions that describe its domain and range. */
   static BlockType validate(TyconEnv env, TypeExp dom, TypeExp rng) throws Failure {
     TyvarEnv params = new TyvarEnv(); // Validate domain and range types
-    dom.scopeType(params, env, 0);
-    rng.scopeType(params, env, 0);
+    dom.scopeType(true, params, env, 0);
+    rng.scopeType(true, params, env, 0);
     dom.checkKind(KAtom.TUPLE); // Check domain and range kinds
     rng.checkKind(KAtom.TUPLE);
     Prefix prefix = params.toPrefix(); // Build BlockType

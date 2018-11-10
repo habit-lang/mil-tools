@@ -126,7 +126,7 @@ public abstract class Type extends Scheme {
     return tw.toString();
   }
 
-  static String toString(Type[] ts) {
+  public static String toString(Type[] ts) {
     StringBuilder buf = new StringBuilder();
     buf.append("[");
     for (int i = 0; i < ts.length; i++) {
@@ -1022,7 +1022,7 @@ public abstract class Type extends Scheme {
     if (alignment < 1) {
       throw new Failure(pos, "Unable to determine alignment for " + this);
     } else if (alignExp != null) {
-      alignExp.scopeType(null, milenv.getTyconEnv(), 0);
+      alignExp.scopeType(false, null, milenv.getTyconEnv(), 0);
       alignExp.checkKind(KAtom.NAT);
       return alignExp.getAlignment(alignment);
     }

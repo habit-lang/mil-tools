@@ -71,7 +71,7 @@ public class ExternalDecl extends CoreDefn {
     try {
       TyvarEnv params = new TyvarEnv(); // Environment for implicitly quantified tyvars
       TyconEnv env = milenv.getTyconEnv(); // Environment for tycons
-      texp.scopeType(params, env, 0); // Validate type component of declaration
+      texp.scopeType(true, params, env, 0); // Validate type component of declaration
       texp.checkKind(KAtom.STAR);
       for (int i = 0; i < extids.length; i++) { // Validate any generator arguments
         extids[i].scopeExternalId(params, env);

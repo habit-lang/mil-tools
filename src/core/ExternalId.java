@@ -38,7 +38,7 @@ class ExternalId extends Name {
   void scopeExternalId(TyvarEnv params, TyconEnv env) throws Failure {
     if (ref != null) {
       for (int i = 0; i < spec.length; i++) {
-        spec[i].scopeType(params, env, 0); // Scope analysis
+        spec[i].scopeType(false, params, env, 0); // Scope analysis
         spec[i].inferKind(); // Check for a valid kind
       }
     }

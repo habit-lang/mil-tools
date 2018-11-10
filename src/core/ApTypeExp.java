@@ -40,12 +40,12 @@ public class ApTypeExp extends TypeExp {
 
   /**
    * Scope analysis on type expressions in a context where we expect all of the type constructor to
-   * be defined, but will treat undefined type variables as implicitly bound, universally quantified
-   * type variables.
+   * be defined, but (if canAdd is true) we will treat undefined type variables as implicitly bound,
+   * universally quantified type variables.
    */
-  public void scopeType(TyvarEnv params, TyconEnv env, int arity) throws Failure {
-    l.scopeType(params, env, arity + 1);
-    r.scopeType(params, env, 0);
+  public void scopeType(boolean canAdd, TyvarEnv params, TyconEnv env, int arity) throws Failure {
+    l.scopeType(canAdd, params, env, arity + 1);
+    r.scopeType(canAdd, params, env, 0);
   }
 
   public Kind inferKind() throws KindMismatchFailure {
