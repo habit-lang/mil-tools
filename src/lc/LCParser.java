@@ -172,7 +172,7 @@ public class LCParser extends CoreParser implements LCTokens {
             int n = e.mustBeLhs(0);
             Position pos = lexer.getPos();
             lexer.nextToken(/* = */ );
-            return e.makeEquation(pos, (n > 0 ? new DefVar[n] : null), n, parseExpr());
+            return e.makeEquation(pos, (n > 0 ? new DefVar[n] : null), n, parseRhs());
           }
         case COMMA:
           {
@@ -183,6 +183,18 @@ public class LCParser extends CoreParser implements LCTokens {
       }
     }
     return null;
+  }
+
+  /** Read a right hand side, comprising an expression and an optional WHERE clause. */
+  private Expr parseRhs() throws Failure {
+    Expr e = parseExpr();
+    if (lexer.getToken() == WHERE) {
+      Position pos = lexer.getPos();
+      lexer.nextToken(/* WHERE */ );
+      LCDefns defns = parseLCDefns();
+      return new ELet(pos, defns, e);
+    }
+    return e;
   }
 
   /**

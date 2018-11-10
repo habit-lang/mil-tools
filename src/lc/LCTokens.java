@@ -31,4 +31,6 @@ interface LCTokens extends CoreTokens {
   int AMPAMP = 52;
 
   int BARBAR = 53;
+
+  int WHERE = 54;
 }

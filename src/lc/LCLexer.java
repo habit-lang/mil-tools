@@ -31,6 +31,7 @@ public class LCLexer extends LayoutLexer implements LCTokens {
     reserved.put("\\", new Integer(LAMBDA));
     reserved.put("&&", new Integer(AMPAMP));
     reserved.put("||", new Integer(BARBAR));
+    reserved.put("where", new Integer(WHERE));
     nextToken(); // Start the token stream
   }
 
@@ -45,6 +46,8 @@ public class LCLexer extends LayoutLexer implements LCTokens {
         return "&& (logical and)";
       case BARBAR:
         return "|| (logical or)";
+      case WHERE:
+        return "\"where\" keyword";
       default:
         return super.describeToken(token, lexeme);
     }
