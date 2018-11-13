@@ -20,11 +20,23 @@ package lc;
 
 import compiler.*;
 import core.*;
+import debug.Screen;
 import mil.*;
 
-class UnknownStructureFailure extends Failure {
+class EqField extends EField {
 
-  public UnknownStructureFailure(Position pos, String id) {
-    super(pos, "Unknown structure name " + id);
+  /** Default constructor. */
+  EqField(Position pos, String id, Expr e) {
+    super(pos, id, e);
+  }
+
+  void display(Screen s) {
+    s.print(id);
+    s.print("=");
+    e.display(s);
+  }
+
+  int checkTypeStructInit(TVarsInScope tis, StructType st, StructField[] sfields) throws Failure {
+    throw new Failure(pos, "Error in structure initializer syntax for field \"" + id + "\"");
   }
 }

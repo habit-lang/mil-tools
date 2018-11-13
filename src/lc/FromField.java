@@ -20,11 +20,27 @@ package lc;
 
 import compiler.*;
 import core.*;
+import debug.Screen;
 import mil.*;
 
-class StructureRequiredFailure extends Failure {
+class FromField extends EField {
 
-  public StructureRequiredFailure(Position pos, Tycon tc) {
-    super(pos, tc + " is not a structure type");
+  /** Default constructor. */
+  FromField(Position pos, String id, Expr e) {
+    super(pos, id, e);
+  }
+
+  void display(Screen s) {
+    s.print(id);
+    s.print("<-");
+    e.display(s);
+  }
+
+  int checkTypeConstruct(TVarsInScope tis, Cfun cf, BitdataField[] lfields) throws Failure {
+    throw new Failure(pos, "Error in bitdata syntax for field \"" + id + "\"");
+  }
+
+  BitdataField checkTypeUpdate(TVarsInScope tis, Type et, BitdataField[] lfields) throws Failure {
+    throw new Failure(pos, "Error in bitdata syntax for field \"" + id + "\"");
   }
 }

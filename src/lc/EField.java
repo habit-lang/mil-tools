@@ -23,9 +23,9 @@ import core.*;
 import debug.Screen;
 import mil.*;
 
-class EField extends Name {
+abstract class EField extends Name {
 
-  private Expr e;
+  protected Expr e;
 
   /** Default constructor. */
   EField(Position pos, String id, Expr e) {
@@ -33,23 +33,19 @@ class EField extends Name {
     this.e = e;
   }
 
-  static void display(Screen s, String sep, EField[] fields) {
+  static void display(Screen s, EField[] fields) {
     s.print("[");
     if (fields != null && fields.length > 0) {
-      fields[0].display(s, sep);
+      fields[0].display(s);
       for (int i = 1; i < fields.length; i++) {
-        s.print(", ");
-        fields[i].display(s, sep);
+        s.print(" | ");
+        fields[i].display(s);
       }
     }
     s.print("]");
   }
 
-  void display(Screen s, String sep) {
-    s.print(id);
-    s.print(sep);
-    e.display(s);
-  }
+  abstract void display(Screen s);
 
   static void indent(IndentOutput out, int n, EField[] fields) {
     for (int i = 0; i < fields.length; i++) {
@@ -81,15 +77,6 @@ class EField extends Name {
     return p;
   }
 
-  BitdataField checkTypeUpdate(TVarsInScope tis, Type et, BitdataField[] lfields) throws Failure {
-    int p = Name.index(id, lfields);
-    if (p < 0) {
-      throw new Failure(pos, "There is no \"" + id + "\" field for type " + et);
-    }
-    e.checkType(tis, lfields[p].getType());
-    return lfields[p];
-  }
-
   int checkTypeStructInit(TVarsInScope tis, StructType st, StructField[] sfields) throws Failure {
     int p = Name.index(id, sfields);
     if (p < 0) {
@@ -98,6 +85,15 @@ class EField extends Name {
     }
     e.checkType(tis, Type.init(sfields[p].getType()));
     return p;
+  }
+
+  BitdataField checkTypeUpdate(TVarsInScope tis, Type et, BitdataField[] lfields) throws Failure {
+    int p = Name.index(id, lfields);
+    if (p < 0) {
+      throw new Failure(pos, "There is no \"" + id + "\" field for type " + et);
+    }
+    e.checkType(tis, lfields[p].getType());
+    return lfields[p];
   }
 
   static void lift(LiftEnv lenv, EField[] fields) {

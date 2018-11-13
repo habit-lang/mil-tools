@@ -38,7 +38,7 @@ class EUpdate extends PosExpr {
 
   void display(Screen s) { // e [ fields ]
     e.displayParen(s);
-    EField.display(s, "=", fields);
+    EField.display(s, fields);
   }
 
   /**
