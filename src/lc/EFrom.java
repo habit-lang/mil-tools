@@ -132,8 +132,8 @@ class EFrom extends PosExpr {
   /** Compile an expression into a Tail. */
   Code compTail(final CGEnv env, final Block abort, final TailCont kt) { // v <- e; e1
     // returns t <- k{...}; kt.with(Proc(t))
-    // where k{...} [] = b(...)
-    //       b(...)    = monadic code for v <- e; e1
+    // where k{...} [] = b[...]
+    //       b[...]    = monadic code for v <- e; e1
     Temp t = new Temp();
     return new Bind(
         t,
