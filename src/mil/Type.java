@@ -751,13 +751,17 @@ public abstract class Type extends Scheme {
    */
   int refWidth(Type[] tenv) {
     long alignment = this.alignment(tenv);
-    int width = Word.size();
-    if (alignment > 0 && ((alignment & (alignment - 1)) == 0)) { // power of two alignment
-      while ((alignment >>= 1) != 0) {
-        width--;
+    if (alignment == 0) { // Unknown alignment?
+      return (-1);
+    } else { // Alignment is known ...
+      int width = Word.size();
+      if (alignment > 0 && ((alignment & (alignment - 1)) == 0)) { // power of two alignment
+        while ((alignment >>= 1) != 0) {
+          width--;
+        }
       }
+      return width;
     }
-    return width;
   }
 
   public Pat bitPat(Type[] tenv) {
@@ -1018,15 +1022,18 @@ public abstract class Type extends Scheme {
    * given.
    */
   public long calcAreaAlignment(Position pos, MILEnv milenv, TypeExp alignExp) throws Failure {
-    long alignment = this.alignment(null);
-    if (alignment < 1) {
+    long minAlignment = this.alignment(null);
+    if (minAlignment < 1) {
       throw new Failure(pos, "Unable to determine alignment for " + this);
-    } else if (alignExp != null) {
+    } else if (alignExp == null) {
+      return minAlignment;
+    } else {
       alignExp.scopeType(false, null, milenv.getTyconEnv(), 0);
       alignExp.checkKind(KAtom.NAT);
-      return alignExp.getAlignment(alignment);
+      long alignment = alignExp.calcAlignment();
+      alignExp.checkAlignment(alignment, minAlignment);
+      return alignment;
     }
-    return alignment;
   }
 
   /**

@@ -93,6 +93,9 @@ public class StructDefn extends TyconDefn {
   void initSizes(Handler handler) {
     try { // TODO: merge this code with the above (only difference is in names st and bt)
       st.setByteSize((sizeExp == null) ? new TVar(Tyvar.nat) : sizeExp.toType(null));
+      if (alignExp != null) {
+        st.setAlignment(alignExp.calcAlignment());
+      }
     } catch (Failure f) {
       handler.report(f);
     }
@@ -150,7 +153,7 @@ public class StructDefn extends TyconDefn {
     st.setFields(fields);
 
     // Calculate the minimal alignment for this structure and validate field alignment/offsets:
-    long alignment = 1;
+    long minAlignment = 1;
     for (int i = 0; i < fields.length; i++) {
       StructField f = fields[i];
       Type t = f.getType(); // Find the type of this field
@@ -171,17 +174,18 @@ public class StructDefn extends TyconDefn {
                 + align
                 + ")");
       }
-      alignment = lcm(alignment, align); // Update minimal alignment
+      minAlignment = lcm(minAlignment, align); // Update minimal alignment
       f.generateSelector(st); // Construct an update primitive
       debug.Log.println("Field " + f.getId() + ": offset=" + offset + ", alignment=" + align);
     }
 
     // Validate declared alignment, if specified:
-    if (alignExp != null) {
-      alignment = alignExp.getAlignment(alignment);
+    if (alignExp == null) {
+      st.setAlignment(minAlignment);
+    } else {
+      alignExp.checkAlignment(st.getAlignment(), minAlignment);
     }
-    debug.Log.println("Structure " + st + " alignment=" + alignment);
-    st.setAlignment(alignment);
+    debug.Log.println("Structure " + st + " alignment=" + st.getAlignment());
   }
 
   /** Utility function to calculate the least common multiple (LCM) of two alignment values. */

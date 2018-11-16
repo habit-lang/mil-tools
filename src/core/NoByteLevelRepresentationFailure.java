@@ -24,6 +24,6 @@ import mil.*;
 class NoByteLevelRepresentationFailure extends Failure {
 
   public NoByteLevelRepresentationFailure(Position pos, Type type) {
-    super(pos, "There is no byte level representation for values of type " + type);
+    super(pos, "Cannot determine byte level representation for values of type " + type);
   }
 }

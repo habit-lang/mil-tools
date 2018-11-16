@@ -391,7 +391,8 @@ public abstract class Tycon extends Name {
       }
       return new TNat(BigInteger.valueOf(w));
     } else if (this == ref || this == ptr) { // BitSize (Ref a) ==>  (calculation below)
-      return new TNat(a.refWidth(tenv));
+      int w = a.refWidth(tenv);
+      return (w > 0) ? new TNat(w) : null;
     }
     return null;
   }

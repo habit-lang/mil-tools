@@ -97,7 +97,7 @@ public abstract class TypeExp {
   }
 
   /** Validate this type expression as a valid alignment, and return that alignment as a long. */
-  public long getAlignment(long minAlignment) throws Failure {
+  public long calcAlignment() throws Failure {
     Type alignType = this.toType(null).simplifyNatType(null);
     BigInteger alignBig = alignType.getNat();
     if (alignBig == null) {
@@ -106,7 +106,11 @@ public abstract class TypeExp {
       throw new Failure(
           position(), "Alignment " + alignBig + " is out of range (1 to " + Word.maxSigned() + ")");
     }
-    long alignment = alignBig.longValue();
+    return alignBig.longValue();
+  }
+
+  /** Check that a specified alignment is divisible by the minimum alignment. */
+  public void checkAlignment(long alignment, long minAlignment) throws Failure {
     if ((alignment % minAlignment) != 0) {
       throw new Failure(
           position(),
@@ -115,6 +119,5 @@ public abstract class TypeExp {
               + " is not a multiple of minimal alignment "
               + minAlignment);
     }
-    return alignment;
   }
 }

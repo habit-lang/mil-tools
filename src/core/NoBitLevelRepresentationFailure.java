@@ -24,6 +24,6 @@ import mil.*;
 class NoBitLevelRepresentationFailure extends Failure {
 
   public NoBitLevelRepresentationFailure(Position pos, Type type) {
-    super(pos, "There is no bit level representation for values of type " + type);
+    super(pos, "Cannot determine bit level representation for values of type " + type);
   }
 }

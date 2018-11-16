@@ -83,7 +83,7 @@ public class CoreDefnSCC {
     return false;
   }
 
-  void calcSizes(Handler handler) {
+  void calcSizes(Handler handler) throws Failure {
     // Set sizes to distinguish types with/without bit level representation
     for (CoreDefns ds = getBindings(); ds != null; ds = ds.next) {
       ds.head.initSizes(handler);
@@ -95,6 +95,7 @@ public class CoreDefnSCC {
     for (CoreDefns ds = getBindings(); ds != null; ds = ds.next) {
       eqns = ds.head.initEqns(handler, eqns);
     }
+    handler.abortOnFailures();
 
     // Calculate size information by collecting and solving corresponding linear equations
     if (eqns != null) { // no equations => no size information to compute and validate

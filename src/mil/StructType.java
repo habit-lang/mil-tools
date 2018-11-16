@@ -38,6 +38,10 @@ public class StructType extends Tycon {
 
   private long alignment;
 
+  public long getAlignment() {
+    return alignment;
+  }
+
   public void setAlignment(long alignment) {
     this.alignment = alignment;
   }
