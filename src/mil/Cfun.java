@@ -116,6 +116,7 @@ public class Cfun extends Name {
 
   static {
     Tycon.ptr.setCfuns(new Cfun[] {Cfun.Null, Cfun.Ref});
+    Tycon.phys.setCfuns(new Cfun[0]);
   }
 
   /** Find the name of the associated bitdata type, if any. */

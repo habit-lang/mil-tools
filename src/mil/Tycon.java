@@ -184,6 +184,8 @@ public abstract class Tycon extends Name {
 
   public static final DataType ptr = new Ptr("Ptr", areaToStar, 1);
 
+  public static final DataType phys = new Ptr("Phys", areaToStar, 1);
+
   /** Find the name of the associated bitdata type, if any. */
   public BitdataType bitdataType() {
     return null;
@@ -390,7 +392,9 @@ public abstract class Tycon extends Name {
         return null;
       }
       return new TNat(BigInteger.valueOf(w));
-    } else if (this == ref || this == ptr) { // BitSize (Ref a) ==>  (calculation below)
+    } else if (this == ref
+        || this == ptr
+        || this == phys) { // BitSize (Ref a) ==>  (calculation below)
       int w = a.refWidth(tenv);
       return (w > 0) ? new TNat(w) : null;
     }
@@ -415,7 +419,7 @@ public abstract class Tycon extends Name {
     if (this == ref) {
       int w = a.refWidth(tenv);
       return (w > 0) ? obdd.Pat.nonzero(w) : null;
-    } else if (this == ptr) {
+    } else if (this == ptr || this == phys) {
       int w = a.refWidth(tenv);
       return (w > 0) ? obdd.Pat.all(w) : null;
     } else if (this == bit) {
