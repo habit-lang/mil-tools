@@ -117,28 +117,32 @@ public class BitdataDefn extends TyconDefn {
     debug.Log.println("BitSize(" + bt + ") = " + nat);
 
     // Calculate region lists for each of the constructors and a bit pattern for the full type:
-    obdd.Pat pat = obdd.Pat.empty(w);
-    for (int i = 0; i < constrs.length; i++) {
-      pat = constrs[i].calcLayout(bt).or(pat);
-    }
-    bt.setPat(pat);
+    if (constrs.length == 0) {
+      bt.setPat(obdd.Pat.all(w));
+    } else {
+      obdd.Pat pat = obdd.Pat.empty(w);
+      for (int i = 0; i < constrs.length; i++) {
+        pat = constrs[i].calcLayout(bt).or(pat);
+      }
+      bt.setPat(pat);
 
-    // Test for junk:
-    obdd.Pat junk = pat.not();
-    if (!junk.isEmpty()) {
-      BigInteger n = junk.size();
-      debug.Log.println(
-          "Warning: bitdata type "
-              + bt
-              + " includes "
-              + ((n.compareTo(BigInteger.ONE) == 0) ? "a junk value" : (n + " junk values")));
-    }
+      // Test for junk:
+      obdd.Pat junk = pat.not();
+      if (!junk.isEmpty()) {
+        BigInteger n = junk.size();
+        debug.Log.println(
+            "Warning: bitdata type "
+                + bt
+                + " includes "
+                + ((n.compareTo(BigInteger.ONE) == 0) ? "a junk value" : (n + " junk values")));
+      }
 
-    // Test for confusion and for the existence of mask-test predicates:
-    // TODO: we could make a special case for single constructor types, none of which
-    // require checking for confusion or a search for a mask-test predicate
-    for (int i = 0; i < constrs.length; i++) {
-      BitdataConDefn.calcMaskTest(constrs, i, w);
+      // Test for confusion and for the existence of mask-test predicates:
+      // TODO: we could make a special case for single constructor types, none of which
+      // require checking for confusion or a search for a mask-test predicate
+      for (int i = 0; i < constrs.length; i++) {
+        BitdataConDefn.calcMaskTest(constrs, i, w);
+      }
     }
   }
 

@@ -98,15 +98,13 @@ public class CoreDefnSCC {
     handler.abortOnFailures();
 
     // Calculate size information by collecting and solving corresponding linear equations
-    if (eqns != null) { // no equations => no size information to compute and validate
-      try {
-        LinearEqns.solve(eqns);
-        for (CoreDefns ds = getBindings(); ds != null; ds = ds.next) {
-          ds.head.checkSizes();
-        }
-      } catch (Failure f) {
-        handler.report(f);
+    try {
+      LinearEqns.solve(eqns);
+      for (CoreDefns ds = getBindings(); ds != null; ds = ds.next) {
+        ds.head.checkSizes();
       }
+    } catch (Failure f) {
+      handler.report(f);
     }
   }
 }
