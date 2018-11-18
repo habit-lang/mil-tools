@@ -53,7 +53,7 @@ class ExternalId extends Name {
       for (int i = 0; i < spec.length; i++) {
         ts[i] = spec[i].toType(prefix);
       }
-      return new External(pos, id, declared, ref, ts);
+      return new External(pos, id, declared, new GenImp(ref, ts));
     }
   }
 }

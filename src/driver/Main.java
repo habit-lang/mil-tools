@@ -274,7 +274,7 @@ class Main {
       generatorsOutput.run(
           new Action() {
             void run(PrintWriter out) {
-              External.dumpGenerators(out);
+              GenImp.dumpGenerators(out);
             }
           });
 
@@ -340,7 +340,7 @@ class Main {
           mil.bitdataRewrite();
           optimized = false;
           if (spec != null) {
-            External.setBitdataRepresentations();
+            GenImp.setBitdataRepresentations();
           }
           break;
 
