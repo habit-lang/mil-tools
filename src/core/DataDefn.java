@@ -120,7 +120,7 @@ public class DataDefn extends TyconDefn {
    * Extend the specified MIL environment with entries for any functions/values introduced in this
    * definition.
    */
-  public void addToMILEnv(Handler handler, MILEnv milenv) {
+  public void addToMILEnv(Handler handler, CoreProgram prog, MILEnv milenv) {
     Cfun[] cfuns = getTycon().getCfuns();
     for (int i = 0; i < cfuns.length; i++) {
       try {

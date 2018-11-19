@@ -23,12 +23,12 @@ import mil.*;
 
 public class ExternalDecl extends CoreDefn {
 
-  private ExternalId[] extids;
+  private ExtImpId[] extids;
 
   private TypeExp texp;
 
   /** Default constructor. */
-  public ExternalDecl(Position pos, ExternalId[] extids, TypeExp texp) {
+  public ExternalDecl(Position pos, ExtImpId[] extids, TypeExp texp) {
     super(pos);
     this.extids = extids;
     this.texp = texp;
@@ -67,19 +67,19 @@ public class ExternalDecl extends CoreDefn {
    * Extend the specified MIL environment with entries for any functions/values introduced in this
    * definition.
    */
-  public void addToMILEnv(Handler handler, MILEnv milenv) {
+  public void addToMILEnv(Handler handler, CoreProgram prog, MILEnv milenv) {
     try {
       TyvarEnv params = new TyvarEnv(); // Environment for implicitly quantified tyvars
       TyconEnv env = milenv.getTyconEnv(); // Environment for tycons
       texp.scopeType(true, params, env, 0); // Validate type component of declaration
       texp.checkKind(KAtom.STAR);
       for (int i = 0; i < extids.length; i++) { // Validate any generator arguments
-        extids[i].scopeExternalId(params, env);
+        extids[i].scopeExtImpId(params, env);
       }
       Prefix prefix = params.toPrefix(); // Calculate the prefix for this declaration
       Scheme scheme = prefix.forall(texp.toType(prefix));
       for (int i = 0; i < extids.length; i++) {
-        Top ext = new TopExt(extids[i].toExternal(prefix, scheme));
+        Top ext = new TopExt(extids[i].toExternal(prefix, prog, scheme));
         if (milenv.addTop(ext.getId(), ext) != null) {
           MILEnv.multipleDefns(pos, "external value", ext.getId());
         }

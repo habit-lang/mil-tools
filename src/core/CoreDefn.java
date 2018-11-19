@@ -154,7 +154,7 @@ public abstract class CoreDefn {
    * Extend the specified MIL environment with entries for any functions/values introduced in this
    * definition.
    */
-  public abstract void addToMILEnv(Handler handler, MILEnv milenv);
+  public abstract void addToMILEnv(Handler handler, CoreProgram prog, MILEnv milenv);
 
   public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {
     /* By default, do nothing */

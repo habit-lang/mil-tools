@@ -130,7 +130,8 @@ public class LCLoader extends core.Loader {
         LCProgram ast = scc.getBindings().head;
         debug.Log.println("Compiling " + ast.getName() + " ...");
         milenv = ast.staticAnalysis(handler, milenv);
-        ast.compile(mil, milenv);
+        ast.compile(handler, mil, milenv);
+        handler.abortOnFailures();
       }
     }
     if (!mainName.equals("")) {

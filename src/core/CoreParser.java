@@ -410,19 +410,19 @@ public class CoreParser extends Phase implements CoreTokens {
   private ExternalDecl externalDecl() throws Failure {
     Position pos = lexer.getPos();
     lexer.nextToken(/* EXTERNAL */ );
-    ExternalId[] extids = parseExternalIds(0);
+    ExtImpId[] extids = parseExtImpIds(0);
     require(COCO);
     return new ExternalDecl(pos, extids, typeExp());
   }
 
-  private ExternalId[] parseExternalIds(int i) throws Failure {
-    ExternalId extid = parseExternalId();
-    ExternalId[] extids = lexer.match(COMMA) ? parseExternalIds(i + 1) : new ExternalId[i + 1];
+  private ExtImpId[] parseExtImpIds(int i) throws Failure {
+    ExtImpId extid = parseExtImpId();
+    ExtImpId[] extids = lexer.match(COMMA) ? parseExtImpIds(i + 1) : new ExtImpId[i + 1];
     extids[i] = extid;
     return extids;
   }
 
-  private ExternalId parseExternalId() throws Failure {
+  private ExtImpId parseExtImpId() throws Failure {
     Position pos = lexer.getPos();
     switch (lexer.getToken()) {
       case VARID:
@@ -431,27 +431,64 @@ public class CoreParser extends Phase implements CoreTokens {
       case CONSYM:
         {
           String id = lexer.getLexeme();
-          if (lexer.nextToken(/* id */ ) == BOPEN) {
-            switch (lexer.nextToken(/* BOPEN */ )) {
-              case VARID:
-              case VARSYM:
-              case CONID:
-              case CONSYM:
-              case STRLIT:
-              case NATLIT:
-              case BITLIT:
-                break;
-              default:
-                throw missing("primitive reference");
-            }
-            String ref = lexer.getLexeme();
-            lexer.nextToken(/* {VAR,CON}{ID,SYM}|STRLIT|NATLIT|BITLIT */ );
-            TypeExp[] spec = typeAtomExps(0);
-            require(BCLOSE);
-            return new ExternalId(pos, id, ref, spec);
+          switch (lexer.nextToken(/* id */ )) {
+            case BOPEN:
+              {
+                switch (lexer.nextToken(/* BOPEN */ )) {
+                  case VARID:
+                  case VARSYM:
+                  case CONID:
+                  case CONSYM:
+                  case STRLIT:
+                  case NATLIT:
+                  case BITLIT:
+                    break;
+                  default:
+                    throw missing("primitive reference");
+                }
+                String ref = lexer.getLexeme();
+                lexer.nextToken(/* {VAR,CON}{ID,SYM}|STRLIT|NATLIT|BITLIT */ );
+                TypeExp[] spec = typeAtomExps(0);
+                require(BCLOSE);
+                return new GenImpId(pos, id, ref, spec);
+              }
+
+            case EQ:
+              {
+                switch (lexer.nextToken(/* EQ */ )) {
+                  case VARID:
+                  case VARSYM:
+                  case CONID:
+                  case CONSYM:
+                    {
+                      Position impPos = lexer.getPos();
+                      String impId = lexer.getLexeme();
+                      lexer.nextToken(/* {VAR,CON}{ID,SYM} */ );
+                      return new TopImpId(pos, id, impPos, impId);
+                    }
+
+                    // TODO: add BITLIT and STRLIT?  Do they make sense post rep transformation?
+                  case NATLIT:
+                    {
+                      Atom a = null;
+                      try {
+                        a = new Word(lexer.getWord());
+                      } finally {
+                        lexer.nextToken(/* NATLIT */ );
+                      }
+                      return (a != null) ? new AtomImpId(pos, id, a) : new ExtImpId(pos, id);
+                    }
+
+                  default:
+                    throw missing("external implementation");
+                }
+              }
+
+            default:
+              return new ExtImpId(pos, id);
           }
-          return new ExternalId(pos, id, null, null);
         }
+
       default:
         throw missing("identifier");
     }

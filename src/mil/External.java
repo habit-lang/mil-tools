@@ -48,6 +48,10 @@ public class External extends TopDefn {
     this(pos, id, declared, new ExtImp());
   }
 
+  public void setImp(ExtImp imp) {
+    this.imp = imp;
+  }
+
   /**
    * Return references to all components of this top level definition in an array of
    * atoms/arguments.
@@ -77,7 +81,7 @@ public class External extends TopDefn {
 
   /** Find the list of Defns that this Defn depends on. */
   public Defns dependencies() {
-    return null;
+    return imp.dependencies();
   }
 
   boolean dotInclude() {
@@ -113,7 +117,7 @@ public class External extends TopDefn {
    * if the given handler is not null.
    */
   void checkBody(Handler handler) throws Failure {
-    /* Nothing to do here */
+    imp.checkImp(handler);
   }
 
   /** Type check the body of this definition, throwing an exception if there is an error. */

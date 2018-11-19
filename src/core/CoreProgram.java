@@ -101,9 +101,47 @@ public class CoreProgram {
   public MILEnv newmil(Handler handler, TyconEnv tenv, MILEnv milenv) {
     milenv = new MILEnvChain(tenv, milenv);
     for (CoreDefns ds = coreDefns; ds != null; ds = ds.next) {
-      ds.head.addToMILEnv(handler, milenv);
+      ds.head.addToMILEnv(handler, this, milenv);
     }
     return milenv;
+  }
+
+  private static class TopImpFixups {
+
+    Position impPos;
+
+    External ext;
+
+    String impId;
+
+    TopImpFixups next;
+
+    /** Default constructor. */
+    private TopImpFixups(Position impPos, External ext, String impId, TopImpFixups next) {
+      this.impPos = impPos;
+      this.ext = ext;
+      this.impId = impId;
+      this.next = next;
+    }
+  }
+
+  private TopImpFixups fixups = null;
+
+  void addTopImpFixup(Position impPos, External ext, String impId) {
+    fixups = new TopImpFixups(impPos, ext, impId, fixups);
+  }
+
+  public void scopeExtImps(Handler handler, MILEnv milenv) {
+    for (; fixups != null; fixups = fixups.next) {
+      Top t = milenv.findTop(fixups.impId);
+      if (t == null) {
+        handler.report(
+            new Failure(fixups.impPos, "Cannot find top-level implementation " + fixups.impId));
+      } else {
+        // TODO: should we also check that t is not a TopExt?  (to prevent cyclic definitions)
+        fixups.ext.setImp(new AtomImp(t));
+      }
+    }
   }
 
   public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {

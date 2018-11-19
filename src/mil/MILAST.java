@@ -86,6 +86,7 @@ class MILAST extends CoreProgram {
     for (DefnExps ds = milDefns; ds != null; ds = ds.next) {
       ds.head.inScopeOf(handler, internal);
     }
+    super.scopeExtImps(handler, internal);
     handler.abortOnFailures();
 
     // Pass 3: Add bindings for exported symbols in to the external environment, and return that as

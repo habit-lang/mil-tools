@@ -21,39 +21,20 @@ package core;
 import compiler.*;
 import mil.*;
 
-class ExternalId extends Name {
-
-  private String ref;
-
-  private TypeExp[] spec;
+class ExtImpId extends Name {
 
   /** Default constructor. */
-  ExternalId(Position pos, String id, String ref, TypeExp[] spec) {
+  ExtImpId(Position pos, String id) {
     super(pos, id);
-    this.ref = ref;
-    this.spec = spec;
   }
 
   /** Check that all of the type arguments used in this external id, if any, are well-scoped. */
-  void scopeExternalId(TyvarEnv params, TyconEnv env) throws Failure {
-    if (ref != null) {
-      for (int i = 0; i < spec.length; i++) {
-        spec[i].scopeType(false, params, env, 0); // Scope analysis
-        spec[i].inferKind(); // Check for a valid kind
-      }
-    }
+  void scopeExtImpId(TyvarEnv params, TyconEnv env) throws Failure {
+    /* nothing to do */
   }
 
-  /** Calculate a MIL External object corresponding to this ExternalId. */
-  External toExternal(Prefix prefix, Scheme declared) throws Failure {
-    if (ref == null) {
-      return new External(pos, id, declared);
-    } else {
-      Type[] ts = new Type[spec.length];
-      for (int i = 0; i < spec.length; i++) {
-        ts[i] = spec[i].toType(prefix);
-      }
-      return new External(pos, id, declared, new GenImp(ref, ts));
-    }
+  /** Calculate a MIL External object corresponding to this ExtImpId. */
+  External toExternal(Prefix prefix, CoreProgram prog, Scheme declared) throws Failure {
+    return new External(pos, id, declared);
   }
 }

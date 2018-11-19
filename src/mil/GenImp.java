@@ -165,23 +165,8 @@ public class GenImp extends ExtImp {
       } catch (GeneratorException e) {
         throw new Failure(pos, "No generated implementation: " + e.getReason());
       }
-      TopLhs[] lhs; // Generate a suitable left hand side
-      String id = ext.getId();
-      if (reps == null) { // No change in representation
-        lhs = new TopLhs[] {new TopLhs(id)}; // ==> single left hand side
-        lhs[0].setDeclared(ext.getDeclared());
-      } else { // Change in representation
-        lhs = new TopLhs[reps.length]; // ==> may require multiple left hand sides
-        for (int i = 0; i < reps.length; i++) {
-          lhs[i] = new TopLhs(Defn.mkid(id, i));
-          lhs[i].setDeclared(reps[i]);
-        }
-      }
-      TopDefn impl =
-          new TopLevel(pos, lhs, t); // Make new top level to use as the replacement for ext
-      impl.setIsEntrypoint(ext.isEntrypoint());
-      debug.Log.println("Generated new top level definition for " + impl);
-      return impl;
+      return repImplement(
+          pos, ext, reps, t); // Make new top level definition as replacement for ext
     }
     if (ts.length > 0) {
       throw new Failure(pos, "No generator for " + ref);

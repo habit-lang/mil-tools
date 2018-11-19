@@ -262,9 +262,12 @@ public class LCProgram extends CoreProgram {
    * Compile an LC program into MIL. The resulting code will require a subsequent call to addArgs(),
    * but that can wait until all files have been loaded.
    */
-  void compile(MILProgram mil, MILEnv milenv) {
+  void compile(Handler handler, MILProgram mil, MILEnv milenv) {
     TopBindings tbs = lambdaLift(); // Lift out definitions of recursive functions
     addExports(mil, milenv); // Process exports and entry points
+    // TODO: can we use tbs (or similar) to allow access to symbols defined in this program without
+    // requiring them to be exported?
+    super.scopeExtImps(handler, milenv);
     for (; tbs != null; tbs = tbs.next) { // Generate MIL code from LC
       tbs.head.compile();
     }
