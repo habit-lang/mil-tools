@@ -254,6 +254,10 @@ public class Sel extends Tail {
     }
   }
 
+  Tail mergeRewrite(MergeMap mmap) {
+    return new Sel(cf.lookup(mmap), n, a);
+  }
+
   Tail repTransform(RepTypeSet set, RepEnv env) {
     return cf.repTransformSel(set, env, n, a);
   }

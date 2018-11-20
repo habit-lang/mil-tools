@@ -196,6 +196,10 @@ public class DataAlloc extends Allocator {
     }
   }
 
+  Tail mergeRewrite(MergeMap mmap) {
+    return new DataAlloc(cf.lookup(mmap)).withArgs(args);
+  }
+
   Tail repTransform(RepTypeSet set, RepEnv env) {
     return cf.repTransformDataAlloc(set, env, Atom.repArgs(set, env, args));
   }

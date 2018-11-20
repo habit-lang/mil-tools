@@ -640,6 +640,10 @@ public class ClosureDefn extends Defn {
     tail = tail.bitdataRewrite(m);
   }
 
+  void mergeRewrite(MergeMap mmap) {
+    tail = tail.mergeRewrite(mmap);
+  }
+
   /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {
     Temp[][] npss = Temp.reps(params); // analyze params

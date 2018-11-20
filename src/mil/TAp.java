@@ -211,6 +211,15 @@ public class TAp extends Type {
     return fun.canonArgs(tenv, set, args + 1);
   }
 
+  /** Determine whether two types are equivalent modulo a given MergeMap. */
+  boolean sameMod(Type[] thisenv, Type t, Type[] tenv, MergeMap mmap) {
+    return t.sameApMod(tenv, this, thisenv, mmap);
+  }
+
+  boolean sameApMod(Type[] tenv, TAp l, Type[] lenv, MergeMap mmap) {
+    return l.fun.sameMod(lenv, this.fun, tenv, mmap) && l.arg.sameMod(lenv, this.arg, tenv, mmap);
+  }
+
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     return fun.repCalc(arg);

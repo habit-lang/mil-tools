@@ -272,6 +272,10 @@ public class Assert extends Code {
     return new Assert(a, (r == null ? cf : cf.bitdataRewrite(r)), c.bitdataRewrite(m));
   }
 
+  Code mergeRewrite(MergeMap mmap) {
+    return new Assert(a, cf.lookup(mmap), c.mergeRewrite(mmap));
+  }
+
   Code repTransform(RepTypeSet set, RepEnv env) {
     return cf.repTransformAssert(set, a, c.repTransform(set, env));
   }

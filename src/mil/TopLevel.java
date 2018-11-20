@@ -413,6 +413,10 @@ public class TopLevel extends TopDefn {
     tail = tail.bitdataRewrite(m);
   }
 
+  void mergeRewrite(MergeMap mmap) {
+    tail = tail.mergeRewrite(mmap);
+  }
+
   void topLevelRepTransform(Handler handler, RepTypeSet set) {
     // Is a change of representation required?
     Type[][] reps = TopLhs.reps(lhs);

@@ -435,6 +435,8 @@ public abstract class Defn {
 
   abstract void bitdataRewrite(BitdataMap m);
 
+  abstract void mergeRewrite(MergeMap mmap);
+
   void topLevelRepTransform(Handler handler, RepTypeSet set) {
     /* do nothing */
   }

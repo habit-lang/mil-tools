@@ -344,6 +344,8 @@ public abstract class Code {
 
   abstract Code bitdataRewrite(BitdataMap m);
 
+  abstract Code mergeRewrite(MergeMap mmap);
+
   abstract Code repTransform(RepTypeSet set, RepEnv env);
 
   /**

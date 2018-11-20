@@ -373,6 +373,20 @@ public class MILProgram {
     }
   }
 
+  public void mergeRewrite() {
+    TypeSet set = new TypeSet();
+    collect(set);
+    MergeMap mmap = set.mergeMap();
+    if (mmap != null) {
+      for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
+        for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
+          ds.head.mergeRewrite(mmap);
+        }
+      }
+      collect(mmap); // Update types and any constructors/datatypes/etc. that were not rewritten
+    }
+  }
+
   /**
    * Replace any MIL entrypoints in this program that have (possibly curried) function types
    * involving at least one use of (->>) with a block that implements the same function as an

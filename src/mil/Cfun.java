@@ -313,6 +313,11 @@ public class Cfun extends Name {
     return r.bitdataSelBlock(num, n);
   }
 
+  Cfun lookup(MergeMap mmap) {
+    DataType dt = mmap.mappingFor(dn); // Find translation for this datatype, if any
+    return (dt == null) ? this : dt.cfuns[num];
+  }
+
   Code repTransformAssert(RepTypeSet set, Atom a, Code c) {
     return (this == Ref) ? c : dn.repTransformAssert(set, this, a, c);
   }

@@ -253,6 +253,10 @@ public class Alt {
     return (r == null) ? this : new Alt(cf.bitdataRewrite(r), bc);
   }
 
+  Alt mergeRewrite(MergeMap mmap) {
+    return new Alt(cf.lookup(mmap), bc);
+  }
+
   Alt repTransformAlt(RepTypeSet set, RepEnv env) {
     return new Alt(cf.canonCfun(set), bc.repTransformBlockCall(set, env));
   }

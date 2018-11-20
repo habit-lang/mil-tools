@@ -431,6 +431,10 @@ public class Bind extends Code {
     return new Bind(vs, t.bitdataRewrite(m), c.bitdataRewrite(m));
   }
 
+  Code mergeRewrite(MergeMap mmap) {
+    return new Bind(vs, t.mergeRewrite(mmap), c.mergeRewrite(mmap));
+  }
+
   Code repTransform(RepTypeSet set, RepEnv env) {
     Temp[][] nvss = Temp.reps(vs);
     Temp[] nvs = Temp.repParams(vs, nvss);

@@ -554,6 +554,25 @@ public abstract class Type extends Scheme {
     return null;
   }
 
+  /** Determine whether two types are equivalent modulo a given MergeMap. */
+  abstract boolean sameMod(Type[] thisenv, Type t, Type[] tenv, MergeMap mmap);
+
+  boolean sameApMod(Type[] tenv, TAp l, Type[] lenv, MergeMap mmap) {
+    return false;
+  }
+
+  boolean sameTVarMod(Type[] tenv, TVar l, MergeMap mmap) {
+    return false;
+  }
+
+  boolean sameTyconMod(Type[] tenv, Tycon l, MergeMap mmap) {
+    return false;
+  }
+
+  boolean sameDataTypeMod(Type[] tenv, DataType l, MergeMap mmap) {
+    return false;
+  }
+
   private static Type[][] wordsCache = new Type[10][];
 
   public static Type[] words(int n) {

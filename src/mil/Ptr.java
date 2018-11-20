@@ -66,6 +66,11 @@ public class Ptr extends DataType {
     return null;
   }
 
+  /** Determine whether this Tycon is a DataType that is a candidate for merging. */
+  DataType mergeCandidate() {
+    return null;
+  }
+
   /**
    * Return the representation vector for types formed by applying this type to the argument a. This
    * allows us to provide special representations for types of the form Bit a, Ix a, Ref a, etc. If

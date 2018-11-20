@@ -463,6 +463,14 @@ public class Case extends Code {
     return new Case(a, nalts, def);
   }
 
+  Code mergeRewrite(MergeMap mmap) {
+    Alt[] nalts = new Alt[alts.length];
+    for (int i = 0; i < alts.length; i++) {
+      nalts[i] = alts[i].mergeRewrite(mmap);
+    }
+    return new Case(a, nalts, def);
+  }
+
   Code repTransform(RepTypeSet set, RepEnv env) {
     BitdataType bt = dom.bitdataType();
     if (bt != null) {

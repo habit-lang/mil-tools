@@ -406,6 +406,10 @@ public abstract class Tail {
     return this;
   }
 
+  Tail mergeRewrite(MergeMap mmap) {
+    return this;
+  }
+
   abstract Tail repTransform(RepTypeSet set, RepEnv env);
 
   /**

@@ -296,6 +296,10 @@ public class Done extends Code {
     return new Done(t.bitdataRewrite(m));
   }
 
+  Code mergeRewrite(MergeMap mmap) {
+    return new Done(t.mergeRewrite(mmap));
+  }
+
   Code repTransform(RepTypeSet set, RepEnv env) {
     return new Done(t.repTransform(set, env));
   }

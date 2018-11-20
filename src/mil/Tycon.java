@@ -267,6 +267,26 @@ public abstract class Tycon extends Name {
     return null;
   }
 
+  /** Determine whether this Tycon is a DataType that is a candidate for merging. */
+  DataType mergeCandidate() {
+    return null;
+  }
+
+  boolean sameMod(Type t, Type[] tenv, MergeMap mmap) {
+    return t.sameTyconMod(tenv, this, mmap);
+  }
+
+  boolean sameTyconMod(Tycon l, MergeMap mmap) {
+    return this == l;
+  }
+
+  /**
+   * Determine whether this Tycon is equivalent to a specified DataType, modulo a given MergeMap.
+   */
+  boolean sameDataTypeMod(DataType l, MergeMap mmap) {
+    return false;
+  }
+
   /** Representation vector for singleton types. */
   public static final Type[] unitRep = new Type[] {unit.asType()};
 

@@ -326,4 +326,48 @@ public class TypeSet {
     }
     return cands;
   }
+
+  public MergeMap mergeMap() {
+    // First, identify candidates for merging (nullary datatypes with at least one constructor):
+    DataTypes[] cands = new DataTypes[4]; // Sort the types by number of constructors
+    int numCands = 0;
+    for (Tycon tycon : tycons) {
+      DataType dt = tycon.mergeCandidate();
+      if (dt != null && dt != Tycon.unit) { // TODO: why the special case for Unit?
+        int n = dt.getCfuns().length;
+        debug.Log.println(
+            "DataType " + dt + " with " + n + " constructors is a candidate for merging");
+        if (n >= cands.length) {
+          DataTypes[] ncands = new DataTypes[Math.max(2 * cands.length, n + 1)];
+          for (int i = 0; i < cands.length; i++) {
+            ncands[i] = cands[i];
+          }
+          cands = ncands;
+        }
+        cands[n] = new DataTypes(dt, cands[n]);
+        numCands++;
+      }
+    }
+
+    // If no candidates were found, then return a null map:
+    if (numCands == 0) {
+      return null;
+    }
+
+    // Otherwise compare types more closely to search for equivalent definitions:
+    MergeMap mmap = new MergeMap();
+    for (int i = 0; i < cands.length; i++) {
+      for (DataTypes dts = cands[i]; dts != null; dts = dts.next) {
+        DataType dt = dts.head;
+        for (DataTypes rest = dts.next; rest != null; rest = rest.next) {
+          mmap.clearAssumed();
+          if (dt.sameDataTypeMod(rest.head, mmap)) {
+            mmap.confirmAssumed();
+            break;
+          }
+        }
+      }
+    }
+    return mmap;
+  }
 }

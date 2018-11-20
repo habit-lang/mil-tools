@@ -247,6 +247,10 @@ public class External extends TopDefn {
     /* Nothing to do here */
   }
 
+  void mergeRewrite(MergeMap mmap) {
+    /* Nothing to do here */
+  }
+
   void topLevelRepTransform(Handler handler, RepTypeSet set) {
     declared = declared.canonType(set);
     debug.Log.println("Determining representation for external " + id + " :: " + declared);

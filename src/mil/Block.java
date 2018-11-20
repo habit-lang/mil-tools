@@ -914,6 +914,10 @@ public class Block extends Defn {
     code = code.bitdataRewrite(m);
   }
 
+  void mergeRewrite(MergeMap mmap) {
+    code = code.mergeRewrite(mmap);
+  }
+
   void setParams(Temp[] params) {
     this.params = params;
   }

@@ -300,6 +300,10 @@ public class If extends Code {
     return this;
   }
 
+  Code mergeRewrite(MergeMap mmap) {
+    return this;
+  }
+
   Code repTransform(RepTypeSet set, RepEnv env) {
     return new If(
         a, ifTrue.repTransformBlockCall(set, env), ifFalse.repTransformBlockCall(set, env));

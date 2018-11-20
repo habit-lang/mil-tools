@@ -152,6 +152,10 @@ public abstract class Area extends TopDefn {
     /* Nothing to do here */
   }
 
+  void mergeRewrite(MergeMap mmap) {
+    /* Nothing to do here */
+  }
+
   public void setDeclared(Handler handler, Position pos, Scheme scheme) {
     if (declared != null) {
       handler.report(new Failure(pos, "Multiple type annotations for \"" + id + "\""));

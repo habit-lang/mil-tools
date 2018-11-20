@@ -329,6 +329,29 @@ public final class TVar extends TInd {
         : bound.canonArgs(boundenv, set, args);
   }
 
+  /** Determine whether two types are equivalent modulo a given MergeMap. */
+  boolean sameMod(Type[] thisenv, Type t, Type[] tenv, MergeMap mmap) {
+    return (bound == null)
+        ? t.sameTVarMod(tenv, this, mmap)
+        : bound.sameMod(boundenv, t, tenv, mmap);
+  }
+
+  boolean sameApMod(Type[] tenv, TAp l, Type[] lenv, MergeMap mmap) {
+    return (bound != null) && bound.sameApMod(boundenv, l, lenv, mmap);
+  }
+
+  boolean sameTVarMod(Type[] tenv, TVar l, MergeMap mmap) {
+    return (bound != null) && bound.sameTVarMod(boundenv, l, mmap);
+  }
+
+  boolean sameTyconMod(Type[] tenv, Tycon l, MergeMap mmap) {
+    return (bound != null) && bound.sameTyconMod(boundenv, l, mmap);
+  }
+
+  boolean sameDataTypeMod(Type[] tenv, DataType l, MergeMap mmap) {
+    return (bound != null) && bound.sameDataTypeMod(boundenv, l, mmap);
+  }
+
   /**
    * Return the natural number type that specifies the BitSize of this type (required to be of kind
    * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should

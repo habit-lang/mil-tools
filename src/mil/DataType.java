@@ -488,6 +488,71 @@ public class DataType extends DataName {
     }
   }
 
+  /** Determine whether this Tycon is a DataType that is a candidate for merging. */
+  DataType mergeCandidate() {
+    return (arity == 0 && cfuns != null && cfuns.length > 0) ? this : null;
+  }
+
+  /**
+   * Determine whether this DataType is equivalent to that DataType, modulo the mappings in a given
+   * MergeMap. As preconditions, we assume that this and that are distinct DataType objects and that
+   * neither one of them is currently mapped by m.
+   */
+  boolean sameMod(DataType that, MergeMap mmap) {
+    Cfun[] cs = this.cfuns;
+    Cfun[] ds = that.cfuns;
+
+    // Structurally equal datatypes must have the same number of constructors:
+    int n = cs.length;
+    if (n != ds.length) {
+      return false;
+    }
+
+    // And each corresponding pair of constructors must have the same arity:
+    for (int i = 0; i < n; i++) {
+      AllocType ct = cs[i].getAllocType();
+      AllocType dt = ds[i].getAllocType();
+      int m = ct.getArity();
+      if (m != dt.getArity()) {
+        return false;
+      }
+    }
+
+    // If those basic structural constraints are satisfied, then we will try to prove an equivalence
+    // by making an
+    // assumption that equates them, and then trying to show that the corresponding types are all
+    // equivalent.
+    mmap.assume(this, that);
+    for (int i = 0; i < n; i++) {
+      AllocType ct = cs[i].getAllocType();
+      AllocType dt = ds[i].getAllocType();
+      int m = ct.getArity();
+      for (int j = 0; j < m; j++) {
+        if (!ct.storedType(j).sameMod(null, dt.storedType(j), null, mmap)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  boolean sameMod(Type t, Type[] tenv, MergeMap mmap) {
+    return t.sameDataTypeMod(tenv, this, mmap);
+  }
+
+  /**
+   * Determine whether this Tycon is equivalent to a specified DataType, modulo a given MergeMap.
+   */
+  boolean sameDataTypeMod(DataType l, MergeMap mmap) {
+    if (l == this) {
+      return true;
+    } else {
+      DataType ldt = mmap.lookup(l);
+      DataType rdt = mmap.lookup(this);
+      return (ldt == rdt) || ldt.sameMod(rdt, mmap);
+    }
+  }
+
   Code repTransformAssert(RepTypeSet set, Cfun cf, Atom a, Code c) {
     return new Assert(a, cf.canonCfun(set), c);
   }

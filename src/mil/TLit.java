@@ -63,6 +63,11 @@ public abstract class TLit extends TConst {
     that.unifyTLit(null, this);
   }
 
+  /** Determine whether two types are equivalent modulo a given MergeMap. */
+  boolean sameMod(Type[] thisenv, Type t, Type[] tenv, MergeMap mmap) {
+    return t.sameTLit(tenv, this);
+  }
+
   /**
    * Return the natural number type that specifies the BitSize of this type (required to be of kind
    * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should

@@ -240,6 +240,27 @@ public class TGen extends Type {
     return (tenv == null) ? super.canonArgs(tenv, set, args) : tenv[n].canonArgs(null, set, args);
   }
 
+  /** Determine whether two types are equivalent modulo a given MergeMap. */
+  boolean sameMod(Type[] thisenv, Type t, Type[] tenv, MergeMap mmap) {
+    return thisenv[n].sameMod(null, t, tenv, mmap);
+  }
+
+  boolean sameApMod(Type[] tenv, TAp l, Type[] lenv, MergeMap mmap) {
+    return tenv[n].sameApMod(null, l, lenv, mmap);
+  }
+
+  boolean sameTVarMod(Type[] tenv, TVar l, MergeMap mmap) {
+    return tenv[n].sameTVarMod(null, l, mmap);
+  }
+
+  boolean sameTyconMod(Type[] tenv, Tycon l, MergeMap mmap) {
+    return tenv[n].sameTyconMod(null, l, mmap);
+  }
+
+  boolean sameDataTypeMod(Type[] tenv, DataType l, MergeMap mmap) {
+    return tenv[n].sameDataTypeMod(null, l, mmap);
+  }
+
   /**
    * Return the natural number type that specifies the BitSize of this type (required to be of kind
    * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should

@@ -273,6 +273,19 @@ public class TTycon extends TConst {
     return tycon.dataType();
   }
 
+  /** Determine whether two types are equivalent modulo a given MergeMap. */
+  boolean sameMod(Type[] thisenv, Type t, Type[] tenv, MergeMap mmap) {
+    return tycon.sameMod(t, tenv, mmap);
+  }
+
+  boolean sameTyconMod(Type[] tenv, Tycon l, MergeMap mmap) {
+    return tycon.sameTyconMod(l, mmap);
+  }
+
+  boolean sameDataTypeMod(Type[] tenv, DataType l, MergeMap mmap) {
+    return tycon.sameDataTypeMod(l, mmap);
+  }
+
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     return tycon.repCalc();

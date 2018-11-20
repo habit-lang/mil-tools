@@ -137,6 +137,21 @@ public class Synonym extends Tycon {
     return expansion.canonArgs(null, set, args);
   }
 
+  boolean sameMod(Type t, Type[] tenv, MergeMap mmap) {
+    return expansion.sameMod(null, t, tenv, mmap);
+  }
+
+  boolean sameTyconMod(Tycon l, MergeMap mmap) {
+    return expansion.sameTyconMod(null, l, mmap);
+  }
+
+  /**
+   * Determine whether this Tycon is equivalent to a specified DataType, modulo a given MergeMap.
+   */
+  boolean sameDataTypeMod(DataType l, MergeMap mmap) {
+    return expansion.sameDataTypeMod(null, l, mmap);
+  }
+
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
     return expansion.repCalc();
