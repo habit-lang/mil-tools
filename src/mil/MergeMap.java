@@ -20,19 +20,21 @@ package mil;
 
 import compiler.*;
 import core.*;
+import java.io.PrintWriter;
 import java.util.HashMap;
 
 class MergeMap extends TypeSet {
 
   /**
-   * Records mappings that are confirmed as valid. We use DataName as the key type because every
-   * Cfun has an associated DataName, and we need this when remapping constructor functions.
-   * However, the methods that we use to add entries to the mapping will only allow DataType values.
+   * Records mappings that are confirmed as valid. We use Tycon as the key type here so that we can
+   * perform lookups for arbitrary type constructors. However, in the methods that add items to
+   * these mappings, we will only use DataType values as keys (and values). As a result, any lookup
+   * for a Key that is not a DataType will automatically return null.
    */
-  private HashMap<DataName, DataType> confirmed = new HashMap();
+  private HashMap<Tycon, DataType> confirmed = new HashMap();
 
   /** Records mappings that are assumed. */
-  private HashMap<DataName, DataType> assumed = new HashMap();
+  private HashMap<Tycon, DataType> assumed = new HashMap();
 
   /** Clear the current set of assumptions. */
   void clearAssumed() {
@@ -42,9 +44,23 @@ class MergeMap extends TypeSet {
   /** Move all assumptions to the set of confirmed mappings. */
   void confirmAssumed() {
     confirmed.putAll(assumed);
-    for (DataName dn : assumed.keySet()) {
-      debug.Log.println("Equating datatypes " + dn + " and " + assumed.get(dn));
+    for (Tycon tc : assumed.keySet()) {
+      debug.Log.println("Equating datatypes " + tc + " and " + assumed.get(tc));
     }
+  }
+
+  /** Write a description of this TypeSet to a PrintWriter. */
+  public void dump(PrintWriter out) {
+    out.println("Equated types: --------------------------");
+    for (Tycon tc : confirmed.keySet()) {
+      out.println(tc + " ---> " + confirmed.get(tc));
+      Cfun[] cs = ((DataName) tc).getCfuns();
+      Cfun[] ds = confirmed.get(tc).getCfuns();
+      for (int i = 0; i < cs.length; i++) {
+        System.out.println("    " + cs[i] + " ---> " + ds[i]);
+      }
+    }
+    super.dump(out);
   }
 
   /** Add a mapping to the current set of assumptions. */
@@ -65,8 +81,24 @@ class MergeMap extends TypeSet {
    * Test to see if the given DataName should be replaced with another type under this mapping,
    * returning either the new DataType or else null, indicating that the DataName is no remapped.
    */
-  DataType mappingFor(DataName dn) {
+  DataType mappingFor(Tycon tc) {
     DataType dt;
-    return ((dt = confirmed.get(dn)) != null || (dt = assumed.get(dn)) != null) ? lookup(dt) : null;
+    return ((dt = confirmed.get(tc)) != null || (dt = assumed.get(tc)) != null) ? lookup(dt) : null;
+  }
+
+  /**
+   * Override the TypeSet method for calculating canonical versions of a type with a Tycon at its
+   * head. By overriding this method, we are able to check for situations where the head is a
+   * DataType that is being merged with another DataType, and then make an appropriate substitution
+   * in all of the types where that is required.
+   */
+  protected Type canon(Tycon h, int args) {
+    if (args == 0) { // Only nullary types are considered
+      DataType dt = mappingFor(h); // Is h to be merged with some given DataType dt?
+      if (dt != null) {
+        h = dt; // Use the new DataType (but still require its canonical version)Cf
+      }
+    }
+    return super.canon(h, args); // Or fall back to the canonical representation
   }
 }

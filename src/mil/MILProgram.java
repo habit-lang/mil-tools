@@ -375,6 +375,7 @@ public class MILProgram {
 
   public void mergeRewrite() {
     TypeSet set = new TypeSet();
+    shake();
     collect(set);
     MergeMap mmap = set.mergeMap();
     if (mmap != null) {

@@ -355,6 +355,7 @@ class Main {
           }
           rep = mil.repTransform(handler);
           handler.abortOnFailures();
+          mil.mergeRewrite();
           mil.shake();
           optimized = false;
           break;

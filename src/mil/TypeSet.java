@@ -368,6 +368,7 @@ public class TypeSet {
         }
       }
     }
+    mmap.clearAssumed();
     return mmap;
   }
 }
