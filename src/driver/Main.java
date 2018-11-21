@@ -360,6 +360,20 @@ class Main {
           optimized = false;
           break;
 
+        case 'm': // Merging of DataTypes
+          // TODO: This is currently a "secret" option (because it is not documented in the usage
+          // message).  Merging is used
+          // as part of the representation transformation process above.  Including it as a separate
+          // option here allows us to
+          // experiment with the feature more generally, but it is not clear how useful this will be
+          // in isolation.  If it turns
+          // out to be useful, then it should be documented.  If not, then it should be deleted ...
+          message("Merging datatypes ...");
+          mil.mergeRewrite();
+          mil.shake();
+          optimized = false;
+          break;
+
         default:
           throw new Failure("Unrecognized pass option \"" + passes.charAt(i) + "\"");
       }
