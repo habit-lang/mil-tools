@@ -135,7 +135,7 @@ public class Temps {
 
   public static Temps remove(Temp[] ts, Temps us) {
     for (int i = 0; i < ts.length; i++) {
-      us = ts[i].removeFrom(us);
+      us = Temps.remove(ts[i], us);
     }
     return us;
   }

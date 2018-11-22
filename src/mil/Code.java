@@ -127,19 +127,18 @@ public abstract class Code {
     return null;
   }
 
-  Tail makeCont(Temp v) {
-    // Build a block:  b[...] = case v of ...
+  Tail makeCont(Temp[] us) {
+    // Build a block:  b[...] = c
     Code c = copy(); // make a copy of this code
     Temps vs = c.liveness(); // find the free variables
     Temp[] formals = Temps.toArray(vs); // create corresponding formal parameters
     Block b = new Block(BuiltinPosition.pos, formals, c); // TODO: different position?
 
-    // Build a closure definition: k{...} v = b[...]
+    // Build a closure definition: k{...} us = b[...]
     Tail t = new BlockCall(b, formals);
     ClosureDefn k =
-        new ClosureDefn(
-            /*pos*/ null, new Temp[] {v}, t); // define a new closure // TODO: fix position
-    Temp[] stored = Temps.toArray(v.removeFrom(vs));
+        new ClosureDefn(/*pos*/ null, us, t); // define a new closure // TODO: fix position
+    Temp[] stored = Temps.toArray(Temps.remove(us, vs));
     k.setParams(stored); // do not store v in the closure
 
     return new ClosAlloc(k).withArgs(stored);

@@ -181,7 +181,7 @@ public class Case extends Code {
   public Code casesOn(Temp v, BlockCall bc) {
     if (a == v && bc.contCand()) {
       // Construct a continuation for the derived block:
-      Tail cont = makeCont(v);
+      Tail cont = makeCont(new Temp[] {v});
       Temp w = new Temp();
 
       // Replace original code with call to a new derived block:

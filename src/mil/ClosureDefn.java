@@ -680,11 +680,7 @@ public class ClosureDefn extends Defn {
    */
   Temp[] addArgs() throws Failure {
     if (params == null) { // compute stored params on first visit
-      Temps as = tail.addArgs(null);
-      for (int i = 0; i < args.length; i++) {
-        as = args[i].removeFrom(as);
-      }
-      params = Temps.toArray(as);
+      params = Temps.toArray(Temps.remove(args, tail.addArgs(null)));
     }
     return params;
   }

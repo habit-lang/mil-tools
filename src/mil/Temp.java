@@ -137,10 +137,6 @@ public class Temp extends Atom {
     return Temps.add(this, vs);
   }
 
-  public Temps removeFrom(Temps vs) {
-    return Temps.remove(this, vs);
-  }
-
   /**
    * Extend the given substitution with a mapping from this Temp to the specified Atom. If this is
    * an Atom but not a Temp, then just return the input substitution without modifications.
