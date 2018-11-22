@@ -1,9 +1,4 @@
-require "basic.mil"
-
--- Basic Datatypes:
-data List a   = Nil | Cons a (List a)
-data Pair a b = Pair a b
-data Maybe a  = Nothing | Just a
+require "prelude.mil"
 
 export return :: a -> Proc a
 return  = primRet
