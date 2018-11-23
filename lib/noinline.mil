@@ -1,0 +1,8 @@
+export noinline
+noinline :: Proc r -> Proc r
+noinline <- b[]
+b[]       = x <- k{}; Func(x)
+k{} [p]   = b1[p]
+b1[p]     = y <- k1{p}; Proc(y)
+k1{p} []  = [] <- noinline(()); x <- Proc 0 p; x @ []
+
