@@ -291,7 +291,7 @@ public class TopLevel extends TopDefn {
   private int summary;
 
   void findIn(TopLevels[] topLevels) {
-    if (!isEntrypoint && tail.isPure()) {
+    if (!isEntrypoint && tail.topLevelMayCombine()) {
       summary = tail.summary();
       int idx = this.summary % topLevels.length;
       if (idx < 0) idx += topLevels.length;

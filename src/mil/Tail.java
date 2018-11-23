@@ -384,6 +384,15 @@ public abstract class Tail {
     return false;
   }
 
+  /**
+   * Determine whether we should consider identifying TopLevels with this tail. We always avoid
+   * identification for Returns because they will be shorted out where possible, but otherwise we
+   * allow any pure tail.
+   */
+  boolean topLevelMayCombine() {
+    return isPure();
+  }
+
   void eliminateDuplicates() {
     /* nothing to do in most cases */
   }

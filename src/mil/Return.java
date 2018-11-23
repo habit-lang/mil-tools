@@ -178,6 +178,15 @@ public class Return extends Call {
     return this.alphaArgs(thisvars, that, thatvars);
   }
 
+  /**
+   * Determine whether we should consider identifying TopLevels with this tail. We always avoid
+   * identification for Returns because they will be shorted out where possible, but otherwise we
+   * allow any pure tail.
+   */
+  boolean topLevelMayCombine() {
+    return false;
+  }
+
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) { // Sufficient for Return
     if (outputs != null) {

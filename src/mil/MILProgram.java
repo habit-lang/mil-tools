@@ -180,7 +180,7 @@ public class MILProgram {
 
     // Final cleanup: look for opportunities to collapse duplicated definitions:
     count = 1;
-    for (int i = 0; i < MAX_OPTIMIZE_PASSES && count > 0 && count != 0; i++) {
+    for (int i = 0; i < MAX_OPTIMIZE_PASSES && count > 0; i++) {
       debug.Log.println("-------------------------");
       count = 0;
       collapse(); // TODO: move inside loop?
