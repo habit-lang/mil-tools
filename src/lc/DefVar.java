@@ -38,23 +38,38 @@ abstract class DefVar extends Var {
     return type;
   }
 
+  /** Return a printable description of this variable. */
+  public String toString() {
+    StringBuilder buf = new StringBuilder();
+    append(buf);
+    return buf.toString();
+  }
+
+  /** Return a printable description of an array of DefVar objects. */
   static String toString(String prefix, DefVar[] vs) {
     StringBuilder buf = new StringBuilder(prefix);
     for (int i = 0; i < vs.length; i++) {
-      Scheme s = vs[i].getScheme();
-      if (s == null) {
-        buf.append(vs[i].getId());
-      } else {
-        buf.append("(");
-        buf.append(vs[i].getId());
-        buf.append(" :: ");
-        buf.append(s.getType().skeleton().toString());
-        buf.append(")");
+      if (i > 0) {
+        buf.append(" ");
       }
-      buf.append(" ");
+      vs[i].append(buf);
     }
     buf.append(" ->");
     return buf.toString();
+  }
+
+  /** Append a printable description of this DefVar to the given buffer. */
+  void append(StringBuilder buf) {
+    if (type == null) {
+      buf.append(getId());
+    } else {
+      buf.append("(");
+      buf.append(getId());
+      buf.append(" :: ");
+      buf.append(type.skeleton().toString());
+      buf.append(")");
+    }
+    buf.append(" ");
   }
 
   /** Add this Var to the given list of DefVars. */

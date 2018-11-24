@@ -40,6 +40,19 @@ public class TopBinding {
     this.generics = generics;
   }
 
+  /** Print an indented description of a TopBinding. */
+  void indent(IndentOutput out, int n) {
+    out.indent(
+        n,
+        "TopBinding: "
+            + topLevel
+            + ", type = "
+            + type.skeleton()
+            + ", generics="
+            + TVar.show(generics));
+    e.indent(out, n + 1);
+  }
+
   void bindExtras(DefVar[] xvs) {
     // Abstract over extra arguments.  If there are any, add a lambda expression to the right hand
     // side of the binding and adjust the type to match:

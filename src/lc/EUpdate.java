@@ -116,7 +116,7 @@ class EUpdate extends PosExpr {
         }
       }
     }
-    return et;
+    return type = et;
   }
 
   Expr lift(LiftEnv lenv) { // e [ fields ]

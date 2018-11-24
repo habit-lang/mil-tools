@@ -140,7 +140,7 @@ class EConstruct extends PosExpr {
         invmap[map[p] - 1] = p;
       }
     }
-    return bt.asType();
+    return type = bt.asType();
   }
 
   Type inferTypeStructInit(TVarsInScope tis) throws Failure {
@@ -171,7 +171,7 @@ class EConstruct extends PosExpr {
                 + sfields[p].getType());
       }
     }
-    return Type.init(st.asType());
+    return type = Type.init(st.asType());
   }
 
   Expr lift(LiftEnv lenv) { // id [ fields ]

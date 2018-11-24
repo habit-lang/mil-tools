@@ -62,4 +62,11 @@ class IndentOutput {
       LCDefns.indent(this, n, defns);
     }
   }
+
+  /** Print an indented description of a list of TopBindings. */
+  void indent(TopBindings tbs, int n) {
+    for (; tbs != null; tbs = tbs.next) {
+      tbs.head.indent(this, n);
+    }
+  }
 }

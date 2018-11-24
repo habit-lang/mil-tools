@@ -57,8 +57,9 @@ public class LiftEnv {
   }
 
   /**
-   * Add the given list of TopBindings to the list of lifted bindings. This process is implemented
-   * using destructive updates, so the input list should not be used again after this call.
+   * Add the given list of TopBindings to the (front of) the list of lifted bindings in this
+   * LiftEnv. This process is implemented using destructive updates, so the input list should not be
+   * used again after this call.
    */
   public void addTopBindings(TopBindings tbs) {
     while (tbs != null) {

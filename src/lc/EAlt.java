@@ -60,7 +60,7 @@ class EAlt {
   void indent(IndentOutput out, int n) {
     out.indent(n, "EAlt");
     out.indent(n + 1, DefVar.toString(id + " ", vs));
-    e.indent(out, n + 1);
+    e.indent(out, n + 2);
   }
 
   private Cfun cf;

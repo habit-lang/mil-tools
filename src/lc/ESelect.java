@@ -105,7 +105,7 @@ class ESelect extends PosExpr {
             index = Name.index(lab, fields);
             if (index >= 0) {
               sf = fields[index];
-              return Type.ref(sf.getType());
+              return type = Type.ref(sf.getType());
             }
           }
         }
@@ -127,7 +127,7 @@ class ESelect extends PosExpr {
       throw new Failure(pos, "There is no \"" + lab + "\" field for type " + et);
     }
     lcf = layout.getCfun();
-    return lfields[index].getType();
+    return type = lfields[index].getType();
   }
 
   Expr lift(LiftEnv lenv) { // e . lab

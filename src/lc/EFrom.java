@@ -61,7 +61,7 @@ class EFrom extends PosExpr {
    */
   void indent(IndentOutput out, int n) {
     indent(out, n, "EFrom");
-    out.indent(n + 1, v.getId());
+    out.indent(n + 1, v.toString());
     e.indent(out, n + 1);
     e1.indent(out, n + 1);
   }

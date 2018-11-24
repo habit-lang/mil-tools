@@ -36,6 +36,9 @@ abstract class Var {
   /** Determine whether this variable can be referenced by the specified identifier. */
   public abstract boolean answersTo(String id);
 
+  /** Return a printable description of this variable. */
+  public abstract String toString();
+
   /**
    * Find the Binding corresponding to a particular Var in a given list of Bindings, or return null
    * if no such Binding can be found.

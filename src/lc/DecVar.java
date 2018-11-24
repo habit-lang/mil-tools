@@ -45,6 +45,11 @@ class DecVar extends Var {
     return id.equals(top.getId());
   }
 
+  /** Return a printable description of this variable. */
+  public String toString() {
+    return getId();
+  }
+
   /** Add this Var to the given list of DefVars. */
   DefVars add(DefVars vs) {
     return vs;
