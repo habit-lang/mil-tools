@@ -194,14 +194,15 @@ public class Block extends Defn {
     String extras = TVars.listAmbigTVars(code.tvars(gens), gens);
     if (extras != null) {
       // TODO: do we need to apply a skeleton() method to defining?
-      // handler.report(new Failure(pos,  ...));
-      debug.Log.println( // TODO: replace this call with the handler above ...
-          "Block \""
-              + id
-              + "\" used at type "
-              + defining
-              + " with ambiguous type variables "
-              + extras);
+      handler.report(
+          new Failure(
+              pos,
+              "Block \""
+                  + id
+                  + "\" used at type "
+                  + defining
+                  + " with ambiguous type variables "
+                  + extras));
     }
   }
 

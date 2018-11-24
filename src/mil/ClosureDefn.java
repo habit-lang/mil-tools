@@ -203,14 +203,15 @@ public class ClosureDefn extends Defn {
     String extras = TVars.listAmbigTVars(tail.tvars(gens), gens);
     if (extras != null) {
       // TODO: do we need to apply a skeleton() method to defining?
-      // handler.report(new Failure(pos,  ...));
-      debug.Log.println( // TODO: replace this call with the handler above ...
-          "Closure definition \""
-              + id
-              + "\" used at type "
-              + defining
-              + " with ambiguous type variables "
-              + extras);
+      handler.report(
+          new Failure(
+              pos,
+              "Closure definition \""
+                  + id
+                  + "\" used at type "
+                  + defining
+                  + " with ambiguous type variables "
+                  + extras));
     }
   }
 
