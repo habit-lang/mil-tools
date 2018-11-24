@@ -197,10 +197,10 @@ public abstract class Call extends Tail {
   }
 
   /**
-   * Generate code that loads the values specified by args in to the slots at the start of the
-   * frame. This requires care to ensure that we do not overwrite frame slots whose values should be
-   * moved to other positions first, even though this is unlikely to occur very often in practice
-   * (because most blocks have more temporaries than return results).
+   * Generate code that loads the values specified by args into the slots at the start of the frame.
+   * This requires care to ensure that we do not overwrite frame slots whose values should be moved
+   * to other positions first, even though this is unlikely to occur very often in practice (because
+   * most blocks have more temporaries than return results).
    */
   void generateTailArgs(MachineBuilder builder) {
     // Calculate a representation of the assignments that will be needed as an array ns, where, for
@@ -214,7 +214,7 @@ public abstract class Call extends Tail {
       }
     }
 
-    // Copy values from frame slots in to correct positions:
+    // Copy values from frame slots into correct positions:
     for (int blocked = findCycle(builder, ns); blocked >= 0; ) {
       builder.load(ns[blocked]);
       ns[blocked] = (-1);

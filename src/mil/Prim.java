@@ -2175,7 +2175,7 @@ public class Prim {
   }
 
   /**
-   * Representation for structure field initializers that map initializers for single fields in to
+   * Representation for structure field initializers that map initializers for single fields into
    * initializers for full structures. Used individually, these primitives would not guarantee full
    * initialization of a structure; instead, they should be used in combination when compiling a
    * structure with one initializer for every field.
@@ -2312,8 +2312,8 @@ public class Prim {
   /**
    * Generate an LLVM code sequence to load a value of the given type from a specified address. We
    * assume that the data that is being loaded will be either the same size or else smaller than a
-   * single machine word: for example, we may load an i8, i16, or i32 in to an i32, but we should
-   * not attempt to load an i64 into an i32.
+   * single machine word: for example, we may load an i8, i16, or i32 into an i32, but we should not
+   * attempt to load an i64 into an i32.
    */
   static llvm.Code loadLLVM(
       LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Type ty, llvm.Local lhs, llvm.Code c) {

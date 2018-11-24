@@ -122,7 +122,7 @@ abstract class CFG extends Node {
 
   /**
    * Calculate a parameter elimination substitution for this CFG that accounts for all of the
-   * renamings that are required when there is a control flow in to a block with a unique
+   * renamings that are required when there is a control flow into a block with a unique
    * predecessor.
    */
   TempSubst paramElim() {

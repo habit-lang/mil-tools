@@ -128,7 +128,7 @@ public class Done extends Code {
    * Test whether a given Code/Tail value is an expression of the form return vs, with the specified
    * Temp[] vs as parameter. We also return a true result for a Tail of the form return _, where the
    * wildcard indicates that any return value is acceptable because the result will be ignored by
-   * the caller. This allows us to turn more calls in to tail calls when they occur at the end of
+   * the caller. This allows us to turn more calls into tail calls when they occur at the end of
    * "void functions" that do not return a useful result.
    */
   boolean isReturn(Temp[] vs) {

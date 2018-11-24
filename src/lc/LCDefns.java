@@ -38,7 +38,7 @@ public class LCDefns {
   }
 
   /**
-   * Convert a list of LCDefn values in to a list of Bindings. This process, for example, attaches
+   * Convert a list of LCDefn values into a list of Bindings. This process, for example, attaches
    * types that are declared in type annotations with the corresponding identifier definition. We
    * implement this algorithm using two passes over the list of LCDefn values: the first builds up a
    * list of all bindings, and the second adds annotations. This is followed by a final pass over

@@ -174,7 +174,7 @@ public abstract class Code {
    * Test whether a given Code/Tail value is an expression of the form return vs, with the specified
    * Temp[] vs as parameter. We also return a true result for a Tail of the form return _, where the
    * wildcard indicates that any return value is acceptable because the result will be ignored by
-   * the caller. This allows us to turn more calls in to tail calls when they occur at the end of
+   * the caller. This allows us to turn more calls into tail calls when they occur at the end of
    * "void functions" that do not return a useful result.
    */
   boolean isReturn(Temp[] vs) {
@@ -189,8 +189,8 @@ public abstract class Code {
    * do not apply inlining to the code of a block that contains a single Tail; any calls to that
    * block should be inlined anyway, at which point the block will become dead code. In addition,
    * expanding a single tail block like this could lead to code duplication, not least because we
-   * also have another transformation (toBlockCall) that turns an expanded code sequence back in to
-   * a single block call, and we want to avoid oscillation back and forth between these two forms.
+   * also have another transformation (toBlockCall) that turns an expanded code sequence back into a
+   * single block call, and we want to avoid oscillation back and forth between these two forms.
    */
   Code inlining(Block src) {
     return inlining(src, INLINE_ITER_LIMIT);

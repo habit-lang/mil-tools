@@ -253,7 +253,7 @@ public abstract class Defn {
     for (int i = 0; i < tss.length; i++) {
       len += (tss[i] == null ? 1 : tss[i].length);
     }
-    // Collapse new parameters in to a single array:
+    // Collapse new parameters into a single array:
     Temp[] nps = new Temp[len];
     int pos = 0;
     for (int i = 0; i < tss.length; i++) {
