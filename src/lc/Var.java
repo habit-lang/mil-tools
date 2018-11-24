@@ -63,6 +63,6 @@ abstract class Var {
     return null;
   }
 
-  /** Look for a binding for this lc variable in the given environment. */
+  /** Find the binding for this LC variable in the given environment. */
   abstract Atom lookup(CGEnv env);
 }

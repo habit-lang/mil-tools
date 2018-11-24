@@ -80,7 +80,7 @@ public class Temps {
     return b.toString();
   }
 
-  static Temp[] toArray(Temps vs) {
+  public static Temp[] toArray(Temps vs) {
     Temp[] va = new Temp[Temps.length(vs)];
     for (int i = 0; vs != null; vs = vs.next) {
       va[i++] = vs.head;
@@ -89,12 +89,12 @@ public class Temps {
   }
 
   /** Add a single element v to the list vs if it is not already included. */
-  static Temps add(Temp v, Temps vs) {
+  public static Temps add(Temp v, Temps vs) {
     return Temps.isIn(v, vs) ? vs : new Temps(v, vs);
   }
 
   /** Add a list of elements us to the list vs. */
-  static Temps add(Temps us, Temps vs) {
+  public static Temps add(Temps us, Temps vs) {
     for (; us != null; us = us.next) {
       vs = add(us.head, vs);
     }
@@ -109,7 +109,7 @@ public class Temps {
   }
 
   /** Destructively remove a single element v from the list vs. */
-  static Temps remove(Temp v, Temps vs) {
+  public static Temps remove(Temp v, Temps vs) {
     Temps prev = null;
     for (Temps us = vs; us != null; us = us.next) {
       if (us.head == v) {
@@ -126,7 +126,7 @@ public class Temps {
   }
 
   /** Destructively remove a list of elements us from the list vs. */
-  static Temps remove(Temps us, Temps vs) {
+  public static Temps remove(Temps us, Temps vs) {
     for (; us != null; us = us.next) {
       vs = remove(us.head, vs);
     }

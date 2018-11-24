@@ -94,7 +94,7 @@ abstract class DefVar extends Var {
     return type;
   }
 
-  /** Look for a binding for this lc variable in the given environment. */
+  /** Find the binding for this LC variable in the given environment. */
   Atom lookup(CGEnv env) {
     return CGEnv.lookup(this, env);
   }

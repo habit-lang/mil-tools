@@ -28,8 +28,10 @@ import mil.*;
  */
 abstract class TailCont {
 
+  /** Invoke this TailCont with the given Tail to be embedded in a complete code sequence. */
   abstract Code with(final Tail t);
 
+  /** A TailCont that wraps the incoming Tail in a simple Done. */
   public static final TailCont done =
       new TailCont() {
         Code with(final Tail t) {

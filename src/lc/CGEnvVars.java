@@ -35,6 +35,10 @@ class CGEnvVars extends CGEnv {
     this.ts = ts;
   }
 
+  /**
+   * Search for an entry for the given DefVar in this CGEnv node (ignoring the enclosing
+   * environment, if any).
+   */
   Temp findInThis(DefVar v) {
     for (int i = 0; i < vs.length; i++) {
       if (vs[i] == v) {

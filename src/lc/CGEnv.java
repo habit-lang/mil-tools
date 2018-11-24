@@ -23,7 +23,7 @@ import core.*;
 import mil.*;
 
 /**
- * Represents an environment mapping variables in the LC program to corresponding temporaries in the
+ * Represents an environment mapping variables in LC programs to corresponding temporaries in
  * generated MIL code.
  */
 abstract class CGEnv {
@@ -35,6 +35,7 @@ abstract class CGEnv {
     this.enclosing = enclosing;
   }
 
+  /** Find the temporary corresponding to a given DefVar in the specified environment. */
   static Temp lookup(DefVar v, CGEnv env) {
     for (; env != null; env = env.enclosing) {
       Temp t = env.findInThis(v);
@@ -46,5 +47,9 @@ abstract class CGEnv {
     return null; // not reached
   }
 
+  /**
+   * Search for an entry for the given DefVar in this CGEnv node (ignoring the enclosing
+   * environment, if any).
+   */
   abstract Temp findInThis(DefVar v);
 }

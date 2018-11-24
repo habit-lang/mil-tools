@@ -57,12 +57,12 @@ public class DefVars {
   }
 
   /** Add a single element v to the list vs if it is not already included. */
-  static DefVars add(DefVar v, DefVars vs) {
+  public static DefVars add(DefVar v, DefVars vs) {
     return DefVars.isIn(v, vs) ? vs : new DefVars(v, vs);
   }
 
   /** Add a list of elements us to the list vs. */
-  static DefVars add(DefVars us, DefVars vs) {
+  public static DefVars add(DefVars us, DefVars vs) {
     for (; us != null; us = us.next) {
       vs = add(us.head, vs);
     }
@@ -70,7 +70,7 @@ public class DefVars {
   }
 
   /** Add an array of elements us to the list vs. */
-  static DefVars add(DefVar[] us, DefVars vs) {
+  public static DefVars add(DefVar[] us, DefVars vs) {
     for (int i = 0; i < us.length; i++) {
       vs = add(us[i], vs);
     }
@@ -78,7 +78,7 @@ public class DefVars {
   }
 
   /** Destructively remove a single element v from the list vs. */
-  static DefVars remove(DefVar v, DefVars vs) {
+  public static DefVars remove(DefVar v, DefVars vs) {
     DefVars prev = null;
     for (DefVars us = vs; us != null; us = us.next) {
       if (us.head == v) {
@@ -95,7 +95,7 @@ public class DefVars {
   }
 
   /** Destructively remove a list of elements us from the list vs. */
-  static DefVars remove(DefVars us, DefVars vs) {
+  public static DefVars remove(DefVars us, DefVars vs) {
     for (; us != null; us = us.next) {
       vs = remove(us.head, vs);
     }
@@ -103,14 +103,14 @@ public class DefVars {
   }
 
   /** Destructively remove an array of elements us from the list vs. */
-  static DefVars remove(DefVar[] us, DefVars vs) {
+  public static DefVars remove(DefVar[] us, DefVars vs) {
     for (int i = 0; i < us.length; i++) {
       vs = remove(us[i], vs);
     }
     return vs;
   }
 
-  static DefVar[] toArray(DefVars vs) {
+  public static DefVar[] toArray(DefVars vs) {
     DefVar[] va = new DefVar[DefVars.length(vs)];
     for (int i = 0; vs != null; vs = vs.next) {
       va[i++] = vs.head;

@@ -28,5 +28,6 @@ import mil.*;
  */
 abstract class AtomCont {
 
+  /** Invoke this AtomCont with the given Atom to be embedded in a complete code sequence. */
   abstract Code with(final Atom v);
 }
