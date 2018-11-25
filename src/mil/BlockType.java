@@ -102,19 +102,24 @@ public class BlockType {
     return rng.tvars(null, dom.tvars(null, tvs));
   }
 
+  /** Generalize this monomorphic BlockType over all the variables that it contains. */
+  public BlockType generalize() {
+    return generalize(TVar.generics(tvars(), null));
+  }
+
   /**
    * Generalize this monomorphic BlockType to a polymorphic type using the specified list of generic
    * variables.
    */
   public BlockType generalize(TVar[] generics) {
-    return generalize(generics, null);
+    return generalize(generics, null, dom, rng);
   }
 
   /**
    * Create a generalized version of this BlockType using the specified list of generics and the
    * given type environment to interpret any TGen values in this BlockType.
    */
-  protected BlockType generalize(TVar[] generics, Type[] tenv) {
+  public static BlockType generalize(TVar[] generics, Type[] tenv, Type dom, Type rng) {
     Type ndom = dom.skeleton(tenv, generics);
     Type nrng = rng.skeleton(tenv, generics);
     return (generics.length > 0)
@@ -159,10 +164,12 @@ public class BlockType {
    * changes in the number or order of quantified type variables.
    */
   BlockType removeArgs(int numUsedArgs, boolean[] usedArgs) {
+    // TODO: could likely use a different version of generalize() and avoid constructing
+    // intermediate bt.
     BlockType bt = freshInstantiate();
     bt.dom =
         (usedArgs == null) ? Type.empty : bt.dom.removeArgs(numUsedArgs, usedArgs, usedArgs.length);
-    return bt.generalize(TVar.generics(bt.tvars(), null));
+    return bt.generalize();
   }
 
   /**

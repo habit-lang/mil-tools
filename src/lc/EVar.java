@@ -100,15 +100,22 @@ class EVar extends PosExpr {
     return (l == null) ? this : l.replacement(pos, type);
   }
 
-  /** Compile an expression into an Atom. */
-  Code compAtom(final CGEnv env, final AtomCont ka) {
+  /**
+   * Compile an expression into an Atom. The continuation ka expects an Atom (of the same type as
+   * this expression) and produces a code sequence (that returns a value of the type kty).
+   */
+  Code compAtom(final CGEnv env, final Type kty, final AtomCont ka) {
     return ka.with(v.lookup(env));
   }
 
-  /** Compile an expression into a Tail. */
-  Code compTail(final CGEnv env, final Block abort, final TailCont kt) {
+  /**
+   * Compile an expression into a Tail. The continuation kt maps tails (of the same type as this
+   * expression) to code sequences (that return a value of the type specified by kty).
+   */
+  Code compTail(final CGEnv env, final Block abort, final Type kty, final TailCont kt) {
     return this.compAtom(
         env,
+        kty,
         new AtomCont() {
           Code with(final Atom la) {
             return kt.with(new Return(la));
@@ -116,9 +123,13 @@ class EVar extends PosExpr {
         });
   }
 
-  /** Compile a monadic expression into a Tail. */
-  Code compTailM(final CGEnv env, final Block abort, final TailCont kt) { //  v
-    Temp t = new Temp();
+  /**
+   * Compile a monadic expression into a Tail. If this is an expression of type Proc T, then the
+   * continuation kt maps tails (that produce values of type T) to code sequences (that return a
+   * value of the type specified by kty).
+   */
+  Code compTailM(final CGEnv env, final Block abort, final Type kty, final TailCont kt) { //  v
+    Temp t = new Temp(Type.milfun(Type.empty, Type.tuple(type.argOf(null))));
     return new Bind(
         t,
         new Sel(Cfun.Proc, 0, v.lookup(env)), // t <- Proc 0 v

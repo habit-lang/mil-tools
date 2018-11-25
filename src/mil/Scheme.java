@@ -81,6 +81,10 @@ public abstract class Scheme {
    */
   public abstract TVars tvars(TVars tvs);
 
+  public Scheme generalize() {
+    return generalize(TVar.generics(tvars(), null));
+  }
+
   public abstract Scheme generalize(TVar[] generics);
 
   /**

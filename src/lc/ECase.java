@@ -131,35 +131,46 @@ class ECase extends PosExpr {
     return this;
   }
 
-  /** Compile an expression into a Tail. */
-  Code compTail(final CGEnv env, final Block abort, final TailCont kt) { //  case e of alts
+  /**
+   * Compile an expression into a Tail. The continuation kt maps tails (of the same type as this
+   * expression) to code sequences (that return a value of the type specified by kty).
+   */
+  Code compTail(
+      final CGEnv env, final Block abort, final Type kty, final TailCont kt) { //  case e of alts
     return e.compAtom(
         env,
+        kty,
         new AtomCont() {
           Code with(final Atom dv) {
-            Temp rv = new Temp(); // holds the final result
-            Block join = new Block(pos, kt.with(new Return(rv)));
+            Temp rv = new Temp(type); // holds the final result
+            Block join = new LCBlock(pos, kty, kt.with(new Return(rv)));
             Alt[] talts = new Alt[alts.length];
             for (int i = 0; i < alts.length; i++) {
-              talts[i] = alts[i].compAlt(env, abort, dv, rv, join);
+              talts[i] = alts[i].compAlt(env, abort, dv, rv, kty, join);
             }
             return new Case(dv, talts, new BlockCall(abort));
           }
         });
   }
 
-  /** Compile a monadic expression into a Tail. */
-  Code compTailM(final CGEnv env, final Block abort, final TailCont kt) { //  case e of alts
-    // TODO: too much cut and paste from compTail version
+  /**
+   * Compile a monadic expression into a Tail. If this is an expression of type Proc T, then the
+   * continuation kt maps tails (that produce values of type T) to code sequences (that return a
+   * value of the type specified by kty).
+   */
+  Code compTailM(
+      final CGEnv env, final Block abort, final Type kty, final TailCont kt) { //  case e of alts
     return e.compAtom(
         env,
+        kty,
         new AtomCont() {
           Code with(final Atom dv) {
-            Temp rv = new Temp(); // holds the final result
-            Block join = new Block(pos, kt.with(new Return(rv)));
+            Type ty = type.argOf(null);
+            Temp rv = new Temp(ty); // holds the final result
+            Block join = new LCBlock(pos, kty, kt.with(new Return(rv)));
             Alt[] talts = new Alt[alts.length];
             for (int i = 0; i < alts.length; i++) {
-              talts[i] = alts[i].compAltM(env, abort, dv, rv, join);
+              talts[i] = alts[i].compAltM(env, abort, dv, rv, kty, join);
             }
             return new Case(dv, talts, new BlockCall(abort));
           }

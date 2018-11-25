@@ -104,30 +104,41 @@ class EFatbar extends PosExpr {
     return this;
   }
 
-  /** Compile an expression into a Tail. */
-  Code compTail(final CGEnv env, final Block abort, final TailCont kt) { //  l | r
-    final Temp rv = new Temp();
-    final Block join = new Block(pos, kt.with(new Return(rv)));
+  /**
+   * Compile an expression into a Tail. The continuation kt maps tails (of the same type as this
+   * expression) to code sequences (that return a value of the type specified by kty).
+   */
+  Code compTail(final CGEnv env, final Block abort, final Type kty, final TailCont kt) { //  l | r
+    final Temp rv = new Temp(type);
+    final Block join = new LCBlock(pos, kty, kt.with(new Return(rv)));
     TailCont kt1 =
         new TailCont() {
           Code with(final Tail t) {
             return new Bind(rv, t, new Done(new BlockCall(join)));
           }
         };
-    return l.compTail(env, new Block(pos, r.compTail(env, abort, kt1)), kt1);
+    return l.compTail(env, new LCBlock(pos, type, r.compTail(env, abort, kty, kt1)), kty, kt1);
   }
 
-  /** Compile a monadic expression into a Tail. */
-  Code compTailM(final CGEnv env, final Block abort, final TailCont kt) { //  l | r  ::  Proc argt
-    // TODO: too much cut and paste from compTail version
-    final Temp rv = new Temp();
-    final Block join = new Block(pos, kt.with(new Return(rv)));
+  /**
+   * Compile a monadic expression into a Tail. If this is an expression of type Proc T, then the
+   * continuation kt maps tails (that produce values of type T) to code sequences (that return a
+   * value of the type specified by kty).
+   */
+  Code compTailM(
+      final CGEnv env,
+      final Block abort,
+      final Type kty,
+      final TailCont kt) { //  l | r  ::  Proc argt
+    final Type rty = type.argOf(null); // type of final result for this expression
+    final Temp rv = new Temp(rty);
+    final Block join = new LCBlock(pos, kty, kt.with(new Return(rv)));
     TailCont kt1 =
         new TailCont() {
           Code with(final Tail t) {
             return new Bind(rv, t, new Done(new BlockCall(join)));
           }
         };
-    return l.compTailM(env, new Block(pos, r.compTailM(env, abort, kt1)), kt1);
+    return l.compTailM(env, new LCBlock(pos, kty, r.compTailM(env, abort, kty, kt1)), kty, kt1);
   }
 }

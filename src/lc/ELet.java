@@ -141,8 +141,8 @@ class ELet extends PosExpr {
         } else {
           prev.next = bsccs.next;
         }
-      } else { // Keep the local definition in this (non-recursive, singleton)
-        for (; bs != null; bs = bs.next) { // binding group, but still lift the rhs
+      } else { // Keep the local definition in this (non-recursive, monomorphic,
+        for (; bs != null; bs = bs.next) { // singleton) binding group, but still lift the rhs
           bs.head.liftBinding(lenv);
         }
         prev = bsccs;
@@ -152,13 +152,22 @@ class ELet extends PosExpr {
     return (sccs == null) ? e : this;
   }
 
-  /** Compile an expression into a Tail. */
-  Code compTail(final CGEnv env, final Block abort, final TailCont kt) { // let bindings in e
-    return e.compLet(env, sccs, abort, kt);
+  /**
+   * Compile an expression into a Tail. The continuation kt maps tails (of the same type as this
+   * expression) to code sequences (that return a value of the type specified by kty).
+   */
+  Code compTail(
+      final CGEnv env, final Block abort, final Type kty, final TailCont kt) { // let bindings in e
+    return e.compLet(env, sccs, abort, kty, kt);
   }
 
-  /** Compile a monadic expression into a Tail. */
-  Code compTailM(final CGEnv env, final Block abort, final TailCont kt) { //  let bindings in e
-    return e.compLetM(env, sccs, abort, kt);
+  /**
+   * Compile a monadic expression into a Tail. If this is an expression of type Proc T, then the
+   * continuation kt maps tails (that produce values of type T) to code sequences (that return a
+   * value of the type specified by kty).
+   */
+  Code compTailM(
+      final CGEnv env, final Block abort, final Type kty, final TailCont kt) { //  let bindings in e
+    return e.compLetM(env, sccs, abort, kty, kt);
   }
 }

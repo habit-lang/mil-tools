@@ -346,7 +346,7 @@ class Binding extends DefVar {
 
     // Add an entry for this binding to the lifting environment and return a new top binding.
     lenv.addLifting(this, topLevel, xvs); // Add lifting v -> topLevel xvs
-    return new TopBinding(topLevel, e, type, generics); // Create new top level binding
+    return new TopBinding(topLevel, e, type); // Create new top level binding
   }
 
   void liftBinding(LiftEnv lenv) {
@@ -378,10 +378,11 @@ class Binding extends DefVar {
    * the binding is not recursive because all recursive definitions should have been lifted out
    * earlier by the lambda lifter.
    */
-  Code compBinding(final CGEnv env, final Temp t1, final Code code) {
+  Code compBinding(final CGEnv env, final Temp t1, final Type kty, final Code code) {
     return e.compTail(
         env,
         MILProgram.abort,
+        kty,
         new TailCont() {
           Code with(Tail t) {
             return new Bind(t1, t, code);

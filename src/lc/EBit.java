@@ -59,8 +59,11 @@ class EBit extends ELit {
     return type = Type.bit(width);
   }
 
-  /** Compile an expression into an Atom. */
-  Code compAtom(final CGEnv env, final AtomCont ka) {
+  /**
+   * Compile an expression into an Atom. The continuation ka expects an Atom (of the same type as
+   * this expression) and produces a code sequence (that returns a value of the type kty).
+   */
+  Code compAtom(final CGEnv env, final Type kty, final AtomCont ka) {
     return ka.with(new Bits(nat, width));
   }
 }

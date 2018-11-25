@@ -136,10 +136,9 @@ public abstract class Code {
 
     // Build a closure definition: k{...} us = b[...]
     Tail t = new BlockCall(b, formals);
-    ClosureDefn k =
-        new ClosureDefn(/*pos*/ null, us, t); // define a new closure // TODO: fix position
     Temp[] stored = Temps.toArray(Temps.remove(us, vs));
-    k.setParams(stored); // do not store v in the closure
+    ClosureDefn k =
+        new ClosureDefn(/*pos*/ null, stored, us, t); // define a new closure // TODO: fix position
 
     return new ClosAlloc(k).withArgs(stored);
   }
@@ -351,12 +350,12 @@ public abstract class Code {
    * Return this code sequence as a Tail, generating a new block if necessary with the code as its
    * body.
    */
-  public Tail forceTail(Position pos) {
-    return new BlockCall(new Block(pos, this));
+  public Tail forceTail(Position pos, Type type) {
+    return new BlockCall(new lc.LCBlock(pos, type, this));
   }
 
   /** Find the argument variables that are used in this Code sequence. */
-  abstract Temps addArgs() throws Failure;
+  public abstract Temps addArgs() throws Failure;
 
   /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
   abstract void countCalls();

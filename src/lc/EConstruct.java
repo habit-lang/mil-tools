@@ -179,11 +179,15 @@ class EConstruct extends PosExpr {
     return this;
   }
 
-  /** Compile an expression into a Tail. */
-  Code compTail(final CGEnv env, final Block abort, final TailCont kt) {
+  /**
+   * Compile an expression into a Tail. The continuation kt maps tails (of the same type as this
+   * expression) to code sequences (that return a value of the type specified by kty).
+   */
+  Code compTail(final CGEnv env, final Block abort, final Type kty, final TailCont kt) {
     if (cf == null) { // structure initializer
       // TODO: does this work correctly for structures with no fields?
-      return EField.compInit(env, abort, st, fields, 0, fields.length - 1, kt);
+      Type initS = Type.init(st.asType());
+      return EField.compInit(env, abort, st, initS, fields, 0, fields.length - 1, kty, kt);
     } else { // bitdata construction
       // sketch of generated code:
       //     comp[fexp1] $ \a1 ->
@@ -192,7 +196,7 @@ class EConstruct extends PosExpr {
       //     l <- LCF(a1,...,aN)    -- build layout (modulo invmap permutation)
       //     kt(C(l))               -- embed in bitdata type
       final Atom[] as = new Atom[fields.length];
-      Temp l = new Temp();
+      Temp l = new Temp(layout.asType());
       Code code = new Bind(l, layout.getCfuns()[0].withArgs(as), kt.with(cf.withArgs(l)));
       for (int i = fields.length; --i >= 0; ) {
         final Code c = code;
@@ -200,6 +204,7 @@ class EConstruct extends PosExpr {
         code =
             fields[i].compAtom(
                 env,
+                kty,
                 new AtomCont() {
                   Code with(final Atom a) {
                     as[j] = a; // save variable
@@ -211,12 +216,17 @@ class EConstruct extends PosExpr {
     }
   }
 
-  /** Compile a monadic expression into a Tail. */
+  /**
+   * Compile a monadic expression into a Tail. If this is an expression of type Proc T, then the
+   * continuation kt maps tails (that produce values of type T) to code sequences (that return a
+   * value of the type specified by kty).
+   */
   Code compTailM(
       final CGEnv env,
       final Block abort,
+      final Type kty,
       final TailCont kt) { // id [ fields ], e [ fields ],  e . lab
-    debug.Internal.error("values of this form do not have monadic type");
+    debug.Internal.error("Constructs of this form do not produce values of monadic type");
     return null;
   }
 }

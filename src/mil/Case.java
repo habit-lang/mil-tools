@@ -491,7 +491,7 @@ public class Case extends Code {
   }
 
   /** Find the argument variables that are used in this Code sequence. */
-  Temps addArgs() throws Failure {
+  public Temps addArgs() throws Failure {
     Temps vs = (def == null) ? null : def.addArgs(null);
     for (int i = 0; i < alts.length; i++) {
       vs = Temps.add(alts[i].addArgs(), vs);

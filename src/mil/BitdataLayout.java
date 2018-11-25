@@ -63,6 +63,10 @@ public class BitdataLayout extends DataName {
     this.maskTest = maskTest;
   }
 
+  public BitdataType getBitdataType() {
+    return bt;
+  }
+
   /** Return the kind of this type constructor. */
   public Kind getKind() {
     return KAtom.STAR;

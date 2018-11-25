@@ -373,6 +373,11 @@ public class TAp extends Type {
     return fun.useBitdataLo(arg);
   }
 
+  /** Return the argument of this type (assuming that this is a type application). */
+  public Type argOf(Type[] tenv) {
+    return arg.with(tenv);
+  }
+
   /**
    * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full
    * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.

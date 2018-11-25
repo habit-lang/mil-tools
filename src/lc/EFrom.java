@@ -129,32 +129,46 @@ class EFrom extends PosExpr {
     return this;
   }
 
-  /** Compile an expression into a Tail. */
-  Code compTail(final CGEnv env, final Block abort, final TailCont kt) { // v <- e; e1
+  /**
+   * Compile an expression into a Tail. The continuation kt maps tails (of the same type as this
+   * expression) to code sequences (that return a value of the type specified by kty).
+   */
+  Code compTail(
+      final CGEnv env, final Block abort, final Type kty, final TailCont kt) { // v <- e; e1
     // returns t <- k{...}; kt.with(Proc(t))
     // where k{...} [] = b[...]
     //       b[...]    = monadic code for v <- e; e1
-    Temp t = new Temp();
+    Temp t = v.freshTemp();
+    Type rty = type.argOf(null); // Type of final result for this expression
     return new Bind(
         t,
         new ClosAlloc(
-            new ClosureDefn(
+            new LCClosureDefn(
                 pos,
+                Type.milfun(Type.empty, Type.tuple(rty)),
                 Temp.noTemps,
                 new BlockCall(
-                    new Block(pos, this.compTailM(env, MILProgram.abort, TailCont.done))))),
+                    new LCBlock(
+                        pos, rty, this.compTailM(env, MILProgram.abort, rty, TailCont.done))))),
         kt.with(Cfun.Proc.withArgs(t)));
   }
 
-  /** Compile a monadic expression into a Tail. */
-  Code compTailM(final CGEnv env, final Block abort, final TailCont kt) { // v <- e; e1
+  /**
+   * Compile a monadic expression into a Tail. If this is an expression of type Proc T, then the
+   * continuation kt maps tails (that produce values of type T) to code sequences (that return a
+   * value of the type specified by kty).
+   */
+  Code compTailM(
+      final CGEnv env, final Block abort, final Type kty, final TailCont kt) { // v <- e; e1
     return e.compTailM(
         env,
         MILProgram.abort,
+        kty,
         new TailCont() {
           Code with(final Tail t) {
-            Temp t1 = new Temp();
-            return new Bind(t1, t, e1.compTailM(new CGEnvVar(env, v, t1), MILProgram.abort, kt));
+            Temp t1 = v.freshTemp();
+            return new Bind(
+                t1, t, e1.compTailM(new CGEnvVar(env, v, t1), MILProgram.abort, kty, kt));
           }
         });
   }

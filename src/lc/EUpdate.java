@@ -56,6 +56,8 @@ class EUpdate extends PosExpr {
 
   private BitdataField[] bfields;
 
+  private BitdataLayout layout;
+
   /**
    * Perform scope analysis on this expression, creating a Temp for each variable binding, checking
    * that all of the identifiers it references correspond to bound variables, and returning the set
@@ -91,7 +93,6 @@ class EUpdate extends PosExpr {
     // TODO: refactor to avoid duplication of ESelect code ...
     Type et = e.inferType(tis).skeleton();
     BitdataType bt = et.bitdataType();
-    BitdataLayout layout;
     if (bt == null) {
       layout = et.bitdataLayout();
       if (layout == null) {
@@ -125,8 +126,12 @@ class EUpdate extends PosExpr {
     return this;
   }
 
-  /** Compile an expression into a Tail. */
-  Code compTail(final CGEnv env, final Block abort, final TailCont kt) { // e [ fields ]
+  /**
+   * Compile an expression into a Tail. The continuation kt maps tails (of the same type as this
+   * expression) to code sequences (that return a value of the type specified by kty).
+   */
+  Code compTail(
+      final CGEnv env, final Block abort, final Type kty, final TailCont kt) { // e [ fields ]
     // sketch of generated code:
     //     compAtom[e]   $ \t ->
     //     Bind(r <- Sel cf 0 t,
@@ -139,25 +144,26 @@ class EUpdate extends PosExpr {
     //     Bind(tN <- update_labN((vN, tN-1)),
     //     kt(C(tN))
     if (cf == null) {
-      return e.compTail(env, MILProgram.abort, new UpdateCont(env, 0, kt));
+      return e.compTail(env, MILProgram.abort, kty, new UpdateCont(env, 0, kty, kt));
     } else {
       final TailCont kn =
           new UpdateCont(
               env,
-              0, // continuation to restore outer cfun at the end
+              0,
+              kty, // continuation to restore outer cfun at the end
               new TailCont() {
                 Code with(final Tail t) {
-                  Temp a = new Temp();
+                  Temp a = new Temp(layout.asType());
                   return new Bind(a, t, kt.with(new DataAlloc(cf).withArgs(a)));
                 }
               });
       final TailCont ks = new TailCont() { // continuation to strip outer cfun at start
             Code with(final Tail t) {
-              Temp a = new Temp();
+              Temp a = new Temp(layout.getBitdataType().asType());
               return new Bind(a, t, kn.with(new Sel(cf, 0, a)));
             }
           };
-      return e.compTail(env, MILProgram.abort, ks);
+      return e.compTail(env, MILProgram.abort, kty, ks);
     }
   }
 
@@ -167,28 +173,50 @@ class EUpdate extends PosExpr {
 
     private int i;
 
+    private Type kty;
+
     private TailCont kt;
 
     /** Default constructor. */
-    private UpdateCont(CGEnv env, int i, TailCont kt) {
+    private UpdateCont(CGEnv env, int i, Type kty, TailCont kt) {
       this.env = env;
       this.i = i;
+      this.kty = kty;
       this.kt = kt;
     }
 
     Code with(final Tail t) {
-      return (i >= fields.length)
-          ? kt.with(t)
-          : fields[i].compUpdate(env, t, bfields[i], new UpdateCont(env, i + 1, kt));
+      if (i >= fields.length) {
+        return kt.with(t);
+      } else {
+        final Temp a = new Temp(layout.asType()); // a holds value to be updated
+        final TailCont ku = new UpdateCont(env, i + 1, kty, kt);
+        return new Bind(
+            a,
+            t,
+            fields[i].compAtom(
+                env,
+                kty,
+                new AtomCont() {
+                  Code with(final Atom b) { // b holds value to insert
+                    return ku.with(bfields[i].getUpdatePrim().withArgs(a, b));
+                  }
+                }));
+      }
     }
   }
 
-  /** Compile a monadic expression into a Tail. */
+  /**
+   * Compile a monadic expression into a Tail. If this is an expression of type Proc T, then the
+   * continuation kt maps tails (that produce values of type T) to code sequences (that return a
+   * value of the type specified by kty).
+   */
   Code compTailM(
       final CGEnv env,
       final Block abort,
+      final Type kty,
       final TailCont kt) { // id [ fields ], e [ fields ],  e . lab
-    debug.Internal.error("values of this form do not have monadic type");
+    debug.Internal.error("Constructs of this form do not produce values of monadic type");
     return null;
   }
 }

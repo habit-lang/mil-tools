@@ -411,6 +411,15 @@ public class Temp extends Atom {
     return ys;
   }
 
+  /** Return an array containing the types of the variables in the given Temp array. */
+  public static Type[] types(Temp[] vs) {
+    Type[] ts = new Type[vs.length];
+    for (int i = 0; i < vs.length; i++) {
+      ts[i] = vs[i].type;
+    }
+    return ts;
+  }
+
   /**
    * Determine whether this item is for a non-Unit, corresponding to a value that requires a
    * run-time representation in the generated LLVM.

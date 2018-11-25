@@ -106,17 +106,20 @@ abstract class EField extends Name {
       final CGEnv env,
       final Block abort,
       final StructType st,
+      final Type initS,
       final EField[] fields,
       final int lo,
       final int hi,
+      final Type kty,
       final TailCont kt) {
     if (lo == hi) {
       return fields[lo].e.compTail(
           env,
           abort,
+          kty,
           new TailCont() {
             Code with(final Tail init) {
-              Temp i = new Temp();
+              Temp i = new Temp(Type.init(st.getFields()[lo].getType()));
               return new Bind(i, init, kt.with(st.initStructFieldPrim(lo).withArgs(i)));
             }
           });
@@ -126,12 +129,14 @@ abstract class EField extends Name {
           env,
           abort,
           st,
+          initS,
           fields,
           lo,
           mid,
+          kty,
           new TailCont() {
             Code with(final Tail t1) {
-              final Temp i1 = new Temp();
+              final Temp i1 = new Temp(initS);
               return new Bind(
                   i1,
                   t1,
@@ -139,12 +144,14 @@ abstract class EField extends Name {
                       env,
                       abort,
                       st,
+                      initS,
                       fields,
                       mid + 1,
                       hi,
+                      kty,
                       new TailCont() {
                         Code with(final Tail t2) {
-                          final Temp i2 = new Temp();
+                          final Temp i2 = new Temp(initS);
                           return new Bind(i2, t2, kt.with(Prim.initSeq.withArgs(i1, i2)));
                         }
                       }));
@@ -153,21 +160,7 @@ abstract class EField extends Name {
     }
   }
 
-  Code compAtom(final CGEnv env, final AtomCont ka) {
-    return e.compAtom(env, ka);
-  }
-
-  Code compUpdate(CGEnv env, Tail t, final BitdataField field, final TailCont kt) {
-    final Temp a = new Temp(); // a holds value to be updated
-    return new Bind(
-        a,
-        t,
-        e.compAtom(
-            env,
-            new AtomCont() {
-              Code with(final Atom b) { // b holds value to insert
-                return kt.with(field.getUpdatePrim().withArgs(a, b));
-              }
-            }));
+  Code compAtom(CGEnv env, Type kty, AtomCont ka) {
+    return e.compAtom(env, kty, ka);
   }
 }

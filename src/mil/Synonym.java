@@ -309,6 +309,11 @@ public class Synonym extends Tycon {
     return expansion.alignment(null, a.with(tenv), b.with(tenv));
   }
 
+  /** Return the argument of this type (assuming that this is a type application). */
+  public Type argOf(Type[] tenv) {
+    return expansion.argOf(null);
+  }
+
   /**
    * Determine whether this item is for a non-Unit, corresponding to a value that requires a
    * run-time representation in the generated LLVM.

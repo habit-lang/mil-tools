@@ -26,8 +26,9 @@ public class ClosureDefnWithKnownCons extends ClosureDefn {
   private Call[] calls;
 
   /** Default constructor. */
-  public ClosureDefnWithKnownCons(Position pos, Temp[] args, Tail tail, Call[] calls) {
-    super(pos, args, tail);
+  public ClosureDefnWithKnownCons(
+      Position pos, Temp[] params, Temp[] args, Tail tail, Call[] calls) {
+    super(pos, params, args, tail);
     this.calls = calls;
   }
 

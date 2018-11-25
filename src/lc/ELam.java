@@ -127,28 +127,43 @@ class ELam extends PosExpr {
     return this;
   }
 
-  /** Compile an expression into a Tail. */
-  Code compTail(final CGEnv env, final Block abort, final TailCont kt) { //  \vs -> e
+  /**
+   * Compile an expression into a Tail. The continuation kt maps tails (of the same type as this
+   * expression) to code sequences (that return a value of the type specified by kty).
+   */
+  Code compTail(
+      final CGEnv env, final Block abort, final Type kty, final TailCont kt) { //  \vs -> e
+    Type ety = e.type;
     Temp[] ts = DefVar.freshTemps(vs);
     Call b =
         new BlockCall(
-            new Block(
-                pos, e.compTail(new CGEnvVars(env, vs, ts), MILProgram.abort, TailCont.done)));
+            new LCBlock(
+                pos,
+                ety,
+                e.compTail(new CGEnvVars(env, vs, ts), MILProgram.abort, ety, TailCont.done)));
     for (int i = vs.length - 1; i >= 0; i--) {
-      Temp t = new Temp();
+      Type tty = ts[i].instantiate(); // Type of ts[i]
+      Type fty = Type.milfunTuple(tty, ety);
+      Temp t = new Temp(fty);
       Code c =
           new Bind(
               t,
-              new ClosAlloc(new ClosureDefn(pos, new Temp[] {ts[i]}, b)),
+              new ClosAlloc(new LCClosureDefn(pos, fty, new Temp[] {ts[i]}, b)),
               new Done(Cfun.Func.withArgs(t)));
-      b = new BlockCall(new Block(pos, c));
+      ety = Type.fun(tty, ety);
+      b = new BlockCall(new LCBlock(pos, ety, c));
     }
     return kt.with(b);
   }
 
-  /** Compile a monadic expression into a Tail. */
-  Code compTailM(final CGEnv env, final Block abort, final TailCont kt) { //  \vs -> e
-    debug.Internal.error("ELam does not have monadic type");
+  /**
+   * Compile a monadic expression into a Tail. If this is an expression of type Proc T, then the
+   * continuation kt maps tails (that produce values of type T) to code sequences (that return a
+   * value of the type specified by kty).
+   */
+  Code compTailM(
+      final CGEnv env, final Block abort, final Type kty, final TailCont kt) { //  \vs -> e
+    debug.Internal.error("Lambda expressions do not have monadic type");
     return null;
   }
 }

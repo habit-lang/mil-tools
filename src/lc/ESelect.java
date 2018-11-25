@@ -135,10 +135,14 @@ class ESelect extends PosExpr {
     return this;
   }
 
-  /** Compile an expression into a Tail. */
-  Code compTail(final CGEnv env, final Block abort, final TailCont kt) { // e . lab
+  /**
+   * Compile an expression into a Tail. The continuation kt maps tails (of the same type as this
+   * expression) to code sequences (that return a value of the type specified by kty).
+   */
+  Code compTail(final CGEnv env, final Block abort, final Type kty, final TailCont kt) { // e . lab
     return e.compAtom(
         env,
+        kty,
         new AtomCont() {
           Code with(final Atom a) {
             if (sf != null) { // structure field selection
@@ -146,19 +150,24 @@ class ESelect extends PosExpr {
             } else if (cf == null) { // operating directly on layout
               return kt.with(new Sel(lcf, index, a));
             } else {
-              Temp t = new Temp();
+              Temp t = new Temp(lcf.getDataName().asType());
               return new Bind(t, new Sel(cf, 0, a), kt.with(new Sel(lcf, index, t)));
             }
           }
         });
   }
 
-  /** Compile a monadic expression into a Tail. */
+  /**
+   * Compile a monadic expression into a Tail. If this is an expression of type Proc T, then the
+   * continuation kt maps tails (that produce values of type T) to code sequences (that return a
+   * value of the type specified by kty).
+   */
   Code compTailM(
       final CGEnv env,
       final Block abort,
+      final Type kty,
       final TailCont kt) { // id [ fields ], e [ fields ],  e . lab
-    debug.Internal.error("values of this form do not have monadic type");
+    debug.Internal.error("Constructs of this form do not produce values of monadic type");
     return null;
   }
 }

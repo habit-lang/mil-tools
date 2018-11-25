@@ -128,18 +128,24 @@ class EAp extends Expr {
     return this;
   }
 
-  /** Compile an expression into a Tail. */
-  Code compTail(final CGEnv env, final Block abort, final TailCont kt) { //  f x
+  /**
+   * Compile an expression into a Tail. The continuation kt maps tails (of the same type as this
+   * expression) to code sequences (that return a value of the type specified by kty).
+   */
+  Code compTail(final CGEnv env, final Block abort, final Type kty, final TailCont kt) { //  f x
+    final Type tft = Type.milfunTuple(x.type, this.type);
     return f.compAtom(
         env,
+        kty,
         new AtomCont() {
           Code with(final Atom fv) {
-            final Temp ft = new Temp();
+            final Temp ft = new Temp(tft);
             return new Bind(
                 ft,
                 new Sel(Cfun.Func, 0, fv), // TODO: do we need an assert too?
                 x.compAtom(
                     env,
+                    kty,
                     new AtomCont() {
                       Code with(final Atom xv) {
                         return kt.with(new Enter(ft, xv));
@@ -149,13 +155,19 @@ class EAp extends Expr {
         });
   }
 
-  /** Compile a monadic expression into a Tail. */
-  Code compTailM(final CGEnv env, final Block abort, final TailCont kt) { //  f x
+  /**
+   * Compile a monadic expression into a Tail. If this is an expression of type Proc T, then the
+   * continuation kt maps tails (that produce values of type T) to code sequences (that return a
+   * value of the type specified by kty).
+   */
+  Code compTailM(final CGEnv env, final Block abort, final Type kty, final TailCont kt) { //  f x
+    final Type tft = Type.milfunTuple(x.type, this.type.argOf(null));
     return this.compAtom(
         env,
+        kty,
         new AtomCont() {
           Code with(final Atom v) {
-            Temp t = new Temp();
+            Temp t = new Temp(tft);
             return new Bind(
                 t,
                 new Sel(Cfun.Proc, 0, v), // TODO: combine with EVar code above?

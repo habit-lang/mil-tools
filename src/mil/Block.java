@@ -24,11 +24,11 @@ import java.io.PrintWriter;
 
 public class Block extends Defn {
 
-  private String id;
+  protected String id;
 
-  private Temp[] params;
+  protected Temp[] params;
 
-  private Code code;
+  protected Code code;
 
   /** Default constructor. */
   public Block(Position pos, String id, Temp[] params, Code code) {
@@ -44,10 +44,6 @@ public class Block extends Defn {
     this(pos, "b" + count++, params, code);
   }
 
-  public Block(Position pos, Code code) {
-    this(pos, (Temp[]) null, code);
-  }
-
   /**
    * Set the code field for this block; this is intended to be used in situations where we are
    * generating code for recursively defined blocks whose Code cannot be constucted until the Block
@@ -57,9 +53,9 @@ public class Block extends Defn {
     this.code = code;
   }
 
-  private BlockType declared;
+  protected BlockType declared;
 
-  private BlockType defining;
+  protected BlockType defining;
 
   /** Get the declared type, or null if no type has been set. */
   public BlockType getDeclared() {
@@ -329,7 +325,7 @@ public class Block extends Defn {
     // whose code is the same as the original block except that it adds a group of one or more
     // initializers.
     // Our first step is to initialize the block:
-    Block b = new BlockWithKnownCons(pos, null, calls);
+    Block b = new BlockWithKnownCons(pos, /*params*/ null, /*code*/ null, calls);
     derived = new Blocks(b, derived);
 
     // Next we pick temporary variables for new parameters:
@@ -969,10 +965,7 @@ public class Block extends Defn {
    * closure are computed the first time that we visit the definition, but are returned directly for
    * each subsequent call.
    */
-  Temp[] addArgs() throws Failure {
-    if (params == null) { // compute formal params on first visit
-      params = Temps.toArray(code.addArgs());
-    }
+  public Temp[] addArgs() throws Failure {
     return params;
   }
 

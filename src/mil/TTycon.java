@@ -456,6 +456,11 @@ public class TTycon extends TConst {
     return tycon != Tycon.ref && tycon != Tycon.ptr;
   }
 
+  /** Return the argument of this type (assuming that this is a type application). */
+  public Type argOf(Type[] tenv) {
+    return tycon.argOf(tenv);
+  }
+
   boolean nonUnit(Type[] tenv) {
     return tycon.nonUnit();
   }

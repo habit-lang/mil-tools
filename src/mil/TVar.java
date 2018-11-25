@@ -441,6 +441,11 @@ public final class TVar extends TInd {
     return (bound == null) ? 0 : bound.alignment(boundenv, a.with(tenv), b.with(tenv));
   }
 
+  /** Return the argument of this type (assuming that this is a type application). */
+  public Type argOf(Type[] tenv) {
+    return (bound != null) ? bound.argOf(boundenv) : super.argOf(tenv);
+  }
+
   boolean nonUnit(Type[] tenv) {
     if (bound == null) {
       debug.Internal.error("nonUnit for unbound TVar");

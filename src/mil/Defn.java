@@ -464,7 +464,7 @@ public abstract class Defn {
    * closure are computed the first time that we visit the definition, but are returned directly for
    * each subsequent call.
    */
-  abstract Temp[] addArgs() throws Failure;
+  public abstract Temp[] addArgs() throws Failure;
 
   /** Calculate a staticValue (which could be null) for each top level definition. */
   void calcStaticValues(LLVMMap lm, llvm.Program prog) {

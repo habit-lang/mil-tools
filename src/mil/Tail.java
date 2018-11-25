@@ -444,7 +444,7 @@ public abstract class Tail {
    * include updates in the cases for BlockCall and ClosAlloc if the argument lists are not already
    * known.
    */
-  Temps addArgs(Temps vs) throws Failure {
+  public Temps addArgs(Temps vs) throws Failure {
     return this.add(vs);
   }
 

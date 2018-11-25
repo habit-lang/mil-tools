@@ -68,7 +68,7 @@ class TIndBlockType extends BlockType {
    * variables.
    */
   public BlockType generalize(TVar[] generics) {
-    return generalize(generics, tenv);
+    return generalize(generics, tenv, dom, rng);
   }
 
   /** Calculate a new version of this block type with canonical components. */

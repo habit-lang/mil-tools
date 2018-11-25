@@ -94,8 +94,7 @@ class PolyAllocType extends AllocType {
 
   /** Calculate a new version of this allocator type with canonical components. */
   AllocType canonAllocType(TypeSet set) {
-    AllocType at = instantiate().canonAllocType(set);
-    return at.generalize(TVar.generics(at.tvars(), null));
+    return instantiate().canonAllocType(set).generalize();
   }
 
   public AllocType apply(TVarSubst s) {

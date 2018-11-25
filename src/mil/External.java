@@ -342,7 +342,7 @@ public class External extends TopDefn {
    * closure are computed the first time that we visit the definition, but are returned directly for
    * each subsequent call.
    */
-  Temp[] addArgs() throws Failure {
+  public Temp[] addArgs() throws Failure {
     return null;
   }
 

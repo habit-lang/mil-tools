@@ -324,6 +324,11 @@ public class TInd extends Type {
     return bound.alignment(boundenv, a.with(tenv), b.with(tenv));
   }
 
+  /** Return the argument of this type (assuming that this is a type application). */
+  public Type argOf(Type[] tenv) {
+    return bound.argOf(boundenv);
+  }
+
   boolean nonUnit(Type[] tenv) {
     return bound.nonUnit(boundenv);
   }

@@ -109,8 +109,7 @@ public class Forall extends Scheme {
 
   /** Calculate a new version of this type scheme with canonical components. */
   Scheme canonScheme(TypeSet set) {
-    Type t = instantiate().canonType(set);
-    return t.generalize(TVar.generics(t.tvars(), null));
+    return instantiate().canonType(set).generalize();
   }
 
   public Type apply(TVarSubst s) {

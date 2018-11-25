@@ -24,13 +24,13 @@ import java.io.PrintWriter;
 
 public class ClosureDefn extends Defn {
 
-  private String id;
+  protected String id;
 
-  private Temp[] params;
+  protected Temp[] params;
 
-  private Temp[] args;
+  protected Temp[] args;
 
-  private Tail tail;
+  protected Tail tail;
 
   /** Default constructor. */
   public ClosureDefn(Position pos, String id, Temp[] params, Temp[] args, Tail tail) {
@@ -47,17 +47,9 @@ public class ClosureDefn extends Defn {
     this(pos, "k" + count++, params, args, tail);
   }
 
-  public ClosureDefn(Position pos, Temp[] args, Tail tail) {
-    this(pos, (Temp[]) null, args, tail);
-  }
+  protected AllocType declared;
 
-  void setParams(Temp[] params) {
-    this.params = params;
-  }
-
-  private AllocType declared;
-
-  private AllocType defining;
+  protected AllocType defining;
 
   /** Get the declared type, or null if no type has been set. */
   public AllocType getDeclared() {
@@ -259,7 +251,8 @@ public class ClosureDefn extends Defn {
     Temp[] newargs = Temp.makeTemps(args.length);
 
     // make the new closure definition; the params and tail will be filled in later:
-    ClosureDefn k = new ClosureDefnWithKnownCons(/*pos*/ null, newargs, null, calls);
+    ClosureDefn k =
+        new ClosureDefnWithKnownCons(/*pos*/ null, /*params*/ null, newargs, null, calls);
     derived = new ClosureDefns(k, derived);
 
     // We pick temporary variables for new parameters:
@@ -679,10 +672,7 @@ public class ClosureDefn extends Defn {
    * closure are computed the first time that we visit the definition, but are returned directly for
    * each subsequent call.
    */
-  Temp[] addArgs() throws Failure {
-    if (params == null) { // compute stored params on first visit
-      params = Temps.toArray(Temps.remove(args, tail.addArgs(null)));
-    }
+  public Temp[] addArgs() throws Failure {
     return params;
   }
 

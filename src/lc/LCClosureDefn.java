@@ -16,22 +16,27 @@
     You should have received a copy of the GNU General Public License
     along with mil-tools.  If not, see <https://www.gnu.org/licenses/>.
 */
-package mil;
+package lc;
 
 import compiler.*;
 import core.*;
+import mil.*;
 
-public class BlockWithKnownCons extends Block {
+public class LCClosureDefn extends ClosureDefn {
 
-  private Call[] calls;
+  private Type result;
 
-  /** Default constructor. */
-  public BlockWithKnownCons(Position pos, Temp[] params, Code code, Call[] calls) {
-    super(pos, params, code);
-    this.calls = calls;
+  public LCClosureDefn(Position pos, Type result, Temp[] args, Tail tail) {
+    super(pos, (Temp[]) null, args, tail);
+    this.result = result;
   }
 
-  boolean hasKnownCons(Call[] calls) {
-    return Call.sameCallForms(calls, this.calls);
+  public Temp[] addArgs() throws Failure {
+    if (params == null) { // compute stored params on first visit
+      params = Temps.toArray(Temps.remove(args, tail.addArgs(null)));
+      AllocType at = new AllocType(Temp.types(params), result);
+      declared = at.generalize();
+    }
+    return params;
   }
 }

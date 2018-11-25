@@ -350,6 +350,11 @@ public class TGen extends Type {
     return tenv[n].alignment(null, a.with(tenv), b.with(tenv));
   }
 
+  /** Return the argument of this type (assuming that this is a type application). */
+  public Type argOf(Type[] tenv) {
+    return tenv[n].argOf(null);
+  }
+
   boolean nonUnit(Type[] tenv) {
     return tenv[n].nonUnit(null);
   }

@@ -158,42 +158,63 @@ abstract class Expr {
 
   abstract Expr lift(LiftEnv lenv);
 
-  /** Compile an expression into an Atom. */
-  Code compAtom(final CGEnv env, final AtomCont ka) {
+  /**
+   * Generate code for an expression to be bound to a top-level variable, forcing the result to be a
+   * tail by introducing a new Block, if necessary.
+   */
+  Tail compTopLevel(Position pos) {
+    return compTail(null, MILProgram.abort, type, TailCont.done).forceTail(pos, type);
+  }
+
+  /**
+   * Compile an expression into an Atom. The continuation ka expects an Atom (of the same type as
+   * this expression) and produces a code sequence (that returns a value of the type kty).
+   */
+  Code compAtom(final CGEnv env, final Type kty, final AtomCont ka) {
     return compTail(
         env,
         MILProgram.abort,
+        kty,
         new TailCont() {
           Code with(final Tail t) {
-            Temp v = new Temp();
+            Temp v = new Temp(type);
             return new Bind(v, t, ka.with(v));
           }
         });
   }
 
-  /** Compile an expression into a Tail. */
-  abstract Code compTail(final CGEnv env, final Block abort, final TailCont kt);
+  /**
+   * Compile an expression into a Tail. The continuation kt maps tails (of the same type as this
+   * expression) to code sequences (that return a value of the type specified by kty).
+   */
+  abstract Code compTail(final CGEnv env, final Block abort, final Type kty, final TailCont kt);
 
-  Code compLet(CGEnv env, BindingSCCs sccs, Block abort, TailCont kt) {
+  Code compLet(CGEnv env, BindingSCCs sccs, Block abort, Type kty, TailCont kt) {
     if (sccs == null) {
-      return this.compTail(env, abort, kt);
+      return this.compTail(env, abort, kty, kt);
     } else {
       Binding b = sccs.head.getNonRecBinding();
-      Temp t = new Temp();
-      return b.compBinding(env, t, this.compLet(new CGEnvVar(env, b, t), sccs.next, abort, kt));
+      Temp t = new Temp(b.instantiate());
+      return b.compBinding(
+          env, t, kty, this.compLet(new CGEnvVar(env, b, t), sccs.next, abort, kty, kt));
     }
   }
 
-  /** Compile a monadic expression into a Tail. */
-  abstract Code compTailM(final CGEnv env, final Block abort, final TailCont kt);
+  /**
+   * Compile a monadic expression into a Tail. If this is an expression of type Proc T, then the
+   * continuation kt maps tails (that produce values of type T) to code sequences (that return a
+   * value of the type specified by kty).
+   */
+  abstract Code compTailM(final CGEnv env, final Block abort, final Type kty, final TailCont kt);
 
-  Code compLetM(CGEnv env, BindingSCCs sccs, Block abort, TailCont kt) {
+  Code compLetM(CGEnv env, BindingSCCs sccs, Block abort, Type kty, TailCont kt) {
     if (sccs == null) {
-      return this.compTailM(env, abort, kt);
+      return this.compTailM(env, abort, kty, kt);
     } else {
       Binding b = sccs.head.getNonRecBinding();
-      Temp t = new Temp();
-      return b.compBinding(env, t, this.compLetM(new CGEnvVar(env, b, t), sccs.next, abort, kt));
+      Temp t = new Temp(b.instantiate());
+      return b.compBinding(
+          env, t, kty, this.compLetM(new CGEnvVar(env, b, t), sccs.next, abort, kty, kt));
     }
   }
 }

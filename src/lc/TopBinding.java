@@ -30,26 +30,16 @@ public class TopBinding {
 
   private Type type;
 
-  private TVar[] generics;
-
   /** Default constructor. */
-  public TopBinding(TopLevel topLevel, Expr e, Type type, TVar[] generics) {
+  public TopBinding(TopLevel topLevel, Expr e, Type type) {
     this.topLevel = topLevel;
     this.e = e;
     this.type = type;
-    this.generics = generics;
   }
 
   /** Print an indented description of a TopBinding. */
   void indent(IndentOutput out, int n) {
-    out.indent(
-        n,
-        "TopBinding: "
-            + topLevel
-            + ", type = "
-            + type.skeleton()
-            + ", generics="
-            + TVar.show(generics));
+    out.indent(n, "TopBinding: " + topLevel + ", type = " + type.skeleton());
     e.indent(out, n + 1);
   }
 
@@ -65,10 +55,7 @@ public class TopBinding {
       e = new ELam(e.getPos(), xvs, e, type);
 
       // Calculate the most general type of the lifted function:
-      // TODO: use null in the following call because there are no fixed type variables at
-      // the top level (but this would not necessarily be true if we had classes).
-      generics = type.generics(null);
-      topLevel.setDeclared(0, type.generalize(generics));
+      topLevel.setDeclared(0, type.generalize());
     }
     debug.Log.println("Type of lifted " + topLevel + " :: " + topLevel.getDeclared(0));
   }
@@ -79,7 +66,6 @@ public class TopBinding {
 
   /** Compile a top-level binding, updating the associated TopLevel value. */
   void compile() { // id = e
-    topLevel.setTail(
-        e.compTail(null, MILProgram.abort, TailCont.done).forceTail(topLevel.getPos()));
+    topLevel.setTail(e.compTopLevel(topLevel.getPos()));
   }
 }

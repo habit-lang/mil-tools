@@ -54,6 +54,10 @@ public class Cfun extends Name {
     return allocType.getArity();
   }
 
+  public DataName getDataName() {
+    return dn;
+  }
+
   /**
    * Get the array of constructor functions associated with this object, or return null if this is
    * not a DataName.

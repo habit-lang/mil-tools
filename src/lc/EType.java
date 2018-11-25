@@ -130,13 +130,22 @@ class EType extends PosExpr {
     return this;
   }
 
-  /** Compile an expression into a Tail. */
-  Code compTail(final CGEnv env, final Block abort, final TailCont kt) { // e :: declared
-    return e.compTail(env, abort, kt);
+  /**
+   * Compile an expression into a Tail. The continuation kt maps tails (of the same type as this
+   * expression) to code sequences (that return a value of the type specified by kty).
+   */
+  Code compTail(
+      final CGEnv env, final Block abort, final Type kty, final TailCont kt) { // e :: declared
+    return e.compTail(env, abort, kty, kt);
   }
 
-  /** Compile a monadic expression into a Tail. */
-  Code compTailM(final CGEnv env, final Block abort, final TailCont kt) { // e :: declared
-    return e.compTailM(env, abort, kt);
+  /**
+   * Compile a monadic expression into a Tail. If this is an expression of type Proc T, then the
+   * continuation kt maps tails (that produce values of type T) to code sequences (that return a
+   * value of the type specified by kty).
+   */
+  Code compTailM(
+      final CGEnv env, final Block abort, final Type kty, final TailCont kt) { // e :: declared
+    return e.compTailM(env, abort, kty, kt);
   }
 }

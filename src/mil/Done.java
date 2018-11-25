@@ -308,12 +308,12 @@ public class Done extends Code {
    * Return this code sequence as a Tail, generating a new block if necessary with the code as its
    * body.
    */
-  public Tail forceTail(Position pos) {
+  public Tail forceTail(Position pos, Type type) {
     return t;
   }
 
   /** Find the argument variables that are used in this Code sequence. */
-  Temps addArgs() throws Failure {
+  public Temps addArgs() throws Failure {
     return t.addArgs(null);
   }
 

@@ -101,6 +101,16 @@ abstract class DefVar extends Var {
 
   /** Generate an array of new mil temporaries from an array of lc temporaries. */
   static Temp[] freshTemps(DefVar[] vs) {
-    return Temp.makeTemps(vs.length);
+    int n = vs.length;
+    Temp[] ts = new Temp[n];
+    for (int i = 0; i < n; i++) {
+      ts[i] = vs[i].freshTemp();
+    }
+    return ts;
+  }
+
+  /** Generate a new MIL temporary from an LC DefVar. */
+  Temp freshTemp() {
+    return new Temp(type);
   }
 }

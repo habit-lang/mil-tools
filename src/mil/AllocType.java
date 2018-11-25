@@ -158,19 +158,24 @@ public class AllocType {
     return result.tvars(tenv, tvs);
   }
 
+  /** Generalize this monomorphic AllocType over all the variables that it contains. */
+  public AllocType generalize() {
+    return generalize(TVar.generics(tvars(), null));
+  }
+
   /**
    * Generalize this monomorphic AllocType to a polymorphic type using the specified list of generic
    * variables.
    */
   public AllocType generalize(TVar[] generics) {
-    return generalize(generics, tenv());
+    return generalize(generics, tenv(), stored, result);
   }
 
   /**
    * Create a generalized version of this AllocType using the specified list of generics and the
    * given type environment to interpret any TGen values in this AllocType.
    */
-  protected AllocType generalize(TVar[] generics, Type[] tenv) {
+  public static AllocType generalize(TVar[] generics, Type[] tenv, Type[] stored, Type result) {
     Type[] nstored = new Type[stored.length];
     for (int i = 0; i < stored.length; i++) {
       nstored[i] = stored[i].skeleton(tenv, generics);
@@ -246,6 +251,8 @@ public class AllocType {
    * the type once the appropriate stored components have been removed.
    */
   AllocType removeStored(int numUsedArgs, boolean[] usedArgs) {
+    // TODO: could likely use a different version of generalize() and avoid constructing
+    // intermediate at.
     AllocType at = freshInstantiate();
     Type[] nstored = new Type[numUsedArgs];
     int j = 0;
@@ -255,7 +262,7 @@ public class AllocType {
       }
     }
     at.stored = nstored;
-    return at.generalize(TVar.generics(at.tvars(), null));
+    return at.generalize();
   }
 
   /** Instantiate this AllocType, ensuring that the result is a newly allocated object. */

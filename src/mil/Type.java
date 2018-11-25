@@ -1055,6 +1055,12 @@ public abstract class Type extends Scheme {
     }
   }
 
+  /** Return the argument of this type (assuming that this is a type application). */
+  public Type argOf(Type[] tenv) {
+    debug.Internal.error("argOf applied to a non-TAp");
+    return null;
+  }
+
   /**
    * Determine whether this item is for a non-Unit, corresponding to a value that requires a
    * run-time representation in the generated LLVM.

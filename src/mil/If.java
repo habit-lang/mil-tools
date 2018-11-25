@@ -310,7 +310,7 @@ public class If extends Code {
   }
 
   /** Find the argument variables that are used in this Code sequence. */
-  Temps addArgs() throws Failure {
+  public Temps addArgs() throws Failure {
     return a.add(ifFalse.addArgs(ifTrue.addArgs(null)));
   }
 

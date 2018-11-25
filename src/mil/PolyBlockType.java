@@ -88,8 +88,7 @@ class PolyBlockType extends BlockType {
 
   /** Calculate a new version of this block type with canonical components. */
   BlockType canonBlockType(TypeSet set) {
-    BlockType bt = instantiate().canonBlockType(set);
-    return bt.generalize(TVar.generics(bt.tvars(), null));
+    return instantiate().canonBlockType(set).generalize();
   }
 
   public BlockType apply(TVarSubst s) {
