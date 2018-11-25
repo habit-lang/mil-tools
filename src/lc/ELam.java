@@ -105,7 +105,7 @@ class ELam extends PosExpr {
    */
   Type lambdaType(Type result) {
     for (int i = vs.length; --i >= 0; ) {
-      result = Type.fun(vs[i].freshType(Tyvar.arg), result);
+      result = Type.fun(vs[i].freshType(Tyvar.star), result);
     }
     return result;
   }

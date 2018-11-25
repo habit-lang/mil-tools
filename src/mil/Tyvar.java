@@ -34,8 +34,6 @@ public class Tyvar extends Name {
 
   public static final Tyvar[] noTyvars = new Tyvar[0];
 
-  public static final Tyvar arg = new Tyvar(BuiltinPosition.pos, "arg", KAtom.STAR);
-
   public static final Tyvar res = new Tyvar(BuiltinPosition.pos, "", KAtom.STAR);
 
   public static final Tyvar star = new Tyvar(BuiltinPosition.pos, "", KAtom.STAR);

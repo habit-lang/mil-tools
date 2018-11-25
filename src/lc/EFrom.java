@@ -109,7 +109,7 @@ class EFrom extends PosExpr {
    */
   Type inferType(TVarsInScope tis) throws Failure { // v <- e; e1
     Type proc = DataType.proc.asType();
-    e.checkType(tis, new TAp(proc, v.freshType(Tyvar.arg)));
+    e.checkType(tis, new TAp(proc, v.freshType(Tyvar.star)));
     type = new TAp(proc, new TVar(Tyvar.res));
     e1.checkType(new TVISVar(tis, v), type);
     return type;
@@ -118,7 +118,7 @@ class EFrom extends PosExpr {
   /** Check that this expression will produce a value of the specified type. */
   void checkType(TVarsInScope tis, Type t) throws Failure { // v <- e; e1
     Type proc = DataType.proc.asType();
-    e.checkType(tis, new TAp(proc, v.freshType(Tyvar.arg)));
+    e.checkType(tis, new TAp(proc, v.freshType(Tyvar.star)));
     t.unify(pos, new TAp(proc, new TVar(Tyvar.res)));
     e1.checkType(new TVISVar(tis, v), type = t);
   }
