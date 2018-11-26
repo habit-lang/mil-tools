@@ -146,9 +146,15 @@ public class LCProgram extends CoreProgram {
     super.inferTypes(handler);
   }
 
+  /**
+   * Used to capture the list of TopBindings corresponding to top level definitions in the LC code
+   * (i.e., this list excludes TopBindings that were created by lifting local definitions).
+   */
+  private TopBindings topBindings = null;
+
   TopBindings lambdaLift() {
     LiftEnv lenv = new LiftEnv();
-    lenv.liftBindings(bindings, DefVar.noVars);
+    topBindings = lenv.liftBindings(bindings, DefVar.noVars);
     liftCoreProgram(lenv);
     // TODO: is the following line necessary?
     // sccs = null; // Invalidate sccs now that new bindings have been added:
@@ -274,6 +280,15 @@ public class LCProgram extends CoreProgram {
     for (TopDefns tds = topDefns; tds != null; tds = tds.next) {
       tds.head.compileTopDefn();
     }
+  }
+
+  /**
+   * Override the method for finding an external implementation so that we can also search the top
+   * level bindings in this program.
+   */
+  public Top findScopeExtImp(String id, MILEnv milenv) {
+    TopLevel topLevel = TopBinding.find(id, topBindings);
+    return (topLevel == null) ? super.findScopeExtImp(id, milenv) : new TopDef(topLevel, 0);
   }
 
   void addExports(MILProgram mil, MILEnv milenv) {

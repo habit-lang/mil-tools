@@ -133,15 +133,24 @@ public class CoreProgram {
 
   public void scopeExtImps(Handler handler, MILEnv milenv) {
     for (; fixups != null; fixups = fixups.next) {
-      Top t = milenv.findTop(fixups.impId);
+      String id = fixups.impId;
+      Top t = findScopeExtImp(id, milenv);
       if (t == null) {
-        handler.report(
-            new Failure(fixups.impPos, "Cannot find top-level implementation " + fixups.impId));
+        handler.report(new Failure(fixups.impPos, "Cannot find top-level implementation " + id));
       } else {
         // TODO: should we also check that t is not a TopExt?  (to prevent cyclic definitions)
         fixups.ext.setImp(new AtomImp(t));
       }
     }
+  }
+
+  /**
+   * Search for a Top value in this program with the given identifier. This implementaton simply
+   * performs a lookup in the given environment, but we can override this method in CoreProgram
+   * subclasses to allow for other behaviors.
+   */
+  public Top findScopeExtImp(String id, MILEnv milenv) {
+    return milenv.findTop(id);
   }
 
   public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {

@@ -43,6 +43,16 @@ public class TopBinding {
     e.indent(out, n + 1);
   }
 
+  /** Search for a TopLevel with the given name in a list of TopBindings. */
+  public static TopLevel find(String id, TopBindings tbs) {
+    for (; tbs != null; tbs = tbs.next) {
+      if (id.equals(tbs.head.topLevel.getId(0))) {
+        return tbs.head.topLevel;
+      }
+    }
+    return null; // not found
+  }
+
   void bindExtras(DefVar[] xvs) {
     // Abstract over extra arguments.  If there are any, add a lambda expression to the right hand
     // side of the binding and adjust the type to match:

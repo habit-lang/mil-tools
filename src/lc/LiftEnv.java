@@ -52,21 +52,29 @@ public class LiftEnv {
 
   private TopBindings lifted = null;
 
+  private TopBindings last = null;
+
   public TopBindings getLifted() {
     return lifted;
   }
 
   /**
-   * Add the given list of TopBindings to the (front of) the list of lifted bindings in this
-   * LiftEnv. This process is implemented using destructive updates, so the input list should not be
-   * used again after this call.
+   * Add the given list of TopBindings to the (end of) the list of lifted bindings in this LiftEnv.
+   * This process is implemented using a destructive update to what was previously the last element
+   * of list, so the input list should not be used again after this call (except for the very last
+   * list to be added to this LiftEnv, which will be for the bindings that were already at the top
+   * level prior to lambda lifting).
    */
   public void addTopBindings(TopBindings tbs) {
-    while (tbs != null) {
-      TopBindings tmp = tbs;
-      tbs = tbs.next;
-      tmp.next = lifted;
-      lifted = tmp;
+    if (tbs != null) {
+      if (last == null) {
+        lifted = tbs;
+      } else {
+        last.next = tbs;
+      }
+      for (last = tbs; last.next != null; last = last.next) {
+        // Find the new last element; all the work done in previous line
+      }
     }
   }
 
@@ -83,7 +91,7 @@ public class LiftEnv {
     return xvs;
   }
 
-  void liftBindings(Bindings bindings, DefVar[] xvs) {
+  TopBindings liftBindings(Bindings bindings, DefVar[] xvs) {
     // Step 1: Create a list of top-level bindings and add corresponding entries to the lifting
     // environment
     TopBindings tbs = null;
@@ -96,5 +104,6 @@ public class LiftEnv {
       ts.head.bindExtras(xvs); // and update the binding with extra parameters
     }
     this.addTopBindings(tbs);
+    return tbs;
   }
 }
