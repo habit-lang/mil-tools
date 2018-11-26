@@ -309,7 +309,7 @@ public class AllocType {
   int repOffset(int n) {
     int offset = 0;
     for (int i = 0; i < n; i++) {
-      Type[] r = stored[i].repCalc();
+      Type[] r = stored[i].repCalc(null);
       offset += (r == null ? 1 : r.length);
     }
     return offset;

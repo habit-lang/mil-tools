@@ -609,20 +609,8 @@ public abstract class Type extends Scheme {
             : (w <= Type.MAX_BIT_WIDTH) ? Type.words(Word.numWords(w)) : null;
   }
 
-  /** Return the representation vector for values of this type. */
-  Type[] repCalc() {
-    return null;
-  }
-
-  /**
-   * Return the representation vector for types formed by applying this type to the argument a. This
-   * allows us to provide special representations for types of the form Bit a, Ix a, Ref a, etc. If
-   * none of these apply, we just return null. TODO: are there other types we should be including
-   * here?
-   */
-  Type[] repCalc(Type a) {
-    return null;
-  }
+  /** Return the representation vector for types formed by applying this type to the argument a. */
+  abstract Type[] repCalc(Type[] tenv, Type a);
 
   /**
    * Return the representation for a value of type Bit n, assuming that this object is the TNat for
@@ -1004,7 +992,7 @@ public abstract class Type extends Scheme {
    * vector; otherwise, one parameter maps to one word.
    */
   int repLen() {
-    Type[] r = repCalc();
+    Type[] r = repCalc(null);
     return (r == null) ? 1 : r.length;
   }
 

@@ -130,10 +130,10 @@ public class Forall extends Scheme {
   }
 
   /** Return the representation vector for values of this type. */
-  Type[] repCalc() {
+  Type[] repCalc(Type[] tenv) {
     if (!prefix.isEmpty()) {
       debug.Internal.error("repCalc on quantified type scheme");
     }
-    return type.repCalc();
+    return type.repCalc(tenv);
   }
 }

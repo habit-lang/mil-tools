@@ -296,7 +296,7 @@ public class Temp extends Atom {
 
   /** Return the representation vector for this Atom. */
   Type[] repCalc() {
-    return type.repCalc();
+    return type.repCalc(null);
   }
 
   /**
@@ -370,7 +370,7 @@ public class Temp extends Atom {
   }
 
   Atom[] repArg(RepTypeSet set, RepEnv env) {
-    return (type.repCalc() == null) ? null : RepEnv.find(this, env);
+    return (type.repCalc(null) == null) ? null : RepEnv.find(this, env);
   }
 
   /**

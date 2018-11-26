@@ -221,8 +221,13 @@ public class TAp extends Type {
   }
 
   /** Return the representation vector for values of this type. */
-  Type[] repCalc() {
-    return fun.repCalc(arg);
+  Type[] repCalc(Type[] tenv) {
+    return fun.repCalc(tenv, arg);
+  }
+
+  /** Return the representation vector for types formed by applying this type to the argument a. */
+  Type[] repCalc(Type[] tenv, Type a) {
+    return null;
   }
 
   /**

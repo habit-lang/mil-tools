@@ -255,7 +255,7 @@ public class External extends TopDefn {
     declared = declared.canonType(set);
     debug.Log.println("Determining representation for external " + id + " :: " + declared);
     try {
-      impl = imp.repImplement(handler, this, declared.repCalc(), set);
+      impl = imp.repImplement(handler, this, declared.repCalc(null), set);
     } catch (Failure f) {
       handler.report(f);
     }

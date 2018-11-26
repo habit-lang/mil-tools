@@ -114,7 +114,7 @@ public class TupleCon extends Tycon {
     Type[][] reps = null; // Look for changes in representation
     int len = 0;
     for (int i = 0; i < args; i++) {
-      Type[] r = set.stackArg(i + 1).repCalc();
+      Type[] r = set.stackArg(i + 1).repCalc(null);
       if (r != null) {
         if (reps == null) {
           reps = new Type[args][];

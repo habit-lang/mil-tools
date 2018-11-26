@@ -72,10 +72,10 @@ public class Ptr extends DataType {
   }
 
   /**
-   * Return the representation vector for types formed by applying this type to the argument a. This
-   * allows us to provide special representations for types of the form Bit a, Ix a, Ref a, etc. If
-   * none of these apply, we just return null. TODO: are there other types we should be including
-   * here?
+   * Return the representation vector for types formed by applying this type constructor to the
+   * argument a. This allows us to provide special representations for types of the form Bit a, Ix
+   * a, Ref a, etc. If none of these apply, we just return null. TODO: are there other types we
+   * should be including here?
    */
   Type[] repCalc(Type a) {
     return Tycon.wordRep;

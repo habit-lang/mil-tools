@@ -53,7 +53,7 @@ public class RepTypeSet extends TypeSet {
     Type[][] reps = null; // Look for changes in representation
     int len = 0;
     for (int i = 0; i < ts.length; i++) {
-      Type[] r = ts[i].repCalc();
+      Type[] r = ts[i].repCalc(null);
       if (r != null) {
         if (reps == null) {
           reps = new Type[ts.length][];

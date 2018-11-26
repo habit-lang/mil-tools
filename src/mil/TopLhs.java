@@ -162,7 +162,7 @@ public class TopLhs {
   static Type[][] reps(TopLhs[] lhs) {
     Type[][] reps = null;
     for (int i = 0; i < lhs.length; i++) {
-      Type[] r = lhs[i].declared.repCalc();
+      Type[] r = lhs[i].declared.repCalc(null);
       if (r != null) {
         if (reps == null) {
           reps = new Type[lhs.length][];

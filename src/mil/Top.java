@@ -64,7 +64,7 @@ public abstract class Top extends Atom {
 
   /** Return the representation vector for this Atom. */
   Type[] repCalc() {
-    return type.repCalc();
+    return type.repCalc(null);
   }
 
   public static final Top Unit =

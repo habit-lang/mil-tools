@@ -235,6 +235,16 @@ public class TInd extends Type {
     return bound.sameDataTypeMod(boundenv, l, mmap);
   }
 
+  /** Return the representation vector for values of this type. */
+  Type[] repCalc(Type[] tenv) {
+    return bound.repCalc(boundenv);
+  }
+
+  /** Return the representation vector for types formed by applying this type to the argument a. */
+  Type[] repCalc(Type[] tenv, Type a) {
+    return bound.repCalc(boundenv, a.with(tenv));
+  }
+
   /**
    * Return the natural number type that specifies the BitSize of this type (required to be of kind
    * *) or null if this type has no BitSize (i.e., no bit-level representation). This method should
