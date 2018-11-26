@@ -488,6 +488,31 @@ public class DataType extends DataName {
     }
   }
 
+  /**
+   * Insert this element into the list vs, placing the new element before any list entries that have
+   * a smaller key.
+   */
+  public DataTypes insertInto(DataTypes vs) {
+    if (vs == null) {
+      return new DataTypes(this, null);
+    } else {
+      DataTypes prev = null;
+      DataTypes curr = vs;
+      for (String k = getId();
+          curr != null && k.compareTo(curr.head.getId()) > 0;
+          curr = curr.next) {
+        prev = curr;
+      }
+      curr = new DataTypes(this, curr);
+      if (prev == null) {
+        return curr;
+      } else {
+        prev.next = curr;
+        return vs;
+      }
+    }
+  }
+
   /** Determine whether this Tycon is a DataType that is a candidate for merging. */
   DataType mergeCandidate() {
     return (arity == 0 && cfuns != null && cfuns.length > 0) ? this : null;

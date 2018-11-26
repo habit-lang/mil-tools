@@ -344,7 +344,7 @@ public class TypeSet {
           }
           cands = ncands;
         }
-        cands[n] = new DataTypes(dt, cands[n]);
+        cands[n] = dt.insertInto(cands[n]);
         numCands++;
       }
     }
