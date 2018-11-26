@@ -91,14 +91,14 @@ public class TopLevel extends TopDefn {
 
   public String toString() {
     if (lhs.length == 1) {
-      return lhs[0].getId();
+      return getId(0);
     } else {
       StringBuilder buf = new StringBuilder("[");
       if (lhs.length > 0) {
-        buf.append(lhs[0].getId());
+        buf.append(getId(0));
         for (int i = 1; i < lhs.length; i++) {
           buf.append(",");
-          buf.append(lhs[i].getId());
+          buf.append(getId(i));
         }
       }
       buf.append("]");
@@ -200,7 +200,7 @@ public class TopLevel extends TopDefn {
 
   void extendAddrMap(HashAddrMap addrMap, int addr) {
     for (int i = 0; i < lhs.length; i++) {
-      addrMap.addGlobalLabel(addr + i, lhs[i].getId());
+      addrMap.addGlobalLabel(addr + i, getId(i));
     }
   }
 
@@ -439,7 +439,7 @@ public class TopLevel extends TopDefn {
         } else {
           if (reps[i].length > 0) {
             Type[] ts = reps[i];
-            String tid = lhs[i].getId();
+            String tid = getId(i);
             for (int k = 0; k < ts.length; k++) {
               nlhs[j] = new TopLhs(mkid(tid, k));
               nlhs[j++].setDeclared(ts[k]);
@@ -582,7 +582,7 @@ public class TopLevel extends TopDefn {
       if (lhs[i].nonUnit() && staticValue(i) == null) {
         llvm.Value val = as[i].toLLVMAtom(lm, ivm);
         ivm.mapGlobal(new TopDef(this, i), val);
-        code = new llvm.Store(val, new llvm.Global(val.getType().ptr(), lhs[i].getId()), code);
+        code = new llvm.Store(val, new llvm.Global(val.getType().ptr(), getId(i)), code);
       }
     }
     return code;
