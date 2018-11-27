@@ -74,7 +74,7 @@ public class Assert extends Code {
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   TVars tvars(TVars tvs) {
-    return type.tvars(tvs);
+    return c.tvars(type.tvars(tvs));
   }
 
   Type inferType(Position pos) throws Failure { // assert a cf; c

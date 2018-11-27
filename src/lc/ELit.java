@@ -74,8 +74,8 @@ abstract class ELit extends PosExpr {
         env,
         kty,
         new AtomCont() {
-          Code with(final Atom la) {
-            return kt.with(new Return(la));
+          Code with(final Atom a) {
+            return kt.with(new Return(a));
           }
         });
   }

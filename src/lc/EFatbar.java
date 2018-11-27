@@ -117,7 +117,7 @@ class EFatbar extends PosExpr {
             return new Bind(rv, t, new Done(new BlockCall(join)));
           }
         };
-    return l.compTail(env, new LCBlock(pos, type, r.compTail(env, abort, kty, kt1)), kty, kt1);
+    return l.compTail(env, new LCBlock(pos, kty, r.compTail(env, abort, kty, kt1)), kty, kt1);
   }
 
   /**

@@ -82,26 +82,24 @@ public class TopLhs {
 
   void generalizeLhsType(Position pos, Handler handler, TVars gens, TVar[] generics)
       throws Failure {
-    if (defining != null) {
-      debug.Log.println(
-          "Generalizing definition for: " + getId() + " with generics " + TVar.show(generics));
-      Scheme inferred = defining.generalize(generics);
-      debug.Log.println("Inferred " + id + " :: " + inferred);
-      if (declared != null && !declared.alphaEquiv(inferred)) {
-        throw new Failure(
-            pos,
-            "Declared type \""
-                + declared
-                + "\" for \""
-                + id
-                + "\" is more general than inferred type \""
-                + inferred
-                + "\"");
-      } else {
-        declared = inferred;
-      }
-      findAmbigTVars(handler, gens); // search for ambiguous type variables ...
+    debug.Log.println(
+        "Generalizing definition for: " + id + " with generics " + TVar.show(generics));
+    Scheme inferred = defining.generalize(generics);
+    debug.Log.println("Inferred " + id + " :: " + inferred);
+    if (declared != null && !declared.alphaEquiv(inferred)) {
+      throw new Failure(
+          pos,
+          "Declared type \""
+              + declared
+              + "\" for \""
+              + id
+              + "\" is more general than inferred type \""
+              + inferred
+              + "\"");
+    } else {
+      declared = inferred;
     }
+    findAmbigTVars(handler, gens); // search for ambiguous type variables ...
   }
 
   void findAmbigTVars(Handler handler, TVars gens) {}
