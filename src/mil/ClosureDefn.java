@@ -169,24 +169,26 @@ public class ClosureDefn extends Defn {
   protected TVar[] generics = TVar.noTVars;
 
   void generalizeType(Handler handler) throws Failure {
-    TVars gens = defining.tvars();
-    generics = TVar.generics(gens, null);
-    AllocType inferred = defining.generalize(generics);
-    debug.Log.println("Inferred " + id + " :: " + inferred);
-    if (declared != null && !declared.alphaEquiv(inferred)) {
-      throw new Failure(
-          pos,
-          "Declared type \""
-              + declared
-              + "\" for \""
-              + id
-              + "\" is more general than inferred type \""
-              + inferred
-              + "\"");
-    } else {
-      declared = inferred;
+    if (defining != null) { // defining will be null if previous stage of type checker failed
+      TVars gens = defining.tvars();
+      generics = TVar.generics(gens, null);
+      AllocType inferred = defining.generalize(generics);
+      debug.Log.println("Inferred " + id + " :: " + inferred);
+      if (declared != null && !declared.alphaEquiv(inferred)) {
+        throw new Failure(
+            pos,
+            "Declared type \""
+                + declared
+                + "\" for \""
+                + id
+                + "\" is more general than inferred type \""
+                + inferred
+                + "\"");
+      } else {
+        declared = inferred;
+      }
+      findAmbigTVars(handler, gens); // search for ambiguous type variables ...
     }
-    findAmbigTVars(handler, gens); // search for ambiguous type variables ...
   }
 
   void findAmbigTVars(Handler handler, TVars gens) {
