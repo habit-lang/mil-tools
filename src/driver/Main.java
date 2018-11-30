@@ -27,11 +27,7 @@ class Main {
 
   /** A command line entry point. */
   public static void main(String[] args) {
-    if (args.length < 1) {
-      usage();
-    } else {
-      new Main().run(args);
-    }
+    new Main().run(args);
   }
 
   public static void usage() {
@@ -58,7 +54,7 @@ class Main {
     System.err.println("         -s[filename]   specialization type set (requires s)");
     System.err.println("         -r[filename]   representation type set (requires r)");
     System.err.println("         -e[filename]   list external generators");
-    System.err.println("         -h[filename]   list primitives");
+    System.err.println("         -h[filename]   list primitives (but -help prints usage message)");
     System.err.println("         -l[filename]   LLVM code (requires s)");
     System.err.println("         -f[filename]   LLVM interface (requires s)");
     System.err.println("         -b[filename]   bytecode text");
@@ -68,8 +64,10 @@ class Main {
     System.err.println("         --standalone   Equivalent to --mil-main=main --llvm-main=main");
     System.err.println("         --32 / --64    Set wordsize to 32 / 64 bits");
     System.err.println("         --target=T     Set LLVM target triple to T");
+    System.err.println("         --help         Display this message");
   }
 
+  /** Flag to indicate if we should generate messages at each stage. */
   private boolean trace = false;
 
   private void message(String msg) {
@@ -78,6 +76,7 @@ class Main {
     }
   }
 
+  /** Store the list of passes to run (null ==> run with a sensible default for other options) */
   private String passes = null;
 
   private void addPasses(String ps) {
@@ -108,9 +107,14 @@ class Main {
 
   private FilenameOption execOutput = new FilenameOption("execution output");
 
+  /** MIL main name option string. */
   private String milMain = "";
 
+  /** Track the number of source files specified on the command line. */
   private int numSourceFiles = 0;
+
+  /** Track the number of output actions executed. */
+  private int numActions = 0;
 
   /** Simple command line argument processing. */
   private void options(Handler handler, String str, LCLoader loader, boolean nested)
@@ -135,6 +139,9 @@ class Main {
       } else if (optMatches("--64", str)) {
         Word.setSize(64);
         return;
+      } else if (optMatches("--help", str) || optMatches("-help", str)) {
+        usage();
+        numActions++;
       }
       for (int i = 1; i < str.length(); i++) {
         switch (str.charAt(i)) {
@@ -285,6 +292,9 @@ class Main {
             }
           });
 
+      if (numSourceFiles == 0 & numActions == 0) {
+        usage();
+      }
     } catch (Failure f) {
       handler.report(f);
       System.exit(-1);
@@ -548,6 +558,7 @@ class Main {
      */
     void run(Action action) throws Failure {
       if (filename != null) {
+        numActions++;
         if (filename.equals("")) { // Output to System.out
           message("*** " + description + ":");
           PrintWriter out = new PrintWriter(System.out);
