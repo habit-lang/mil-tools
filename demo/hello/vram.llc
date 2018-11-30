@@ -1,0 +1,144 @@
+> require "lib.llc"
+> require "noinline.mil"
+> require "string.lc"
+
+On a standard PC, we can implement a simple form of output on
+the display by writing values to a region of memory known as the
+"video RAM" that begins at address 0xb8000:
+
+> external vram  = 0xb8000 :: Ref Screen
+
+The video RAM is organized as an array of 25 lines, each of
+which is an array of 80 "characters"  that are made up from
+two bytes specifying a character code and a color attribute:
+
+> type NumCols   = 80
+> type NumRows   = 25
+> type Screen    = Array NumRows (Array NumCols (Stored Char))
+
+> bitdata Char /16 = Char [ attr :: Byte | char :: Byte ]
+
+The definition of `Char` has been chosen to match the design of
+the video RAM hardware on a standard PC, assuming a little-endian
+representation that places the `char` and `attr` components in
+consecutive memory locations.  For the time being, we represent
+both characters and color attributes using plain Byte values:
+(For a more complete library, it would be useful to provide a
+more bitdata type for attributes that allows color names to be
+written using symbolic names instead of plain numeric codes.)
+
+We provide a simple function for constructing Char values by
+taking the character code from the least signicant byte of a
+`Word` value, and combining that with a default video attribute:
+
+> char  :: Word -> Char
+> char w = Char [ attr=defAttr | char=wordToByte w]
+
+> defAttr = X0c
+> blank   = char ' '
+
+We can use the following function to determine the address for
+the character with particular coordinate values.  Note that the
+order of the two coordinates here is important, and calling the
+function with arguments in the wrong order will result in a
+compile-time type error.
+
+> pos    :: Ix NumRows -> Ix NumCols -> Ref (Stored Char)
+> pos y x = (vram `at` y) `at` x
+
+We will also need to maintain counters for the current position
+on screen; these values will be incremented appropriately as we
+output individual characters using the `putchar` and `puts`
+functions described below.
+
+> area xpos <- initStored ix0 :: Ref (Stored (Ix NumCols))
+> area ypos <- initStored ix0 :: Ref (Stored (Ix NumRows))
+
+To clear the screen, we need to write a blank character to every
+location in the video RAM.  This basic task can be accomplished
+very concisely using `foreach clearRow`.  The following
+implementation, however, is a little more complex because it
+adds features (1) to reset the `xpos` and `ypos` coordinates;
+and (2) to vary the color attributes for each position on the
+screen to create a "rainbow" effect:
+
+> export clearScreen :: Proc Unit
+> clearScreen
+>   = do set xpos ix0         -- reset stored cursor coordinates
+>        set ypos ix0
+>        foreach (\y ->       -- reset video ram contents
+>          foreach (\x ->
+>            set (pos y x) blank[attr = defAttr    `addByte`
+>                                       ixToBit y  `addByte`
+>                                       ixToBit x]))
+
+We provide a `putchar` function for "printing" a single character
+on the screen.  This process involves writing the specified
+character at the current location on the screen; advancing the
+`xpos` and `ypos` values to the next position on the screen;
+and, if necessary, scrolling the screen when the output reaches
+the last line of the display.  So long as the character to be
+displayed is not a carriage return or line feed, the first step
+is to find the current cursor coordinates, and overwrite the
+corresponding location in video RAM with that character.  After
+this, we begin the process of moving to the next character
+position, which starts by incrementing the `x` coordinate:
+
+> export putchar :: Word -> Proc Unit
+> putchar c       = do y <- get ypos
+>                      if (c `eq` '\r') || (c `eq` '\n')
+>                        then newline y
+>                        else x <- get xpos
+>                             set (pos y x) (char c)
+>                             case incIx x of
+>                               Just newx -> set xpos newx
+>                               Nothing   -> newline y
+
+If incrementing `x` succeeds, then we can just save the `newx`
+value and return.  Otherwise, however, we have reached the end
+of one line, and need to increment the `y` coordinate to move
+the cursor on to the next line:
+
+> newline  :: Ix NumRows -> Proc Unit
+> newline y = do set xpos ix0                   -- reset x coordinate
+>                case incIx y of
+>                  Just newy -> set ypos newy   -- move y coordinate down screen
+>                  Nothing   -> scroll          -- or scroll the screen one line
+
+In most cases, we can save the incremented `y` coordinate and
+return to the caller.  But if the cursor was already on the
+last line of the screen, then the increment will fail and we
+need to scroll the contents of the screen to make space for
+new output.  This can be implemented using a simple loop that
+copies from each row `i` to its successor row `j=i+1` in the
+top portion of the screen, and then ends by writing a fresh
+row of blanks in the last line:
+
+> scroll   :: Proc Unit
+> scroll    = loop ix0
+>  where loop i = noinline (case incIx i of
+>                             Nothing -> clearRow i
+>                             Just j  -> do copyRow j i
+>                                           loop j)
+
+For clarity, and because they might potentially be useful in
+other settings, we present the code for clearing and copying
+rows as separate functions, both written as simple uses of
+the `foreach` combinator:
+
+> clearRow   :: Ix NumRows -> Proc Unit
+> clearRow y  = foreach (\x -> set (pos y x) blank)
+
+> copyRow    :: Ix NumRows -> Ix NumRows -> Proc Unit
+> copyRow j i = foreach (\x -> pos j x >-> pos i x)
+
+To write a complete string on the screen, we just need to iterate through
+each character, using `putchar` to display each one, until we reach the
+end of the string:
+
+> export puts :: Ref String -> Proc Unit
+> puts s       = noinline (case<- nextChar s of
+>                            Nothing -> return Unit
+>                            Just p  -> putchar (fst p)
+>                                       puts (snd p))
+

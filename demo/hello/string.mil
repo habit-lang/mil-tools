@@ -1,0 +1,19 @@
+require "prelude.mil"
+
+-- MIL implementations of loadChar and refToWord for use in the LC
+-- definition of nextChar.  Defining nextChar in LC is generally
+-- preferable to doing it in MIL.  However, loadCharImp, at least,
+-- must currently be written in MIL so that we can access the load8
+-- primitive.
+
+export loadChar, refToWord
+external loadChar  = loadCharImp  :: Ref String -> Proc Word
+external refToWord = refToWordImp :: Ref a -> Word
+
+loadCharImp       :: Addr -> Proc (Bit 8)
+loadCharImp       <- {s} c <- loadCharImp1{s}; Proc(c)
+loadCharImp1{s} [] = load8((s))
+
+refToWordImp :: Word -> Word
+refToWordImp <- {w} return w
+

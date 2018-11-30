@@ -1,0 +1,29 @@
+This file contains a recreation of the LLP "hello" demo in Habit/LC.
+It is a (very) simple client of the vram library for video RAM output
+on a PC:
+
+> require "vram.llc"
+
+The demo program just clears the screen and then displays two copies
+of a text greeting:
+
+> export hello
+> hello :: Proc Unit
+> hello  = do clearScreen
+>             greet
+>             greet
+
+The greeting itself is produced by writing a sequence of strings on
+the screen:
+
+> greet = do puts "\nhhhh   hhhh\n"
+>            puts " hh    hhh        lll lll\n"
+>            puts " hh    hh   eeee  ll  ll   oooo\n"
+>            puts " hhhhhhhh  ee  ee ll  ll  oo  oo\n"
+>            puts " hh    hh eeeeeee ll  ll oo   oo\n"
+>            puts " hh    hh  ee     ll  ll oo  oo\n"
+>            puts "hhh   hhhh  eeee  ll  ll  oooo\n"
+>            puts "\n"
+>            puts "    K e r n e l   W o r l d\n"
+>            puts "\n      from LC and MIL\n"
+

@@ -1,0 +1,12 @@
+require "prelude.lc"
+require "string.mil"
+
+-- LC implementation for nextChar cursor function:
+external nextChar = nextCharImp :: Ref String -> Proc (Maybe (Pair Word (Ref String)))
+
+nextCharImp  :: Ref String -> Proc (Maybe (Pair Word Word))
+nextCharImp r = do c <- loadChar r
+                   if eq c 0
+                     then return Nothing
+                     else return (Just (Pair c (add 1 (refToWord r))))
+

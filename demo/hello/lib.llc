@@ -1,0 +1,136 @@
+This file contains a small collection of definitions that
+might, in a more complete system, be provided by a set of
+general purpose libraries; indeed, some of these might be good
+candidates for including in a more carefully developed version
+of the prelude:
+
+> require "prelude.lc"
+
+[Caveat: The comments in the following text are intended to
+give an overview for how each of the operations that we define
+might be used in practice, but they do attempt to explain all
+of the details of the syntax that we use.]
+
+We start with the definition of a primitive type representing
+`Byte` values, and provide two operations for building `Byte`
+values; of course, a more realistic library would include a
+much wider range of operations here:
+
+> type Byte = Bit 8
+
+> external wordToByte {primWordToBit 8} :: Word -> Byte
+> external addByte    {primBitPlus 8}   :: Byte -> Byte -> Byte
+
+The prelude provides definitions for some standard datatypes,
+including pairs, but currently does not provide operations
+for manipulating values of those types in interesting ways.
+One of the many gaps here can be filled by defining the familiar
+operations for extracting the individual components of a pair
+structure:
+
+> export fst :: Pair a b -> a
+> export snd :: Pair a b -> b
+> fst p       = case p of Pair x y -> x
+> snd p       = case p of Pair x y -> y
+
+Habit uses values of type `Proc t` to represent procedures that,
+when executed, will return a value of type `t`.  (Types like
+`Proc` are also referred to as "monads".)  One of the standard
+tools for working with procedure types like this is the "bind"
+operator, written `>>=`, which can be defined in terms of the
+built-in do notation:
+
+> export >>= :: Proc a -> (a -> Proc b) -> Proc b
+> c >>= f     = do r <- c; f r
+
+One of the reasons for using procedures is to write programs
+that can read and write values stored in memory.  The `get` and
+`set` functions defined below can be used to build procedures
+that do this given a "reference" to the memory location where
+the data is stored (and, in the case of `set`, the value that
+we want to store in that location):
+
+> external get {primReadRefStored t}  :: Ref (Stored t) -> Proc t
+> external set {primWriteRefStored t} :: Ref (Stored t) -> t -> Proc Unit
+
+One nice application of these functions is to implement a "copy"
+operator that reads a value from one reference and immediately
+writes it to another:
+
+> export >-> :: Ref (Stored t) -> Ref (Stored t) -> Proc Unit
+> src >-> dst = get src >>= set dst
+
+Habit also supports the use of "Index types", like `Ix n`, which
+represents the set of natural numbers up to but not including
+the value n.  One of the primary motivations for using index
+types is to support the following array indexing operation:
+
+> external at {@ n a} :: Ref (Array n a) -> Ix n -> Ref a
+
+An expression of the form a `at` i returns a reference to the
+`i`th element of the array referenced by the first argument, `a`;
+we can see from the type for `at` that the size of the array is
+`n`, and so we can be sure that the index `i`, of type `Ix n`,
+will always be a valid index for the array, so we can be sure
+that an expression of this form will never result in an out of
+bounds array access.
+
+There are some additional functions and definitions that are
+useful when working with index types:
+
+- Converting index values to bit vector values.  We can use the
+  `ixToBit` function to find the bit vector corresponding to
+  a given index value.  Of course, the bit vector size must be
+  large enough for the given index type: with an index of 256,
+  for example, we will need a bit vector with at least 8 bits:
+
+> external ixToBit    {primIxToBit m n}        :: Ix m -> Bit n
+
+- The zero index value.  A numeric literal like 0 will be
+  interpreted as a value of type Word; if we want to use a
+  zero index value instead, then we can use `ix0`, which is
+  defined as follows:
+
+> export ix0 :: Ix n
+> ix0         = ix0u Unit
+> external ix0u {primIxFromLiteral 0 n} :: Unit -> Ix n
+
+- In a loop that works through the elements of an array, might
+  might start at index `ix0` and then increment / add one to
+  the index to access subsequent elements, eventually reaching
+  the end of the array.  This kind of behavior can be described
+  using the following incIx operator; the result of `incIx i`
+  is either a value `Just j` where `j=i+1` is a valid index of
+  the same type as `i`, or else `Nothing`, which indicates that
+  the input `i` was the largest valid index, so attempting to
+  increment it would produce an invalid result.
+
+> export incIx :: Ix n -> Maybe (Ix n)
+> incIx         = genIncIx Nothing Just
+
+> external genIncIx   {primGenIncIx (Maybe (Ix n)) n}
+>       :: Maybe (Ix n) -> (Ix n -> Maybe (Ix n)) -> Ix n -> Maybe (Ix n)
+
+- As an example application of `ix0` and `incIx`, the following
+  function describes a certain form of loop that performs
+  a particular computation once for each value in a given
+  index type.  Note that it is not necessary to specify the
+  upper and lower bounds for the loop because these can be
+  determined automatically from the type of the function `f`:
+
+> export foreach :: (Ix n -> Proc Unit) -> Proc Unit
+> foreach f = loop ix0
+>  where loop i = noinline (do f i
+>                              case incIx i of
+>                                Nothing -> return Unit
+>                                Just j  -> loop j)
+
+Finally, we provide two operations for constructing initializers
+for memory areas; these produce values of type `Init a` that
+can be executed when the program starts up to ensure that data
+structures stored in memory are initialized to appropriate
+values.
+
+> external initStored {primInitStored t}  :: t -> Init (Stored t)
+> external initArray  {primInitArray n a} :: (Ix n -> Init a) -> Init (Array n a)
+
