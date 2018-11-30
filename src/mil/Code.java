@@ -143,6 +143,10 @@ public abstract class Code {
     return new ClosAlloc(k).withArgs(stored);
   }
 
+  boolean noCallsWithinSCC(DefnSCC scc) {
+    return true;
+  }
+
   abstract Code copy();
 
   /** Test for code that is guaranteed not to return. */

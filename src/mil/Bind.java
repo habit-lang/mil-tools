@@ -128,6 +128,10 @@ public class Bind extends Code {
     return new Bind(vs, t, c.deriveWithCont(cont));
   }
 
+  boolean noCallsWithinSCC(DefnSCC scc) {
+    return t.noCallsWithinSCC(scc) && c.noCallsWithinSCC(scc);
+  }
+
   Code copy() {
     return new Bind(vs, t, c.copy());
   }
@@ -193,6 +197,9 @@ public class Bind extends Code {
       } else if ((nc = c.casesOn(vs, bc)) != null) {
         MILProgram.report("pushed case into call in " + src.getId());
         return nc;
+        //    } else if ((nc = bc.localLoop(src, vs, c))!=null) {
+        //      MILProgram.report("pushed continuation into block call in " + src.getId());
+        //      return nc;
       }
 
       t = bc.inlineBlockCall();

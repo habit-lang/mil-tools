@@ -152,6 +152,19 @@ public class DefnSCC {
   }
 
   /**
+   * Test to determine if this SCC contains only Block definitions, and if the only (non- tail)
+   * calls in the code sequences for those blocks are to blocks in other SCCs.
+   */
+  boolean localLoopSCC() {
+    for (Defns ds = bindings; ds != null; ds = ds.next) {
+      if (!ds.head.localLoopSCC(this)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Compute values for doesntReturn for all of the definitions (specifically Blocks) in this SCC.
    */
   void returnAnalysis() {

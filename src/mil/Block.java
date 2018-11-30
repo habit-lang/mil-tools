@@ -296,6 +296,10 @@ public class Block extends Defn {
         && scc.contCand();
   }
 
+  boolean localLoopSCC(DefnSCC scc) {
+    return code.noCallsWithinSCC(scc);
+  }
+
   public Block deriveWithKnownCons(Call[] calls) {
 
     // Do not create a specialized version of a simple block (i.e., a block that contains only a

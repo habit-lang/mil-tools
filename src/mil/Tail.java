@@ -142,6 +142,10 @@ public abstract class Tail {
     return null;
   }
 
+  boolean noCallsWithinSCC(DefnSCC scc) {
+    return true;
+  }
+
   /**
    * Return the associated constructor function if this is a data allocator without any arguments.
    */

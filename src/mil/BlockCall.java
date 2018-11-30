@@ -146,6 +146,25 @@ public class BlockCall extends Call {
   }
 
   /**
+   * Test to see if a (non tail) block call in the code for the given src block could be interpreted
+   * as an entry to a local loop.
+   */
+  Code localLoop(Block src, Temp[] vs, Code c) {
+    DefnSCC srcScc = src.getScc();
+    DefnSCC scc = b.getScc();
+    if (srcScc != null && scc != null && srcScc != scc && scc.localLoopSCC()) {
+      // System.out.println("Block " + b + " is a candidate for localLoop");
+      Temp t = new Temp();
+      return new Bind(t, c.makeCont(vs), new Done(this.deriveWithCont(t)));
+    }
+    return null;
+  }
+
+  boolean noCallsWithinSCC(DefnSCC scc) {
+    return b.getScc() != scc;
+  }
+
+  /**
    * Determine whether a pair of given Call values are of the same "form", meaning that they are of
    * the same type with the same target (e.g., two block calls to the same block are considered as
    * having the same form, but a block call and a data alloc do not have the same form, and neither

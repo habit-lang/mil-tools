@@ -247,6 +247,10 @@ public abstract class Defn {
   /** Second pass code generation: produce code for block and closure definitions. */
   abstract void generateFunctions(MachineBuilder builder);
 
+  boolean localLoopSCC(DefnSCC scc) {
+    return false;
+  }
+
   protected static Temp[] mergeParams(Temp[][] tss, Temp[] params) {
     // Calculate total number of new parameters:
     int len = 0;

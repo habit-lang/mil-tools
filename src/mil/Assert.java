@@ -108,6 +108,10 @@ public class Assert extends Code {
     return new Assert(a, cf, c.deriveWithCont(cont));
   }
 
+  boolean noCallsWithinSCC(DefnSCC scc) {
+    return c.noCallsWithinSCC(scc);
+  }
+
   Code copy() {
     return new Assert(a, cf, c.copy());
   }
