@@ -142,6 +142,7 @@ class Main {
       } else if (optMatches("--help", str) || optMatches("-help", str)) {
         usage();
         numActions++;
+        return;
       }
       for (int i = 1; i < str.length(); i++) {
         switch (str.charAt(i)) {
