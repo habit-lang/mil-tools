@@ -326,6 +326,7 @@ public class Cfun extends Name {
     return (this == Ref) ? c : dn.repTransformAssert(set, this, a, c);
   }
 
+  /** Find block that implements the mask test predicate for this constructor/layout. */
   Block maskTestBlock() {
     return dn.maskTestBlock(num);
   }

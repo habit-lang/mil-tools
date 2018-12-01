@@ -105,16 +105,13 @@ public class DataAlloc extends Allocator {
    * to find a matching constructor, falling back on the default branch if no other option is
    * available.
    */
-  BlockCall shortCase(TempSubst s, Alt[] alts, BlockCall d) {
-    for (int i = 0; i < alts.length; i++) { // search for matching alternative
-      BlockCall bc = alts[i].shortCase(s, cf, args);
-      if (bc != null) {
-        MILProgram.report("shorting out match on constructor " + cf.getId());
-        return bc;
-      }
+  BlockCall shortCase(TempSubst s, Alts alts) {
+    BlockCall bc = alts.blockCallFor(cf);
+    if (bc != null) {
+      MILProgram.report("shorting out match on constructor " + cf);
+      return bc.applyBlockCall(s);
     }
-    MILProgram.report("shorting out match using default for " + cf.getId());
-    return d.applyBlockCall(s); // use default branch if no match found
+    return null;
   }
 
   /**

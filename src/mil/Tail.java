@@ -319,7 +319,7 @@ public abstract class Tail {
    * to find a matching constructor, falling back on the default branch if no other option is
    * available.
    */
-  BlockCall shortCase(TempSubst s, Alt[] alts, BlockCall d) {
+  BlockCall shortCase(TempSubst s, Alts alts) {
     return null;
   }
 

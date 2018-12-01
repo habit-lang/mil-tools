@@ -158,6 +158,10 @@ public class BitdataType extends DataName {
     return c;
   }
 
+  /**
+   * Find the block that implements the mask test predicate for the (num)th constructor of this
+   * type.
+   */
   Block maskTestBlock(int num) {
     return layouts[num].maskTestBlock();
   }

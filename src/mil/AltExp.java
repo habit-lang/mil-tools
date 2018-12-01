@@ -40,10 +40,9 @@ class AltExp {
   }
 
   /** Perform scope analysis on the given array of case alternatives. */
-  static Alt[] inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv, AltExp[] altexps) {
-    Alt[] alts = new Alt[altexps.length];
-    for (int i = 0; i < altexps.length; i++) {
-      alts[i] = altexps[i].inScopeOf(handler, milenv, tenv);
+  static Alts inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv, AltExp[] altexps, Alts alts) {
+    for (int i = altexps.length; --i >= 0; ) {
+      alts = altexps[i].inScopeOf(handler, milenv, tenv, alts);
     }
     return alts;
   }
@@ -52,8 +51,10 @@ class AltExp {
    * Perform scope analysis on this case alternative, checking that the referenced constructor
    * function is in scope and that the block call is valid.
    */
-  Alt inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
-    return new Alt(
-        milenv.mustFindCfun(handler, pos, id, subid), bc.blockCallInScopeOf(handler, milenv, tenv));
+  Alts inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv, Alts alts) {
+    return new CfunAlt(
+        milenv.mustFindCfun(handler, pos, id, subid),
+        bc.blockCallInScopeOf(handler, milenv, tenv),
+        alts);
   }
 }

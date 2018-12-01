@@ -134,17 +134,19 @@ class EAlt {
     return this;
   }
 
-  Alt compAlt(
+  Alts compAlt(
       final CGEnv env,
       final Block abort,
       final Atom dv,
       final Temp r,
+      final Alts next,
       final Type jty,
       final Block join) { // cf vs -> e
     Temp[] ts = DefVar.freshTemps(vs);
     return makeAlt(
         dv,
         ts,
+        next,
         jty,
         e.compTail(
             new CGEnvVars(env, vs, ts),
@@ -157,25 +159,27 @@ class EAlt {
             }));
   }
 
-  Alt makeAlt(Atom dv, Temp[] ts, Type jty, Code code) {
+  CfunAlt makeAlt(Atom dv, Temp[] ts, Alts next, Type jty, Code code) {
     // Add selectors to extract components:
     for (int i = ts.length - 1; i >= 0; i--) {
       code = new Bind(ts[i], new Sel(cf, i, dv), code);
     }
-    return new Alt(cf, new BlockCall(new LCBlock(pos, jty, code)));
+    return new CfunAlt(cf, new BlockCall(new LCBlock(pos, jty, code)), next);
   }
 
-  Alt compAltM(
+  Alts compAltM(
       final CGEnv env,
       final Block abort,
       final Atom dv,
       final Temp r,
+      final Alts nalts,
       final Type jty,
       final Block join) { // cf vs -> e
     Temp[] ts = DefVar.freshTemps(vs);
     return makeAlt(
         dv,
         ts,
+        nalts,
         jty,
         e.compTailM(
             new CGEnvVars(env, vs, ts),

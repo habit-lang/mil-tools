@@ -104,6 +104,10 @@ public abstract class DataName extends Tycon {
 
   abstract Code repTransformAssert(RepTypeSet set, Cfun cf, Atom a, Code c);
 
+  /**
+   * Find the block that implements the mask test predicate for the (num)th constructor of this
+   * type.
+   */
   Block maskTestBlock(int num) {
     debug.Internal.error("DataName does not have a mask test block");
     return null;

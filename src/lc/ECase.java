@@ -144,11 +144,11 @@ class ECase extends PosExpr {
           Code with(final Atom dv) {
             Temp rv = new Temp(type); // holds the final result
             Block join = new LCBlock(pos, kty, kt.with(new Return(rv)));
-            Alt[] talts = new Alt[alts.length];
-            for (int i = 0; i < alts.length; i++) {
-              talts[i] = alts[i].compAlt(env, abort, dv, rv, kty, join);
+            Alts nalts = new DefAlt(new BlockCall(abort));
+            for (int i = alts.length; --i >= 0; ) {
+              nalts = alts[i].compAlt(env, abort, dv, rv, nalts, kty, join);
             }
-            return new Case(dv, talts, new BlockCall(abort));
+            return new Case(dv, nalts);
           }
         });
   }
@@ -168,11 +168,11 @@ class ECase extends PosExpr {
             Type ty = type.argOf(null);
             Temp rv = new Temp(ty); // holds the final result
             Block join = new LCBlock(pos, kty, kt.with(new Return(rv)));
-            Alt[] talts = new Alt[alts.length];
-            for (int i = 0; i < alts.length; i++) {
-              talts[i] = alts[i].compAltM(env, abort, dv, rv, kty, join);
+            Alts nalts = new DefAlt(new BlockCall(abort));
+            for (int i = alts.length; --i >= 0; ) {
+              nalts = alts[i].compAltM(env, abort, dv, rv, nalts, kty, join);
             }
-            return new Case(dv, talts, new BlockCall(abort));
+            return new Case(dv, nalts);
           }
         });
   }

@@ -249,6 +249,7 @@ public class BitdataLayout extends DataName {
     return c;
   }
 
+  /** Find block that implements the mask test predicate for this constructor/layout. */
   Block maskTestBlock() {
     return maskTestBlock;
   }

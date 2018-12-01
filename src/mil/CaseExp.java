@@ -43,8 +43,9 @@ class CaseExp extends CodeExp {
    * BindExp, and returning the corresponding mil Code sequence.
    */
   public Code inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
-    BlockCall bc = (def == null) ? null : def.blockCallInScopeOf(handler, milenv, tenv);
+    Alts nalts =
+        (def == null) ? new FailAlt() : new DefAlt(def.blockCallInScopeOf(handler, milenv, tenv));
     return new Case(
-        a.inScopeOf(handler, milenv, tenv), AltExp.inScopeOf(handler, milenv, tenv, alts), bc);
+        a.inScopeOf(handler, milenv, tenv), AltExp.inScopeOf(handler, milenv, tenv, alts, nalts));
   }
 }

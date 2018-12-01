@@ -33,56 +33,28 @@ public class Case extends Code {
   private Atom a;
 
   /** A list of alternatives for this Case. */
-  private Alt[] alts;
-
-  /** A default branch, if none of the alternatives apply. */
-  private BlockCall def;
+  private Alts alts;
 
   /** Default constructor. */
-  public Case(Atom a, Alt[] alts, BlockCall def) {
+  public Case(Atom a, Alts alts) {
     this.a = a;
     this.alts = alts;
-    this.def = def;
   }
 
   /** Test for a free occurrence of a particular variable. */
   public boolean contains(Temp w) {
-    if (a == w || (def != null && def.contains(w))) {
-      return true;
-    }
-    for (int i = 0; i < alts.length; i++) {
-      if (alts[i].contains(w)) {
-        return true;
-      }
-    }
-    return false;
+    return a == w || alts.contains(w);
   }
 
   /** Find the dependencies of this AST fragment. */
   public Defns dependencies(Defns ds) {
-    if (def != null) {
-      ds = def.dependencies(ds);
-    }
-    for (int i = 0; i < alts.length; i++) {
-      ds = alts[i].dependencies(ds);
-    }
-    return a.dependencies(ds);
+    return a.dependencies(alts.dependencies(ds));
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
   public void dump(PrintWriter out, Temps ts) {
     indentln(out, "case " + a.toString(ts) + " of");
-    for (int i = 0; i < alts.length; i++) {
-      indent(out); // double indent
-      indent(out);
-      alts[i].dump(out, ts);
-    }
-    if (def != null) {
-      indent(out); // double indent
-      indent(out);
-      out.print("_ -> ");
-      def.displayln(out, ts);
-    }
+    alts.dump(out, ts);
   }
 
   /**
@@ -90,37 +62,21 @@ public class Case extends Code {
    * copy of the input code structure, including the introduction of new temporaries in place of any
    * variables introduced by Binds.
    */
-  public Code forceApply(TempSubst s) { // case a of alts; d
-    Alt[] talts = new Alt[alts.length];
-    for (int i = 0; i < alts.length; i++) {
-      talts[i] = alts[i].forceApply(s);
-    }
-    BlockCall d = (def == null) ? null : def.forceApplyBlockCall(s);
-    return new Case(a.apply(s), talts, d);
+  public Code forceApply(TempSubst s) {
+    return new Case(a.apply(s), alts.forceApply(s));
   }
 
   private Type dom;
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   TVars tvars(TVars tvs) {
-    if (def != null) {
-      tvs = def.tvars(tvs);
-    }
-    for (int i = 0; i < alts.length; i++) {
-      tvs = alts[i].tvars(tvs);
-    }
-    return tvs;
+    return alts.tvars(tvs);
   }
 
   Type inferType(Position pos) throws Failure { // case a of alts [; _ -> def]
     dom = a.instantiate();
     Type rng = new TVar(Tyvar.tuple);
-    for (int i = 0; i < alts.length; i++) {
-      alts[i].checkAltType(pos, dom, rng);
-    }
-    if (def != null) {
-      def.inferType(pos).unify(pos, rng);
-    }
+    alts.checkTypeAlts(pos, dom, rng);
     return rng;
   }
 
@@ -130,19 +86,7 @@ public class Case extends Code {
    */
   void generateCode(MachineBuilder builder, int o) {
     a.load(builder);
-    if (alts.length >= 1) {
-      int iaddr = alts[0].generateAltCode(builder, o);
-      for (int i = 1; i < alts.length; i++) {
-        builder.patchToHere(iaddr); // fix previous test to branch to this case
-        iaddr = alts[i].generateAltCode(builder, o);
-      }
-      builder.patchToHere(iaddr);
-    }
-    if (def != null) {
-      def.generateTailCode(builder, o);
-    } else {
-      builder.stop();
-    }
+    alts.generateCode(builder, o);
   }
 
   /**
@@ -151,12 +95,7 @@ public class Case extends Code {
    * parameter.
    */
   Code deriveWithEnter(Atom[] iargs) {
-    Alt[] nalts = new Alt[alts.length];
-    for (int i = 0; i < alts.length; i++) {
-      nalts[i] = alts[i].deriveWithEnter(iargs);
-    }
-    BlockCall d = (def == null) ? null : def.deriveWithEnter(iargs);
-    return new Case(a, nalts, d);
+    return new Case(a, alts.deriveWithEnter(iargs));
   }
 
   /**
@@ -164,12 +103,7 @@ public class Case extends Code {
    * have been returned by the code in the original block to the specified continuation parameter.
    */
   Code deriveWithCont(Atom cont) {
-    Alt[] nalts = new Alt[alts.length];
-    for (int i = 0; i < alts.length; i++) {
-      nalts[i] = alts[i].deriveWithCont(cont);
-    }
-    BlockCall d = (def == null) ? null : def.deriveWithCont(cont);
-    return new Case(a, nalts, d);
+    return new Case(a, alts.deriveWithCont(cont));
   }
 
   /**
@@ -191,22 +125,12 @@ public class Case extends Code {
   }
 
   Code copy() {
-    return new Case(a, Alt.copy(alts), def);
+    return new Case(a, alts.copy());
   }
 
   /** Test for code that is guaranteed not to return. */
   boolean doesntReturn() {
-    // If the default or any of the alternatives can return, then the Case might also be able to
-    // return.
-    if (def != null && !def.doesntReturn()) {
-      return false;
-    }
-    for (int i = 0; i < alts.length; i++) {
-      if (!alts[i].doesntReturn()) {
-        return false;
-      }
-    }
-    return true;
+    return alts.doesntReturn();
   }
 
   /**
@@ -215,7 +139,7 @@ public class Case extends Code {
    * that are enabled.
    */
   Code cleanup(Block src) {
-    BlockCall bc = Alt.sameBlockCalls(def, alts);
+    BlockCall bc = alts.sameBlockCalls();
     if (bc != null) { // Rewrite a case in which all of the targets are the same
       MILProgram.report("eliminated a case with the same block in each branch in " + src.getId());
       return new Done(bc);
@@ -228,16 +152,8 @@ public class Case extends Code {
    * performed, and declining to pursue further inlining at this node once the limit reaches zero.
    */
   Code inlining(Block src, int limit) {
-    for (int i = 0; i < alts.length; i++) {
-      alts[i].inlineAlt();
-    }
-    if (def != null) {
-      def = def.inlineBlockCall();
-    }
-    // If the Case has no alternatives, then we can use the default directly.
-    return (alts.length == 0) ? new Done(def).inlining(src, INLINE_ITER_LIMIT) : this;
-    // TODO: is it appropriate to apply inlining to the def above?  If there is useful
-    // work to be done, we'll catch it next time anyway ... won't we ... ?
+    alts.inlining();
+    return this;
   }
 
   /**
@@ -264,20 +180,11 @@ public class Case extends Code {
    * BlockCalls or ClosAllocs are only included if the corresponding flag in usedArgs is set.
    */
   Temps usedVars() {
-    Temps vs = (def == null) ? null : def.usedVars(null);
-    for (int i = 0; i < alts.length; i++) {
-      vs = alts[i].usedVars(vs);
-    }
-    return a.add(vs);
+    return a.add(alts.usedVars(null));
   }
 
   Code removeUnusedArgs() {
-    BlockCall ndef = (def != null) ? def.removeUnusedArgsBlockCall() : null;
-    Alt[] nalts = new Alt[alts.length];
-    for (int i = 0; i < alts.length; i++) {
-      nalts[i] = alts[i].removeUnusedArgs();
-    }
-    return new Case(a, nalts, ndef);
+    return new Case(a, alts.removeUnusedArgs());
   }
 
   /** Optimize a Code block using a simple flow analysis. */
@@ -286,7 +193,7 @@ public class Case extends Code {
     a = a.apply(s);
     Tail t = a.lookupFact(facts);
     if (t != null) {
-      BlockCall bc = t.shortCase(s, alts, def);
+      BlockCall bc = t.shortCase(s, alts);
       if (bc != null) {
         return new Done(bc.rewriteBlockCall(facts));
       }
@@ -294,13 +201,7 @@ public class Case extends Code {
 
     // Case will be preserved, but we still need to update using substitution s
     // and to compute the appropriate set of live variables.
-    if (def != null) { // update the default branch
-      def = def.applyBlockCall(s).rewriteBlockCall(facts);
-    }
-    // We do not need to kill facts about a here because we are not changing its value
-    for (int i = 0; i < alts.length; i++) { // update regular branches
-      alts[i].flow(a, facts, s);
-    }
+    alts.flow(a, facts, s);
     return this;
   }
 
@@ -314,24 +215,20 @@ public class Case extends Code {
    * if the variable v is not used in the following code.
    */
   Temps liveness() {
-    Temps vs = (def == null) ? null : def.liveness(null);
-    for (int i = 0; i < alts.length; i++) {
-      vs = Temps.add(alts[i].liveness(), vs);
-    }
     a = a.shortTopLevel();
-    return a.add(vs);
+    return a.add(alts.liveness(null));
   }
 
   /**
-   * Test to see if this code is Case that can be shorted out. Even If we find a Case, we still need
-   * to check for a relevant item in the set of Facts (after applying a substitution that captures
-   * the result of entering the block that starts with the Case). Again, if it turns out that the
-   * optimization cannot be used, then we return null.
+   * Test to see if this code is a Case that can be shorted out. Even if we find a Case, we still
+   * need to check for a relevant item in the set of Facts (after applying a substitution that
+   * captures the result of entering the block that starts with the Case). Again, if it turns out
+   * that the optimization cannot be used, then we return null.
    */
   BlockCall shortCase(Temp[] params, Atom[] args, Facts facts) {
     TempSubst s = TempSubst.extend(params, args, null);
     Tail t = a.apply(s).lookupFact(facts);
-    return (t == null) ? null : t.shortCase(s, alts, def);
+    return (t == null) ? null : t.shortCase(s, alts);
   }
 
   /**
@@ -339,13 +236,7 @@ public class Case extends Code {
    * equivalent program fragments have the same summary value.
    */
   int summary() {
-    int sum = (def == null) ? 19 : def.summary();
-    if (alts != null) {
-      for (int i = 0; i < alts.length; i++) {
-        sum = sum * 13 + alts[i].summary();
-      }
-    }
-    return sum;
+    return alts.summary();
   }
 
   /** Test to see if two Code sequences are alpha equivalent. */
@@ -355,75 +246,38 @@ public class Case extends Code {
 
   /** Test two items for alpha equivalence. */
   boolean alphaCase(Temps thisvars, Case that, Temps thatvars) {
-    if (!this.a.alphaAtom(thisvars, that.a, thatvars)) { // Compare discriminants:
-      return false;
-    }
-
-    if (this.def == null) { // Compare default branches:
-      if (that.def != null) {
-        return false;
-      }
-    } else if (that.def == null || !this.def.alphaTail(thisvars, that.def, thatvars)) {
-      return false;
-    }
-
-    if (this.alts == null) { // Compare alternatives:
-      return that.alts == null;
-    } else if (that.alts == null || this.alts.length != that.alts.length) {
-      return false;
-    }
-    for (int i = 0; i < alts.length; i++) {
-      if (!this.alts[i].alphaAlt(thisvars, that.alts[i], thatvars)) {
-        return false;
-      }
-    }
-    return true;
+    return this.a.alphaAtom(thisvars, that.a, thatvars)
+        && this.alts.alphaAlts(thisvars, that.alts, thatvars);
   }
 
   void eliminateDuplicates() {
-    if (alts != null) {
-      for (int i = 0; i < alts.length; i++) {
-        alts[i].eliminateDuplicates();
-      }
-    }
-    if (def != null) {
-      def.eliminateDuplicates();
-    }
+    alts.eliminateDuplicates();
   }
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
-    a.collect(set);
     if (dom != null) {
       dom = dom.canonType(set);
     }
-    for (int i = 0; i < alts.length; i++) {
-      alts[i].collect(set);
-    }
-    if (def != null) {
-      def.collect(set);
-    }
+    a.collect(set);
+    alts.collect(set);
   }
 
   /** Simplify uses of constructor functions in this code sequence. */
   Code cfunSimplify() {
     // If there are no alternatives, replace this Case with a Done:
-    if (alts.length == 0) { // no alternatives; use default
+    Tail t = alts.noCfunAltTail();
+    if (t != null) { // no alternatives; use default
       MILProgram.report("eliminating case with no alternatives");
-      return (def == null) ? new Done(Prim.halt.withArgs()) : new Done(def);
+      return new Done(t);
     }
 
     // Determine which constructor numbers are covered by alts:
-    boolean[] used = null;
-    for (int i = 0; i < alts.length; i++) {
-      used = alts[i].cfunsUsed(used);
-    }
-
-    // Count to see if all constructor numbers are used:
+    Cfun[] used = alts.cfunsUsed();
     int count = 0;
     int notused = 0;
     for (int i = 0; i < used.length; i++) {
-      if (used[i]) count++; // count this constructor as being used
+      if (used[i] != null) count++; // count this constructor as being used
       else notused = i; // record index of an unused constructor
     }
 
@@ -433,70 +287,45 @@ public class Case extends Code {
     if (count == used.length) {
       if (count == 1) { // Look for a single constructor type:
         MILProgram.report("eliminating case on single constructor type");
-        return new Done(alts[0].getBlockCall());
+        return new Done(alts.firstBlockCall());
       }
-      // TODO: if count==0, then we could introduce a halt(()) for unreachable code ...
-      def = null; // Eliminate the default case
-    } else if (count == used.length - 1 && def != null) {
-      // Promote a default to a regular alternative for better flow results:
-      alts = Alt.extendAlts(alts, notused, def); // Add new alternative
-      def = null; // Eliminate default
+      alts = alts.elimDefAlt(); // Eliminate the default case
+    } else if (count == used.length - 1) {
+      // For better flow results, promote a default to a regular alternative with the unused
+      // constructor:
+      alts = alts.promoteDefault(used[(notused == 0) ? 1 : 0].getCfuns()[notused]);
     }
     return this;
   }
 
   /** Generate a specialized version of this code sequence. */
   Code specializeCode(MILSpec spec, TVarSubst s, SpecEnv env) {
-    Alt[] salts = new Alt[alts.length];
-    for (int i = 0; i < alts.length; i++) {
-      salts[i] = alts[i].specializeAlt(spec, s, env);
-    }
-    BlockCall sdef = def == null ? null : def.specializeBlockCall(spec, s, env);
-    return new Case(a.specializeAtom(spec, s, env), salts, sdef);
+    return new Case(a.specializeAtom(spec, s, env), alts.specializeAlts(spec, s, env));
   }
 
   Code bitdataRewrite(BitdataMap m) {
-    Alt[] nalts = new Alt[alts.length];
-    for (int i = 0; i < alts.length; i++) {
-      nalts[i] = alts[i].bitdataRewrite(m);
-    }
-    return new Case(a, nalts, def);
+    return new Case(a, alts.bitdataRewrite(m));
   }
 
   Code mergeRewrite(MergeMap mmap) {
-    Alt[] nalts = new Alt[alts.length];
-    for (int i = 0; i < alts.length; i++) {
-      nalts[i] = alts[i].mergeRewrite(mmap);
-    }
-    return new Case(a, nalts, def);
+    return new Case(a, alts.mergeRewrite(mmap));
   }
 
   Code repTransform(RepTypeSet set, RepEnv env) {
     BitdataType bt = dom.bitdataType();
     if (bt != null) {
-      return Alt.repTransformBitdataCase(set, env, bt, a, alts, def);
+      return new Done(
+          alts.repTransformBitdataCase(set, env, bt.getPat().not(), a.repAtom(set, env)));
     } else if (dom.referenceType(null)) {
-      return Alt.repTransformPtrCase(set, env, a, alts, def);
+      return alts.repTransformPtrCase(set, env, a);
     } else {
-      // We're assuming that cfunRewrite has already been applied; one consequence is that we don't
-      // have to
-      // deal with single constructor datatypes here.
-      Alt[] nalts = new Alt[alts.length];
-      for (int i = 0; i < alts.length; i++) {
-        nalts[i] = alts[i].repTransformAlt(set, env);
-      }
-      BlockCall ndef = (def == null) ? null : def.repTransformBlockCall(set, env);
-      return new Case(a, nalts, ndef);
+      return new Case(a, alts.repTransform(set, env));
     }
   }
 
   /** Find the argument variables that are used in this Code sequence. */
   public Temps addArgs() throws Failure {
-    Temps vs = (def == null) ? null : def.addArgs(null);
-    for (int i = 0; i < alts.length; i++) {
-      vs = Temps.add(alts[i].addArgs(), vs);
-    }
-    return a.add(vs);
+    return a.add(alts.addArgs());
   }
 
   /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */
@@ -510,9 +339,7 @@ public class Case extends Code {
    * does not skip tail calls at the end of a code sequence.
    */
   void countAllCalls() {
-    for (int i = 0; i < alts.length; i++) {
-      alts[i].countAllCalls();
-    }
+    alts.countAllCalls();
   }
 
   /**
@@ -520,26 +347,12 @@ public class Case extends Code {
    * the code for a current function to the list bs.
    */
   Blocks identifyBlocks(Defn src, Blocks bs) {
-    for (int i = 0; i < alts.length; i++) {
-      bs = alts[i].identifyBlocks(src, bs);
-    }
-    if (def != null) {
-      bs = def.identifyBlocks(src, bs);
-    }
-    return bs;
+    return alts.identifyBlocks(src, bs);
   }
 
   /** Find the CFG successors for this MIL code fragment. */
   Label[] findSuccs(CFG cfg, Node src) {
-    Label[] succs = new Label[(def == null) ? alts.length : (alts.length + 1)];
-    int i = 0;
-    for (; i < alts.length; i++) {
-      succs[i] = alts[i].findSucc(cfg, src);
-    }
-    if (def != null) {
-      succs[i] = def.findSucc(cfg, src);
-    }
-    return succs;
+    return alts.findSuccs(cfg, src, 0);
   }
 
   /**
@@ -548,6 +361,31 @@ public class Case extends Code {
    * end of the code.
    */
   llvm.Code toLLVMCode(LLVMMap lm, VarMap vm, TempSubst s, Label[] succs) {
-    return Alt.toLLVMCase(lm, vm, a.toLLVMAtom(lm, vm, s), alts, def, succs);
+    int n = succs.length; // Determine number of successors
+    if (n == 0) {
+      debug.Internal.error("zero outdegree match");
+    }
+    String def = succs[--n].label(); // Use the last alternative as a default
+    if (n == 0) { // Make a direct jump if there are no other alternatives
+      return new llvm.Goto(def);
+    } else {
+      llvm.Value[] nums = new llvm.Value[n];
+      String[] labs = new String[n];
+      alts.collectAlts(nums, labs, succs, n - 1);
+      llvm.Type dt = LLVMMap.tagType(); // the type of the tag
+      llvm.Local tag = vm.reg(dt); // a register to hold the tag
+      llvm.Type at = dt.ptr(); // the type of pointers to the tag
+      llvm.Local addr = vm.reg(at); // a register that points to the tag
+      return new llvm.CodeComment(
+          "read the tag for a data object",
+          new llvm.Op(
+              addr,
+              new llvm.Getelementptr(at, a.toLLVMAtom(lm, vm, s), llvm.Word.ZERO, llvm.Word.ZERO),
+              new llvm.Op(
+                  tag,
+                  new llvm.Load(addr),
+                  new llvm.CodeComment(
+                      "branch based on the tag value", new llvm.Switch(tag, nums, labs, def)))));
+    }
   }
 }

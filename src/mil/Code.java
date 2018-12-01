@@ -290,10 +290,10 @@ public abstract class Code {
   }
 
   /**
-   * Test to see if this code is Case that can be shorted out. Even If we find a Case, we still need
-   * to check for a relevant item in the set of Facts (after applying a substitution that captures
-   * the result of entering the block that starts with the Case). Again, if it turns out that the
-   * optimization cannot be used, then we return null.
+   * Test to see if this code is a Case that can be shorted out. Even if we find a Case, we still
+   * need to check for a relevant item in the set of Facts (after applying a substitution that
+   * captures the result of entering the block that starts with the Case). Again, if it turns out
+   * that the optimization cannot be used, then we return null.
    */
   BlockCall shortCase(Temp[] params, Atom[] args, Facts facts) {
     return null;
