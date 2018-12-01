@@ -136,9 +136,7 @@ public class BitdataLayout extends DataName {
             + id
             + ": width "
             + pat.getWidth()
-            + " ["
-            + Word.numWords(pat.getWidth())
-            + " word(s)], tagbits 0x"
+            + ", tagbits 0x"
             + tagbits.toString(16)
             + " and "
             + fields.length
