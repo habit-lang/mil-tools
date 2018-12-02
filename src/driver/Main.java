@@ -57,6 +57,7 @@ class Main {
     System.err.println("         -h[filename]   list primitives (but -help prints usage message)");
     System.err.println("         -l[filename]   LLVM code (requires s)");
     System.err.println("         -f[filename]   LLVM interface (requires s)");
+    System.err.println("         -G[filename]   CFGs GraphViz output (requires s)");
     System.err.println("         -b[filename]   bytecode text");
     System.err.println("         -x[filename]   execute bytecode");
     System.err.println("         --mil-main=N   Set name of main function in MIL input");
@@ -102,6 +103,8 @@ class Main {
   private FilenameOption llvmOutput = new FilenameOption("llvm output");
 
   private FilenameOption llvmInterfaceOutput = new FilenameOption("llvm interface");
+
+  private FilenameOption cfgsGraphvizOutput = new FilenameOption("CFGs GraphViz output");
 
   private FilenameOption bytecodeOutput = new FilenameOption("bytecode output");
 
@@ -187,6 +190,9 @@ class Main {
             return;
           case 'f':
             llvmInterfaceOutput.setName(str, i);
+            return;
+          case 'G':
+            cfgsGraphvizOutput.setName(str, i);
             return;
           case 'b':
             bytecodeOutput.setName(str, i);
@@ -315,7 +321,7 @@ class Main {
       // a prior 's', or an attempt to generate LLVM code without specialization).
 
       passes =
-          (llvmOutput.isSet() || llvmInterfaceOutput.isSet())
+          (llvmOutput.isSet() || llvmInterfaceOutput.isSet() || cfgsGraphvizOutput.isSet())
               ? "cosboros"
               : execOutput.isSet()
                   ? "cosboro"
@@ -468,7 +474,7 @@ class Main {
           }
         });
 
-    if (llvmOutput.isSet() || llvmInterfaceOutput.isSet()) {
+    if (llvmOutput.isSet() || llvmInterfaceOutput.isSet() || cfgsGraphvizOutput.isSet()) {
       if (spec == null) {
         throw new Failure("A specialization pass is required for LLVM output");
       } else if (rep == null) {
@@ -485,6 +491,12 @@ class Main {
           new Action() {
             void run(PrintWriter out) throws Failure {
               llvmProg.dumpInterface(out);
+            }
+          });
+      cfgsGraphvizOutput.run(
+          new Action() {
+            void run(PrintWriter out) throws Failure {
+              mil.cfgsToDot(out);
             }
           });
     }

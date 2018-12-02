@@ -480,11 +480,19 @@ public class MILProgram {
     }
   }
 
+  /** Records the list of CFGs that have been generated for this program. */
+  private CFGs cfgs;
+
+  /** Generate a GraphViz file with the CFGs for this program. */
+  public void cfgsToDot(PrintWriter out) {
+    CFGs.toDot(out, cfgs);
+  }
+
   /** Generate an LLVM implementation of this MIL program. */
   public llvm.Program toLLVM() throws Failure {
     llvm.Type.setWord(Word.size());
     analyzeCalls();
-    CFGs cfgs = null;
+    cfgs = null;
     llvm.Program prog = new llvm.Program();
     LLVMMap lm = new LLVMMap(prog);
     calcStaticValues(lm, prog);
@@ -513,7 +521,6 @@ public class MILProgram {
       }
     }
     generateInitFunction(lm, prog);
-    //  CFGs.toDot("cfgs.dot", cfgs);       // TODO: should not generate this unless requested
     return prog;
   }
 
