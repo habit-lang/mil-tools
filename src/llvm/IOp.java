@@ -19,16 +19,22 @@
 package llvm;
 
 
-/** Integer (unsigned) remainder. */
-public class URem extends IntBinOp {
+/**
+ * Integer binary operations return an integer result by combining two arguments of the same
+ * (integer) type.
+ */
+public class IOp extends BinOp {
+
+  private String opcode;
 
   /** Default constructor. */
-  public URem(Type ty, Value l, Value r) {
+  public IOp(Type ty, Value l, Value r, String opcode) {
     super(ty, l, r);
+    this.opcode = opcode;
   }
 
   /** Return the LLVM opcode for this binary operation. */
   public String binOpString() {
-    return "urem";
+    return opcode;
   }
 }

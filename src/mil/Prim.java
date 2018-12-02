@@ -231,7 +231,7 @@ public class Prim {
      * Generate an LLVM right hand side for this unary MIL primitive with the given value as input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value v) {
-      return new llvm.Xor(ty, llvm.Word.ONES, v);
+      return new llvm.IOp(ty, llvm.Word.ONES, v, "xor");
     }
   }
 
@@ -260,7 +260,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.And(ty, l, r);
+      return new llvm.IOp(ty, l, r, "and");
     }
   }
 
@@ -289,7 +289,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.Or(ty, l, r);
+      return new llvm.IOp(ty, l, r, "or");
     }
   }
 
@@ -318,7 +318,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.Xor(ty, l, r);
+      return new llvm.IOp(ty, l, r, "xor");
     }
   }
 
@@ -362,7 +362,7 @@ public class Prim {
      * Generate an LLVM right hand side for this unary MIL primitive with the given value as input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value v) {
-      return new llvm.Xor(ty, new llvm.Word(1), v);
+      return new llvm.IOp(ty, new llvm.Word(1), v, "xor");
     }
   }
 
@@ -391,7 +391,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.And(ty, l, r);
+      return new llvm.IOp(ty, l, r, "and");
     }
   }
 
@@ -420,7 +420,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.Or(ty, l, r);
+      return new llvm.IOp(ty, l, r, "or");
     }
   }
 
@@ -457,7 +457,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.Xor(ty, l, r);
+      return new llvm.IOp(ty, l, r, "xor");
     }
   }
 
@@ -671,7 +671,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.Shl(ty, l, r);
+      return new llvm.IOp(ty, l, r, "shl");
     }
   }
 
@@ -700,7 +700,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.LShr(ty, l, r);
+      return new llvm.IOp(ty, l, r, "lshr");
     }
   }
 
@@ -729,7 +729,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.AShr(ty, l, r);
+      return new llvm.IOp(ty, l, r, "ashr");
     }
   }
 
@@ -773,7 +773,7 @@ public class Prim {
      * Generate an LLVM right hand side for this unary MIL primitive with the given value as input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value v) {
-      return new llvm.Sub(ty, new llvm.Word(0), v);
+      return new llvm.IOp(ty, new llvm.Word(0), v, "sub");
     }
   }
 
@@ -802,7 +802,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.Add(ty, l, r);
+      return new llvm.IOp(ty, l, r, "add");
     }
   }
 
@@ -831,7 +831,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.Sub(ty, l, r);
+      return new llvm.IOp(ty, l, r, "sub");
     }
   }
 
@@ -860,7 +860,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.Mul(ty, l, r);
+      return new llvm.IOp(ty, l, r, "mul");
     }
   }
 
@@ -924,7 +924,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.SDiv(ty, l, r);
+      return new llvm.IOp(ty, l, r, "sdiv");
     }
   }
 
@@ -988,7 +988,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.SRem(ty, l, r);
+      return new llvm.IOp(ty, l, r, "srem");
     }
   }
 
@@ -1043,7 +1043,7 @@ public class Prim {
      * input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
-      return new llvm.UDiv(ty, l, r);
+      return new llvm.IOp(ty, l, r, "udiv");
     }
   }
 
