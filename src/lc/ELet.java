@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 class ELet extends PosExpr {
@@ -39,15 +38,6 @@ class ELet extends PosExpr {
   private Bindings bindings;
 
   private BindingSCCs sccs;
-
-  void display(Screen s) {
-    int ind = s.getIndent();
-    s.print("let ");
-    Bindings.display(s, bindings, sccs);
-    s.indent(ind);
-    s.print("in ");
-    e.display(s);
-  }
 
   /**
    * Print an indented description of this abstract syntax node, including a name for the node

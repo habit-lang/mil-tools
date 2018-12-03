@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 class EConstruct extends PosExpr {
@@ -34,11 +33,6 @@ class EConstruct extends PosExpr {
     super(pos);
     this.id = id;
     this.fields = fields;
-  }
-
-  void display(Screen s) { // id [ fields ]
-    s.print(id);
-    EField.display(s, fields);
   }
 
   /**

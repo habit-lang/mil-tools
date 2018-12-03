@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 public class BindingSCC {
@@ -83,21 +82,6 @@ public class BindingSCC {
       }
     }
     return false;
-  }
-
-  void display(Screen s) {
-    if (isRecursive()) {
-      s.print("rec ");
-    }
-    int ind = s.getIndent();
-    Bindings bs = getBindings();
-    if (bs != null) {
-      bs.head.display(s);
-      while ((bs = bs.next) != null) {
-        s.indent(ind);
-        bs.head.display(s);
-      }
-    }
   }
 
   /**

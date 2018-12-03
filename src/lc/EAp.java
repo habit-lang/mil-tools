@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 class EAp extends Expr {
@@ -56,12 +55,6 @@ class EAp extends Expr {
   Equation makeEquation(Position pos, DefVar[] vs, int n, Expr rhs) throws Failure {
     vs[--n] = x.asLamVar(null);
     return f.makeEquation(pos, vs, n, rhs);
-  }
-
-  void display(Screen s) {
-    f.display(s);
-    s.space();
-    x.displayParen(s);
   }
 
   /**

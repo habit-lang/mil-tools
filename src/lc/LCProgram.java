@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
@@ -85,11 +84,6 @@ public class LCProgram extends CoreProgram {
   private Bindings bindings;
 
   private BindingSCCs sccs;
-
-  void display(Screen s) {
-    Bindings.display(s, bindings, sccs);
-    // TODO display top level and core definitions too?
-  }
 
   /**
    * Print an indented description of this abstract syntax node, including a name for the node

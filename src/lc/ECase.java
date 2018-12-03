@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 class ECase extends PosExpr {
@@ -34,17 +33,6 @@ class ECase extends PosExpr {
     super(pos);
     this.e = e;
     this.alts = alts;
-  }
-
-  void display(Screen s) {
-    int ind = s.getIndent();
-    s.print("case ");
-    e.display(s);
-    s.print(" of");
-    for (int i = 0; i < alts.length; i++) {
-      s.indent(ind + 2);
-      alts[i].display(s);
-    }
   }
 
   /**

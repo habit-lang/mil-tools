@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 class EType extends PosExpr {
@@ -45,14 +44,6 @@ class EType extends PosExpr {
       throw new Failure(texp.position(), "Multiple type annotations in variable binding");
     }
     return e.asLamVar(this.texp);
-  }
-
-  void display(Screen s) {
-    s.print("(");
-    e.display(s);
-    s.print(" :: ");
-    s.print((declared != null) ? declared.toString() : "_");
-    s.print(")");
   }
 
   /**

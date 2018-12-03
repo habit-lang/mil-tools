@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 class ESelect extends PosExpr {
@@ -34,12 +33,6 @@ class ESelect extends PosExpr {
     super(pos);
     this.e = e;
     this.lab = lab;
-  }
-
-  void display(Screen s) { // e . lab
-    e.displayParen(s);
-    s.print(".");
-    s.print(lab);
   }
 
   /**

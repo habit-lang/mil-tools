@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 class EStr extends ELit {
@@ -31,12 +30,6 @@ class EStr extends ELit {
   EStr(Position pos, String str) {
     super(pos);
     this.str = str;
-  }
-
-  void display(Screen s) {
-    s.print("\"");
-    s.print(str); // TODO: display special characters using escapes
-    s.print("\"");
   }
 
   /**

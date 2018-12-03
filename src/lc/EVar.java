@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 class EVar extends PosExpr {
@@ -31,14 +30,6 @@ class EVar extends PosExpr {
   EVar(Position pos, Var v) {
     super(pos);
     this.v = v;
-  }
-
-  void display(Screen s) {
-    s.print(v.getId());
-  }
-
-  void displayParen(Screen s) {
-    display(s);
   }
 
   /**

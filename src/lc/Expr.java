@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 /** A base class for representing the abstract syntax of LC expressions. */
@@ -84,18 +83,6 @@ abstract class Expr {
           new EAlt(post, trueName, Var.noVars, trueBranch),
           new EAlt(posf, falseName, Var.noVars, falseBranch)
         });
-  }
-
-  abstract void display(Screen s);
-
-  void displayParen(Screen s) {
-    s.print("(");
-    display(s);
-    s.print(")");
-  }
-
-  void displayDo(Screen s) {
-    display(s);
   }
 
   /**

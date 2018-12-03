@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 class PunField extends EField {
@@ -28,9 +27,5 @@ class PunField extends EField {
   /** Default constructor. */
   PunField(Position pos, String id, Expr e) {
     super(pos, id, e);
-  }
-
-  void display(Screen s) {
-    s.print(id);
   }
 }

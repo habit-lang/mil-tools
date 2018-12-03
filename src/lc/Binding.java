@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 /** Represents a let-bound variable, with an associated binding, id = e. */
@@ -146,20 +145,6 @@ class Binding extends DefVar {
     } else {
       this.declared = declared;
     }
-  }
-
-  void display(Screen s) {
-    if (declared != null) {
-      int ind = s.getIndent();
-      s.print(id);
-      s.print(" :: ");
-      s.print(declared.toString());
-      s.println();
-      s.indent(ind);
-    }
-    s.print(id);
-    s.print(" = ");
-    e.display(s);
   }
 
   /**

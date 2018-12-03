@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 /** Represents an alternative in a case expression. */
@@ -40,16 +39,6 @@ class EAlt {
     this.id = id;
     this.vs = vs;
     this.e = e;
-  }
-
-  void display(Screen s) {
-    int ind = s.getIndent();
-    s.print(id);
-    s.print(" ");
-    s.print(vs);
-    s.print(" ->");
-    s.indent(ind + 2);
-    e.display(s);
   }
 
   /**

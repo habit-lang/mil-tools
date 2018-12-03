@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 class ELam extends PosExpr {
@@ -34,13 +33,6 @@ class ELam extends PosExpr {
     super(pos);
     this.vs = vs;
     this.e = e;
-  }
-
-  void display(Screen s) {
-    s.print("\\");
-    s.print(vs);
-    s.print(" -> ");
-    e.display(s);
   }
 
   /**

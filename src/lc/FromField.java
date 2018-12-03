@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 class FromField extends EField {
@@ -28,12 +27,6 @@ class FromField extends EField {
   /** Default constructor. */
   FromField(Position pos, String id, Expr e) {
     super(pos, id, e);
-  }
-
-  void display(Screen s) {
-    s.print(id);
-    s.print("<-");
-    e.display(s);
   }
 
   int checkTypeConstruct(TVarsInScope tis, Cfun cf, BitdataField[] lfields) throws Failure {

@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 class EFatbar extends PosExpr {
@@ -34,14 +33,6 @@ class EFatbar extends PosExpr {
     super(pos);
     this.l = l;
     this.r = r;
-  }
-
-  void display(Screen s) {
-    int ind = s.getIndent();
-    l.display(s);
-    s.indent(ind - 2);
-    s.print("| ");
-    r.display(s);
   }
 
   /**

@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 /**
@@ -118,34 +117,6 @@ public class Bindings {
       if (ms != null && Bindings.find(ns.head.getId(), reported) == null) {
         handler.report(new MultipleBindingDefnsFailure(new Bindings(ns.head, ms)));
         reported = new Bindings(ns.head, reported);
-      }
-    }
-  }
-
-  public static void display(Screen s, Bindings bindings) {
-    int ind = s.getIndent();
-    if (bindings != null) {
-      bindings.head.display(s);
-      while ((bindings = bindings.next) != null) {
-        // s.print(";");
-        // s.println();
-        s.println();
-        s.indent(ind);
-        bindings.head.display(s);
-      }
-      s.indent(ind);
-    }
-  }
-
-  static void display(Screen s, Bindings bindings, BindingSCCs bsccs) {
-    if (bsccs == null) {
-      Bindings.display(s, bindings);
-    } else {
-      int ind = s.getIndent();
-      bsccs.head.display(s);
-      while ((bsccs = bsccs.next) != null) {
-        s.indent(ind);
-        bsccs.head.display(s);
       }
     }
   }

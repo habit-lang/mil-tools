@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 class EFrom extends PosExpr {
@@ -37,21 +36,6 @@ class EFrom extends PosExpr {
     this.v = v;
     this.e = e;
     this.e1 = e1;
-  }
-
-  void display(Screen s) {
-    int ind = s.getIndent();
-    s.print("do ");
-    displayDo(s);
-  }
-
-  void displayDo(Screen s) {
-    int ind = s.getIndent();
-    s.print(v.toString());
-    s.print(" <- ");
-    e.display(s);
-    s.indent(ind);
-    e1.displayDo(s);
   }
 
   /**

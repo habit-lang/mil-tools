@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 class EId extends EVar {
@@ -68,10 +67,6 @@ class EId extends EVar {
    */
   LamVar asLamVar(TypeExp texp) throws Failure {
     return new LamVar(id, texp);
-  }
-
-  void display(Screen s) {
-    s.print(id);
   }
 
   /**

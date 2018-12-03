@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 abstract class ELit extends PosExpr {
@@ -28,10 +27,6 @@ abstract class ELit extends PosExpr {
   /** Default constructor. */
   ELit(Position pos) {
     super(pos);
-  }
-
-  void displayParen(Screen s) {
-    display(s);
   }
 
   /**

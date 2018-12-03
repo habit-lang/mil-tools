@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 class EqField extends EField {
@@ -28,12 +27,6 @@ class EqField extends EField {
   /** Default constructor. */
   EqField(Position pos, String id, Expr e) {
     super(pos, id, e);
-  }
-
-  void display(Screen s) {
-    s.print(id);
-    s.print("=");
-    e.display(s);
   }
 
   int checkTypeStructInit(TVarsInScope tis, StructType st, StructField[] sfields) throws Failure {

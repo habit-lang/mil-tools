@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import java.math.BigInteger;
 import mil.*;
 
@@ -35,10 +34,6 @@ class EBit extends ELit {
     super(pos);
     this.nat = nat;
     this.width = width;
-  }
-
-  void display(Screen s) {
-    s.print(Bits.toString(nat, width));
   }
 
   /**

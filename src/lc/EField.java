@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 abstract class EField extends Name {
@@ -32,20 +31,6 @@ abstract class EField extends Name {
     super(pos, id);
     this.e = e;
   }
-
-  static void display(Screen s, EField[] fields) {
-    s.print("[");
-    if (fields != null && fields.length > 0) {
-      fields[0].display(s);
-      for (int i = 1; i < fields.length; i++) {
-        s.print(" | ");
-        fields[i].display(s);
-      }
-    }
-    s.print("]");
-  }
-
-  abstract void display(Screen s);
 
   static void indent(IndentOutput out, int n, EField[] fields) {
     for (int i = 0; i < fields.length; i++) {

@@ -20,7 +20,6 @@ package lc;
 
 import compiler.*;
 import core.*;
-import debug.Screen;
 import mil.*;
 
 class ENat extends ELit {
@@ -31,10 +30,6 @@ class ENat extends ELit {
   ENat(Position pos, long num) {
     super(pos);
     this.num = num;
-  }
-
-  void display(Screen s) {
-    s.print(Long.toString(num));
   }
 
   /**
