@@ -1014,15 +1014,6 @@ public class Block extends Defn {
   }
 
   /**
-   * Count the number of calls to blocks, both regular and tail calls, in this abstract syntax
-   * fragment. This is suitable for counting the calls in the main function; unlike countCalls, it
-   * does not skip tail calls at the end of a code sequence.
-   */
-  void countAllCalls() {
-    code.countAllCalls();
-  }
-
-  /**
    * Identify the set of blocks that should be included in the function that is generated for this
    * definition. A block call in the tail for a TopLevel is considered a regular call (it will
    * likely be called from the initialization code), but a block call in the tail for a ClosureDefn
@@ -1059,9 +1050,7 @@ public class Block extends Defn {
       for (int i = 0; i < params.length; i++) {
         nparams[i] = params[i].newParam();
       }
-      BlockCFG cfg = new BlockCFG(this, Temp.nonUnits(nparams));
-      cfg.initCFG();
-      return cfg;
+      return new BlockCFG(this, Temp.nonUnits(nparams));
     }
   }
 
@@ -1082,7 +1071,6 @@ public class Block extends Defn {
   llvm.FuncDefn toLLVMFuncDefn(
       LLVMMap lm,
       DefnVarMap dvm,
-      TempSubst s,
       llvm.Local[] formals,
       String[] ss,
       llvm.Code[] cs,
@@ -1105,17 +1093,11 @@ public class Block extends Defn {
   }
 
   /**
-   * Calculate the LLVM return type that will be produced by the code in the main Block of a
-   * program, if one has been specified.
+   * Find the main block for this program. If no main symbol has been specified, then we generate a
+   * null main block. If the main symbol has been defined but does not correspond to a nullary
+   * block, then we report an error.
    */
-  llvm.Type initType(LLVMMap lm) throws Failure {
-    return retType(lm);
-  }
-
-  /** Generate an LLVM code sequence from the main Block in a program, if one has been specified. */
-  llvm.Code initCode(LLVMMap lm, InitVarMap ivm) throws Failure {
-    return (params.length != 0)
-        ? super.initCode(lm, ivm)
-        : code.toLLVMCode(lm, ivm, null, Label.noLabels);
+  Block getMainBlock() throws Failure {
+    return (params.length == 0) ? this : mainBlockFailure();
   }
 }

@@ -31,6 +31,16 @@ class BlockCFG extends CFG {
   BlockCFG(Block b, Temp[] fparams) {
     this.b = b;
     this.fparams = fparams;
+
+    includedBlocks = b.identifyBlocks();
+    succs = new Label[] {this.edge(this, b, fparams)};
+    findSuccs();
+  }
+
+  private DefnVarMap dvm = new DefnVarMap();
+
+  VarMap getVarMap() {
+    return dvm;
   }
 
   /** Return a string that can be used as the name of this node in debugging output. */
@@ -43,27 +53,20 @@ class BlockCFG extends CFG {
     return b.dotAttrs();
   }
 
-  void initCFG() {
-    includedBlocks = b.identifyBlocks();
-    succs = new Label[] {this.edge(this, b, fparams)};
-    findSuccs();
-  }
-
   /** Calculate an array of formal parameters for the associated LLVM function definition. */
-  llvm.Local[] formals(LLVMMap lm, DefnVarMap dvm) {
+  llvm.Local[] formals(LLVMMap lm, VarMap vm) {
     llvm.Local[] formals = new llvm.Local[fparams.length];
     for (int i = 0; i < fparams.length; i++) {
-      formals[i] = dvm.lookup(lm, fparams[i]);
+      formals[i] = vm.lookup(lm, fparams[i]);
     }
     return formals;
   }
 
   /**
-   * Helper function for constructing a function definition with the fiven formal parameters and
-   * code by connecting the the associated MIL Defn for additional details.
+   * Helper function for constructing a function definition with the given formal parameters and
+   * code by dispatching on the associated MIL Defn to collect additional details.
    */
-  llvm.FuncDefn toLLVMFuncDefn(
-      LLVMMap lm, DefnVarMap dvm, TempSubst s, llvm.Local[] formals, String[] ss, llvm.Code[] cs) {
-    return b.toLLVMFuncDefn(lm, dvm, s, formals, ss, cs, succs);
+  llvm.FuncDefn toLLVMFuncDefn(LLVMMap lm, llvm.Local[] formals, String[] ss, llvm.Code[] cs) {
+    return b.toLLVMFuncDefn(lm, dvm, formals, ss, cs, succs);
   }
 }

@@ -469,7 +469,7 @@ public class MILProgram {
       es.head.called();
     }
     if (main != null) {
-      main.countAllCalls();
+      main.countCalls();
     }
 
     // Scan the full program to register any additional non-tail calls:
@@ -492,74 +492,53 @@ public class MILProgram {
   public llvm.Program toLLVM() throws Failure {
     llvm.Type.setWord(Word.size());
     analyzeCalls();
-    cfgs = null;
+
     llvm.Program prog = new llvm.Program();
     LLVMMap lm = new LLVMMap(prog);
+    llvm.Code edoc = null;
+    InitVarMap ivm = new InitVarMap();
+    cfgs = null;
     calcStaticValues(lm, prog);
+
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
+        // Generate code to initialize TopLevels that do not have static values.
+        edoc = ds.head.addRevInitCode(lm, ivm, edoc);
+        // Generate CFGs as required for each Block and ClosureDefn
         CFG cfg = ds.head.makeCFG();
         if (cfg != null) {
           TempSubst s = cfg.paramElim();
           // System.out.println(TempSubst.toString(s));
-
-          DefnVarMap dvm = new DefnVarMap();
-          prog.add(cfg.toLLVMFuncDefn(lm, dvm, s));
-
-          // TODO: revert to adding each new CFG to the front of the list
-          // cfgs = new CFGs(cfg, cfgs);
-          if (cfgs == null) {
-            cfgs = new CFGs(cfg, null);
-          } else {
-            CFGs prev = cfgs;
-            while (prev.next != null) {
-              prev = prev.next;
-            }
-            prev.next = new CFGs(cfg, null);
-          }
+          prog.add(cfg.toLLVMFuncDefn(lm, s));
+          cfgs = new CFGs(cfg, cfgs);
         }
       }
     }
-    generateInitFunction(lm, prog);
+
+    if (!llvm.FuncDefn.mainFunctionName.equals("")) {
+      Block mainBlock = getMainBlock();
+      InitCFG cfg = new InitCFG(ivm, mainBlock, edoc);
+      TempSubst s = cfg.paramElim();
+      prog.add(cfg.toLLVMFuncDefn(lm, s));
+      cfgs = new CFGs(cfg, cfgs);
+    } else if (edoc != null) {
+      throw new Failure(
+          "LLVM program requires initialization function (set using --llvm-main=NAME)");
+    }
     return prog;
   }
 
   /**
-   * Generate LLVM code to initialize all TopLevels in this program that do not have static values.
+   * Find the main block for this program. If no main symbol has been specified, then we generate a
+   * null main block. If the main symbol has been defined but does not correspond to a nullary
+   * block, then we report an error.
    */
-  void generateInitFunction(LLVMMap lm, llvm.Program prog) throws Failure {
-    llvm.Code code = null;
-    InitVarMap ivm = new InitVarMap();
-    for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
-      for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
-        code = ds.head.addRevInitCode(lm, ivm, code);
-      }
+  Block getMainBlock() throws Failure {
+    if (main == null) {
+      Block b = new Block(BuiltinPosition.pos, Temp.noTemps, new Done(new Return().withArgs()));
+      b.setDeclared(new BlockType(Type.empty, Type.empty));
+      return b;
     }
-    if (!llvm.FuncDefn.mainFunctionName.equals("")) {
-      prog.add(
-          new llvm.FuncDefn(
-              llvm.Mods.NONE,
-              initType(lm),
-              llvm.FuncDefn.mainFunctionName,
-              new llvm.Local[0],
-              new String[] {"0"},
-              new llvm.Code[] {llvm.Code.reverseOnto(code, initCode(lm, ivm))}));
-    } else if (code != null || main != null) {
-      throw new Failure(
-          "LLVM program requires initialization function (set using --llvm-main=NAME)");
-    }
-  }
-
-  /**
-   * Calculate the LLVM return type that will be produced by the code in the main Block of a
-   * program, if one has been specified.
-   */
-  llvm.Type initType(LLVMMap lm) throws Failure {
-    return (main == null) ? llvm.Type.vd : main.initType(lm);
-  }
-
-  /** Generate an LLVM code sequence from the main Block in a program, if one has been specified. */
-  llvm.Code initCode(LLVMMap lm, InitVarMap ivm) throws Failure {
-    return (main == null) ? new llvm.RetVoid() : main.initCode(lm, ivm);
+    return main.getMainBlock();
   }
 }

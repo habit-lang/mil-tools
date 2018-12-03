@@ -362,19 +362,10 @@ public class External extends TopDefn {
   }
 
   /**
-   * Count the number of calls to blocks, both regular and tail calls, in this abstract syntax
-   * fragment. This is suitable for counting the calls in the main function; unlike countCalls, it
-   * does not skip tail calls at the end of a code sequence.
-   */
-  void countAllCalls() {
-    /* Nothing to do here */
-  }
-
-  /**
    * Generate code (in reverse) to initialize each TopLevel (unless all of the components are
    * statically known).
    */
-  llvm.Code addRevInitCode(LLVMMap lm, InitVarMap ivm, llvm.Code code) {
+  llvm.Code addRevInitCode(LLVMMap lm, InitVarMap ivm, llvm.Code edoc) {
     // Generate code to load values of externals in case they are needed later in initialization
     // TODO: Will LLVM optimize away these loads if they are not actually needed?
     // Can we avoid generating them in the first place?
@@ -383,6 +374,6 @@ public class External extends TopDefn {
     llvm.Global g = new llvm.Global(gt.ptr(), id); // - find the global for this external
     llvm.Local l = ivm.reg(gt); // - find a local to hold its value
     ivm.mapGlobal(new TopExt(this), l); // - record the load in the var map
-    return new llvm.Op(l, new llvm.Load(g), code); // - emit code to load the value
+    return new llvm.Op(l, new llvm.Load(g), edoc); // - emit code to load the value
   }
 }

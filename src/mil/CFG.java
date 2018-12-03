@@ -40,6 +40,8 @@ abstract class CFG extends Node {
    */
   protected Blocks includedBlocks;
 
+  abstract VarMap getVarMap();
+
   /**
    * Dump a summary of this CFG that lists its start label and the labels of all the nodes that it
    * includes.
@@ -134,8 +136,9 @@ abstract class CFG extends Node {
   }
 
   /** Generate an LLVM function definition for this CFG node. */
-  llvm.FuncDefn toLLVMFuncDefn(LLVMMap lm, DefnVarMap dvm, TempSubst s) {
-    llvm.Local[] formals = formals(lm, dvm);
+  llvm.FuncDefn toLLVMFuncDefn(LLVMMap lm, TempSubst s) {
+    VarMap vm = getVarMap();
+    llvm.Local[] formals = formals(lm, vm);
     int n = Labels.length(labels);
     String[] ss = new String[1 + n];
     llvm.Code[] cs = new llvm.Code[1 + n];
@@ -143,18 +146,18 @@ abstract class CFG extends Node {
     int i = 1;
     for (Labels ls = labels; ls != null; ls = ls.next) {
       ss[i] = ls.head.label();
-      cs[i++] = ls.head.toLLVMLabel(lm, dvm, s);
+      cs[i++] = ls.head.toLLVMLabel(lm, vm, s);
     }
-    return toLLVMFuncDefn(lm, dvm, s, formals, ss, cs);
+    return toLLVMFuncDefn(lm, formals, ss, cs);
   }
 
   /** Calculate an array of formal parameters for the associated LLVM function definition. */
-  abstract llvm.Local[] formals(LLVMMap lm, DefnVarMap dvm);
+  abstract llvm.Local[] formals(LLVMMap lm, VarMap vm);
 
   /**
-   * Helper function for constructing a function definition with the fiven formal parameters and
-   * code by connecting the the associated MIL Defn for additional details.
+   * Helper function for constructing a function definition with the given formal parameters and
+   * code by dispatching on the associated MIL Defn to collect additional details.
    */
   abstract llvm.FuncDefn toLLVMFuncDefn(
-      LLVMMap lm, DefnVarMap dvm, TempSubst s, llvm.Local[] formals, String[] ss, llvm.Code[] cs);
+      LLVMMap lm, llvm.Local[] formals, String[] ss, llvm.Code[] cs);
 }

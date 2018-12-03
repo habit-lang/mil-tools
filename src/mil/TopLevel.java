@@ -546,28 +546,19 @@ public class TopLevel extends TopDefn {
   }
 
   /**
-   * Count the number of calls to blocks, both regular and tail calls, in this abstract syntax
-   * fragment. This is suitable for counting the calls in the main function; unlike countCalls, it
-   * does not skip tail calls at the end of a code sequence.
-   */
-  void countAllCalls() {
-    tail.countAllCalls();
-  }
-
-  /**
    * Generate code (in reverse) to initialize each TopLevel (unless all of the components are
    * statically known).
    */
-  llvm.Code addRevInitCode(LLVMMap lm, InitVarMap ivm, llvm.Code code) {
+  llvm.Code addRevInitCode(LLVMMap lm, InitVarMap ivm, llvm.Code edoc) {
     if (staticValue == null) {
-      return tail.revInitTail(lm, ivm, this, lhs, code); // no static values
+      return tail.revInitTail(lm, ivm, this, lhs, edoc); // no static values
     } else {
       for (int i = 0; i < staticValue.length; i++) {
         if (staticValue[i] == null) {
-          return tail.revInitTail(lm, ivm, this, lhs, code); // some static values
+          return tail.revInitTail(lm, ivm, this, lhs, edoc); // some static values
         }
       }
-      return code; // all components have static values, no new code required
+      return edoc; // all components have static values, no new code required
     }
   }
 
@@ -575,14 +566,14 @@ public class TopLevel extends TopDefn {
    * Use the values in the given list of atoms to initialize the (non static) left hand sides of
    * this TopLevel.
    */
-  llvm.Code initLLVMTopLhs(LLVMMap lm, InitVarMap ivm, Atom[] as, llvm.Code code) {
+  llvm.Code initLLVMTopLhs(LLVMMap lm, InitVarMap ivm, Atom[] as, llvm.Code edoc) {
     for (int i = 0; i < lhs.length; i++) {
       if (lhs[i].nonUnit() && staticValue(i) == null) {
         llvm.Value val = as[i].toLLVMAtom(lm, ivm);
         ivm.mapGlobal(new TopDef(this, i), val);
-        code = new llvm.Store(val, new llvm.Global(val.getType().ptr(), getId(i)), code);
+        edoc = new llvm.Store(val, new llvm.Global(val.getType().ptr(), getId(i)), edoc);
       }
     }
-    return code;
+    return edoc;
   }
 }

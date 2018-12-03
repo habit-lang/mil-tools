@@ -21,38 +21,42 @@ package mil;
 import compiler.*;
 import core.*;
 
-class ClosureDefnCFG extends CFG {
+class InitCFG extends CFG {
 
-  private ClosureDefn k;
+  private InitVarMap ivm;
+
+  private Block b;
+
+  llvm.Code edoc;
 
   /** Default constructor. */
-  ClosureDefnCFG(ClosureDefn k) {
-    this.k = k;
+  InitCFG(InitVarMap ivm, Block b, llvm.Code edoc) {
+    this.ivm = ivm;
+    this.b = b;
+    this.edoc = edoc;
 
-    includedBlocks = k.identifyBlocks();
-    succs = k.findSuccs(this, this);
+    includedBlocks = b.identifyBlocks(new Blocks(b, null));
+    succs = new Label[] {this.edge(this, b, Temp.noTemps)};
     findSuccs();
   }
 
-  private DefnVarMap dvm = new DefnVarMap();
-
   VarMap getVarMap() {
-    return dvm;
+    return ivm;
   }
 
   /** Return a string that can be used as the name of this node in debugging output. */
   String nodeName() {
-    return k.functionName();
+    return llvm.FuncDefn.mainFunctionName;
   }
 
   /** Return a string with the options (e.g., fillcolor) for displaying this CFG node. */
   String dotAttrs() {
-    return k.dotAttrs();
+    return b.dotAttrs();
   }
 
   /** Calculate an array of formal parameters for the associated LLVM function definition. */
   llvm.Local[] formals(LLVMMap lm, VarMap vm) {
-    return k.formals(lm, vm);
+    return new llvm.Local[0];
   }
 
   /**
@@ -60,6 +64,8 @@ class ClosureDefnCFG extends CFG {
    * code by dispatching on the associated MIL Defn to collect additional details.
    */
   llvm.FuncDefn toLLVMFuncDefn(LLVMMap lm, llvm.Local[] formals, String[] ss, llvm.Code[] cs) {
-    return k.toLLVMFuncDefn(lm, dvm, formals, ss, cs, succs);
+    cs[0] = llvm.Code.reverseOnto(edoc, new llvm.Goto(succs[0].label()));
+    return new llvm.FuncDefn(
+        llvm.Mods.NONE, b.retType(lm), llvm.FuncDefn.mainFunctionName, formals, ss, cs);
   }
 }

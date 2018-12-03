@@ -470,15 +470,6 @@ public abstract class Tail {
   }
 
   /**
-   * Count the number of calls to blocks, both regular and tail calls, in this abstract syntax
-   * fragment. This is suitable for counting the calls in the main function; unlike countCalls, it
-   * does not skip tail calls at the end of a code sequence.
-   */
-  void countAllCalls() {
-    /* default is to do nothing: BlockCalls are the only Tails that contain calls. */
-  }
-
-  /**
    * Search this fragment of MIL code for tail calls, adding new blocks that should be included in
    * the code for a current function to the list bs.
    */
@@ -568,13 +559,13 @@ public abstract class Tail {
    * Worker function for generateRevInitCode, called when we have established that this tail
    * expression, for the given TopLevel, should be executed during program initialization.
    */
-  llvm.Code revInitTail(LLVMMap lm, InitVarMap ivm, TopLevel tl, TopLhs[] lhs, llvm.Code code) {
+  llvm.Code revInitTail(LLVMMap lm, InitVarMap ivm, TopLevel tl, TopLhs[] lhs, llvm.Code edoc) {
     // This is the general case for any form of Tail other than a Return.
     Temp[] vs = new Temp[lhs.length];
     for (int i = 0; i < lhs.length; i++) {
       vs[i] = lhs[i].makeTemp();
     }
-    code = llvm.Code.reverseOnto(toLLVMBindTail(lm, ivm, null, vs, false, null), code);
-    return tl.initLLVMTopLhs(lm, ivm, vs, code);
+    edoc = llvm.Code.reverseOnto(toLLVMBindTail(lm, ivm, null, vs, false, null), edoc);
+    return tl.initLLVMTopLhs(lm, ivm, vs, edoc);
   }
 }

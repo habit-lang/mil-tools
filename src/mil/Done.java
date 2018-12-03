@@ -323,15 +323,6 @@ public class Done extends Code {
   }
 
   /**
-   * Count the number of calls to blocks, both regular and tail calls, in this abstract syntax
-   * fragment. This is suitable for counting the calls in the main function; unlike countCalls, it
-   * does not skip tail calls at the end of a code sequence.
-   */
-  void countAllCalls() {
-    t.countAllCalls();
-  }
-
-  /**
    * Search this fragment of MIL code for tail calls, adding new blocks that should be included in
    * the code for a current function to the list bs.
    */

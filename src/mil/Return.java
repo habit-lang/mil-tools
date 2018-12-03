@@ -270,12 +270,12 @@ public class Return extends Call {
    * Worker function for generateRevInitCode, called when we have established that this tail
    * expression, for the given TopLevel, should be executed during program initialization.
    */
-  llvm.Code revInitTail(LLVMMap lm, InitVarMap ivm, TopLevel tl, TopLhs[] lhs, llvm.Code code) {
+  llvm.Code revInitTail(LLVMMap lm, InitVarMap ivm, TopLevel tl, TopLhs[] lhs, llvm.Code edoc) {
     // This is a special case for TopLevels that have a return expression for their tail
     // (essentially copying another
     // value that is defined at the top-level); we cannot use toLLVMBindVoid(), toLLVMBindCont(), or
     // toLLVMBindTail()
     // in this case.
-    return tl.initLLVMTopLhs(lm, ivm, args, code);
+    return tl.initLLVMTopLhs(lm, ivm, args, edoc);
   }
 }

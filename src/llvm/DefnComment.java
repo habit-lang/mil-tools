@@ -26,7 +26,7 @@ public class DefnComment extends Defn {
   /** The text of the comment. */
   private String comment;
 
-  /** The definition that the comment applies to. */
+  /** The definition the comment applies to. */
   private Defn defn;
 
   /** Default constructor. */

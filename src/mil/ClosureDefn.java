@@ -711,15 +711,6 @@ public class ClosureDefn extends Defn {
   }
 
   /**
-   * Count the number of calls to blocks, both regular and tail calls, in this abstract syntax
-   * fragment. This is suitable for counting the calls in the main function; unlike countCalls, it
-   * does not skip tail calls at the end of a code sequence.
-   */
-  void countAllCalls() {
-    tail.countAllCalls();
-  }
-
-  /**
    * Identify the set of blocks that should be included in the function that is generated for this
    * definition. A block call in the tail for a TopLevel is considered a regular call (it will
    * likely be called from the initialization code), but a block call in the tail for a ClosureDefn
@@ -731,9 +722,7 @@ public class ClosureDefn extends Defn {
   }
 
   CFG makeCFG() {
-    ClosureDefnCFG cfg = new ClosureDefnCFG(this);
-    cfg.initCFG();
-    return cfg;
+    return new ClosureDefnCFG(this);
   }
 
   /** Find the CFG successors for this definition. */
@@ -742,12 +731,12 @@ public class ClosureDefn extends Defn {
   }
 
   /** Calculate an array of formal parameters for the associated LLVM function definition. */
-  llvm.Local[] formals(LLVMMap lm, DefnVarMap dvm) {
+  llvm.Local[] formals(LLVMMap lm, VarMap vm) {
     Temp[] nuargs = Temp.nonUnits(args);
     llvm.Local[] formals = new llvm.Local[1 + nuargs.length]; // Closure pointer + arguments
-    formals[0] = dvm.reg(closurePtrType(lm));
+    formals[0] = vm.reg(closurePtrType(lm));
     for (int i = 0; i < nuargs.length; i++) {
-      formals[1 + i] = dvm.lookup(lm, nuargs[i]);
+      formals[1 + i] = vm.lookup(lm, nuargs[i]);
     }
     return formals;
   }
@@ -760,7 +749,6 @@ public class ClosureDefn extends Defn {
   llvm.FuncDefn toLLVMFuncDefn(
       LLVMMap lm,
       DefnVarMap dvm,
-      TempSubst s,
       llvm.Local[] formals,
       String[] ss,
       llvm.Code[] cs,

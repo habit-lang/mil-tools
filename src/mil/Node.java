@@ -31,8 +31,8 @@ abstract class Node {
   /**
    * The list of Labels that are successors to this Node. TODO: we don't really need the full
    * generality that this provides ... for CallLabel, it will always be noLabels; for GotoLabel, it
-   * will always be a singleton containing lab; for BlockCFG it will always be a singleton; for
-   * ClosureDefn, it will contain at most one entry.
+   * will always be a singleton containing lab; for BlockCFG and InitCFG it will always be a
+   * singleton; for ClosureDefnCFG, it will contain at most one entry.
    */
   protected Label[] succs;
 
