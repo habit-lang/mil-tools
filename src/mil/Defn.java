@@ -175,7 +175,7 @@ public abstract class Defn {
 
   /** Find the dependencies of this AST fragment. */
   public Defns dependencies(Defns ds) {
-    return /* Defns.isIn(this, ds) ? ds : */ new Defns(this, ds);
+    return Defns.isIn(this, ds) ? ds : new Defns(this, ds);
   }
 
   String dotAttrs() {
