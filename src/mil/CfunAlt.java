@@ -171,7 +171,7 @@ public class CfunAlt extends Alts {
   }
 
   void eliminateDuplicates() {
-    bc.eliminateDuplicates();
+    bc = bc.eliminateDuplicatesBlockCall();
     next.eliminateDuplicates();
   }
 

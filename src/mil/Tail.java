@@ -397,8 +397,8 @@ public abstract class Tail {
     return isPure();
   }
 
-  void eliminateDuplicates() {
-    /* nothing to do in most cases */
+  Tail eliminateDuplicates() {
+    return this;
   }
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */

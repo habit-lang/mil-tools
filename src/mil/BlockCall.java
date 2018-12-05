@@ -24,19 +24,19 @@ import java.io.PrintWriter;
 
 public class BlockCall extends Call {
 
-  private Block b;
+  private final Block b;
 
   /** Default constructor. */
-  public BlockCall(Block b) {
+  public BlockCall(final Block b) {
     this.b = b;
   }
 
   /**
-   * Specify block and arguments in a single constructor call, for situations where use of
-   * withArgs() would loose type information.
+   * Specify block and arguments in a single constructor call (for situations where use of
+   * withArgs() would loose type information).
    */
   public BlockCall(Block b, Atom[] args) {
-    this.b = b;
+    this(b);
     this.args = args;
   }
 
@@ -363,11 +363,13 @@ public class BlockCall extends Call {
     return this.b == that.b && this.alphaArgs(thisvars, that, thatvars);
   }
 
-  void eliminateDuplicates() {
+  Tail eliminateDuplicates() {
+    return eliminateDuplicatesBlockCall();
+  }
+
+  BlockCall eliminateDuplicatesBlockCall() {
     Block b1 = b.getReplaceWith();
-    if (b1 != null) {
-      b = b1;
-    }
+    return (b1 == null) ? this : new BlockCall(b1, args);
   }
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */

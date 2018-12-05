@@ -151,7 +151,7 @@ public class DefAlt extends Alts {
   }
 
   void eliminateDuplicates() {
-    bc.eliminateDuplicates();
+    bc = bc.eliminateDuplicatesBlockCall();
   }
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */

@@ -272,8 +272,8 @@ public class If extends Code {
   }
 
   void eliminateDuplicates() {
-    ifTrue.eliminateDuplicates();
-    ifFalse.eliminateDuplicates();
+    ifTrue = ifTrue.eliminateDuplicatesBlockCall();
+    ifFalse = ifFalse.eliminateDuplicatesBlockCall();
   }
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */

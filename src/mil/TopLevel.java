@@ -323,7 +323,7 @@ public class TopLevel extends TopDefn {
   }
 
   void eliminateDuplicates() {
-    tail.eliminateDuplicates();
+    tail = tail.eliminateDuplicates();
   }
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */

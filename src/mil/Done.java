@@ -273,7 +273,7 @@ public class Done extends Code {
   }
 
   void eliminateDuplicates() {
-    t.eliminateDuplicates();
+    t = t.eliminateDuplicates();
   }
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */

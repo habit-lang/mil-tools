@@ -24,10 +24,10 @@ import java.io.PrintWriter;
 
 public class ClosAlloc extends Allocator {
 
-  private ClosureDefn k;
+  private final ClosureDefn k;
 
   /** Default constructor. */
-  public ClosAlloc(ClosureDefn k) {
+  public ClosAlloc(final ClosureDefn k) {
     this.k = k;
   }
 
@@ -171,11 +171,9 @@ public class ClosAlloc extends Allocator {
     return this.k == that.k && this.alphaArgs(thisvars, that, thatvars);
   }
 
-  void eliminateDuplicates() {
+  Tail eliminateDuplicates() {
     ClosureDefn k1 = k.getReplaceWith();
-    if (k1 != null) {
-      k = k1;
-    }
+    return (k1 == null) ? this : new ClosAlloc(k1).withArgs(args);
   }
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */

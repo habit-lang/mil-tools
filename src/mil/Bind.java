@@ -409,7 +409,7 @@ public class Bind extends Code {
   }
 
   void eliminateDuplicates() {
-    t.eliminateDuplicates();
+    t = t.eliminateDuplicates();
     c.eliminateDuplicates();
   }
 
