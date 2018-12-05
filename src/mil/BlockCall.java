@@ -311,7 +311,6 @@ public class BlockCall extends Call {
     // block
     // (i.e., if id is local, not a top level value) and id is used elsewhere in the block.
     Call[] calls = bc.b.collectCalls(bc.args, facts);
-    this.callx = calls; // TODO: temporary, for inspection of results.
     if (calls != null) {
       BlockCall bc1 = bc.deriveWithKnownCons(calls);
       if (bc1 != null) {
@@ -331,14 +330,6 @@ public class BlockCall extends Call {
     }
 
     return bc;
-  }
-
-  private Call[] callx;
-
-  public void dump(PrintWriter out) {
-    if (callx != null) {
-      Call.dump(out, callx);
-    }
   }
 
   BlockCall shortCase(Facts facts) {
