@@ -227,11 +227,6 @@ public class TopLevel extends TopDefn {
     return 0;
   }
 
-  /** Rewrite this program to remove unused arguments in block calls. */
-  void removeUnusedArgs() {
-    tail = tail.removeUnusedArgs();
-  }
-
   public Tail lookupFact(TopLevel tl) {
     return tail.lookupFact(tl);
   }

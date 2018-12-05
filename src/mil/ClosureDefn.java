@@ -418,25 +418,13 @@ public class ClosureDefn extends Defn {
     return dsts; // No newly discovered unused arguments
   }
 
-  /**
-   * Update an argument list by removing unused arguments, or return null if no change is required.
-   */
-  Atom[] removeUnusedArgs(Atom[] args) {
-    if (!isEntrypoint
-        && numUsedArgs < args.length) { // Only rewrite if we have found some new unused arguments
-      Atom[] newArgs = new Atom[numUsedArgs];
-      int j = 0;
-      for (int i = 0; i < args.length; i++) {
-        if ((usedArgs != null && usedArgs[i])) {
-          newArgs[j++] = args[i];
-        }
-      }
-      return newArgs;
-    }
-    return null; // The argument list should not be changed
+  private ClosAllocs uses = null;
+
+  public void calledFrom(ClosAlloc ca) {
+    uses = new ClosAllocs(ca, uses);
   }
 
-  /** Rewrite this program to remove unused arguments in block calls. */
+  /** Remove unused arguments from block calls and closure definitions. */
   void removeUnusedArgs() {
     if (!isEntrypoint && numUsedArgs < params.length) {
       MILProgram.report(
@@ -449,8 +437,10 @@ public class ClosureDefn extends Defn {
       if (declared != null) {
         declared = declared.removeStored(numUsedArgs, usedArgs);
       }
+      for (ClosAllocs cas = uses; cas != null; cas = cas.next) {
+        cas.head.removeUnusedArgs(numUsedArgs, usedArgs);
+      }
     }
-    tail = tail.removeUnusedArgs(); // update calls in tail
   }
 
   public void flow() {

@@ -425,6 +425,22 @@ public abstract class Call extends Tail {
     return Temps.add(args, vs);
   }
 
+  /**
+   * Update an argument list by removing unused arguments, or return null if no change is required.
+   */
+  void removeUnusedArgs(int numUsedArgs, boolean[] usedArgs) {
+    if (numUsedArgs < args.length) { // Only rewrite if we have found some unused arguments
+      Atom[] newArgs = new Atom[numUsedArgs];
+      int j = 0;
+      for (int i = 0; i < args.length; i++) {
+        if ((usedArgs != null && usedArgs[i])) {
+          newArgs[j++] = args[i];
+        }
+      }
+      args = newArgs;
+    }
+  }
+
   /** Liveness analysis. TODO: finish this comment. */
   Temps liveness(Temps vs) {
     for (int i = 0; i < args.length; i++) {

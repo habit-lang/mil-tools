@@ -215,10 +215,6 @@ public class Done extends Code {
     return t.usedVars(null);
   }
 
-  Code removeUnusedArgs() {
-    return new Done(t.removeUnusedArgs());
-  }
-
   /** Optimize a Code block using a simple flow analysis. */
   public Code flow(Facts facts, TempSubst s) {
     t = t.apply(s);

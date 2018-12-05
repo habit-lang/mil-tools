@@ -115,10 +115,6 @@ public class DefAlt extends Alts {
     return bc.usedVars(vs);
   }
 
-  Alts removeUnusedArgs() {
-    return new DefAlt(bc.removeUnusedArgsBlockCall());
-  }
-
   public void flow(Atom a, Facts facts, TempSubst s) {
     bc = bc.applyBlockCall(s).rewriteBlockCall(facts);
   }

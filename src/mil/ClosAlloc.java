@@ -29,6 +29,7 @@ public class ClosAlloc extends Allocator {
   /** Default constructor. */
   public ClosAlloc(final ClosureDefn k) {
     this.k = k;
+    k.calledFrom(this);
   }
 
   /** Test if two Tail expressions are the same. */
@@ -118,11 +119,6 @@ public class ClosAlloc extends Allocator {
    */
   Temps usedVars(Temps vs) {
     return k.usedVars(args, vs);
-  }
-
-  Tail removeUnusedArgs() {
-    Atom[] nargs = k.removeUnusedArgs(args);
-    return (nargs == null) ? this : new ClosAlloc(k).withArgs(nargs);
   }
 
   public Code rewrite(Facts facts) {

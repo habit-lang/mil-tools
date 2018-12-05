@@ -29,6 +29,7 @@ public class BlockCall extends Call {
   /** Default constructor. */
   public BlockCall(final Block b) {
     this.b = b;
+    b.calledFrom(this);
   }
 
   /**
@@ -271,15 +272,6 @@ public class BlockCall extends Call {
    */
   Temps usedVars(Temps vs) {
     return b.usedVars(args, vs);
-  }
-
-  Tail removeUnusedArgs() {
-    return removeUnusedArgsBlockCall();
-  }
-
-  BlockCall removeUnusedArgsBlockCall() {
-    Atom[] nargs = b.removeUnusedArgs(args);
-    return (nargs != null) ? new BlockCall(b, nargs) : this;
   }
 
   /**

@@ -260,8 +260,6 @@ public abstract class Code {
    */
   abstract Temps usedVars();
 
-  abstract Code removeUnusedArgs();
-
   /** Optimize a Code block using a simple flow analysis. */
   public abstract Code flow(Facts facts, TempSubst s);
 

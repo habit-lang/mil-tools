@@ -247,10 +247,6 @@ public abstract class Tail {
    */
   abstract Temps usedVars(Temps vs);
 
-  Tail removeUnusedArgs() {
-    return this;
-  }
-
   /**
    * Test to determine whether a given tail expression may be repeatable (i.e., whether the results
    * of a previous use of the same tail can be reused instead of repeating the tail). TODO: is there

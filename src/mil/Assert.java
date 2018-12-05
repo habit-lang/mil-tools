@@ -183,10 +183,6 @@ public class Assert extends Code {
     return c.usedVars();
   }
 
-  Code removeUnusedArgs() {
-    return new Assert(a, cf, c.removeUnusedArgs());
-  }
-
   /** Optimize a Code block using a simple flow analysis. */
   public Code flow(Facts facts, TempSubst s) {
     Tail t = a.lookupFact(facts);

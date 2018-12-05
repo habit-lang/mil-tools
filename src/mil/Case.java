@@ -183,10 +183,6 @@ public class Case extends Code {
     return a.add(alts.usedVars(null));
   }
 
-  Code removeUnusedArgs() {
-    return new Case(a, alts.removeUnusedArgs());
-  }
-
   /** Optimize a Code block using a simple flow analysis. */
   public Code flow(Facts facts, TempSubst s) { // case a of alts; d
     // Look for an opportunity to short this Case

@@ -295,10 +295,6 @@ public class Bind extends Code {
     return t.usedVars(Temps.remove(vs, c.usedVars()));
   }
 
-  Code removeUnusedArgs() {
-    return new Bind(vs, t.removeUnusedArgs(), c.removeUnusedArgs());
-  }
-
   /** Optimize a Code block using a simple flow analysis. */
   public Code flow(Facts facts, TempSubst s) {
     t = t.apply(s); // Update tail to reflect substitution

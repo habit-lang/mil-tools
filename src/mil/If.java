@@ -192,10 +192,6 @@ public class If extends Code {
     return a.add(ifFalse.usedVars(ifTrue.usedVars(null)));
   }
 
-  Code removeUnusedArgs() {
-    return new If(a, ifTrue.removeUnusedArgsBlockCall(), ifFalse.removeUnusedArgsBlockCall());
-  }
-
   /** Optimize a Code block using a simple flow analysis. */
   public Code flow(Facts facts, TempSubst s) { // if a then ifTrue else ifFalse
     a = a.apply(s);

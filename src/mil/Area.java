@@ -115,11 +115,6 @@ public abstract class Area extends TopDefn {
     return 0;
   }
 
-  /** Rewrite this program to remove unused arguments in block calls. */
-  void removeUnusedArgs() {
-    /* Nothing to do here */
-  }
-
   public void flow() {
     /* Nothing to do here */
   }

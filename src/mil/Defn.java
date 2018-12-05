@@ -347,8 +347,10 @@ public abstract class Defn {
    */
   abstract int countUnusedArgs();
 
-  /** Rewrite this program to remove unused arguments in block calls. */
-  abstract void removeUnusedArgs();
+  /** Remove unused arguments from block calls and closure definitions. */
+  void removeUnusedArgs() {
+    /* Nothing to do here */
+  }
 
   public abstract void flow();
 

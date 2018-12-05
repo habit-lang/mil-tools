@@ -105,10 +105,6 @@ public class FailAlt extends Alts {
     return vs;
   }
 
-  Alts removeUnusedArgs() {
-    return this;
-  }
-
   public void flow(Atom a, Facts facts, TempSubst s) {
     /* nothing to do */
   }

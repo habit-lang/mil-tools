@@ -131,10 +131,6 @@ public class CfunAlt extends Alts {
     return next.usedVars(bc.usedVars(vs));
   }
 
-  Alts removeUnusedArgs() {
-    return new CfunAlt(cf, bc.removeUnusedArgsBlockCall(), next.removeUnusedArgs());
-  }
-
   public void flow(Atom a, Facts facts, TempSubst s) {
     // We know which constructor will be used for a, but not its arguments:
     bc = bc.forceApplyBlockCall(s).rewriteBlockCall(a.addFact(cf, facts));

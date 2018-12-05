@@ -699,25 +699,13 @@ public class Block extends Defn {
     return dsts; // No newly discovered unused arguments
   }
 
-  /**
-   * Update an argument list by removing unused arguments, or return null if no change is required.
-   */
-  Atom[] removeUnusedArgs(Atom[] args) {
-    if (!isEntrypoint
-        && numUsedArgs < args.length) { // Only rewrite if we have found some new unused arguments
-      Atom[] newArgs = new Atom[numUsedArgs];
-      int j = 0;
-      for (int i = 0; i < args.length; i++) {
-        if ((usedArgs != null && usedArgs[i])) {
-          newArgs[j++] = args[i];
-        }
-      }
-      return newArgs;
-    }
-    return null; // The argument list should not be changed
+  private BlockCalls uses = null;
+
+  public void calledFrom(BlockCall bc) {
+    uses = new BlockCalls(bc, uses);
   }
 
-  /** Rewrite this program to remove unused arguments in block calls. */
+  /** Remove unused arguments from block calls and closure definitions. */
   void removeUnusedArgs() {
     if (!isEntrypoint && numUsedArgs < params.length) {
       MILProgram.report(
@@ -730,8 +718,10 @@ public class Block extends Defn {
       if (declared != null) {
         declared = declared.removeArgs(numUsedArgs, usedArgs);
       }
+      for (BlockCalls bcs = uses; bcs != null; bcs = bcs.next) {
+        bcs.head.removeUnusedArgs(numUsedArgs, usedArgs);
+      }
     }
-    code = code.removeUnusedArgs(); // update calls in code sequence
   }
 
   public void flow() {
