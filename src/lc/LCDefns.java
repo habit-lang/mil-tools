@@ -55,11 +55,4 @@ public class LCDefns {
     Bindings.checkForMultiple(handler, bs);
     return bs;
   }
-
-  static void indent(IndentOutput out, int n, LCDefns defns) {
-    out.indent(n, "LCDefns");
-    for (; defns != null; defns = defns.next) {
-      defns.head.indent(out, n + 1);
-    }
-  }
 }

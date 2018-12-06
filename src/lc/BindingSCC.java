@@ -91,7 +91,7 @@ public class BindingSCC {
    */
   void indent(IndentOutput out, int n) {
     out.indent(n, "BindingSCC" + (isRecursive() ? ", recursive" : ""));
-    Bindings.indent(out, n + 1, getBindings());
+    out.indent(n + 1, getBindings());
   }
 
   /**

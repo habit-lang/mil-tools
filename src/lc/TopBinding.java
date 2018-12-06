@@ -37,7 +37,11 @@ public class TopBinding {
     this.type = type;
   }
 
-  /** Print an indented description of a TopBinding. */
+  /**
+   * Print an indented description of this abstract syntax node, including a name for the node
+   * itself at the specified level of indentation, plus more deeply indented descriptions of any
+   * child nodes.
+   */
   void indent(IndentOutput out, int n) {
     out.indent(n, "TopBinding: " + topLevel + ", type = " + type.skeleton());
     e.indent(out, n + 1);

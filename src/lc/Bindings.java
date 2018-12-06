@@ -121,13 +121,6 @@ public class Bindings {
     }
   }
 
-  static void indent(IndentOutput out, int n, Bindings bindings) {
-    out.indent(n, "Bindings");
-    for (; bindings != null; bindings = bindings.next) {
-      bindings.head.indent(out, n + 1);
-    }
-  }
-
   /** Test for membership in a list. */
   public static boolean isIn(Binding val, Bindings list) {
     for (; list != null; list = list.next) {

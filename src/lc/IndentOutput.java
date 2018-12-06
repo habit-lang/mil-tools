@@ -51,22 +51,40 @@ class IndentOutput {
     out.println(msg);
   }
 
+  /** Print an indented description of a list of bindings in an LCProgram or ELet. */
   void indent(int n, BindingSCCs sccs, Bindings bindings, LCDefns defns) {
     if (sccs != null) {
       for (BindingSCCs bs = sccs; bs != null; bs = bs.next) {
         bs.head.indent(this, n);
       }
     } else if (bindings != null) {
-      Bindings.indent(this, n, bindings);
+      indent(n, bindings);
     } else {
-      LCDefns.indent(this, n, defns);
+      indent(n, defns);
+    }
+  }
+
+  /** Print an indented description of a list of LCDefns. */
+  void indent(int n, LCDefns defns) {
+    indent(n, "LCDefns");
+    for (; defns != null; defns = defns.next) {
+      defns.head.indent(this, n + 1);
+    }
+  }
+
+  /** Print an indented description of a list of Bindings. */
+  void indent(int n, Bindings bindings) {
+    indent(n, "Bindings");
+    for (; bindings != null; bindings = bindings.next) {
+      bindings.head.indent(this, n + 1);
     }
   }
 
   /** Print an indented description of a list of TopBindings. */
   void indent(TopBindings tbs, int n) {
+    indent(n, "TopBindings");
     for (; tbs != null; tbs = tbs.next) {
-      tbs.head.indent(this, n);
+      tbs.head.indent(this, n + 1);
     }
   }
 }
