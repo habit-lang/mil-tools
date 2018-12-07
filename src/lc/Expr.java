@@ -138,6 +138,28 @@ abstract class Expr {
    */
   abstract Type inferType(TVarsInScope tis) throws Failure;
 
+  Type explicitlyTyped(Position pos, TVarsInScope tis, Scheme declared) throws Failure {
+    if (declared == null) {
+      // ignore annotation if type scheme was invalid
+      return inferType(tis);
+    } else {
+      Type type = declared.instantiate();
+      checkType(tis, type);
+      TVars fixed = TVarsInScope.tvarsInScope(tis);
+      Scheme scheme = type.generalize(type.generics(fixed));
+      if (!declared.alphaEquiv(scheme)) {
+        throw new Failure(
+            pos,
+            "Declared type \""
+                + declared
+                + "\" is more general than inferred type \""
+                + scheme
+                + "\"");
+      }
+      return type;
+    }
+  }
+
   /** Check that this expression will produce a value of the specified type. */
   void checkType(TVarsInScope tis, Type t) throws Failure { // default, used for EVar, ELit, EType
     inferType(tis).unify(getPos(), t);

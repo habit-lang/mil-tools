@@ -96,24 +96,7 @@ class EType extends PosExpr {
    * type variables that appear in an assumption.
    */
   Type inferType(TVarsInScope tis) throws Failure { // e :: declared
-    if (declared == null) {
-      // ignore annotation if type scheme was invalid
-      return type = e.inferType(tis);
-    } else {
-      e.checkType(tis, type = declared.instantiate());
-      TVars fixed = TVarsInScope.tvarsInScope(tis);
-      Scheme scheme = type.generalize(type.generics(fixed));
-      if (!declared.alphaEquiv(scheme)) {
-        throw new Failure(
-            pos,
-            "Declared type \""
-                + declared
-                + "\" is more general than inferred type \""
-                + scheme
-                + "\"");
-      }
-      return type;
-    }
+    return type = e.explicitlyTyped(pos, tis, declared);
   }
 
   Expr lift(LiftEnv lenv) { // e :: declared
