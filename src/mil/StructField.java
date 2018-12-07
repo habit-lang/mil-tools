@@ -106,4 +106,14 @@ public class StructField extends Name {
     }
     return initStructField;
   }
+
+  private TopLevel defaultInit = null;
+
+  public TopLevel getDefaultInit() {
+    return defaultInit;
+  }
+
+  public void setDefaultInit(TopLevel defaultInit) {
+    this.defaultInit = defaultInit;
+  }
 }

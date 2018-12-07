@@ -431,4 +431,14 @@ public class BitdataField extends Name {
     generateSelector(layout);
     generateUpdate(layout);
   }
+
+  private TopLevel defaultValue = null;
+
+  public TopLevel getDefaultValue() {
+    return defaultValue;
+  }
+
+  public void setDefaultValue(TopLevel defaultValue) {
+    this.defaultValue = defaultValue;
+  }
 }

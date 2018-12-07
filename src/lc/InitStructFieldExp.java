@@ -31,4 +31,19 @@ class InitStructFieldExp extends core.StructFieldExp {
     super(pos, id);
     this.init = init;
   }
+
+  private TopBinding tb;
+
+  public StructField makeField(Type type, int offset, int width) {
+    StructField sf = new StructField(pos, id, type, offset, width);
+    TopLevel topLevel = new TopLevel(pos, "init_" + id, null);
+    topLevel.setDeclared(0, Type.init(type));
+    tb = new TopBinding(topLevel, init, null);
+    sf.setDefaultInit(topLevel);
+    return sf;
+  }
+
+  public TopBindings coreBindings(TopBindings tbs) {
+    return new TopBindings(tb, tbs);
+  }
 }

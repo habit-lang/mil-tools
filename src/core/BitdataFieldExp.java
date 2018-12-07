@@ -29,7 +29,7 @@ public class BitdataFieldExp extends Name {
     super(pos, id);
   }
 
-  BitdataField makeField(Type type, int offset, int width) {
+  public BitdataField makeField(Type type, int offset, int width) {
     return new BitdataField(pos, id, type, offset, width);
   }
 

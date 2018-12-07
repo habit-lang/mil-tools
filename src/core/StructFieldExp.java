@@ -29,7 +29,7 @@ public class StructFieldExp extends Name {
     super(pos, id);
   }
 
-  StructField makeField(Type type, int offset, int width) {
+  public StructField makeField(Type type, int offset, int width) {
     return new StructField(pos, id, type, offset, width);
   }
 

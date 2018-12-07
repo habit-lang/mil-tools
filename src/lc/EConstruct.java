@@ -51,6 +51,8 @@ class EConstruct extends PosExpr {
 
   private BitdataLayout layout;
 
+  private Atom[] as;
+
   private int[] invmap;
 
   private StructType st;
@@ -119,19 +121,25 @@ class EConstruct extends PosExpr {
 
     // Check that all fields are defined:
     invmap = new int[fields.length]; // inverse mapping from field # in AST to layout #
+    as = new Atom[lfields.length]; // capture default values where needed
     for (int p = 0; p < lfields.length; p++) {
-      if (map[p] == 0) {
-        // TODO: report all missing fields in a single error message.
-        throw new Failure(
-            pos,
-            "Constructor "
-                + cf
-                + " requires value for field "
-                + lfields[p]
-                + " :: "
-                + lfields[p].getType());
-      } else {
+      if (map[p] != 0) {
         invmap[map[p] - 1] = p;
+      } else {
+        TopLevel tl = lfields[p].getDefaultValue();
+        if (tl != null) {
+          as[p] = new TopDef(tl, 0);
+        } else {
+          // TODO: report all missing fields in a single error message.
+          throw new Failure(
+              pos,
+              "Constructor "
+                  + cf
+                  + " requires value for field "
+                  + lfields[p]
+                  + " :: "
+                  + lfields[p].getType());
+        }
       }
     }
     return type = bt.asType();
@@ -189,12 +197,11 @@ class EConstruct extends PosExpr {
       //     comp[fexpN] $ \aN ->
       //     l <- LCF(a1,...,aN)    -- build layout (modulo invmap permutation)
       //     kt(C(l))               -- embed in bitdata type
-      final Atom[] as = new Atom[fields.length];
       Temp l = new Temp(layout.asType());
       Code code = new Bind(l, layout.getCfuns()[0].withArgs(as), kt.with(cf.withArgs(l)));
       for (int i = fields.length; --i >= 0; ) {
-        final Code c = code;
         final int j = invmap[i];
+        final Code c = code;
         code =
             fields[i].compAtom(
                 env,

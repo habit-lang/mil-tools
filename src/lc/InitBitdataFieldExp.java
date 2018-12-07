@@ -31,4 +31,19 @@ class InitBitdataFieldExp extends core.BitdataFieldExp {
     super(pos, id);
     this.init = init;
   }
+
+  private TopBinding tb;
+
+  public BitdataField makeField(Type type, int offset, int width) {
+    BitdataField bf = new BitdataField(pos, id, type, offset, width);
+    TopLevel topLevel = new TopLevel(pos, "default_" + id, null);
+    topLevel.setDeclared(0, type);
+    tb = new TopBinding(topLevel, init, null);
+    bf.setDefaultValue(topLevel);
+    return bf;
+  }
+
+  public TopBindings coreBindings(TopBindings tbs) {
+    return new TopBindings(tb, tbs);
+  }
 }
