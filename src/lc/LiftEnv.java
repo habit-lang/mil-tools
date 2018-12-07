@@ -98,12 +98,12 @@ public class LiftEnv {
     for (; bindings != null; bindings = bindings.next) {
       tbs = new TopBindings(bindings.head.liftToTop(xvs, this), tbs);
     }
+
     // Step 2: Update each of the bodies by adding new parameters and lifting the right hand sides
     for (TopBindings ts = tbs; ts != null; ts = ts.next) {
       ts.head.liftBinding(this); // applying lifting to the right hand side
       ts.head.bindExtras(xvs); // and update the binding with extra parameters
     }
-    this.addTopBindings(tbs);
     return tbs;
   }
 }

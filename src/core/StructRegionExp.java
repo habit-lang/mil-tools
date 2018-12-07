@@ -20,8 +20,7 @@ package core;
 
 import compiler.*;
 import java.math.BigInteger;
-import lc.Env;
-import lc.LiftEnv;
+import lc.TopBindings;
 import mil.*;
 
 class StructRegionExp {
@@ -97,27 +96,12 @@ class StructRegionExp {
     return (fields == null) ? 0 : fields.length;
   }
 
-  public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {
+  public TopBindings coreBindings(TopBindings tbs) {
     if (fields != null) {
       for (int i = 0; i < fields.length; i++) {
-        fields[i].inScopeOf(handler, milenv, env);
+        tbs = fields[i].coreBindings(tbs);
       }
     }
-  }
-
-  public void inferTypes(Handler handler) throws Failure {
-    if (fields != null) {
-      for (int i = 0; i < fields.length; i++) {
-        fields[i].inferTypes(handler, type);
-      }
-    }
-  }
-
-  public void lift(LiftEnv lenv) {
-    if (fields != null) {
-      for (int i = 0; i < fields.length; i++) {
-        fields[i].lift(lenv);
-      }
-    }
+    return tbs;
   }
 }

@@ -20,8 +20,7 @@ package core;
 
 import compiler.*;
 import java.math.BigInteger;
-import lc.Env;
-import lc.LiftEnv;
+import lc.TopBindings;
 import mil.*;
 
 abstract class BitdataRegionExp {
@@ -69,15 +68,7 @@ abstract class BitdataRegionExp {
    */
   abstract int collectFields(BitdataField[] fs, int next) throws Failure;
 
-  public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {
-    /* default is to do nothing */
-  }
-
-  public void inferTypes(Handler handler) throws Failure {
-    /* default is to do nothing */
-  }
-
-  public void lift(LiftEnv lenv) {
-    /* default is to do nothing */
+  public TopBindings coreBindings(TopBindings tbs) {
+    return tbs;
   }
 }

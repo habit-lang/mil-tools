@@ -31,18 +31,4 @@ class InitStructFieldExp extends core.StructFieldExp {
     super(pos, id);
     this.init = init;
   }
-
-  public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {
-    // Ignore results of top level inScopeOf() call
-    init.inScopeOf(handler, milenv, env);
-  }
-
-  public void inferTypes(Handler handler, Type type) throws Failure {
-    init.checkType(null, Type.init(type));
-    init.findAmbigTVars(null);
-  }
-
-  public void lift(LiftEnv lenv) {
-    init = init.lift(lenv);
-  }
 }

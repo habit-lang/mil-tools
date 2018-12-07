@@ -81,6 +81,8 @@ public class LCProgram extends CoreProgram {
     handler.abortOnFailures();
   }
 
+  private TopBindings coreBindings;
+
   private Bindings bindings;
 
   private BindingSCCs sccs;
@@ -124,8 +126,10 @@ public class LCProgram extends CoreProgram {
       tds.head.scopeTopDefn(handler, milenv, env);
     }
 
-    // Check every expression that appears in a core definition:
-    super.inScopeOf(handler, milenv, env);
+    // Check the TopBindings that were introduced in core definitions:
+    for (TopBindings cbs = coreBindings; cbs != null; cbs = cbs.next) {
+      cbs.head.inScopeOf(handler, milenv, env);
+    }
 
     // Compute the strongly connected components:
     sccs = Bindings.scc(bindings);
@@ -137,7 +141,11 @@ public class LCProgram extends CoreProgram {
     for (TopDefns tds = topDefns; tds != null; tds = tds.next) {
       tds.head.inferTypes(handler);
     }
-    super.inferTypes(handler);
+
+    // Type check the TopBindings that were introduced in core definitions:
+    for (TopBindings cbs = coreBindings; cbs != null; cbs = cbs.next) {
+      cbs.head.checkType(handler);
+    }
   }
 
   /**
@@ -148,18 +156,25 @@ public class LCProgram extends CoreProgram {
 
   TopBindings lambdaLift() {
     LiftEnv lenv = new LiftEnv();
-    topBindings = lenv.liftBindings(bindings, DefVar.noVars);
-    liftCoreProgram(lenv);
-    // TODO: is the following line necessary?
-    // sccs = null; // Invalidate sccs now that new bindings have been added:
-    liftTopDefns(lenv);
-    return lenv.getLifted();
-  }
 
-  void liftTopDefns(LiftEnv lenv) {
+    // Lift this set of bindings, populating the LiftEnv:
+    topBindings = lenv.liftBindings(bindings, DefVar.noVars);
+
+    // Lift bindings from TopDefns:
     for (TopDefns tds = topDefns; tds != null; tds = tds.next) {
       tds.head.liftTopDefn(lenv);
     }
+
+    // Lift bindings from the core program:
+    for (TopBindings cbs = coreBindings; cbs != null; cbs = cbs.next) {
+      cbs.head.liftBinding(lenv);
+    }
+    lenv.addTopBindings(coreBindings);
+
+    // Add the items for this list of Bindings as the last such list in the LiftEnv:
+    lenv.addTopBindings(topBindings);
+
+    return lenv.getLifted();
   }
 
   /** Compare the name of this object with a given string. */
@@ -246,6 +261,9 @@ public class LCProgram extends CoreProgram {
 
     // Build a new MILEnv for this program:
     milenv = this.newmil(handler, tenv, milenv);
+
+    // Extract top level bindings from CoreDefns
+    coreBindings = coreBindings();
 
     // Run scope analysis on the LC program:
     this.scopeAnalysis(handler, milenv);

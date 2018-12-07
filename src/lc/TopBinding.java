@@ -47,6 +47,22 @@ public class TopBinding {
     e.indent(out, n + 1);
   }
 
+  /** Scope analysis for TopBindings that are introduced in CorePrograms. */
+  public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {
+    // Ignore results of top level inScopeOf() call
+    e.inScopeOf(handler, milenv, env);
+  }
+
+  /** Check types for the top level bindings that are generated from CoreDefns. */
+  void checkType(Handler handler) {
+    try {
+      type = e.explicitlyTyped(topLevel.getPos(), null, topLevel.getDeclared(0));
+      e.findAmbigTVars(null);
+    } catch (Failure f) {
+      handler.report(f);
+    }
+  }
+
   /** Search for a TopLevel with the given name in a list of TopBindings. */
   public static TopLevel find(String id, TopBindings tbs) {
     for (; tbs != null; tbs = tbs.next) {

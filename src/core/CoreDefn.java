@@ -19,8 +19,7 @@
 package core;
 
 import compiler.*;
-import lc.Env;
-import lc.LiftEnv;
+import lc.TopBindings;
 import mil.*;
 
 public abstract class CoreDefn {
@@ -156,15 +155,7 @@ public abstract class CoreDefn {
    */
   public abstract void addToMILEnv(Handler handler, CoreProgram prog, MILEnv milenv);
 
-  public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {
-    /* By default, do nothing */
-  }
-
-  public void inferTypes(Handler handler) throws Failure {
-    /* By default, do nothing */
-  }
-
-  public void lift(LiftEnv lenv) {
-    /* By default, do nothing */
+  public TopBindings coreBindings(TopBindings tbs) {
+    return tbs;
   }
 }

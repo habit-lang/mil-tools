@@ -19,8 +19,7 @@
 package core;
 
 import compiler.*;
-import lc.Env;
-import lc.LiftEnv;
+import lc.TopBindings;
 import mil.*;
 
 public class CoreProgram {
@@ -153,21 +152,11 @@ public class CoreProgram {
     return milenv.findTop(id);
   }
 
-  public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {
+  public TopBindings coreBindings() {
+    TopBindings tbs = null;
     for (CoreDefns ds = coreDefns; ds != null; ds = ds.next) {
-      ds.head.inScopeOf(handler, milenv, env);
+      tbs = ds.head.coreBindings(tbs);
     }
-  }
-
-  public void inferTypes(Handler handler) throws Failure {
-    for (CoreDefns ds = coreDefns; ds != null; ds = ds.next) {
-      ds.head.inferTypes(handler);
-    }
-  }
-
-  public void liftCoreProgram(LiftEnv lenv) {
-    for (CoreDefns ds = coreDefns; ds != null; ds = ds.next) {
-      ds.head.lift(lenv);
-    }
+    return tbs;
   }
 }

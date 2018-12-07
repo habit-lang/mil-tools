@@ -20,8 +20,7 @@ package core;
 
 import compiler.*;
 import java.math.BigInteger;
-import lc.Env;
-import lc.LiftEnv;
+import lc.TopBindings;
 import mil.*;
 
 public class BitdataDefn extends TyconDefn {
@@ -166,21 +165,10 @@ public class BitdataDefn extends TyconDefn {
     }
   }
 
-  public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {
+  public TopBindings coreBindings(TopBindings tbs) {
     for (int i = 0; i < constrs.length; i++) {
-      constrs[i].inScopeOf(handler, milenv, env);
+      tbs = constrs[i].coreBindings(tbs);
     }
-  }
-
-  public void inferTypes(Handler handler) throws Failure {
-    for (int i = 0; i < constrs.length; i++) {
-      constrs[i].inferTypes(handler);
-    }
-  }
-
-  public void lift(LiftEnv lenv) {
-    for (int i = 0; i < constrs.length; i++) {
-      constrs[i].lift(lenv);
-    }
+    return tbs;
   }
 }

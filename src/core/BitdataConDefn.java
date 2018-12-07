@@ -20,8 +20,7 @@ package core;
 
 import compiler.*;
 import java.math.BigInteger;
-import lc.Env;
-import lc.LiftEnv;
+import lc.TopBindings;
 import mil.*;
 
 class BitdataConDefn extends Name {
@@ -156,21 +155,10 @@ class BitdataConDefn extends Name {
     bt.setLayouts(layouts);
   }
 
-  public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {
+  public TopBindings coreBindings(TopBindings tbs) {
     for (int i = 0; i < regexps.length; i++) {
-      regexps[i].inScopeOf(handler, milenv, env);
+      tbs = regexps[i].coreBindings(tbs);
     }
-  }
-
-  public void inferTypes(Handler handler) throws Failure {
-    for (int i = 0; i < regexps.length; i++) {
-      regexps[i].inferTypes(handler);
-    }
-  }
-
-  public void lift(LiftEnv lenv) {
-    for (int i = 0; i < regexps.length; i++) {
-      regexps[i].lift(lenv);
-    }
+    return tbs;
   }
 }

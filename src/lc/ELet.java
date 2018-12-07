@@ -124,8 +124,13 @@ class ELet extends PosExpr {
         // DefVar for each
         // variable binding is replaced with an appropriate Top value.
         DefVar[] xvs = scc.extraVars(lenv);
-        Binding.rename(bs); // Rename all of the bindings in this SCC
-        lenv.liftBindings(bs, xvs); // Lift them to the top level
+
+        // Rename all of the bindings in this SCC
+        Binding.rename(bs);
+
+        // Lift them to the top level
+        lenv.addTopBindings(lenv.liftBindings(bs, xvs));
+
         if (prev == null) { // Unlink the SCC from this ELet
           sccs = bsccs.next;
         } else {

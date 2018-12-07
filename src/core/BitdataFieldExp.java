@@ -19,8 +19,7 @@
 package core;
 
 import compiler.*;
-import lc.Env;
-import lc.LiftEnv;
+import lc.TopBindings;
 import mil.*;
 
 public class BitdataFieldExp extends Name {
@@ -34,15 +33,7 @@ public class BitdataFieldExp extends Name {
     return new BitdataField(pos, id, type, offset, width);
   }
 
-  public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {
-    /* default is to do nothing */
-  }
-
-  public void inferTypes(Handler handler, Type type) throws Failure {
-    /* default is to do nothing */
-  }
-
-  public void lift(LiftEnv lenv) {
-    /* default is to do nothing */
+  public TopBindings coreBindings(TopBindings tbs) {
+    return tbs;
   }
 }
