@@ -91,14 +91,18 @@ abstract class EField extends Name {
       final CGEnv env,
       final Block abort,
       final StructType st,
-      final Type initS,
-      final EField[] fields,
+      final Type tyinitS,
+      final EField[] inits,
       final int lo,
       final int hi,
       final Type kty,
       final TailCont kt) {
     if (lo == hi) {
-      return fields[lo].e.compTail(
+      if (inits[lo] == null) {
+        Atom i = new TopDef(st.getFields()[lo].getDefaultInit(), 0);
+        return kt.with(st.initStructFieldPrim(lo).withArgs(i));
+      }
+      return inits[lo].e.compTail(
           env,
           abort,
           kty,
@@ -114,14 +118,14 @@ abstract class EField extends Name {
           env,
           abort,
           st,
-          initS,
-          fields,
+          tyinitS,
+          inits,
           lo,
           mid,
           kty,
           new TailCont() {
             Code with(final Tail t1) {
-              final Temp i1 = new Temp(initS);
+              final Temp i1 = new Temp(tyinitS);
               return new Bind(
                   i1,
                   t1,
@@ -129,14 +133,14 @@ abstract class EField extends Name {
                       env,
                       abort,
                       st,
-                      initS,
-                      fields,
+                      tyinitS,
+                      inits,
                       mid + 1,
                       hi,
                       kty,
                       new TailCont() {
                         Code with(final Tail t2) {
-                          final Temp i2 = new Temp(initS);
+                          final Temp i2 = new Temp(tyinitS);
                           return new Bind(i2, t2, kt.with(Prim.initSeq.withArgs(i1, i2)));
                         }
                       }));

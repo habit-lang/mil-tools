@@ -57,6 +57,8 @@ class EConstruct extends PosExpr {
 
   private StructType st;
 
+  private EField[] inits;
+
   /**
    * Perform scope analysis on this expression, creating a Temp for each variable binding, checking
    * that all of the identifiers it references correspond to bound variables, and returning the set
@@ -147,22 +149,23 @@ class EConstruct extends PosExpr {
 
   Type inferTypeStructInit(TVarsInScope tis) throws Failure {
     StructField[] sfields = st.getFields();
-    // A mapping from field numbers in the structure to field numbers in this expression:
-    int[] map = new int[sfields.length];
+
+    // A mapping from field numbers in the structure to the Efields in this expression:
+    inits = new EField[sfields.length];
 
     // Check that individual fields have the expected type:
     for (int i = 0; i < fields.length; i++) {
       int p = fields[i].checkTypeStructInit(tis, st, sfields);
-      if (map[p] != 0) {
+      if (inits[p] != null) {
         throw new Failure(
             fields[i].getPos(), "There are multiple initializers for field \"" + sfields[p] + "\"");
       }
-      map[p] = 1 + i; // Add one to avoid confusion with 0th element ...
+      inits[p] = fields[i];
     }
 
-    // Check that all fields are defined:
+    // Check that all fields are defined (or have defaults):
     for (int p = 0; p < sfields.length; p++) {
-      if (map[p] == 0) {
+      if (inits[p] == null && sfields[p].getDefaultInit() == null) {
         throw new Failure(
             pos,
             "Structure "
@@ -188,8 +191,8 @@ class EConstruct extends PosExpr {
   Code compTail(final CGEnv env, final Block abort, final Type kty, final TailCont kt) {
     if (cf == null) { // structure initializer
       // TODO: does this work correctly for structures with no fields?
-      Type initS = Type.init(st.asType());
-      return EField.compInit(env, abort, st, initS, fields, 0, fields.length - 1, kty, kt);
+      Type tyinitS = Type.init(st.asType());
+      return EField.compInit(env, abort, st, tyinitS, inits, 0, inits.length - 1, kty, kt);
     } else { // bitdata construction
       // sketch of generated code:
       //     comp[fexp1] $ \a1 ->
