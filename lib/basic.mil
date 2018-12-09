@@ -49,9 +49,15 @@ export eq, neq :: Word -> Word -> Bool
 eq  <- {x,y} t <- primEq((x,y));  bconv[t]
 neq <- {x,y} t <- primNeq((x,y)); bconv[t]
 
-export gt, gte, lt, lte :: Word -> Word -> Bool
-gt  <- {x,y} t <- primSgt((x,y)); bconv[t]
-gte <- {x,y} t <- primSge((x,y)); bconv[t]
-lt  <- {x,y} t <- primSlt((x,y)); bconv[t]
-lte <- {x,y} t <- primSle((x,y)); bconv[t]
+export gt, ge, lt, le :: Word -> Word -> Bool
+gt <- {x,y} t <- primSgt((x,y)); bconv[t]
+ge <- {x,y} t <- primSge((x,y)); bconv[t]
+lt <- {x,y} t <- primSlt((x,y)); bconv[t]
+le <- {x,y} t <- primSle((x,y)); bconv[t]
+
+export ugt, uge, ult, ule :: Word -> Word -> Bool
+ugt <- {x,y} t <- primUgt((x,y)); bconv[t]
+uge <- {x,y} t <- primUge((x,y)); bconv[t]
+ult <- {x,y} t <- primUlt((x,y)); bconv[t]
+ule <- {x,y} t <- primUle((x,y)); bconv[t]
 
