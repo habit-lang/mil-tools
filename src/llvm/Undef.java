@@ -19,35 +19,29 @@
 package llvm;
 
 
-/** Represents an LLVM structure value. */
-public class Struct extends Value {
+/** Represents an undefined value. */
+public class Undef extends Value {
 
-  /** The type of this structure (will be computed if left null). */
+  /** The type for this undefined value. */
   private Type ty;
 
-  /** An array of component values (must all be constants). */
-  private Value[] vals;
-
   /** Default constructor. */
-  public Struct(Type ty, Value[] vals) {
+  public Undef(Type ty) {
     this.ty = ty;
-    this.vals = vals;
   }
 
   /** Return the LLVM type of this value. */
   public Type getType() {
-    if (ty == null) {
-      Type[] tys = new Type[vals.length];
-      for (int i = 0; i < vals.length; i++) {
-        tys[i] = vals[i].getType();
-      }
-      ty = new StructType(tys);
-    }
     return ty;
   }
 
-  /** Append the name for this value to the specified buffer. */
-  public void appendName(StringBuilder buf) {
-    append(buf, "{", vals, "}");
+  /**
+   * Return the LLVM name for this value. We provide a default definition that relies on the
+   * existence of an appendName() implementation, which has a default implementation in terms of
+   * getName(). To avoid an infinite loop, at least one of these methods must be implemented for
+   * every concrete instance of Value.
+   */
+  public String getName() {
+    return "undef";
   }
 }

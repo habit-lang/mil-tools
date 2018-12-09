@@ -20,27 +20,33 @@ package llvm;
 
 
 /**
- * Extract a component from a structure/aggregate type. (Does not support full generality of LLVM,
+ * Insert a value into a structure/aggregate type. (Does not support the full generality of LLVM,
  * which allows the instruction to specify a sequence of index values.)
  */
-public class ExtractValue extends Rhs {
+public class InsertValue extends Rhs {
 
-  /** A structure value. */
+  /** A structure/aggregate value. */
   private Value v;
 
-  /** Index of the required component of v. */
+  /** The field value to insert. */
+  private Value f;
+
+  /** The index of the inserted field. */
   private int n;
 
   /** Default constructor. */
-  public ExtractValue(Value v, int n) {
+  public InsertValue(Value v, Value f, int n) {
     this.v = v;
+    this.f = f;
     this.n = n;
   }
 
   /** Append a printable string for this instruction to the specified buffer. */
   public void append(StringBuilder buf) {
-    buf.append("extractvalue ");
+    buf.append("insertvalue ");
     v.append(buf);
+    buf.append(", ");
+    f.append(buf);
     buf.append(", ");
     buf.append(n);
   }
