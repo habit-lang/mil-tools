@@ -238,11 +238,20 @@ public class Return extends Call {
     } else if (nuargs.length == 1) {
       return new llvm.Ret(nuargs[0].toLLVMAtom(lm, vm, s));
     } else {
-      llvm.Value[] vals = new llvm.Value[nuargs.length];
-      for (int i = 0; i < nuargs.length; i++) {
-        vals[i] = nuargs[i].toLLVMAtom(lm, vm, s);
+      llvm.Type st = lm.toLLVM(outputs);
+      if (nuargs.length == 0) {
+        return new llvm.Ret(new llvm.Struct(st, new llvm.Value[0]));
+      } else {
+        llvm.Local r = vm.reg(st);
+        llvm.Code code = new llvm.Ret(r);
+        for (int i = nuargs.length; --i > 0; ) {
+          llvm.Local rp = vm.reg(st);
+          code = new llvm.Op(r, new llvm.InsertValue(rp, nuargs[i].toLLVMAtom(lm, vm, s), i), code);
+          r = rp;
+        }
+        return new llvm.Op(
+            r, new llvm.InsertValue(new llvm.Undef(st), nuargs[0].toLLVMAtom(lm, vm, s), 0), code);
       }
-      return new llvm.Ret(new llvm.Struct(lm.toLLVM(outputs), vals));
     }
   }
 
