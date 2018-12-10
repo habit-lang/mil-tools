@@ -1047,6 +1047,61 @@ public class Prim {
     }
   }
 
+  public static final Prim nzrem = new nzrem();
+
+  public static class nzrem extends Prim {
+
+    private nzrem() {
+      this(nzdivType);
+    }
+
+    private nzrem(BlockType bt) {
+      super("nzrem", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new nzrem(bt);
+    }
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is not expected to produce any results, but execution is expected to continue with
+     * the given code.
+     */
+    llvm.Code toLLVMPrimVoid(
+        LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, boolean isTail, llvm.Code c) {
+      debug.Internal.error(id + " is not a void primitive");
+      return c;
+    }
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is expected to return a result (that should be captured in the specified lhs), and
+     * then execution is expected to continue on to the specified code, c.
+     */
+    llvm.Code toLLVMPrimCont(
+        LLVMMap lm,
+        VarMap vm,
+        TempSubst s,
+        Atom[] args,
+        boolean isTail,
+        llvm.Local lhs,
+        llvm.Code c) {
+      return new llvm.Op(
+          lhs,
+          this.op(llvm.Type.word(), args[0].toLLVMAtom(lm, vm, s), args[1].toLLVMAtom(lm, vm, s)),
+          c);
+    }
+
+    /**
+     * Generate an LLVM right hand side for this binary MIL primitive with the given values as
+     * input.
+     */
+    llvm.Rhs op(llvm.Type ty, llvm.Value l, llvm.Value r) {
+      return new llvm.IOp(ty, l, r, "urem");
+    }
+  }
+
   public static final PrimRelOp eq = new eq();
 
   public static class eq extends PrimRelOp {

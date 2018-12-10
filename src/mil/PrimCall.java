@@ -292,12 +292,13 @@ public class PrimCall extends Call {
         Word a = x.isWord();
         if (a != null) {
           long n = a.getVal(); // Look for a constant numerator
-          if (n > 0) { // To be cautious, only consider positive values
+          if (n >= 0) { // To be cautious, only consider nonnegative values
             MILProgram.report("constant folding for nzdiv");
-            return done(new Word(n / d));
+            return done(n / d);
           }
         }
         if (d == 1) { // Look for a (redundant) divide by 1
+          MILProgram.report("eliminate division by 1");
           return done(x);
         }
         if ((d & (d - 1)) == 0) { // Look for division by a power of two, d=(1L<<n)
@@ -307,6 +308,30 @@ public class PrimCall extends Call {
           }
           MILProgram.report("rewrite: nzdiv((x, " + d + ")) ==> lshr((x, " + n + "))");
           return done(Prim.lshr, x, n);
+        }
+      }
+      return null;
+    }
+    if (p instanceof Prim.nzrem || p == Prim.rem) {
+      Word y = args[1].isWord();
+      long d;
+      if (y != null && (d = y.getVal()) > 0) { // Look for a constant denominator
+        Atom x = args[0];
+        Word a = x.isWord();
+        if (a != null) {
+          long n = a.getVal(); // Look for a constant numerator
+          if (n >= 0) { // To be cautious, only consider nonnegative values
+            MILProgram.report("constant folding for nzrem");
+            return done(n % d);
+          }
+        }
+        if (d == 1) { // Look for a (trivial) remainder modulo 1
+          MILProgram.report("eliminate remainder modulo 1");
+          return done(0L);
+        }
+        if ((d & (d - 1)) == 0) { // Look for remainder modulo a power of two, d=(1L<<n)
+          MILProgram.report("rewrite: nzrem((x, " + d + ")) ==> and((x, " + (d - 1) + "))");
+          return done(Prim.and, x, d - 1);
         }
       }
       return null;
