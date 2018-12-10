@@ -118,7 +118,7 @@ public class GenImp extends ExtImp {
 
     void dump(PrintWriter out, String ref, int width) {
       out.print(ref);
-      for (int i = ref.length(); i < width; i++) {
+      for (int i = ref.length(); i <= width; i++) {
         out.print(' ');
       }
       out.println(prefix.forall(type).toString());
