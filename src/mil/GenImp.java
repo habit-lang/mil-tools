@@ -1602,13 +1602,20 @@ public class GenImp extends ExtImp {
         });
 
     // primNZBitDiv w :: Bit w -> NZBit w -> Bit w
+    genNZDivOp("primNZBitDiv", Prim.div);
+
+    // primNZBitRem w :: Bit w -> NZBit w -> Bit w
+    genNZDivOp("primNZBitRem", Prim.rem);
+  }
+
+  static void genNZDivOp(String ref, final Prim p) {
     generators.put(
-        "primNZBitDiv",
+        ref,
         new Generator(Prefix.nat, fun(bitA, Type.nzbit(gA), bitA)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int w = ts[0].validWidth(2); // Width of bit vector (must fit within a single word)
             validSingleWord(w);
-            return new PrimCall(Prim.div).makeBinaryFuncClosure(pos, 1, 1);
+            return new PrimCall(p).makeBinaryFuncClosure(pos, 1, 1);
           }
         });
   }
