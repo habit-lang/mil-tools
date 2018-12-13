@@ -216,7 +216,9 @@ public class Temp extends Atom {
    * case.)
    */
   public Facts addFact(Tail t, Facts facts) {
-    return (t.isRepeatable() && !t.contains(this)) ? new Facts(this, t, facts) : facts;
+    return (this.isLive() && t.isRepeatable() && !t.contains(this))
+        ? new Facts(this, t, facts)
+        : facts;
   }
 
   public Facts addCfunFact(Cfun cf, Facts facts) {
