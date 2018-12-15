@@ -153,8 +153,11 @@ public class BlockCall extends Call {
   Code localLoop(Block src, Temp[] vs, Code c) {
     DefnSCC srcScc = src.getScc();
     DefnSCC scc = b.getScc();
-    if (srcScc != null && scc != null && srcScc != scc && scc.localLoopSCC()) {
-      // System.out.println("Block " + b + " is a candidate for localLoop");
+    if (srcScc != null
+        && scc != null
+        && srcScc != scc
+        && b.getOccurs() == 1
+        && scc.localLoopSCC()) {
       Temp t = new Temp();
       return new Bind(t, c.makeCont(vs), new Done(this.deriveWithCont(t)));
     }

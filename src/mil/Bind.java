@@ -197,9 +197,9 @@ public class Bind extends Code {
       } else if ((nc = c.casesOn(vs, bc)) != null) {
         MILProgram.report("pushed case into call in " + src.getId());
         return nc;
-        //    } else if ((nc = bc.localLoop(src, vs, c))!=null) {
-        //      MILProgram.report("pushed continuation into block call in " + src.getId());
-        //      return nc;
+      } else if ((nc = bc.localLoop(src, vs, c)) != null) {
+        MILProgram.report("pushed continuation into block call in " + src.getId());
+        return nc;
       }
 
       t = bc.inlineBlockCall();
