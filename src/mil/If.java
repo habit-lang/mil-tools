@@ -66,12 +66,12 @@ public class If extends Code {
   }
 
   /**
-   * Force the application of a TempSubst to this Code sequence, forcing construction of a fresh
-   * copy of the input code structure, including the introduction of new temporaries in place of any
-   * variables introduced by Binds.
+   * Apply a TempSubst to this Code sequence, forcing construction of a fresh copy of the input code
+   * structure, including the introduction of new temporaries in place of any variables introduced
+   * by Binds.
    */
-  public Code forceApply(TempSubst s) {
-    return new If(a.apply(s), ifTrue.forceApplyBlockCall(s), ifFalse.forceApplyBlockCall(s));
+  public Code apply(TempSubst s) {
+    return new If(a.apply(s), ifTrue.applyBlockCall(s), ifFalse.applyBlockCall(s));
   }
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
@@ -198,7 +198,7 @@ public class If extends Code {
     Flag c = a.isFlag(); // Does the argument hold a known constant?
     if (c != null) {
       BlockCall bc = c.getVal() ? ifTrue : ifFalse;
-      return new Done(bc.forceApplyBlockCall(a.mapsTo(c, s)).rewriteBlockCall(facts));
+      return new Done(bc.applyBlockCall(a.mapsTo(c, s)).rewriteBlockCall(facts));
     } else {
       Tail t = a.lookupFact(facts); // Look for a fact about a
       if (t != null) {

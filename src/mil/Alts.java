@@ -35,7 +35,7 @@ public abstract class Alts {
   public abstract void dump(PrintWriter out, Temps ts);
 
   /** Force the application of a TempSubst to this list of alternatives. */
-  public abstract Alts forceApply(TempSubst s);
+  public abstract Alts apply(TempSubst s);
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   abstract TVars tvars(TVars tvs);

@@ -114,7 +114,7 @@ public class ClosureDefn extends Defn {
     args = Temp.makeTemps(oldas.length);
 
     // Update the tail with new temporary names:
-    tail = tail.forceApply(TempSubst.extend(oldps, params, TempSubst.extend(oldas, args, null)));
+    tail = tail.apply(TempSubst.extend(oldps, params, TempSubst.extend(oldas, args, null)));
 
     // Set initial types for temporaries:
     Type[] stored = Type.freshTypes(params);
@@ -455,7 +455,7 @@ public class ClosureDefn extends Defn {
    * enter this closure in the first place.
    */
   Tail withArgs(Atom[] sargs, Atom[] fargs) {
-    return tail.forceApply(TempSubst.extend(args, fargs, TempSubst.extend(params, sargs, null)));
+    return tail.apply(TempSubst.extend(args, fargs, TempSubst.extend(params, sargs, null)));
   }
 
   /**

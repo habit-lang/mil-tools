@@ -92,18 +92,10 @@ public abstract class Tail {
   }
 
   /**
-   * Apply a TempSubst to this Tail. As an optimization, we skip the operation if the substitution
-   * is empty.
+   * Apply a TempSubst to this Tail, forcing construction of a new Tail, even if the substitution is
+   * empty.
    */
-  public Tail apply(TempSubst s) {
-    return (s == null) ? this : forceApply(s);
-  }
-
-  /**
-   * Apply a TempSubst to this Tail. A call to this method, even if the substitution is empty, will
-   * force the construction of a new Tail.
-   */
-  public abstract Tail forceApply(TempSubst s);
+  public abstract Tail apply(TempSubst s);
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   abstract TVars tvars(TVars tvs);

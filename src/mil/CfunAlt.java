@@ -59,8 +59,8 @@ public class CfunAlt extends Alts {
   }
 
   /** Force the application of a TempSubst to this list of alternatives. */
-  public Alts forceApply(TempSubst s) {
-    return new CfunAlt(cf, bc.forceApplyBlockCall(s), next.forceApply(s));
+  public Alts apply(TempSubst s) {
+    return new CfunAlt(cf, bc.applyBlockCall(s), next.apply(s));
   }
 
   private AllocType type;
@@ -133,7 +133,7 @@ public class CfunAlt extends Alts {
 
   public void flow(Atom a, Facts facts, TempSubst s) {
     // We know which constructor will be used for a, but not its arguments:
-    bc = bc.forceApplyBlockCall(s).rewriteBlockCall(a.addFact(cf, facts));
+    bc = bc.applyBlockCall(s).rewriteBlockCall(a.addFact(cf, facts));
     next.flow(a, facts, s);
   }
 

@@ -118,7 +118,7 @@ public class Block extends Defn {
     // Rename to ensure that every block has a distinct set of temporaries:
     Temp[] old = params;
     params = Temp.makeTemps(old.length);
-    code = code.forceApply(TempSubst.extend(old, params, null));
+    code = code.apply(TempSubst.extend(old, params, null));
 
     // Set initial types for temporaries:
     Type dom = Type.tuple(Type.freshTypes(params));
@@ -395,7 +395,7 @@ public class Block extends Defn {
       }
     }
 
-    Block b = new BlockWithDuplicateArgs(pos, nps, code.forceApply(s), dups);
+    Block b = new BlockWithDuplicateArgs(pos, nps, code.apply(s), dups);
     // TODO: should we set a declared type for b if this block has one?
     derived = new Blocks(b, derived);
     return b;
@@ -506,7 +506,7 @@ public class Block extends Defn {
     if (canSuffixInline(src)) {
       MILProgram.report(
           "suffixInline succeeded for call to block " + getId() + " from block " + src.getId());
-      return code.forceApply(TempSubst.extend(params, args, null));
+      return code.apply(TempSubst.extend(params, args, null));
     }
     return null;
   }
@@ -542,7 +542,7 @@ public class Block extends Defn {
   public Tail inlineTail(Atom[] args) {
     Tail tail = code.isDone();
     if (tail != null) {
-      tail = tail.forceApply(TempSubst.extend(params, args, null));
+      tail = tail.apply(TempSubst.extend(params, args, null));
     }
     return tail;
   }
@@ -557,7 +557,7 @@ public class Block extends Defn {
     BlockCall bc = this.isGotoBlock();
     if (bc != null) {
       MILProgram.report("elided call to goto block " + getId());
-      return bc.forceApplyBlockCall(TempSubst.extend(params, args, null));
+      return bc.applyBlockCall(TempSubst.extend(params, args, null));
     }
     return null;
   }

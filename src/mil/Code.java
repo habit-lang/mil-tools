@@ -53,19 +53,11 @@ public abstract class Code {
   }
 
   /**
-   * Apply a TempSubst to this Code sequence. As an optimization, skip the operation if the
-   * substitution is empty.
+   * Apply a TempSubst to this Code sequence, forcing construction of a fresh copy of the input code
+   * structure, including the introduction of new temporaries in place of any variables introduced
+   * by Binds.
    */
-  public Code apply(TempSubst s) {
-    return (s == null) ? this : forceApply(s);
-  }
-
-  /**
-   * Force the application of a TempSubst to this Code sequence, forcing construction of a fresh
-   * copy of the input code structure, including the introduction of new temporaries in place of any
-   * variables introduced by Binds.
-   */
-  public abstract Code forceApply(TempSubst s);
+  public abstract Code apply(TempSubst s);
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   abstract TVars tvars(TVars tvs);

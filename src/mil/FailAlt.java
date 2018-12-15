@@ -41,7 +41,7 @@ public class FailAlt extends Alts {
   }
 
   /** Force the application of a TempSubst to this list of alternatives. */
-  public Alts forceApply(TempSubst s) {
+  public Alts apply(TempSubst s) {
     return this;
   }
 

@@ -79,10 +79,10 @@ public class Enter extends Call {
   }
 
   /**
-   * Apply a TempSubst to this Tail. A call to this method, even if the substitution is empty, will
-   * force the construction of a new Tail.
+   * Apply a TempSubst to this Tail, forcing construction of a new Tail, even if the substitution is
+   * empty.
    */
-  public Tail forceApply(TempSubst s) {
+  public Tail apply(TempSubst s) {
     return new Enter(f.apply(s), TempSubst.apply(args, s));
   }
 

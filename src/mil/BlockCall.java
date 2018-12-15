@@ -71,11 +71,6 @@ public class BlockCall extends Call {
    * because that loses type information, producing a Body from a BlockCall input.
    */
   public BlockCall applyBlockCall(TempSubst s) {
-    return (s == null) ? this : forceApplyBlockCall(s);
-  }
-
-  /** A special version of forceApply that works only on BlockCalls. */
-  BlockCall forceApplyBlockCall(TempSubst s) {
     return new BlockCall(b, TempSubst.apply(args, s));
   }
 

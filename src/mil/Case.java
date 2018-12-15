@@ -58,12 +58,12 @@ public class Case extends Code {
   }
 
   /**
-   * Force the application of a TempSubst to this Code sequence, forcing construction of a fresh
-   * copy of the input code structure, including the introduction of new temporaries in place of any
-   * variables introduced by Binds.
+   * Apply a TempSubst to this Code sequence, forcing construction of a fresh copy of the input code
+   * structure, including the introduction of new temporaries in place of any variables introduced
+   * by Binds.
    */
-  public Code forceApply(TempSubst s) {
-    return new Case(a.apply(s), alts.forceApply(s));
+  public Code apply(TempSubst s) {
+    return new Case(a.apply(s), alts.apply(s));
   }
 
   private Type dom;

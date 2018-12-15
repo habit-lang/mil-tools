@@ -69,17 +69,17 @@ public class Bind extends Code {
   }
 
   /**
-   * Force the application of a TempSubst to this Code sequence, forcing construction of a fresh
-   * copy of the input code structure, including the introduction of new temporaries in place of any
-   * variables introduced by Binds.
+   * Apply a TempSubst to this Code sequence, forcing construction of a fresh copy of the input code
+   * structure, including the introduction of new temporaries in place of any variables introduced
+   * by Binds.
    */
-  public Code forceApply(TempSubst s) { // vs <- t; c
-    Tail t1 = t.forceApply(s);
+  public Code apply(TempSubst s) { // vs <- t; c
+    Tail t1 = t.apply(s);
     Temp[] ws = new Temp[vs.length];
     for (int i = 0; i < vs.length; i++) {
       s = vs[i].mapsTo(ws[i] = new Temp(), s);
     }
-    return new Bind(ws, t1, c.forceApply(s));
+    return new Bind(ws, t1, c.apply(s));
   }
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */

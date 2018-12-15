@@ -51,8 +51,8 @@ public class DefAlt extends Alts {
   }
 
   /** Force the application of a TempSubst to this list of alternatives. */
-  public Alts forceApply(TempSubst s) {
-    return new DefAlt(bc.forceApplyBlockCall(s));
+  public Alts apply(TempSubst s) {
+    return new DefAlt(bc.applyBlockCall(s));
   }
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
