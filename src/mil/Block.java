@@ -506,7 +506,7 @@ public class Block extends Defn {
     if (canSuffixInline(src)) {
       MILProgram.report(
           "suffixInline succeeded for call to block " + getId() + " from block " + src.getId());
-      return code.apply(TempSubst.extend(params, args, null));
+      return code.forceApply(TempSubst.extend(params, args, null));
     }
     return null;
   }
