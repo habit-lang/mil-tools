@@ -282,9 +282,7 @@ public class LCProgram extends CoreProgram {
    */
   void compile(Handler handler, MILProgram mil, MILEnv milenv) {
     TopBindings tbs = lambdaLift(); // Lift out definitions of recursive functions
-    addExports(mil, milenv); // Process exports and entry points
-    // TODO: can we use tbs (or similar) to allow access to symbols defined in this program without
-    // requiring them to be exported?
+    addExports(mil, milenv); // Process exports and entrypoints
     super.scopeExtImps(handler, milenv);
     for (; tbs != null; tbs = tbs.next) { // Generate MIL code from LC
       tbs.head.compile();

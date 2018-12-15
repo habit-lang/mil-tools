@@ -22,7 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
-class Entrypoint extends Export {
+class Entrypoint extends VisDecl {
 
   /** Default constructor. */
   Entrypoint(Position pos, String[] ids) {
