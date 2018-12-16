@@ -540,6 +540,97 @@ public class GenImp extends ExtImp {
           }
         });
 
+    // primGenLtInc a m :: a -> (Ix m -> a) -> Ix m -> Ix m -> Ix m -> a
+    generators.put(
+        "primGenLtInc",
+        new Generator(Prefix.star_nat, fun(gA, fun(ixB, gA), ixB, fun(ixB, ixB, gA))) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int nl = ts[0].repLen(); // Find number of words to represent values of type a
+            BigInteger m = ts[1].validIndex(); // Index modulus, will be > 0
+
+            // The intended semantics for genLtInc is given by the following:
+            //   genLtInc nothing just n i j = let k = i + n
+            //                                 in if (i<=k) && (k<=j) then just k else nothing
+            // with the assumption that the calculation of (i + n) does not produce any overflow.
+            // The validIndex() test will ensure that m is in the range [1..maxSigned], and hence
+            // that 0 <= n, i, j < maxSigned.  As a result, so long as we used an UNSIGNED
+            // comparison,
+            // we can be sure that (i + n) will not produce an overflow and that i <= k will be
+            // trivially satisfied.  For that reason, the generated code only tests that k <= j.
+
+            Block yes = enterBlock(pos); // yes[j, k] = j @ k
+            Block no = returnBlock(pos, nl); // no[thing] = return thing
+
+            Temp[] ns = Temp.makeTemps(nl); // arguments for nothing parameter
+            Temp[] jnij = Temp.makeTemps(4); // arguments for just, n, i, j
+            Temp k = new Temp(); // temp to hold i + n
+            Temp t = new Temp(); // temp to hold result of test
+            return new BlockCall(
+                    new Block(
+                        pos,
+                        Temp.append(ns, jnij), // b[nothing,..., just, n, i, j]
+                        new Bind(
+                            k,
+                            Prim.add.withArgs(jnij[2], jnij[1]), //   = k <- add((i, n))
+                            new Bind(
+                                t,
+                                Prim.ule.withArgs(k, jnij[3]), //     t <- ule((k, j))
+                                new If(
+                                    t,
+                                    new BlockCall(
+                                        yes, new Atom[] {jnij[0], k}), //     if t then yes[just, k]
+                                    new BlockCall(no, ns)))))) //          else no[nothing..]
+                .makeClosure(pos, nl + 3, 1)
+                .makeClosure(pos, nl + 2, 1)
+                .makeTernaryFuncClosure(pos, nl, 1, 1);
+          }
+        });
+
+    // primGenLtDec a m :: a -> (Ix m -> a) -> Ix m -> Ix m -> Ix m -> a
+    generators.put(
+        "primGenLtDec",
+        new Generator(Prefix.star_nat, fun(gA, fun(ixB, gA), ixB, fun(ixB, ixB, gA))) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int nl = ts[0].repLen(); // Find number of words to represent values of type a
+            BigInteger m = ts[1].validIndex(); // Index modulus, will be > 0
+
+            // The intended semantics for genLtInc is given by the following:
+            //   genLtDec nothing just n i j = let k = j - n
+            //                                 in if (i<=k) && (k<=j) then just k else nothing
+            // with the assumption that the calculation of (j - n) does not produce any underflow.
+            // The validIndex() test will ensure that m is in the range [1..maxSigned], and hence
+            // that 0 <= n, i, j < maxSigned.  As a result, so long as we used an SIGNED comparison,
+            // we can be sure that (j - n) will not produce an underflow and that k <= j will be
+            // trivially satisfied.  For that reason, the generated code only tests that i <= k.
+
+            Block yes = enterBlock(pos); // yes[j, k] = j @ k
+            Block no = returnBlock(pos, nl); // no[thing] = return thing
+
+            Temp[] ns = Temp.makeTemps(nl); // arguments for nothing parameter
+            Temp[] jnij = Temp.makeTemps(4); // arguments for just, n, i, j
+            Temp k = new Temp(); // temp to hold i + n
+            Temp t = new Temp(); // temp to hold result of test
+            return new BlockCall(
+                    new Block(
+                        pos,
+                        Temp.append(ns, jnij), // b[nothing,..., just, n, i, j]
+                        new Bind(
+                            k,
+                            Prim.sub.withArgs(jnij[3], jnij[1]), //   = k <- sub((j, n))
+                            new Bind(
+                                t,
+                                Prim.sle.withArgs(jnij[2], k), //     t <- sle((i, k))
+                                new If(
+                                    t,
+                                    new BlockCall(
+                                        yes, new Atom[] {jnij[0], k}), //     if t then yes[just, k]
+                                    new BlockCall(no, ns)))))) //          else no[nothing..]
+                .makeClosure(pos, nl + 3, 1)
+                .makeClosure(pos, nl + 2, 1)
+                .makeTernaryFuncClosure(pos, nl, 1, 1);
+          }
+        });
+
     // primGenIncIx a m :: a -> (Ix m -> a) -> Ix m -> a
     generators.put(
         "primGenIncIx",
