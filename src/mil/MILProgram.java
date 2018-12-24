@@ -266,10 +266,17 @@ public class MILProgram {
 
   /** Run a flow pass over this program. */
   public void flow() {
+    invariantAnalysis();
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
         ds.head.flow();
       }
+    }
+  }
+
+  void invariantAnalysis() {
+    for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
+      dsccs.head.invariantAnalysis();
     }
   }
 

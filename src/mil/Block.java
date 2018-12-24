@@ -739,6 +739,69 @@ public class Block extends Defn {
     return code.shortCase(params, args, facts);
   }
 
+  private Src[] sources;
+
+  void initSources() {
+    sources = new Src[params.length];
+    for (int i = 0; i < sources.length; i++) {
+      sources[i] = new Join(this, i, null);
+    }
+  }
+
+  void dumpSources(PrintWriter out) {
+    dumpSources(out, toString(), "[", "]", sources);
+  }
+
+  /**
+   * Traverse the abstract syntax tree to calculate initial values for the sources of the parameters
+   * of each Block and Closure definition.
+   */
+  void calcSources() {
+    code.calcSources(this, params, null);
+  }
+
+  void updateSources(int i, Defn d, int j) {
+    sources[i].updateSources(this, i, d, j);
+  }
+
+  void updateSources(int i, Defn d, int j, Join js) {
+    int k = Join.find(d, js); // Does js already include a component d.k?
+    if (k < 0) { // If not, add a new component for d.j
+      sources[i] = new Join(d, j, js);
+    } else if (j != k) { // Otherwise, if the existing component comes from a different
+      sources[i] = Src.any; // argument, then b.i could be "any" value.
+    }
+  }
+
+  void setSource(int i, Src src) {
+    sources[i] = src;
+  }
+
+  boolean propagateSources() {
+    boolean changed = false;
+    for (int i = 0; i < sources.length; i++) {
+      Src src = sources[i];
+      Src nsrc = src.propagate();
+      if (nsrc != src) {
+        changed = true;
+        sources[i] = nsrc;
+      }
+    }
+    return changed;
+  }
+
+  Src propagate(int i, Src src) {
+    return sources[i].join(src);
+  }
+
+  /**
+   * Use results of invariant analysis to determine whether the specified parameter of this
+   * definition is invariant in its defining SCC.
+   */
+  boolean isInvariant(int i) {
+    return sources != null && sources[i].isInvariant();
+  }
+
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
    * equivalent program fragments have the same summary value.

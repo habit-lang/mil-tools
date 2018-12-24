@@ -280,6 +280,14 @@ public class TopLevel extends TopDefn {
     return tail.lookForDataAlloc();
   }
 
+  /**
+   * Traverse the abstract syntax tree to calculate initial values for the sources of the parameters
+   * of each Block and Closure definition.
+   */
+  void calcSources() {
+    tail.calcSources(this, Temp.noTemps, null);
+  }
+
   /** Holds the most recently computed summary value for this definition. */
   private int summary;
 

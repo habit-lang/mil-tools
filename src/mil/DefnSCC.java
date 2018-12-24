@@ -203,6 +203,44 @@ public class DefnSCC {
     }
   }
 
+  void invariantAnalysis() {
+    initSources();
+    calcSources();
+    propagateSources();
+  }
+
+  void initSources() {
+    for (Defns ds = bindings; ds != null; ds = ds.next) {
+      ds.head.initSources();
+    }
+  }
+
+  void dumpSources(PrintWriter out) {
+    for (Defns ds = bindings; ds != null; ds = ds.next) {
+      ds.head.dumpSources(out);
+    }
+  }
+
+  /**
+   * Traverse the abstract syntax tree to calculate initial values for the sources of the parameters
+   * of each Block and Closure definition.
+   */
+  void calcSources() {
+    for (Defns ds = bindings; ds != null; ds = ds.next) {
+      ds.head.calcSources();
+    }
+  }
+
+  void propagateSources() {
+    boolean changed;
+    do {
+      changed = false;
+      for (Defns ds = bindings; ds != null; ds = ds.next) {
+        changed |= ds.head.propagateSources();
+      }
+    } while (changed);
+  }
+
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
     for (Defns ds = bindings; ds != null; ds = ds.next) {

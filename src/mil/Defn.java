@@ -362,32 +362,91 @@ public abstract class Defn {
   public abstract void flow();
 
   Call[] collectCalls(Atom[] args, Facts facts) {
-    int l = args.length;
+    int len = args.length;
     Call[] calls = null;
-    for (int i = 0; i < l; i++) {
-      Tail t = args[i].lookupFact(facts);
-      if (t != null) {
-        Allocator alloc = t.isAllocator(); // we're only going to keep info about Allocators
-        if (alloc != null) {
-          if (calls == null) {
-            calls = new Call[l];
-          }
-          calls[i] = alloc;
-        }
-      } else {
-        Atom a = args[i].isKnown(); // Look for a known argument ...
-        if (a != null) {
-          DefnSCC scc = getScc(); // ... in a call to a non-recursive Defn
-          if (scc != null && !scc.isRecursive()) {
+    for (int i = 0; i < len; i++) {
+      if (isInvariant(i)) {
+        Tail t = args[i].lookupFact(facts);
+        if (t != null) {
+          Allocator alloc = t.isAllocator(); // we're only going to keep info about Allocators
+          if (alloc != null) {
             if (calls == null) {
-              calls = new Call[l];
+              calls = new Call[len];
             }
-            calls[i] = new Return(a);
+            calls[i] = alloc;
+          }
+        } else {
+          Atom a = args[i].isKnown(); // Look for a known argument ...
+          if (a != null) {
+            DefnSCC scc = getScc(); // ... in a call to a non-recursive Defn
+            if (scc != null && !scc.isRecursive()) {
+              if (calls == null) {
+                calls = new Call[len];
+              }
+              calls[i] = new Return(a);
+            }
           }
         }
       }
     }
     return calls;
+  }
+
+  void initSources() {
+    /* nothing to do */
+  }
+
+  void dumpSources(PrintWriter out) {
+    /* nothing to do */
+  }
+
+  static void dumpSources(PrintWriter out, String lab, String open, String close, Src[] sources) {
+    if (sources != null) {
+      out.print(lab);
+      out.print(open);
+      for (int i = 0; i < sources.length; i++) {
+        if (i > 0) {
+          out.print(", ");
+        }
+        out.print(sources[i].toString());
+      }
+      out.println(close);
+    }
+  }
+
+  /**
+   * Traverse the abstract syntax tree to calculate initial values for the sources of the parameters
+   * of each Block and Closure definition.
+   */
+  abstract void calcSources();
+
+  void updateSources(int i, Defn d, int j) {
+    debug.Internal.error("updateSources should not be called for " + this);
+  }
+
+  void updateSources(int i, Defn d, int j, Join js) {
+    debug.Internal.error("updateSources should not be called for " + this);
+  }
+
+  void setSource(int i, Src src) {
+    debug.Internal.error("setSource should not be called for " + this);
+  }
+
+  boolean propagateSources() {
+    return false;
+  }
+
+  Src propagate(int i, Src src) {
+    debug.Internal.error("propagate should not be called for " + this);
+    return src;
+  }
+
+  /**
+   * Use results of invariant analysis to determine whether the specified parameter of this
+   * definition is invariant in its defining SCC.
+   */
+  boolean isInvariant(int i) {
+    return false;
   }
 
   /**

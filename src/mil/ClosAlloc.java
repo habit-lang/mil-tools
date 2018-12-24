@@ -155,6 +155,18 @@ public class ClosAlloc extends Allocator {
   }
 
   /**
+   * Traverse abstract syntax in the context of a definition d with the given parameters as
+   * contributions to calculating initial values for all Block and ClosureDefns in the program. We
+   * use the rebound list to indicate when Temp values appearing in the parameters have been reused,
+   * effectively shadowing the original parameter binding. In practice, we expect such uses to be
+   * rare, and so the rebound list will usually be empty. But it is still important to check for
+   * rebound parameters, just in case!
+   */
+  void calcSources(Defn d, Temp[] params, Temps rebound) {
+    updateSources(d, params, rebound, k);
+  }
+
+  /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
    * equivalent program fragments have the same summary value.
    */

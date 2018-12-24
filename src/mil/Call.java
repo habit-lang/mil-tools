@@ -471,6 +471,21 @@ public abstract class Call extends Tail {
     out.flush();
   }
 
+  /**
+   * Update initial Src values when we find a call to a Block or ClosureDefn (represented by b) in
+   * the context of a definition d with the given parameters. We only track sources within
+   * individual SCCs, so the call is ignored if d and b are in distinct SCCs.
+   */
+  void updateSources(Defn d, Temp[] params, Temps rebound, Defn b) {
+    DefnSCC dscc = d.getScc();
+    DefnSCC bscc = b.getScc();
+    if (dscc == bscc && dscc != null) {
+      for (int i = 0; i < args.length; i++) {
+        args[i].updateSources(d, params, rebound, b, i);
+      }
+    }
+  }
+
   /** Calculate a summary value for the arguments in a call, starting with a given seed value. */
   int summary(int sum) {
     for (int i = 0; i < args.length; i++) {

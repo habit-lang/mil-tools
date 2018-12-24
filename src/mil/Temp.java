@@ -256,6 +256,45 @@ public class Temp extends Atom {
     return t == null ? null : t.lookForDataAlloc();
   }
 
+  /**
+   * Extend the given list of rebound parameters with any temporaries in the intersection of the
+   * first two arguments.
+   */
+  static Temps extersect(Temp[] vs, Temp[] params, Temps rebound) {
+    for (int i = 0; i < vs.length; i++) {
+      if (vs[i].occursIn(params)) {
+        rebound = vs[i].add(rebound);
+      }
+    }
+    return rebound;
+  }
+
+  /**
+   * Find the index of this Temp in the given list of parameters. If it is not found, or if it also
+   * appears in the list of parameter temporaries that have been rebound, then return (-1).
+   */
+  int findParam(Temp[] params, Temps rebound) {
+    for (int i = 0; i < params.length; i++) {
+      if (params[i] == this) {
+        return this.isIn(rebound) ? (-1) : i;
+      }
+    }
+    return (-1);
+  }
+
+  /**
+   * Update the sources arrays to indicate that we have found a use of this Atom as the ith argument
+   * in a call to b as part of the definition d.
+   */
+  void updateSources(Defn d, Temp[] params, Temps rebound, Defn b, int i) {
+    int j = findParam(params, rebound); // Is this Temp a parameter of d?
+    if (j < 0) { // If not, then b.i could be "any" value.
+      b.setSource(i, Src.any);
+    } else { // d[...x...] = ... b[...x...]
+      b.updateSources(i, d, j); //      j                i
+    }
+  }
+
   /** Test to see if two atoms are the same upto alpha renaming. */
   boolean alphaAtom(Temps thisvars, Atom that, Temps thatvars) {
     return that.alphaTemp(thatvars, this, thisvars);

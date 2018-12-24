@@ -21,29 +21,36 @@ package mil;
 import compiler.*;
 import core.*;
 
-public abstract class TopDefn extends Defn {
+class Any extends Src {
 
-  /** Default constructor. */
-  public TopDefn(Position pos) {
-    super(pos);
+  /**
+   * Calculate the join of two Src values, neither of which is bottom. If either one could be "any"
+   * value (i.e., the lattice top), then we return that. Otherwise we will use the joinJoin method
+   * to do a pairwise merge of two join lists.
+   */
+  Src join(Src r) {
+    return this;
   }
 
   /**
-   * Return references to all components of this top level definition in an array of
-   * atoms/arguments.
+   * Worker function for join. Will either return the receiver for this method (i.e., the right
+   * argument in the original call to join()), or else a new Src value (if the result is greater
+   * than the receiver).
    */
-  abstract Atom[] tops();
-
-  /** Second pass code generation: produce code for block and closure definitions. */
-  void generateFunctions(MachineBuilder builder) {
-    /* Ignore these on the second pass */
+  Src joinJoin(Join js) {
+    return this;
   }
 
-  /**
-   * Traverse the abstract syntax tree to calculate initial values for the sources of the parameters
-   * of each Block and Closure definition.
-   */
-  void calcSources() {
+  /** Generate a printable description of this Src value (which should not be bottom/null). */
+  public String toString() {
+    return "top";
+  }
+
+  void updateSources(Defn b, int i, Defn d, int j) {
     /* nothing to do */
+  }
+
+  Src propagate() {
+    return this;
   }
 }

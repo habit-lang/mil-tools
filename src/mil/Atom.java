@@ -315,6 +315,14 @@ public abstract class Atom {
   }
 
   /**
+   * Update the sources arrays to indicate that we have found a use of this Atom as the ith argument
+   * in a call to b as part of the definition d.
+   */
+  void updateSources(Defn d, Temp[] params, Temps rebound, Defn b, int i) {
+    b.setSource(i, Src.any);
+  }
+
+  /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
    * equivalent program fragments have the same summary value.
    */
