@@ -131,10 +131,10 @@ public class CfunAlt extends Alts {
     return next.usedVars(bc.usedVars(vs));
   }
 
-  public void flow(Atom a, Facts facts, TempSubst s) {
+  public void flow(Defn d, Atom a, Facts facts, TempSubst s) {
     // We know which constructor will be used for a, but not its arguments:
-    bc = bc.applyBlockCall(s).rewriteBlockCall(a.addFact(cf, facts));
-    next.flow(a, facts, s);
+    bc = bc.applyBlockCall(s).rewriteBlockCall(d, a.addFact(cf, facts));
+    next.flow(d, a, facts, s);
   }
 
   Temps liveness(Temps vs) {

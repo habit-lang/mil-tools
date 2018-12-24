@@ -178,7 +178,12 @@ public class BlockCall extends Call {
     return that.b == this.b;
   }
 
-  BlockCall deriveWithKnownCons(Call[] calls) {
+  BlockCall deriveWithKnownCons(Defn d, Call[] calls) {
+    DefnSCC dScc = d.getScc();
+    DefnSCC bScc = b.getScc();
+    if (dScc == null || bScc == null || dScc == bScc) {
+      return null;
+    }
     if (calls.length != args.length) {
       debug.Internal.error("BlockCall argument list length mismatch in deriveWithKnownCons");
     }
@@ -280,16 +285,16 @@ public class BlockCall extends Call {
     return args.length == 0 ? b.returnsFlag() : null;
   }
 
-  public Code rewrite(Facts facts) {
-    BlockCall bc = rewriteBlockCall(facts);
+  public Code rewrite(Defn d, Facts facts) {
+    BlockCall bc = rewriteBlockCall(d, facts);
     return (bc == this) ? null : new Done(bc); // TODO: worried about this == test
   }
 
-  Tail rewriteTail(Facts facts) {
-    return this.rewriteBlockCall(facts);
+  Tail rewriteTail(Defn d, Facts facts) {
+    return this.rewriteBlockCall(d, facts);
   }
 
-  BlockCall rewriteBlockCall(Facts facts) {
+  BlockCall rewriteBlockCall(Defn d, Facts facts) {
     // Look for an opportunity to short out a Case if this block branches to a Case for a variable
     // that has a known DataAlloc value in the current set of facts.
     BlockCall bc = this.shortCase(facts);
@@ -302,10 +307,11 @@ public class BlockCall extends Call {
     // (i.e., if id is local, not a top level value) and id is used elsewhere in the block.
     Call[] calls = bc.b.collectCalls(bc.args, facts);
     if (calls != null) {
-      BlockCall bc1 = bc.deriveWithKnownCons(calls);
+      BlockCall bc1 = bc.deriveWithKnownCons(d, calls);
       if (bc1 != null) {
         bc = bc1;
-        MILProgram.report("deriving specialized block for BlockCall to block " + b.getId());
+        MILProgram.report(
+            "deriving specialized block " + bc.b.getId() + " for BlockCall to block " + b.getId());
       }
     }
 

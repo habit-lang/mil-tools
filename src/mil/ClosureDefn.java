@@ -385,9 +385,7 @@ public class ClosureDefn extends Defn {
    */
   Temps usedVars(Atom[] args, Temps vs) {
     if (isEntrypoint) { // treat all entrypoint arguments as used
-      for (int i = 0; i < args.length; i++) {
-        vs = args[i].add(vs);
-      }
+      return useAllArgs(args, vs);
     } else if (usedArgs != null) { // ignore this call if no args are used
       for (int i = 0; i < args.length; i++) {
         if (usedArgs[i]) { // ignore this argument if the flag is not set
@@ -445,7 +443,7 @@ public class ClosureDefn extends Defn {
 
   public void flow() {
     // TODO: find examples that exercise the next line ...
-    tail = tail.rewriteTail(null /* facts */);
+    tail = tail.rewriteTail(this, null /* facts */);
     tail.liveness(null /*facts*/);
   }
 

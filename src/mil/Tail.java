@@ -276,11 +276,11 @@ public abstract class Tail {
     return null;
   }
 
-  public Code rewrite(Facts facts) {
+  public Code rewrite(Defn d, Facts facts) {
     return null;
   }
 
-  Tail rewriteTail(Facts facts) {
+  Tail rewriteTail(Defn d, Facts facts) {
     return this;
   }
 

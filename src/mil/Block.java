@@ -302,19 +302,6 @@ public class Block extends Defn {
 
   public Block deriveWithKnownCons(Call[] calls) {
 
-    // Do not create a specialized version of a simple block (i.e., a block that contains only a
-    // single Done):
-    //    if (code instanceof Done) {
-    // System.out.println("Will not specialize this block: code is a single tail");
-    //      return null;
-    //  }
-
-    // TODO: this test is disabled, which results in more aggressive inlining that, so
-    // far, appears to be a good thing :-)  Consider removing this test completely ... ?
-    //  if (this instanceof BlockWithKnownCons) {
-    //      return null;
-    //  }
-
     // Look to see if we have already derived a suitable version of this block:
     for (Blocks bs = derived; bs != null; bs = bs.next) {
       if (bs.head.hasKnownCons(calls)) {
@@ -517,7 +504,14 @@ public class Block extends Defn {
    * program, or else the length of the code sequence is at most INLINE_LINES_LIMIT lines long.
    */
   boolean canSuffixInline(Block src) {
-    if (doesntReturn && getScc().isRecursive()) { // Avoid loopy code that doesn't return
+    DefnSCC srcscc = src.getScc();
+    DefnSCC bscc = this.getScc();
+    if (srcscc == null
+        || bscc == null // Do not inline if SCC information is missing
+        || (bscc.isRecursive() // or if this block is recursive ...
+            && (doesntReturn
+                || bscc != srcscc
+                || occurs > 1))) { // and is either loopy or in a different scc
       return false;
     } else if (occurs == 1 || code.isDone() != null) { // Inline single occurrences and trivial
       return true; // blocks (safe, as a result of removing loops)
@@ -666,9 +660,7 @@ public class Block extends Defn {
    */
   Temps usedVars(Atom[] args, Temps vs) {
     if (isEntrypoint) { // treat all entrypoint arguments as used
-      for (int i = 0; i < args.length; i++) {
-        vs = args[i].add(vs);
-      }
+      return useAllArgs(args, vs);
     } else if (usedArgs != null) { // ignore this call if no args are used
       for (int i = 0; i < args.length; i++) {
         if (usedArgs[i]) { // ignore this argument if the flag is not set
@@ -725,7 +717,7 @@ public class Block extends Defn {
   }
 
   public void flow() {
-    code = code.flow(null /*facts*/, null /*substitution*/);
+    code = code.flow(this, null /*facts*/, null /*substitution*/);
     code.liveness();
   }
 

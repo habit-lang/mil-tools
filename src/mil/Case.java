@@ -184,20 +184,20 @@ public class Case extends Code {
   }
 
   /** Optimize a Code block using a simple flow analysis. */
-  public Code flow(Facts facts, TempSubst s) { // case a of alts; d
+  public Code flow(Defn d, Facts facts, TempSubst s) { // case a of alts; d
     // Look for an opportunity to short this Case
     a = a.apply(s);
     Tail t = a.lookupFact(facts);
     if (t != null) {
       BlockCall bc = t.shortCase(s, alts);
       if (bc != null) {
-        return new Done(bc.rewriteBlockCall(facts));
+        return new Done(bc.rewriteBlockCall(d, facts));
       }
     }
 
     // Case will be preserved, but we still need to update using substitution s
     // and to compute the appropriate set of live variables.
-    alts.flow(a, facts, s);
+    alts.flow(d, a, facts, s);
     return this;
   }
 

@@ -85,7 +85,7 @@ public abstract class Alts {
 
   abstract Temps usedVars(Temps vs);
 
-  public abstract void flow(Atom a, Facts facts, TempSubst s);
+  public abstract void flow(Defn d, Atom a, Facts facts, TempSubst s);
 
   abstract Temps liveness(Temps vs);
 

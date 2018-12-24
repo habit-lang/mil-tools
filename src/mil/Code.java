@@ -253,7 +253,7 @@ public abstract class Code {
   abstract Temps usedVars();
 
   /** Optimize a Code block using a simple flow analysis. */
-  public abstract Code flow(Facts facts, TempSubst s);
+  public abstract Code flow(Defn d, Facts facts, TempSubst s);
 
   /**
    * A simple test for MIL code fragments that return a known Flag, returning either the constant or

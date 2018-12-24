@@ -347,6 +347,13 @@ public abstract class Defn {
    */
   abstract int countUnusedArgs();
 
+  protected static Temps useAllArgs(Atom[] args, Temps vs) {
+    for (int i = 0; i < args.length; i++) {
+      vs = args[i].add(vs);
+    }
+    return vs;
+  }
+
   /** Remove unused arguments from block calls and closure definitions. */
   void removeUnusedArgs() {
     /* Nothing to do here */

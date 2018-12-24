@@ -216,10 +216,10 @@ public class Done extends Code {
   }
 
   /** Optimize a Code block using a simple flow analysis. */
-  public Code flow(Facts facts, TempSubst s) {
+  public Code flow(Defn d, Facts facts, TempSubst s) {
     t = t.apply(s);
-    Code nc = t.rewrite(facts);
-    return (nc == null) ? this : nc.flow(facts, s);
+    Code nc = t.rewrite(d, facts);
+    return (nc == null) ? this : nc.flow(d, facts, s);
   }
 
   /**

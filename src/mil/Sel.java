@@ -165,7 +165,7 @@ public class Sel extends Tail {
     return true;
   }
 
-  public Code rewrite(Facts facts) {
+  public Code rewrite(Defn d, Facts facts) {
     Tail t = rewriteSel(facts);
     return (t == null) ? null : new Done(t);
   }

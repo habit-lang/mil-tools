@@ -96,8 +96,13 @@ public class ClosAlloc extends Allocator {
     return that.k == this.k;
   }
 
-  ClosAlloc deriveWithKnownCons(Call[] calls) {
+  ClosAlloc deriveWithKnownCons(Defn d, Call[] calls) {
     // if (calls!=null) { return null; } // disable optimization
+    DefnSCC dScc = d.getScc();
+    DefnSCC kScc = k.getScc();
+    if (dScc == null || kScc == null || dScc == kScc) {
+      return null;
+    }
     if (calls.length != args.length) {
       debug.Internal.error("ClosAlloc argument list length mismatch in deriveWithKnownCons");
     }
@@ -121,10 +126,10 @@ public class ClosAlloc extends Allocator {
     return k.usedVars(args, vs);
   }
 
-  public Code rewrite(Facts facts) {
+  public Code rewrite(Defn d, Facts facts) {
     Call[] calls = k.collectCalls(args, facts);
     if (calls != null) {
-      ClosAlloc ca = deriveWithKnownCons(calls);
+      ClosAlloc ca = deriveWithKnownCons(d, calls);
       if (ca != null) {
         MILProgram.report("deriving specialized block for ClosAlloc block " + k.getId());
         return new Done(ca);

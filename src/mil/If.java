@@ -193,12 +193,12 @@ public class If extends Code {
   }
 
   /** Optimize a Code block using a simple flow analysis. */
-  public Code flow(Facts facts, TempSubst s) { // if a then ifTrue else ifFalse
+  public Code flow(Defn d, Facts facts, TempSubst s) { // if a then ifTrue else ifFalse
     a = a.apply(s);
     Flag c = a.isFlag(); // Does the argument hold a known constant?
     if (c != null) {
       BlockCall bc = c.getVal() ? ifTrue : ifFalse;
-      return new Done(bc.applyBlockCall(a.mapsTo(c, s)).rewriteBlockCall(facts));
+      return new Done(bc.applyBlockCall(a.mapsTo(c, s)).rewriteBlockCall(d, facts));
     } else {
       Tail t = a.lookupFact(facts); // Look for a fact about a
       if (t != null) {
@@ -213,8 +213,8 @@ public class If extends Code {
         }
       }
     }
-    ifTrue = ifTrue.applyBlockCall(a.mapsTo(Flag.True, s)).rewriteBlockCall(facts);
-    ifFalse = ifFalse.applyBlockCall(a.mapsTo(Flag.False, s)).rewriteBlockCall(facts);
+    ifTrue = ifTrue.applyBlockCall(a.mapsTo(Flag.True, s)).rewriteBlockCall(d, facts);
+    ifFalse = ifFalse.applyBlockCall(a.mapsTo(Flag.False, s)).rewriteBlockCall(d, facts);
     Flag tc = ifTrue.returnsFlag();
     Flag fc = ifFalse.returnsFlag();
     if (tc != null && fc != null) {

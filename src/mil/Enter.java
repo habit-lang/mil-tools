@@ -180,10 +180,10 @@ public class Enter extends Call {
     return f.add(super.usedVars(vs));
   }
 
-  public Code rewrite(Facts facts) {
+  public Code rewrite(Defn d, Facts facts) {
     Tail t = rewriteEnter(facts);
     if (t != null) {
-      Code c = t.rewrite(facts);
+      Code c = t.rewrite(d, facts);
       return (c == null) ? new Done(t) : c;
     }
     return null;

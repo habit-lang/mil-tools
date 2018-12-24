@@ -105,7 +105,7 @@ public class FailAlt extends Alts {
     return vs;
   }
 
-  public void flow(Atom a, Facts facts, TempSubst s) {
+  public void flow(Defn d, Atom a, Facts facts, TempSubst s) {
     /* nothing to do */
   }
 

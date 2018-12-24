@@ -184,16 +184,16 @@ public class Assert extends Code {
   }
 
   /** Optimize a Code block using a simple flow analysis. */
-  public Code flow(Facts facts, TempSubst s) {
+  public Code flow(Defn d, Facts facts, TempSubst s) {
     Tail t = a.lookupFact(facts);
     // If we already have a fact in place for the asserted atom, then we
     // will assume that this assert is satisfied and is no longer needed.
     // e.g.,  x <- MkInt(2); assert MkInt x; c   ==>   x <- MkInt(2); c
     // TODO: should we check that t is a DataAlloc with constructor function cf?
     if (t != null) {
-      return c.flow(facts, s);
+      return c.flow(d, facts, s);
     }
-    c = c.flow(a.addCfunFact(cf, facts), s);
+    c = c.flow(d, a.addCfunFact(cf, facts), s);
     return this;
   }
 

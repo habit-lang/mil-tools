@@ -138,7 +138,7 @@ public class PrimCall extends Call {
     return p == Prim.bnot ? args[0] : null;
   }
 
-  public Code rewrite(Facts facts) {
+  public Code rewrite(Defn d, Facts facts) {
     return this.rewritePrimCall(facts);
   }
 

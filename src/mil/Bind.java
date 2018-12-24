@@ -296,7 +296,7 @@ public class Bind extends Code {
   }
 
   /** Optimize a Code block using a simple flow analysis. */
-  public Code flow(Facts facts, TempSubst s) {
+  public Code flow(Defn d, Facts facts, TempSubst s) {
     t = t.apply(s); // Update tail to reflect substitution
     s = TempSubst.extend(vs, vs, s); // Remove bindings for vs from the substitution
     // (TODO: this could be done more efficiently!)
@@ -307,7 +307,7 @@ public class Bind extends Code {
     Temp p = Facts.find(t, facts); // Look for previously computed value
     if (p != null && vs.length == 1) {
       MILProgram.report("cse: using previously computed value " + p + " for " + vs[0]);
-      return c.flow(facts, vs[0].mapsTo(p, s));
+      return c.flow(d, facts, vs[0].mapsTo(p, s));
     }
     // TODO: this code needs careful attention!
     // Apply left monad law: (vs <- return as; c) == [as/vs]c
@@ -315,13 +315,13 @@ public class Bind extends Code {
     if (as != null) {
       MILProgram.report(
           "applied left monad law for " + Atom.toString(vs) + " <- return " + Atom.toString(as));
-      return c.flow(facts, TempSubst.extend(vs, as, s));
+      return c.flow(d, facts, TempSubst.extend(vs, as, s));
     }
 
     // Look for opportunities to rewrite this tail, perhaps using previous results
-    Code nc = t.rewrite(facts); // Look for ways to rewrite the tail
+    Code nc = t.rewrite(d, facts); // Look for ways to rewrite the tail
     if (nc != null) {
-      return nc.andThen(vs, c).flow(facts, s);
+      return nc.andThen(vs, c).flow(d, facts, s);
     }
 
     // Propagate analysis to the following code, updating facts as necessary.
@@ -336,7 +336,7 @@ public class Bind extends Code {
     if (vs.length == 1) { // Try to add a fact for a single LHS variable
       facts = vs[0].addFact(t, facts);
     }
-    c = c.flow(facts, s);
+    c = c.flow(d, facts, s);
     return this;
   }
 

@@ -235,7 +235,7 @@ public class TopLevel extends TopDefn {
     // TODO: Do something more here ... ?
     // The main purpose of this code is to run liveness analysis on the tail expression, which will
     // have the effect of shorting out top level atom references where possible.
-    tail = tail.rewriteTail(null /* facts */);
+    tail = tail.rewriteTail(this, null /* facts */);
     if (tail.liveness(null) != null) {
       debug.Internal.error("Tail expression in TopLevel has live variables");
     }
