@@ -131,7 +131,11 @@ public class ClosAlloc extends Allocator {
     if (calls != null) {
       ClosAlloc ca = deriveWithKnownCons(d, calls);
       if (ca != null) {
-        MILProgram.report("deriving specialized block for ClosAlloc block " + k.getId());
+        MILProgram.report(
+            "deriving specialized closure definition "
+                + ca.k.getId()
+                + " for ClosAlloc using "
+                + k.getId());
         return new Done(ca);
       }
     }
