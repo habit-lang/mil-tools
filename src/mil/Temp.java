@@ -62,14 +62,16 @@ public class Temp extends Atom {
      * constant factor would be the same) and the task of building the list would be more complex.  Another alternative
      * would be to use a more efficient lookup structure than a list, although that would likely add other overhead.
      */
-    for (; ts != null; ts = ts.next) {
-      if (ts.head == this) {
-        int i = 0;
-        do {
-          ts = ts.next;
-          i++;
-        } while (ts != null);
-        return "t" + (i - 1);
+    if (isLive()) { // TODO: isLive() is currently part of optimizer, not MIL AST
+      for (; ts != null; ts = ts.next) {
+        if (ts.head == this) {
+          int i = 0;
+          do {
+            ts = ts.next;
+            i++;
+          } while (ts != null);
+          return "t" + (i - 1);
+        }
       }
     }
     return toString();
