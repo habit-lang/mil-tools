@@ -34,4 +34,43 @@ public class BlockWithKnownCons extends Block {
   boolean hasKnownCons(Call[] calls) {
     return Call.sameCallForms(calls, this.calls);
   }
+
+  /**
+   * We allow a block to be inlined if the original call is in a different block, the code for the
+   * block ends with a Done, and either there is only one reference to the block in the whole
+   * program, or else the length of the code sequence is at most INLINE_LINES_LIMIT lines long.
+   */
+  boolean canSuffixInline(Block src) {
+    return false;
+  }
+
+  /**
+   * Count the number of unused arguments for this definition. A zero count indicates that all
+   * arguments are used.
+   */
+  int countUnusedArgs(Temp[] dst) {
+    return 0;
+  }
+
+  /**
+   * Find the list of variables that are used in a call to this definition, taking account of the
+   * usedArgs setting so that we only include variables appearing in argument positions that are
+   * known to be used.
+   */
+  Temps usedVars(Atom[] args, Temps vs) {
+    return useAllArgs(args, vs);
+  }
+
+  /**
+   * Use information about which and how many argument positions are used to trim down an array of
+   * destinations (specifically, the formal parameters of a Block or a ClosureDefn).
+   */
+  Temp[] removeUnusedTemps(Temp[] dsts) {
+    return dsts;
+  }
+
+  /** Remove unused arguments from block calls and closure definitions. */
+  void removeUnusedArgs() {
+    /* Nothing to do here */
+  }
 }
