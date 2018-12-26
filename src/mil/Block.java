@@ -301,7 +301,6 @@ public class Block extends Defn {
   }
 
   public Block deriveWithKnownCons(Call[] calls) {
-
     // Look to see if we have already derived a suitable version of this block:
     for (Blocks bs = derived; bs != null; bs = bs.next) {
       if (bs.head.hasKnownCons(calls)) {
@@ -716,6 +715,7 @@ public class Block extends Defn {
     }
   }
 
+  /** Perform flow analysis on this definition. */
   public void flow() {
     code = code.flow(this, null /*facts*/, null /*substitution*/);
     code.liveness();

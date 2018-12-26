@@ -231,8 +231,8 @@ public class TopLevel extends TopDefn {
     return tail.lookupFact(tl);
   }
 
+  /** Perform flow analysis on this definition. */
   public void flow() {
-    // TODO: Do something more here ... ?
     // The main purpose of this code is to run liveness analysis on the tail expression, which will
     // have the effect of shorting out top level atom references where possible.
     tail = tail.rewriteTail(this, null /* facts */);

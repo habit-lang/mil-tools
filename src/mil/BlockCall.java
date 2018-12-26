@@ -301,10 +301,9 @@ public class BlockCall extends Call {
     bc = (bc == null) ? this : bc.inlineBlockCall();
 
     // Look for an opportunity to specialize on known constructors:
-    // TODO: when we find, b16(t109, id, t110){-, k35{}, -}, it isn't
-    // necessarily a good idea to create a specialized block if the id <- k35{} line appears in this
-    // block
-    // (i.e., if id is local, not a top level value) and id is used elsewhere in the block.
+    // TODO: When we find, b16[t109, id, t110]{-, k35{}, -}, it isn't necessarily a good idea to
+    // create a specialized block if the id <- k35{} line appears in this block (i.e., if id is
+    // local, not a top level value) and id is used elsewhere in the block.
     Call[] calls = bc.b.collectCalls(bc.args, facts);
     if (calls != null) {
       BlockCall bc1 = bc.deriveWithKnownCons(d, calls);

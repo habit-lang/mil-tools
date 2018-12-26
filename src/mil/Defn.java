@@ -359,6 +359,7 @@ public abstract class Defn {
     /* Nothing to do here */
   }
 
+  /** Perform flow analysis on this definition. */
   public abstract void flow();
 
   Call[] collectCalls(Atom[] args, Facts facts) {

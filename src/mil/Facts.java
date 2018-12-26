@@ -54,13 +54,11 @@ public class Facts {
       Facts fs = Facts.kills(v, facts.next);
       // A binding for the variable v kills any fact (w = t) that mentions v.
       if (facts.v == v || facts.t.contains(v)) {
-        // Head item in facts is killed by binding v, so do not include
-        // it in the return result:
+        // Head item in facts is killed by binding v, so do not include it in the return result:
         return fs;
       } else if (fs != facts.next) {
-        // Some items in facts.next were killed, but the head item
-        // in facts is not, so we create a new list that retains the
-        // head fact together with the facts left in fs:
+        // Some items in facts.next were killed, but the head item in facts is not, so we
+        // create a new list that retains the head fact together with the facts left in fs:
         return new Facts(facts.v, facts.t, fs);
       }
     }
@@ -75,8 +73,7 @@ public class Facts {
   public static Facts killNonPure(Facts facts) {
     if (facts != null) {
       Facts fs = Facts.killNonPure(facts.next);
-      if (!facts.t.isPure()) {
-        // Head item is not pure, so exclude from result.
+      if (!facts.t.isPure()) { // Head item is not pure, so exclude from result.
         return fs;
       } else if (fs != facts.next) {
         return new Facts(facts.v, facts.t, fs);

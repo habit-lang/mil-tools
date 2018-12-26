@@ -115,6 +115,7 @@ public abstract class Area extends TopDefn {
     return 0;
   }
 
+  /** Perform flow analysis on this definition. */
   public void flow() {
     /* Nothing to do here */
   }
