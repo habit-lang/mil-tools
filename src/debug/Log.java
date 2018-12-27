@@ -25,6 +25,8 @@ public class Log {
 
   private static PrintStream out = null;
 
+  private static int indent = 0;
+
   public static void on(PrintStream out) {
     Log.out = out;
   }
@@ -37,21 +39,31 @@ public class Log {
     on(null);
   }
 
+  public void indent() {
+    indent++;
+  }
+
+  public void undent() {
+    indent--;
+  }
+
+  private static void spaces() {
+    for (int i = 0; i < indent; i++) {
+      System.out.print("  ");
+    }
+  }
+
   public static void print(String msg) {
     if (out != null) {
+      spaces();
       out.print(msg);
     }
   }
 
   public static void println(String msg) {
     if (out != null) {
+      spaces();
       out.println(msg);
-    }
-  }
-
-  public static void println() {
-    if (out != null) {
-      out.println();
     }
   }
 }
