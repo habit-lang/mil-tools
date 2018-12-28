@@ -68,7 +68,7 @@ public class TopLhs {
 
   /** Return a type for an instantiated version of this item when used as Atom (input operand). */
   public Type instantiate() {
-    return declared.instantiate();
+    return (declared != null) ? declared.instantiate() : defining;
   }
 
   Type setInitialType() {
