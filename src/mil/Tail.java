@@ -182,7 +182,7 @@ public abstract class Tail {
    * renamed copy of the block's body, or else returns null if the tail is either not a block call,
    * or if the code of the block is not suitable for inlining.
    */
-  Code suffixInline(Block src) {
+  Code suffixInline(Block d) {
     return null;
   }
 

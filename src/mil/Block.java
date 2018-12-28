@@ -452,8 +452,11 @@ public class Block extends Defn {
 
   /** Apply inlining. */
   public void inlining() {
-    if (isGotoBlock() == null || isEntrypoint) { // TODO: consider replacing with code.isDone()
+    BlockCall bc = isGotoBlock();
+    if (bc == null) {
       code = code.inlining(this);
+    } else if (isEntrypoint) {
+      code = bc.forceSuffixInline(this);
     }
   }
 
@@ -486,15 +489,18 @@ public class Block extends Defn {
   /**
    * Attempt to construct an inlined version of the code in this block that can be placed at the end
    * of a Code sequence. Assumes that a BlockCall to this block with the given set of arguments was
-   * included in the specified src Block. A null return indicates that no inlining was performed.
+   * included in the Block d. A null return indicates that no inlining was performed.
    */
-  Code suffixInline(Block src, Atom[] args) {
-    if (canSuffixInline(src)) {
-      MILProgram.report(
-          "suffixInline succeeded for call to block " + getId() + " from block " + src.getId());
-      return code.apply(TempSubst.extend(params, args, null));
+  Code suffixInline(Block d, Atom[] args) {
+    if (canSuffixInline(d)) {
+      MILProgram.report("suffixInline succeeded for call to block " + this + " from block " + d);
+      return forceSuffixInline(args);
     }
     return null;
+  }
+
+  Code forceSuffixInline(Atom[] args) {
+    return code.apply(TempSubst.extend(params, args, null));
   }
 
   /**
@@ -508,9 +514,7 @@ public class Block extends Defn {
     if (srcscc == null
         || bscc == null // Do not inline if SCC information is missing
         || (bscc.isRecursive() // or if this block is recursive ...
-            && (doesntReturn
-                || bscc != srcscc
-                || occurs > 1))) { // and is either loopy or in a different scc
+            && (doesntReturn || occurs > 1))) { // and doesn't return or appears multiple times
       return false;
     } else if (occurs == 1 || code.isDone() != null) { // Inline single occurrences and trivial
       return true; // blocks (safe, as a result of removing loops)

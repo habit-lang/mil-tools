@@ -227,8 +227,13 @@ public class BlockCall extends Call {
    * renamed copy of the block's body, or else returns null if the tail is either not a block call,
    * or if the code of the block is not suitable for inlining.
    */
-  Code suffixInline(Block src) {
-    return b.suffixInline(src, args);
+  Code suffixInline(Block d) {
+    return b.suffixInline(d, args);
+  }
+
+  Code forceSuffixInline(Block d) {
+    MILProgram.report("forced suffixInline for call to block " + this + " from block " + d);
+    return b.forceSuffixInline(args);
   }
 
   /**

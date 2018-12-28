@@ -36,15 +36,6 @@ public class BlockWithKnownCons extends Block {
   }
 
   /**
-   * We allow a block to be inlined if the original call is in a different block, the code for the
-   * block ends with a Done, and either there is only one reference to the block in the whole
-   * program, or else the length of the code sequence is at most INLINE_LINES_LIMIT lines long.
-   */
-  boolean canSuffixInline(Block src) {
-    return false;
-  }
-
-  /**
    * Count the number of unused arguments for this definition. A zero count indicates that all
    * arguments are used.
    */
