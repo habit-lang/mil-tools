@@ -21,12 +21,12 @@ package mil;
 import compiler.*;
 import core.*;
 
-public class BlockWithDuplicateArgs extends Block {
+class BlockWithDuplicateArgs extends DerivedBlock {
 
   private int[] dups;
 
   /** Default constructor. */
-  public BlockWithDuplicateArgs(Position pos, Temp[] params, Code code, int[] dups) {
+  BlockWithDuplicateArgs(Position pos, Temp[] params, Code code, int[] dups) {
     super(pos, params, code);
     this.dups = dups;
   }

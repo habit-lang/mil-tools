@@ -21,47 +21,17 @@ package mil;
 import compiler.*;
 import core.*;
 
-public class BlockWithKnownCons extends Block {
+class BlockWithKnownCons extends DerivedBlock {
 
   private Call[] calls;
 
   /** Default constructor. */
-  public BlockWithKnownCons(Position pos, Temp[] params, Code code, Call[] calls) {
+  BlockWithKnownCons(Position pos, Temp[] params, Code code, Call[] calls) {
     super(pos, params, code);
     this.calls = calls;
   }
 
   boolean hasKnownCons(Call[] calls) {
     return Call.sameCallForms(calls, this.calls);
-  }
-
-  /**
-   * Count the number of unused arguments for this definition. A zero count indicates that all
-   * arguments are used.
-   */
-  int countUnusedArgs(Temp[] dst) {
-    return 0;
-  }
-
-  /**
-   * Find the list of variables that are used in a call to this definition, taking account of the
-   * usedArgs setting so that we only include variables appearing in argument positions that are
-   * known to be used.
-   */
-  Temps usedVars(Atom[] args, Temps vs) {
-    return useAllArgs(args, vs);
-  }
-
-  /**
-   * Use information about which and how many argument positions are used to trim down an array of
-   * destinations (specifically, the formal parameters of a Block or a ClosureDefn).
-   */
-  Temp[] removeUnusedTemps(Temp[] dsts) {
-    return dsts;
-  }
-
-  /** Remove unused arguments from block calls and closure definitions. */
-  void removeUnusedArgs() {
-    /* Nothing to do here */
   }
 }

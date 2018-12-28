@@ -22,10 +22,10 @@ import compiler.*;
 import core.*;
 
 /** Represents a block that was derived by adding a trailing enter to its code sequence. */
-public class BlockWithEnter extends Block {
+class BlockWithEnter extends DerivedBlock {
 
   /** Default constructor. */
-  public BlockWithEnter(Position pos, Temp[] params, Code code) {
+  BlockWithEnter(Position pos, Temp[] params, Code code) {
     super(pos, params, code);
   }
 }

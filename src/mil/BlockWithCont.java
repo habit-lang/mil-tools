@@ -25,10 +25,10 @@ import core.*;
  * Represents a block that was derived by adding a trailing invocation of a new continuation
  * argument to its code sequence.
  */
-public class BlockWithCont extends Block {
+class BlockWithCont extends DerivedBlock {
 
   /** Default constructor. */
-  public BlockWithCont(Position pos, Temp[] params, Code code) {
+  BlockWithCont(Position pos, Temp[] params, Code code) {
     super(pos, params, code);
   }
 }
