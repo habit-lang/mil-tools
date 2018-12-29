@@ -773,7 +773,7 @@ public class Prim {
      * Generate an LLVM right hand side for this unary MIL primitive with the given value as input.
      */
     llvm.Rhs op(llvm.Type ty, llvm.Value v) {
-      return new llvm.IOp(ty, new llvm.Word(0), v, "sub");
+      return new llvm.IOp(ty, llvm.Word.ZERO, v, "sub");
     }
   }
 

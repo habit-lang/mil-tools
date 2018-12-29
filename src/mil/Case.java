@@ -379,7 +379,7 @@ public class Case extends Code {
           "read the tag for a data object",
           new llvm.Op(
               addr,
-              new llvm.Getelementptr(at, a.toLLVMAtom(lm, vm, s), llvm.Word.ZERO, llvm.Word.ZERO),
+              new llvm.Getelementptr(at, a.toLLVMAtom(lm, vm, s), llvm.Word.ZERO, llvm.Index.ZERO),
               new llvm.Op(
                   tag,
                   new llvm.Load(addr),

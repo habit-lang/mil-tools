@@ -303,7 +303,8 @@ public class Enter extends Call {
         vm.reg(ct); // a register to hold the address where the code pointer is stored
     return new llvm.Op(
         cptrptr,
-        new llvm.Getelementptr(ct, clo, llvm.Word.ZERO, llvm.Word.ZERO), // 0th field of 0th closure
+        new llvm.Getelementptr(
+            ct, clo, llvm.Word.ZERO, llvm.Index.ZERO), // 0th field of 0th closure
         new llvm.Op(
             cptr,
             new llvm.Load(cptrptr), // load function address

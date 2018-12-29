@@ -165,7 +165,7 @@ public class StringArea extends Area {
                 llvm.Type.i8.ptr(),
                 new llvm.Global(si.getType().ptr(), strName),
                 llvm.Word.ZERO,
-                llvm.Word.ZERO)));
+                llvm.Index.ZERO)));
     staticValue = calcStaticValue(id);
   }
 }

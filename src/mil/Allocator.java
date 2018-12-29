@@ -179,7 +179,7 @@ public abstract class Allocator extends Call {
     llvm.Local addr = vm.reg(at);
     return new llvm.Op(
         addr,
-        new llvm.Getelementptr(at, lhs, llvm.Word.ZERO, new llvm.Word(n)),
+        new llvm.Getelementptr(at, lhs, llvm.Word.ZERO, new llvm.Index(n)),
         new llvm.Store(v, addr, c));
   }
 }
