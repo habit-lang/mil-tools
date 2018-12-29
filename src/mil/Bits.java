@@ -96,6 +96,10 @@ public class Bits extends Const {
     return val.intValue();
   }
 
+  Atom isKnown() {
+    return this;
+  }
+
   /** Return the representation vector for this Atom. */
   Type[] repCalc() {
     return Type.repBits(width);

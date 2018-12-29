@@ -101,6 +101,10 @@ public class Flag extends Const {
     return val ? 71 : -11;
   }
 
+  Atom isKnown() {
+    return this;
+  }
+
   /**
    * Calculate a static value for this atom, or return null if the result must be determined at
    * runtime.
