@@ -179,11 +179,6 @@ public class BlockCall extends Call {
   }
 
   BlockCall deriveWithKnownCons(Defn d, Call[] calls) {
-    DefnSCC dScc = d.getScc();
-    DefnSCC bScc = b.getScc();
-    if (dScc == null || bScc == null || dScc == bScc) {
-      return null;
-    }
     if (calls.length != args.length) {
       debug.Internal.error("BlockCall argument list length mismatch in deriveWithKnownCons");
     }

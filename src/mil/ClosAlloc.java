@@ -98,11 +98,6 @@ public class ClosAlloc extends Allocator {
 
   ClosAlloc deriveWithKnownCons(Defn d, Call[] calls) {
     // if (calls!=null) { return null; } // disable optimization
-    DefnSCC dScc = d.getScc();
-    DefnSCC kScc = k.getScc();
-    if (dScc == null || kScc == null || dScc == kScc) {
-      return null;
-    }
     if (calls.length != args.length) {
       debug.Internal.error("ClosAlloc argument list length mismatch in deriveWithKnownCons");
     }
