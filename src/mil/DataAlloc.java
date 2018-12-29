@@ -97,6 +97,10 @@ public class DataAlloc extends Allocator {
     return (args == null) ? cf : null;
   }
 
+  boolean isRecursive() {
+    return cf.getDataName().isRecursive();
+  }
+
   /**
    * Figure out the BlockCall that will be used in place of the original after shorting out a Case.
    * Note that we require a DataAlloc fact for this to be possible (closures and monadic thunks

@@ -366,31 +366,30 @@ public abstract class Defn {
     int len = args.length;
     Call[] calls = null;
     for (int i = 0; i < len; i++) {
-      if (isInvariant(i)) {
-        Tail t = args[i].lookupFact(facts);
-        if (t != null) {
-          Allocator alloc = t.isAllocator(); // we're only going to keep info about Allocators
-          if (alloc != null) {
-            if (calls == null) {
-              calls = new Call[len];
-            }
-            calls[i] = alloc;
+      Tail t = args[i].lookupFact(facts);
+      if (t != null) {
+        Allocator alloc = t.isAllocator(); // We're only going to keep info about Allocators
+        if (alloc != null && (isInvariant(i) || !alloc.isRecursive())) {
+          if (calls == null) {
+            calls = new Call[len];
           }
-        } else {
-          Atom a = args[i].isKnown(); // Look for a known argument ...
-          if (a != null) {
-            DefnSCC scc = getScc(); // ... in a call to a non-recursive Defn
-            if (scc != null && !scc.isRecursive()) {
-              if (calls == null) {
-                calls = new Call[len];
-              }
-              calls[i] = new Return(a);
-            }
+          calls[i] = alloc;
+        }
+      } else if (isInvariant(i)) {
+        Atom a = args[i].isKnown(); // Look for a known argument ...
+        if (a != null && !isRecursive()) { // ... in a call to a non-recursive Defn
+          if (calls == null) {
+            calls = new Call[len];
           }
+          calls[i] = new Return(a);
         }
       }
     }
     return calls;
+  }
+
+  boolean isRecursive() {
+    return scc != null && scc.isRecursive();
   }
 
   void initSources() {

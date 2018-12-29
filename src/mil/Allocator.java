@@ -71,6 +71,8 @@ public abstract class Allocator extends Call {
     return tl;
   }
 
+  abstract boolean isRecursive();
+
   /**
    * Calculate an array of static values for this tail, or null if none of the results produced by
    * this tail have statically known values. (Either because they are truly not statically known, or

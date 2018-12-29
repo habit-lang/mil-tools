@@ -142,6 +142,10 @@ public class ClosAlloc extends Allocator {
     return null;
   }
 
+  boolean isRecursive() {
+    return k.isRecursive();
+  }
+
   /**
    * Test to determine whether this Code/Tail value corresponds to a closure allocator, returning
    * either a ClosAlloc value, or else a null result.
