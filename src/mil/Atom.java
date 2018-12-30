@@ -286,6 +286,10 @@ public abstract class Atom {
     return facts;
   }
 
+  Atom isKnown() {
+    return null;
+  }
+
   /**
    * Special case treatment for top-level bindings of the form [...,x,...] <- return [...,y,...]; we
    * want to short out such bindings whenever possible by replacing all occurrences of x with y.
@@ -338,10 +342,6 @@ public abstract class Atom {
   /** Test two items for alpha equivalence. */
   boolean alphaTemp(Temps thisvars, Temp that, Temps thatvars) {
     return false;
-  }
-
-  Atom isKnown() {
-    return null;
   }
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */

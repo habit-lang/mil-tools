@@ -374,15 +374,15 @@ public abstract class Defn {
             calls = new Call[len];
           }
           calls[i] = alloc;
+          continue;
         }
-      } else if (isInvariant(i)) {
-        Atom a = args[i].isKnown(); // Look for a known argument ...
-        if (a != null && !isRecursive()) { // ... in a call to a non-recursive Defn
-          if (calls == null) {
-            calls = new Call[len];
-          }
-          calls[i] = new Return(a);
+      }
+      Atom a = args[i].isKnown(); // Otherwise look for a known argument ...
+      if (a != null) {
+        if (calls == null) {
+          calls = new Call[len];
         }
+        calls[i] = new Return(a);
       }
     }
     return calls;

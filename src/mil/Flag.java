@@ -93,16 +93,16 @@ public class Flag extends Const {
     return this;
   }
 
+  Atom isKnown() {
+    return this;
+  }
+
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
    * equivalent program fragments have the same summary value.
    */
   int summary() {
     return val ? 71 : -11;
-  }
-
-  Atom isKnown() {
-    return this;
   }
 
   /**

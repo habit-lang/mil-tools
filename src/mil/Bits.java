@@ -88,16 +88,16 @@ public class Bits extends Const {
     return new WordValue(val.longValue());
   }
 
+  Atom isKnown() {
+    return this;
+  }
+
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
    * equivalent program fragments have the same summary value.
    */
   int summary() {
     return val.intValue();
-  }
-
-  Atom isKnown() {
-    return this;
   }
 
   /** Return the representation vector for this Atom. */
