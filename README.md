@@ -8,9 +8,6 @@ to LLVM.
 These tools are primarily intended for use as a backend for
 the alb compiler for Habit.  However, they can also be used
 independently, as suggested by the following quick demo.
-(Note that this command sequence must run in the top level
-directory; we need to do a better job with search paths for
-source files in future releases!)
 
 A draft paper with more details about MIL is available from 
 https://web.cecs.pdx.edu/~mpj/pubs/mil.pdf.
