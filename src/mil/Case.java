@@ -191,7 +191,7 @@ public class Case extends Code {
     if (t != null) {
       BlockCall bc = t.shortCase(s, alts);
       if (bc != null) {
-        return new Done(bc.rewriteBlockCall(d, facts));
+        return new Done(bc.rewriteBlockCall(d, facts, false));
       }
     }
 

@@ -286,15 +286,15 @@ public class BlockCall extends Call {
   }
 
   public Code rewrite(Defn d, Facts facts) {
-    BlockCall bc = rewriteBlockCall(d, facts);
+    BlockCall bc = rewriteBlockCall(d, facts, false);
     return (bc == this) ? null : new Done(bc); // TODO: worried about this == test
   }
 
-  Tail rewriteTail(Defn d, Facts facts) {
-    return this.rewriteBlockCall(d, facts);
+  Tail rewriteTail(Defn d, Facts facts, boolean allowWord) {
+    return this.rewriteBlockCall(d, facts, allowWord);
   }
 
-  BlockCall rewriteBlockCall(Defn d, Facts facts) {
+  BlockCall rewriteBlockCall(Defn d, Facts facts, boolean allowWord) {
     // Look for an opportunity to short out a Case if this block branches to a Case for a variable
     // that has a known DataAlloc value in the current set of facts.
     BlockCall bc = this.shortCase(facts);
@@ -304,7 +304,7 @@ public class BlockCall extends Call {
     // TODO: When we find, b16[t109, id, t110]{-, k35{}, -}, it isn't necessarily a good idea to
     // create a specialized block if the id <- k35{} line appears in this block (i.e., if id is
     // local, not a top level value) and id is used elsewhere in the block.
-    Call[] calls = bc.b.collectCalls(bc.args, facts);
+    Call[] calls = bc.b.collectCalls(bc.args, facts, allowWord);
     if (calls != null) {
       BlockCall bc1 = bc.deriveWithKnownCons(d, calls);
       if (bc1 != null) {

@@ -133,7 +133,7 @@ public class CfunAlt extends Alts {
 
   public void flow(Defn d, Atom a, Facts facts, TempSubst s) {
     // We know which constructor will be used for a, but not its arguments:
-    bc = bc.applyBlockCall(s).rewriteBlockCall(d, a.addFact(cf, facts));
+    bc = bc.applyBlockCall(s).rewriteBlockCall(d, a.addFact(cf, facts), false);
     next.flow(d, a, facts, s);
   }
 

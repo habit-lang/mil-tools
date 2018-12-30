@@ -51,7 +51,7 @@ public abstract class Top extends Atom {
     return true;
   }
 
-  Atom isKnown() {
+  Atom isKnown(boolean allowWord) {
     return this;
   }
 

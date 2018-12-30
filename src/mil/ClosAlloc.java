@@ -122,7 +122,7 @@ public class ClosAlloc extends Allocator {
   }
 
   public Code rewrite(Defn d, Facts facts) {
-    Call[] calls = k.collectCalls(args, facts);
+    Call[] calls = k.collectCalls(args, facts, false);
     if (calls != null) {
       ClosAlloc ca = deriveWithKnownCons(d, calls);
       if (ca != null) {

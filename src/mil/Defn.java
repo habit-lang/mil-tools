@@ -362,7 +362,7 @@ public abstract class Defn {
   /** Perform flow analysis on this definition. */
   public abstract void flow();
 
-  Call[] collectCalls(Atom[] args, Facts facts) {
+  Call[] collectCalls(Atom[] args, Facts facts, boolean allowWord) {
     int len = args.length;
     Call[] calls = null;
     for (int i = 0; i < len; i++) {
@@ -377,7 +377,7 @@ public abstract class Defn {
           continue;
         }
       }
-      Atom a = args[i].isKnown(); // Otherwise look for a known argument ...
+      Atom a = args[i].isKnown(allowWord); // Otherwise look for a known argument ...
       if (a != null) {
         if (calls == null) {
           calls = new Call[len];

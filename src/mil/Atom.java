@@ -286,7 +286,7 @@ public abstract class Atom {
     return facts;
   }
 
-  Atom isKnown() {
+  Atom isKnown(boolean allowWord) {
     return null;
   }
 

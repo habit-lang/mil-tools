@@ -88,7 +88,7 @@ public class Bits extends Const {
     return new WordValue(val.longValue());
   }
 
-  Atom isKnown() {
+  Atom isKnown(boolean allowWord) {
     return this;
   }
 

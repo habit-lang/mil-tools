@@ -171,6 +171,10 @@ public class Word extends Const {
     return new WordValue(val);
   }
 
+  Atom isKnown(boolean allowWord) {
+    return allowWord ? this : null;
+  }
+
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
    * equivalent program fragments have the same summary value.

@@ -116,7 +116,7 @@ public class DefAlt extends Alts {
   }
 
   public void flow(Defn d, Atom a, Facts facts, TempSubst s) {
-    bc = bc.applyBlockCall(s).rewriteBlockCall(d, facts);
+    bc = bc.applyBlockCall(s).rewriteBlockCall(d, facts, false);
   }
 
   Temps liveness(Temps vs) {

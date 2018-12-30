@@ -280,7 +280,7 @@ public abstract class Tail {
     return null;
   }
 
-  Tail rewriteTail(Defn d, Facts facts) {
+  Tail rewriteTail(Defn d, Facts facts, boolean allowWord) {
     return this;
   }
 

@@ -93,7 +93,7 @@ public class Flag extends Const {
     return this;
   }
 
-  Atom isKnown() {
+  Atom isKnown(boolean allowWord) {
     return this;
   }
 

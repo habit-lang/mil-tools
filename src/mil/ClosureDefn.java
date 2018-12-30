@@ -443,7 +443,7 @@ public class ClosureDefn extends Defn {
 
   /** Perform flow analysis on this definition. */
   public void flow() {
-    tail = tail.rewriteTail(this, null /* facts */);
+    tail = tail.rewriteTail(this, null /* facts */, false); // TODO: allowWord here too?
     tail.liveness(null /*facts*/);
   }
 
