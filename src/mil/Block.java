@@ -332,7 +332,6 @@ public class Block extends Defn {
     // Fill in the code for the new block by prepending some initializers:
     b.code = addInitializers(calls, params, tss, code.copy());
     b.flow(); // perform an initial flow analysis to inline initializers.
-
     return b;
   }
 
@@ -438,7 +437,7 @@ public class Block extends Defn {
   boolean detectLoops(Blocks visited) {
     // Check to see if this block calls code for an already visited block:
     if (Blocks.isIn(this, visited) || code.detectLoops(this, visited)) {
-      MILProgram.report("detected an infinite loop in block " + getId());
+      MILProgram.report("detected an infinite loop in block " + this);
       code = new Done(Prim.loop.withArgs());
       return true;
     }
@@ -479,8 +478,7 @@ public class Block extends Defn {
    */
   Code prefixInline(Block src, Atom[] args, Temp[] rs, Code rest) {
     if (canPrefixInline(src)) {
-      MILProgram.report(
-          "prefixInline succeeded for call to block " + getId() + " from block " + src.getId());
+      MILProgram.report("prefixInline succeeded for call to block " + this + " from block " + src);
       return code.prefixInline(TempSubst.extend(params, args, null), rs, rest);
     }
     return null;
@@ -553,7 +551,7 @@ public class Block extends Defn {
   BlockCall bypassGotoBlockCall(Atom[] args) {
     BlockCall bc = this.isGotoBlock();
     if (bc != null) {
-      MILProgram.report("elided call to goto block " + getId());
+      MILProgram.report("elided call to goto block " + this);
       return bc.applyBlockCall(TempSubst.extend(params, args, null));
     }
     return null;
@@ -686,7 +684,7 @@ public class Block extends Defn {
         if (usedArgs != null && usedArgs[i]) {
           newTemps[j++] = dsts[i];
         } else {
-          MILProgram.report("removing unused argument " + dsts[i] + " from " + getId());
+          MILProgram.report("removing unused argument " + dsts[i] + " from " + this);
         }
       }
       return newTemps;
@@ -705,7 +703,7 @@ public class Block extends Defn {
     if (!isEntrypoint && numUsedArgs < params.length) {
       MILProgram.report(
           "Rewrote block "
-              + getId()
+              + this
               + " to eliminate "
               + (params.length - numUsedArgs)
               + " unused parameters");
@@ -863,7 +861,7 @@ public class Block extends Defn {
           return false;
         } else if (ds.head.declared == null
             || (this.declared != null && ds.head.declared.alphaEquiv(this.declared))) {
-          MILProgram.report("Replacing " + this.getId() + " with " + ds.head.getId());
+          MILProgram.report("Replacing " + this + " with " + ds.head);
           this.replaceWith = ds.head;
           return true;
         }

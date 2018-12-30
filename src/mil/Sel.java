@@ -185,7 +185,7 @@ public class Sel extends Tail {
     if (data != null) {
       Atom a1 = data.select(cf, n); // find matching component
       if (a1 != null) {
-        MILProgram.report("rewriting " + cf.getId() + " " + n + " " + a + " -> " + a1);
+        MILProgram.report("rewriting " + cf + " " + n + " " + a + " -> " + a1);
         return new Return(a1);
       }
     }

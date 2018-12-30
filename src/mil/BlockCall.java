@@ -309,8 +309,7 @@ public class BlockCall extends Call {
       BlockCall bc1 = bc.deriveWithKnownCons(d, calls);
       if (bc1 != null) {
         bc = bc1;
-        MILProgram.report(
-            "deriving specialized block " + bc.b.getId() + " for BlockCall to block " + b.getId());
+        MILProgram.report("deriving specialized block " + bc.b + " for BlockCall to block " + b);
       }
     }
 
@@ -320,7 +319,7 @@ public class BlockCall extends Call {
       BlockCall bc1 = bc.deriveWithDuplicateArgs(dups);
       if (bc1 != null) {
         bc = bc1;
-        MILProgram.report("eliminating duplicate args in call within " + b.getId());
+        MILProgram.report("eliminating duplicate args in call within " + b);
       }
     }
 

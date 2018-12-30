@@ -149,7 +149,7 @@ public class If extends Code {
    */
   Code cleanup(Block src) {
     if (ifTrue.sameBlockCall(ifFalse)) { // Rewrite (if a then bc else bc) ==> bc
-      MILProgram.report("eliminated an if with the same block in each branch in " + src.getId());
+      MILProgram.report("eliminated an if with the same block in each branch in " + src);
       return new Done(ifTrue);
     }
     return this;

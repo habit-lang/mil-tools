@@ -133,7 +133,7 @@ public class Assert extends Code {
   Code cleanup(Block src) {
     c = c.cleanup(src);
     if (!a.isLive()) { // Rewrite (assert cf _; c) ==> c
-      MILProgram.report("eliminated an unused assertion in " + src.getId());
+      MILProgram.report("eliminated an unused assertion in " + src);
       return c;
     }
     return this;

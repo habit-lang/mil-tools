@@ -155,17 +155,17 @@ public class Bind extends Code {
   Code cleanup(Block src) {
     if (Temp.noneLive(vs)
         && t.hasNoEffect()) { // Rewrite (_ <- t; c) ==> c, if t has no visible effect
-      MILProgram.report("inlining eliminated a wildcard binding in " + src.getId());
+      MILProgram.report("inlining eliminated a wildcard binding in " + src);
       return c.cleanup(src);
     } else if (c.isReturn(vs)) { // Rewrite (vs <- t; return vs) ==> t
-      MILProgram.report("applied right monad law in " + src.getId());
+      MILProgram.report("applied right monad law in " + src);
       return new Done(t);
     } else if (t.blackholes()) { // Rewrite (vs <- loop(()); c) ==> loop(())
       MILProgram.report("rewrite (vs <- loop(()); c) ==> loop(())");
       return new Done(Prim.loop.withArgs());
     } else if (t.doesntReturn()
         && !c.blackholes()) { // Rewrite (vs <- t; c) ==> vs <- t; loop(()), if t doesn't return
-      MILProgram.report("removed code after a tail that does not return in " + src.getId());
+      MILProgram.report("removed code after a tail that does not return in " + src);
       return new Bind(vs, t, new Done(Prim.loop.withArgs()));
     } else {
       c = c.cleanup(src);
@@ -192,13 +192,13 @@ public class Bind extends Code {
     if (bc != null) {
       Code nc;
       if ((nc = c.enters(vs, bc)) != null) {
-        MILProgram.report("pushed enter into call in " + src.getId());
+        MILProgram.report("pushed enter into call in " + src);
         return nc;
       } else if ((nc = c.casesOn(vs, bc)) != null) {
-        MILProgram.report("pushed case into call in " + src.getId());
+        MILProgram.report("pushed case into call in " + src);
         return nc;
       } else if ((nc = bc.localLoop(src, vs, c)) != null) {
-        MILProgram.report("pushed continuation into block call in " + src.getId());
+        MILProgram.report("pushed continuation into block call in " + src);
         return nc;
       }
 

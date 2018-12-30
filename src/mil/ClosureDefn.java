@@ -408,7 +408,7 @@ public class ClosureDefn extends Defn {
         if (usedArgs != null && usedArgs[i]) {
           newTemps[j++] = dsts[i];
         } else {
-          MILProgram.report("removing unused argument " + dsts[i] + " from " + getId());
+          MILProgram.report("removing unused argument " + dsts[i] + " from " + this);
         }
       }
       return newTemps;
@@ -427,7 +427,7 @@ public class ClosureDefn extends Defn {
     if (!isEntrypoint && numUsedArgs < params.length) {
       MILProgram.report(
           "Rewrote closure definition "
-              + getId()
+              + this
               + " to eliminate "
               + (params.length - numUsedArgs)
               + " unused fields");
@@ -580,7 +580,7 @@ public class ClosureDefn extends Defn {
           return false;
         } else if (ds.head.declared == null
             || (this.declared != null && ds.head.declared.alphaEquiv(this.declared))) {
-          MILProgram.report("Replacing " + this.getId() + " with " + ds.head.getId());
+          MILProgram.report("Replacing " + this + " with " + ds.head);
           this.replaceWith = ds.head;
           return true;
         }

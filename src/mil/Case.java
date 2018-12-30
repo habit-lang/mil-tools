@@ -141,7 +141,7 @@ public class Case extends Code {
   Code cleanup(Block src) {
     BlockCall bc = alts.sameBlockCalls();
     if (bc != null) { // Rewrite a case in which all of the targets are the same
-      MILProgram.report("eliminated a case with the same block in each branch in " + src.getId());
+      MILProgram.report("eliminated a case with the same block in each branch in " + src);
       return new Done(bc);
     }
     return this;
