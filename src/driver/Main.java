@@ -322,7 +322,7 @@ class Main {
 
       passes =
           (llvmOutput.isSet() || llvmInterfaceOutput.isSet() || cfgsGraphvizOutput.isSet())
-              ? "cosboros"
+              ? "csosrsos"
               : execOutput.isSet()
                   ? "cosboro"
                   : repTypeSetOutput.isSet() ? "cosor" : specTypeSetOutput.isSet() ? "cos" : "co";
