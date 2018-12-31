@@ -101,21 +101,23 @@ public class BindingSCC {
   public static void checkSafeRecursion(Handler handler, BindingSCCs sccs) {
     for (; sccs != null; sccs = sccs.next) {
       BindingSCC scc = sccs.head;
+      Bindings bindings = scc.getBindings();
+
+      // Union the free variables for each binding
+      DefVars fvs = null;
+      for (Bindings bs = bindings; bs != null; bs = bs.next) {
+        fvs = bs.head.addExtraVars(fvs);
+      }
+
+      // For recursive SCCs, check format and remove vars defined in this SCC from fvs:
       if (scc.isRecursive()) {
-        Bindings bindings = scc.getBindings();
-
-        // Union the free variables for each binding
-        DefVars fvs = null;
         for (Bindings bs = bindings; bs != null; bs = bs.next) {
-          fvs = bs.head.checkSafeToRecurse(handler, fvs);
-        }
-
-        // Then remove any variables defined in this binding
-        for (Bindings bs = bindings; bs != null; bs = bs.next) {
+          bs.head.checkSafeToRecurse(handler);
           fvs = bs.head.remove(fvs);
         }
-        scc.fvs = fvs;
       }
+
+      scc.fvs = fvs;
     }
   }
 

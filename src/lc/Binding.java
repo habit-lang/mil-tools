@@ -218,12 +218,16 @@ class Binding extends DefVar {
     return fvs;
   }
 
+  /** Add the extra vars from this binding to the given list. */
+  DefVars addExtraVars(DefVars fvs) {
+    return DefVars.add(xvs, fvs);
+  }
+
   /** Test to determine whether this binding can be used in a recursive binding group. */
-  public DefVars checkSafeToRecurse(Handler handler, DefVars vs) { // id = e
+  void checkSafeToRecurse(Handler handler) {
     if (!e.isSafeToRecurse()) {
       handler.report(new InvalidRecursiveDefinition(pos, id));
     }
-    return DefVars.add(xvs, vs);
   }
 
   /**
