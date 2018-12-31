@@ -38,14 +38,14 @@ public class LiftEnv {
   }
 
   /**
-   * Add a lifting that can be used to map occurrences of the variable v to an application of the
-   * top-level function top to the specified list of extra variables.
+   * Add a lifting that can be used to map occurrences of the variable binding b to an application
+   * of the given top-level to the specified list of extra variables.
    */
   void addLifting(Binding b, TopLevel topLevel, DefVar[] xvs) {
     table.put(b, new Lifting(topLevel, xvs));
   }
 
-  /** Look for a lifting corresponding to the specified variable v. */
+  /** Look for a lifting corresponding to the specified binding b. */
   Lifting findLifting(Binding b) {
     return table.get(b);
   }

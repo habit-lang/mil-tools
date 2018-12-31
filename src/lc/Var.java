@@ -47,9 +47,10 @@ abstract class Var {
     return null;
   }
 
-  /** Add this Var to the given list of DefVars. */
+  /** Add this variable to the given list of DefVars. */
   abstract DefVars add(DefVars vs);
 
+  /** Remove this variable from the given list of DefVars. */
   abstract DefVars remove(DefVars vs);
 
   /** Return a type for an instantiated version of this variable. */

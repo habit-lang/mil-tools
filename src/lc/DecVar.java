@@ -50,11 +50,12 @@ class DecVar extends Var {
     return getId();
   }
 
-  /** Add this Var to the given list of DefVars. */
+  /** Add this variable to the given list of DefVars. */
   DefVars add(DefVars vs) {
     return vs;
   }
 
+  /** Remove this variable from the given list of DefVars. */
   DefVars remove(DefVars vs) {
     return vs;
   }

@@ -72,11 +72,12 @@ abstract class DefVar extends Var {
     buf.append(" ");
   }
 
-  /** Add this Var to the given list of DefVars. */
+  /** Add this variable to the given list of DefVars. */
   DefVars add(DefVars vs) {
     return DefVars.add(this, vs);
   }
 
+  /** Remove this variable from the given list of DefVars. */
   DefVars remove(DefVars vs) {
     return DefVars.remove(this, vs);
   }
