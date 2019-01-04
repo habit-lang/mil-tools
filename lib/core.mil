@@ -1,0 +1,93 @@
+bitdata Bool = False [B0] | True [B1]
+export true, false :: Bool
+true  <- True()
+false <- False()
+
+-- Monadic primitives:
+export primRet :: a -> Proc a
+primRet   <- {x} c <- ret1{x}; Proc(c)
+ret1{x} [] = return x
+
+-- Pairs:
+data Pair a b = Pair a b
+
+-- Maybe:
+data Maybe a = Nothing | Just a
+
+-- Lists:
+data List a = Nil | Cons a (List a)
+
+-- Arithmetic primitives:
+export +, -, *, / :: Word -> Word -> Word
++ <- {x,y} add((x,y))
+- <- {x,y} sub((x,y))
+* <- {x,y} mul((x,y))
+/ <- {x,y} div((x,y))
+
+export neg :: Word -> Word
+neg <- {x} neg((x))
+
+-- Bitwise operators:
+export and, or, xor :: Word -> Word -> Word
+and <- {x,y} and((x,y))
+or  <- {x,y} or((x,y))
+xor <- {x,y} xor((x,y))
+
+export shl, lshr, ashr :: Word -> Word -> Word
+shl  <- {x,y} shl((x,y))
+lshr <- {x,y} lshr((x,y))
+ashr <- {x,y} ashr((x,y))
+
+export not :: Word -> Word
+not <- {x} not((x))
+
+-- "Convert" a MIL-level boolean result into an LC-level Bool value
+bconv   :: [Flag] >>= [Bool]
+bconv[t] = if t then btrue[] else bfalse[]
+btrue[]  = return true
+bfalse[] = return false
+
+export bnot :: Flag -> Flag
+bnot <- {x} bnot((x))
+
+-- Basic Comparisons:
+-- These cannot be expressed in LC because they require the
+-- MIL-level boolean type / if construct:
+
+export ==, /= :: Word -> Word -> Bool
+== <- {x,y} t <- primEq((x,y));  bconv[t]
+/= <- {x,y} t <- primNeq((x,y)); bconv[t]
+
+export >+, >=+, <+, <=+ :: Word -> Word -> Bool
+>+  <- {x,y} t <- primSgt((x,y)); bconv[t]
+>=+ <- {x,y} t <- primSge((x,y)); bconv[t]
+<+  <- {x,y} t <- primSlt((x,y)); bconv[t]
+<=+ <- {x,y} t <- primSle((x,y)); bconv[t]
+
+export >, >=, <, <= :: Word -> Word -> Bool
+>  <- {x,y} t <- primUgt((x,y)); bconv[t]
+>= <- {x,y} t <- primUge((x,y)); bconv[t]
+<  <- {x,y} t <- primUlt((x,y)); bconv[t]
+<= <- {x,y} t <- primUle((x,y)); bconv[t]
+
+-- Pointers/References:
+
+export refToWord, ptrToWord
+external refToWord = ptrToWordImp :: Ref a -> Word
+external ptrToWord = ptrToWordImp :: Ptr a -> Word
+
+ptrToWordImp :: Word -> Word
+ptrToWordImp <- {w} return w
+
+-- Strings:
+
+-- MIL implementation of loadChar primitive; must currently be
+-- written in MIL so that we can access the load8 primitive.
+
+export loadChar
+external loadChar  = loadCharImp  :: Ref String -> Proc Word
+
+loadCharImp       :: Addr -> Proc (Bit 8)
+loadCharImp       <- {s} c <- loadCharImp1{s}; Proc(c)
+loadCharImp1{s} [] = load8((s))
+

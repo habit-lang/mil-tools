@@ -1,0 +1,214 @@
+The code in this file is a higher-order library for generating
+formatted output of String and Word values in which each of the
+formatting functions is parameterized by a "putchar" function.
+
+> require "core.llc"
+> require "ix.llc"
+> require "bit.llc"
+> require "nonzero.llc"
+> require "string.llc"
+> require "noinline.mil"
+
+PRINTING STRINGS AND NUMBERS:
+-----------------------------
+We will use the following two types to describe operations that
+output a single character (`Putchar`) or a numerical value using a
+sequence of characters (`Putnum`):
+
+> type Putchar = Word -> Proc Unit  -- input is a single character
+> type Putnum  = Word -> Proc Unit  -- input is a numeric value
+
+It is clear that these two types are actually the same, but
+it can still be useful to distinguish between them in type
+signatures as a way to indicate how the `Word` argument will
+be used.  If we call a `Putchar` function with argument
+value 65, for example, then we expect to display a single
+'A' character (i.e., the character with ASCII value 65).  On
+the other hand if we call a `Putnum` operation with the same
+argument, then the result might be the two character
+sequence "65", the two character sequence "41", or the seven
+character sequence "1000001", depending on whether we are
+using decimal, hexadecimal, or binary notation.
+
+Our goal now is to define general operations for displaying
+string and numeric values as higher-order functions that are
+parameterized by a value of type `Putchar`.  A single
+function for displaying an input value as an unsigned
+decimal, for example, can then be used to generate output in
+a window on the video RAM display, or output to a serial
+port, or output to some other system resource that is
+identified by a tag such as a file descriptor or capability
+reference.
+
+As a first example, we can write a complete string on the
+screen by iterating through the individual character in the
+string, using a suitable `putchar` call to display each one;
+and then repeating the process until we reach the end of the
+string:
+
+> export hputs :: Putchar -> Ref String -> Proc Unit
+> hputs put s   = case<- nextChar s of
+>                   Nothing -> return Unit
+>                   Just p  -> put (fst p)
+>                              hputs put (snd p)
+
+[Note that we begin the name of this operations, and others
+like it in this section, with a letter 'h' as a mnemonic for
+"higher-order".  Alternatively, we could imagine using 'h' to
+indicate the use of a "handle", where the latter term is
+interpreted broadly, and might include different types of
+values such as port numbers, window references, or similar.]
+
+Next, we focus on operations for displaying `Word` values as
+numeric values.  As simple examples, this includes functions
+for displaying numbers in decimal notation, using either an
+unsigned or signed interpretation:
+
+> export hputUnsigned, hputSigned :: Putchar -> Putnum
+> hputUnsigned     = hputDigits nz10
+> hputSigned put n = if n <+ 0
+>                      then do put '-'; hputUnsigned put (neg n)
+>                      else hputUnsigned put n
+
+We also provide simple functions for printing out values in
+binary, octal, and hexadecimal notation:
+
+> export hputBin, hputOctal, hputHex :: Putchar -> Putnum
+> hputBin      = hputDigits nz2  
+> hputOctal    = hputDigits nz8  
+> hputHex      = hputDigits nz16
+
+Each of the functions listed above will display its input
+argument with as few characters as possible (i.e., with no
+unnecessary leading zeros).  For greater control over
+formatting, the library also provides a more general
+operation called `putDigitsFmt`.  The parameters for this
+operation allow the caller to specify an arbtirary base
+(within a sensible range) as well as the maximum and minimum
+number of characters to be displayed.  An additional
+parameter specifies the padding character that will be used
+(on the left) if the input number is not big enough to fill
+the specified minimum width:
+
+> export hputDigitsFmt
+>   :: NZBit WordSize -- number base
+>      -> Ix MaxWidth    -- maximum number of digits to display
+>      -> Ix MaxWidth    -- minimum field width
+>      -> Word           -- character to use as padding
+>      -> Putchar        -- function to use for output
+>      -> Putnum
+
+We will also provide one additional operation for displaying
+values in a decimal notation that includes a `G`, `M`, or
+`K` suffix if the input is a multiple of 2^30, 2^20, or
+2^10, respectively.  This is often useful for displaying
+sizes of blocks of memory in a fairly compact and readable
+notation, which is why we refer to it as `putSize`:
+
+> export hputSize :: Putchar -> Putnum
+
+IMPLEMENTING HIGHER-ORDER PRINTING FUNCTIONS:
+---------------------------------------------
+This section presents implementations for each of the
+higher-order printing functions described above  For
+example, the `putUnsigned`, `putSigned`, `putBin`,
+`putOctal`, and `putHex` functions are all defined in terms
+of a more general `putDigits` function that, in turn, is
+defined by a call to the `putDigitsFmt` function:
+
+> hputDigits     :: NZBit WordSize -> Putchar -> Putnum
+> hputDigits base = hputDigitsFmt base maxBound ix0 ' '
+
+We can always determine the least significant digit in the
+printed representation for a number by calculating the
+remainder modulo the base.  And then, by iterating this
+process, we can calculate the full sequence of digits.  The
+main problem with this method is that it generates the
+sequence of digits in the reverse order that we want to use
+when they are displayed.  To work around this, we introduce
+a buffer, `itoaBuf` (named for the `itoa` function in C that
+converts integers to "ASCII"), for storing the individual
+digits as they are generated.  Once this process is
+complete, we can empty the buffer, treating it as a stack
+and "pop"ing one character at a time to display them in the
+right order:
+
+> type MaxWidth = WordSize
+> area itoaBuf <- initArray (\ix -> initStored bit0) :: Ref (Array MaxWidth (Stored Byte))
+
+Note that our buffer can contain at most `WordSize`
+characters, which matches the worst case (i.e., maximum
+length) for displaying a `Word` value in binary notation.
+Technically speaking, with a base value of `1`, a call to
+`hputDigitsFmt` might be expected to produce an output
+string with more than `WordSize` digits.  This behavior,
+exlusively for unary display of potentially large numbers,
+is not likely to be useful in practice, and our
+implementation will simply truncate the output in such cases
+to include at most `WordSize` (least significant) digits.
+Indeed, the following `hputDigitsFmt` function allows us to
+specify a smaller maximum width by passing in a suitable
+value for `max`.  The basic algorithm here has three steps:
+
+1) Calculate a sequence of digit values for the input
+number, storing those values in the `itoaBuf` array.
+
+2) If a minimum width, greater than zero, has been
+specified, and the input number does not have enough digits
+to fill that width, then we must output some padding
+characters to fill the gap.
+
+3) Finally we can output the sequence of digits by reading
+them in reverse order (i.e., from the highest to the lowest
+index).
+
+The complete implementation is as follows:
+
+> hputDigitsFmt base max min padchar put = loop ix0
+>  where loop i n  = do set (itoaBuf @ i) (digitToByte (n `nzrem` base))
+>                       case i `ltInc` max of
+>                         Nothing -> pad i
+>                         Just j  -> let q = n `nzdiv` base
+>                                    if q == 0 then pad i
+>                                              else loop j q
+>        pad i     = do padloop i; output i
+>        padloop i = case i `ltInc` min of
+>                      Nothing -> return Unit
+>                      Just j  -> do put padchar
+>                                    padloop j
+>        output i  = do c <- get (itoaBuf @ i)
+>                       put (bitsToWord c)
+>                       case decIx i of
+>                         Nothing -> return Unit
+>                         Just j  -> output j
+
+The `digitToByte` function used here just converts an arbitrary
+`Word` value the represents a single digit into a coresponding
+character.  The function used here will produce reasonable choices
+for any base between 1 and 36, which is sufficient for all of the
+uses that are of interest to us here.  (The upper limit would
+correspond to a notation that used all 10 numeric digits and all
+26 alphabetic lowercase characters for a total of 36 different
+"digit" characters.)
+
+> digitToByte  :: Word -> Byte
+> digitToByte d = wordToByte (if d <= 9
+>                               then ('0' + d)
+>                               else ('a' + (d - 10)))
+
+> hputSize put
+>  = ifZero                    -- special treatment for zero
+>     (multiplier 30 'G'       -- G suffix for multiples of 2^30
+>      (multiplier 20 'M'      -- M suffix for multiples of 2^20
+>       (multiplier 10 'K'     -- K suffix for multiples of 2^10
+>        (hputUnsigned put)))) -- otherwise no suffix
+>    where 
+>     ifZero         :: Putnum -> Putnum
+>     ifZero next val = if val == 0 then put '0' else next val
+>     multiplier     :: Word -> Word -> Putnum -> Putnum
+>     multiplier w c next val
+>                     = if ((val `ashr` w) `shl` w) == val
+>                         then do hputUnsigned put (val `ashr` w)
+>                                 put c
+>                         else next val
+

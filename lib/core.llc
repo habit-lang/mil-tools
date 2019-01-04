@@ -1,0 +1,122 @@
+> require "core.mil"
+
+Words and Bytes:
+
+> type WordSize  = 32        -- TODO: deprecate in favor of WordBits
+> type WordBits  = WordSize
+> type WordSize1 = 33        -- TODO: should be (WordSize+1)
+
+> external wordToBit  {primWordToBit WordSize} :: Word -> Bit WordSize
+> external bitToWord  {primBitToWord WordSize} :: Bit WordSize -> Word
+> external bitsToWord {primBitToWord n}        :: Bit n -> Word
+
+> type ByteBits = 8
+> type Byte     = Bit ByteBits
+
+> external wordToByte {primWordToBit 8} :: Word -> Byte
+> external addByte    {primBitPlus 8}   :: Byte -> Byte -> Byte
+
+Pointer/Reference equality:
+
+> export refEq :: Ref a -> Ref a -> Bool
+> refEq p q     = refToWord p == refToWord q
+
+> export ptrEq :: Ptr a -> Ptr a -> Bool
+> ptrEq p q     = ptrToWord p == ptrToWord q
+
+Pairs:
+
+> export fst :: Pair a b -> a
+> fst p = case p of Pair a b -> a
+
+> export snd :: Pair a b -> b
+> snd p = case p of Pair a b -> b
+
+Procedures:
+
+Habit uses values of type `Proc t` to represent procedures that,
+when executed, will return a value of type `t`.  (Types like
+`Proc` are also referred to as "monads".)  One of the standard
+tools for working with procedure types like this is the "bind"
+operator, written `>>=`, which can be defined in terms of the
+built-in do notation:
+
+> export >>= :: Proc a -> (a -> Proc b) -> Proc b
+> c >>= f     = do r <- c; f r
+
+The `return` function is used to construct a procedures that
+does no computation other than to return a specified value:
+
+> export return :: a -> Proc a
+> return  = primRet
+
+Stored Values:
+
+One of the reasons for using procedures is to write programs
+that can read and write values stored in memory.  The `get` and
+`set` functions defined below can be used to build procedures
+that do this given a "reference" to the memory location where
+the data is stored (and, in the case of `set`, the value that
+we want to store in that location):
+
+> external get {primReadRefStored t}  :: Ref (Stored t) -> Proc t
+> external set {primWriteRefStored t} :: Ref (Stored t) -> t -> Proc Unit
+
+General applications of these functions include implementing:
+
+1) a "copy" operator that reads a value from one reference and
+immediately writes it to another:
+
+> export >-> :: Ref (Stored t) -> Ref (Stored t) -> Proc Unit
+> src >-> dst = get src >>= set dst
+
+2) Using a function to update the value at a given reference:
+
+> export update   :: Ref (Stored t) -> (t -> t) -> Proc Unit
+> update r f       = do v <- get r
+>                       set r (f v)
+
+3) Swapping the values stored at two (presumably distinct) references:
+
+> export <-> :: Ref (Stored t) -> Ref (Stored t) -> Proc Unit
+> r1 <-> r2   = do s1 <- get r1
+>                  s2 <- get r2
+>                  set r2 s1
+>                  set r1 s2
+
+We also provide a function to build initializers for `Stored` values:
+
+> external initStored {primInitStored t}  :: t -> Init (Stored t)
+
+Arrays:
+
+The `initArray` function can be used to construct an initializer
+for a statically allocated and sized array where the initial value
+of each array element is a function of its index:
+
+> external initArray  {primInitArray n a} :: (Ix n -> Init a) -> Init (Array n a)
+
+A simpler form of initializer can be used in situations where all
+array elements should be initialized to the same value:
+
+> export initArrayAll :: a -> Init (Array n (Stored a))
+> initArrayAll v       = initArray (\ix -> initStored v)
+
+For example, the following function builds an initializer that
+sets every value in an array of pointers to `Null`:
+
+> export nullArray :: Init (Array n (Stored (Ptr a)))
+> nullArray         = initArrayAll Null
+
+Array indexing is represented by the `@` operator:
+
+> external @ {@ n a} :: Ref (Array n a) -> Ix n -> Ref a
+
+An expression of the form `a @ i` returns a reference to the
+`i`th element of the array referenced by the first argument, `a`;
+we can see from the type for `at` that the size of the array is
+`n`, and so we can be sure that the index `i`, of type `Ix n`,
+will always be a valid index for the array, so we can be sure
+that an expression of this form will never result in an out of
+bounds array access.
+

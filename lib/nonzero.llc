@@ -1,0 +1,26 @@
+> require "core.llc"
+
+A (currently underdeveloped) library for working with NonZero Bit vectors.
+
+NonZero Values, Division, and Remainder:
+
+> external nzbitdiv {primNZBitDiv n} :: Bit n -> NZBit n -> Bit n
+> external nzbitrem {primNZBitRem n} :: Bit n -> NZBit n -> Bit n
+
+> export nzdiv :: Word -> NZBit WordSize -> Word
+> x `nzdiv` y   = bitToWord (wordToBit x `nzbitdiv` y)
+
+> export nzrem :: Word -> NZBit WordSize -> Word
+> x `nzrem` y   = bitToWord (wordToBit x `nzbitrem` y)
+
+> external nz2u       {primNZBitFromLiteral  2 n} :: Unit -> NZBit n
+> external nz8u       {primNZBitFromLiteral  8 n} :: Unit -> NZBit n
+> external nz10u      {primNZBitFromLiteral 10 n} :: Unit -> NZBit n
+> external nz16u      {primNZBitFromLiteral 16 n} :: Unit -> NZBit n
+
+> export nz2, nz8, nz10, nz16
+> nz2  = nz2u  Unit
+> nz8  = nz8u  Unit
+> nz10 = nz10u Unit
+> nz16 = nz16u Unit
+

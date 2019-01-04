@@ -1,0 +1,127 @@
+> require "core.llc"
+
+The type `Ix n` represents the set of all natural numbers that are
+less than `n`.
+
+Simple Index Constants:
+
+Numeric literals are interpreted as values of type Word.  As
+a convenience, we provide the following definitions that
+make it easy to use small index values:
+
+> export ix0, ix1, ix2, ix3, ix4, ix5, ix6, ix7 :: Ix n
+> ix0 = ix0u Unit
+> ix1 = ix1u Unit
+> ix2 = ix2u Unit
+> ix3 = ix3u Unit
+> ix4 = ix4u Unit
+> ix5 = ix5u Unit
+> ix6 = ix6u Unit
+> ix7 = ix7u Unit
+
+> external ix0u {primIxFromLiteral 0 n},
+>          ix1u {primIxFromLiteral 1 n},
+>          ix2u {primIxFromLiteral 2 n},
+>          ix3u {primIxFromLiteral 3 n},
+>          ix4u {primIxFromLiteral 4 n},
+>          ix5u {primIxFromLiteral 5 n},
+>          ix6u {primIxFromLiteral 6 n},
+>          ix7u {primIxFromLiteral 7 n}  :: Unit -> Ix n
+
+Other mechanisms for constructing Index values:
+
+> external maxBound   {primIxMaxBound m}       :: Ix m
+> external genMaybeIx {primGenMaybeIx (Maybe (Ix n)) n}
+>            :: Maybe (Ix n) -> (Ix n -> Maybe (Ix n)) -> Word -> Maybe (Ix n)
+> external genLeqIx   {primGenLeqIx (Maybe (Ix n)) m}
+>            :: Maybe (Ix n) -> (Ix m -> Maybe (Ix n)) -> Word -> Ix m -> Maybe (Ix n)
+> external modIx      {primModIx n m}          :: Bit n -> Ix m
+
+> export maybeIx       :: Word -> Maybe (Ix n)
+> maybeIx               = genMaybeIx Nothing Just
+
+> export <=?           :: Word -> Ix m -> Maybe (Ix m)
+> (<=?)                 = genLeqIx Nothing Just
+
+> export wordModIx     :: Word -> Ix m
+> wordModIx w           = modIx (wordToBit w)
+
+Index-oriented arithmetic:
+
+> external genLtInc {primGenLtInc (Maybe (Ix m)) m},
+>          genLtDec {primGenLtDec (Maybe (Ix m)) m}
+>    :: Maybe (Ix m) -> (Ix m -> Maybe (Ix m)) -> Ix m -> Ix m -> Ix m -> Maybe (Ix m)
+
+> export ltIncBy, ltDecBy :: Ix n -> Ix n -> Ix n -> Maybe (Ix n)
+> ltIncBy = genLtInc Nothing Just
+> ltDecBy = genLtDec Nothing Just
+
+The `ltInc` and `ltDec` operators not only compare index
+values, but also return evidence that the left value is less
+than the right value, either by returning an incremented
+left value or a decremented right value, respectively:
+
+- The expression i `ltInc` j returns either Just (i+1) if
+  i<j, or else Nothing.
+
+- The expression i `ltDec` j returns either Just (j-1) if
+  i<j, or else Nothing.
+
+> export ltInc, ltDec :: Ix n -> Ix n -> Maybe (Ix n)
+> ltInc = ltIncBy ix1
+> ltDec = ltDecBy ix1
+
+A loop that works through the elements of an array might
+start at index `ix0` and then increment / add one to the
+index to access subsequent elements, eventually reaching the
+end of the array.  This kind of behavior can be described
+using the following incIx operator; the result of `incIx i`
+is either a value `Just j` where `j=i+1` is a valid index of
+the same type as `i`, or else `Nothing`, which indicates
+that the input `i` was the largest valid index, so
+attempting to increment it would produce an invalid result.
+
+> export incIx, decIx  :: Ix n -> Maybe (Ix n)
+> incIx i = i   `ltInc` maxBound
+> decIx j = ix0 `ltDec` j
+
+As an example, the `foreach` operator describes a form of
+loop that performs a particular computation once for each
+value in a given index type.  Note that it is not necessary
+to specify the upper and lower bounds for the loop because
+these are determined automatically from the type of the
+function `f`:
+
+> export foreach :: (Ix n -> Proc Unit) -> Proc Unit
+> foreach f = loop ix0
+>  where loop i = do f i
+>                    case incIx i of
+>                      Nothing -> return Unit
+>                      Just j  -> loop j
+
+Basic comparisons on index values:
+
+> external eqIx       {primIxEq m},
+>          neIx       {primIxNe m},
+>          ltIx       {primIxLt m},
+>          gtIx       {primIxGt m},
+>          leIx       {primIxLe m},
+>          geIx       {primIxGe m}       :: Ix m -> Ix m -> Bool
+
+Arithmetic on index values:
+
+> external lshrIx     {primIxShiftR n m} :: Ix n -> Ix m  -> Ix n
+
+Conversions from Index Types:
+
+We can use the `ixToBit` function to find the bit vector
+corresponding to a given index value.  Of course, the bit
+vector size must be large enough for the given index type:
+with an index of 256, for example, we will need a bit vector
+with at least 8 bits:
+
+> external ixToBit    {primIxToBit m n}  :: Ix m -> Bit n
+
+> export ixToWord :: Ix m -> Word
+> ixToWord i       = bitToWord (ixToBit i)
+

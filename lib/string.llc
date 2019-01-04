@@ -1,0 +1,27 @@
+> require "core.llc"
+
+A cursor for iterating through the characters of a
+null-terminated string:
+
+> external nextChar = nextCharImp
+>             :: Ref String -> Proc (Maybe (Pair Word (Ref String)))
+
+> nextCharImp  :: Ref String -> Proc (Maybe (Pair Word Word))
+> nextCharImp r = do c <- loadChar r
+>                    if c == 0
+>                      then return Nothing
+>                      else return (Just (Pair c (1 + refToWord r)))
+
+Some sample applications (which may or may not belong in a
+library like this):
+
+> foldString            :: a -> (a -> Word -> Proc a) -> Ref String -> Proc a
+> foldString init step s = loop s init
+>  where loop s a = case<- nextChar s of
+>                     Nothing -> return a
+>                     Just p  -> do w <- step a (fst p)
+>                                   loop (snd p) w
+
+> export length :: Ref String -> Proc Word
+> length         = foldString 0 (\len c -> return (len + 1))
+

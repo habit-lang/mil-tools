@@ -1,0 +1,69 @@
+> require "core.llc"
+> require "ix.llc"
+
+This library provides a reuseable implementation for an in-place
+selection sort of an array of stored values.  The library is
+reusable in the sense that it does not fix any particular array
+size, element type, or comparison operation.  The library provides
+some additional flexibility by exporting a function,
+`selectionSortSeg`, that sorts the array elements within a given
+segment but does not touch elements outside that range.  This
+operation is useful in applications where only a portion of an
+array is used to store data, but it can also be used to sort a
+full array by specifying 0 and maxBound as the segment endpoints:
+
+> export selectionSort :: (a -> a -> Bool) -> Ref (Array n (Stored a)) -> Proc Unit
+> selectionSort lt a    = selectionSortSeg lt a ix0 maxBound
+
+The `selectionSortSeg` operation is implemented by a simple loop
+that, at each step, uses the `selectSmallest operation, defined
+below, to find the smallest element in the given segment and move
+it (using a swap) to the front of the segment:
+
+> export selectionSortSeg :: (a -> a -> Bool) -> Ref (Array n (Stored a)) -> Ix n -> Ix n -> Proc Unit
+> selectionSortSeg lt a i n
+>   = do selectSmallest lt a i n
+>        case i `ltInc` n of
+>          Just j  -> selectionSortSeg lt a j n
+>          Nothing -> return Unit
+
+The implementation of `selectSmallest` distinguishes between three
+possibilities.  The first is that the specified segment contains
+only one element (or is empty), in which case there is no work to
+do.  The second, encapsulated in the local `scan` function, is
+that we read the first element in the segment, but do not find a
+smaller value as we scan the remaining elements.  In this case, no
+further action needs to be taken because the smallest element in
+the segment is already in the correct place.  The third
+possibility, corresponding to the local function `replace`, occurs
+when we have found a smaller element `aj` (at index `j` in the
+array) that should be swapped with the original first element
+(`ai`, at index `i`), so long as we do not find an even smaller
+element further along in the array segment.
+
+> selectSmallest :: (a -> a -> Bool) -> Ref (Array n (Stored a)) -> Ix n -> Ix n -> Proc Unit
+> selectSmallest lt a i n
+>   = case i `ltInc` n of
+>       Nothing -> return Unit
+>       Just j  -> do ai <- get (a @ i)
+>                     scan i ai j n
+>  where
+>   scan i ai j n               -- scan for item smaller than ai in [j..n]
+>    = do aj <- get (a @ j)
+>         if aj `lt` ai then    -- found a smaller value, so we will be replacing
+>           repl i ai j aj j n  -- the value at index i
+>         else case j `ltInc` n of
+>                Just k  -> scan i ai k n -- continue scan of array
+>                Nothing -> return Unit   -- segment end, ai is smallest value
+
+>   repl i ai j aj l n          -- will swap ai and aj ...
+>    = case l `ltInc` n of      -- ... unless we find a smaller item in (l..n]
+>        Just k  -> do ak <- get (a @ k)
+>                      if ak `lt` aj then   -- ak is our new smallest element
+>                        repl i ai k ak k n
+>                      else                 -- aj is still smaller
+>                        repl i ai j aj k n
+>
+>        Nothing -> do set (a @ i) aj  -- complete the swap of the values
+>                      set (a @ j) ai  -- at indices i and j
+
