@@ -529,21 +529,36 @@ following form:
 will automatically be rewritten as the following sequence of
 definitions:
 
-    entrypoint bar :: [A] ->> [[B] ->> C]
-    bar <- k2{}
+    entrypoint bar :: A -> B -> C
+    bar      <- b2[]
 
-    k2     :: {} [A] ->> [[B] ->> C]
-    k2{} t0 = k1{t0}
+    b2       :: [] >>= [A -> B -> C]
+    b2[]      = t0 <- k2{}
+                Func(t0)
+
+    k2       :: {} [A] ->> [B -> C]
+    k2{} t0   = b1[t0]
+
+    b1       :: [A] >>= [B -> C]
+    b1[t0]    = t1 <- k1{t0}
+                Func(t1)
 
     k1       :: {A} [B] ->> C
     k1{t0} t1 = b0[t0, t1]
 
-    b0       :: [A,B] -> C
+    b0       :: [A,B] >>= C
     b0[t0,t1] = code
 
-(This assumes that `code` will return a tuple of results specified
+This assumes that `code` will return a tuple of results specified
 by the type `C`, assuming that variables `t0` and `t1` have types
-`A` and `B`, respectively.)
+`A` and `B`, respectively.  The Func constructor used here is part
+of the MIL definition for the -> type constructor:
+
+    data a -> b = Func ([a] ->> [b])
+
+In other words, a MIL tail of the form `Func(t)` will take a
+function value with type of the form `[a] ->> [b]` and repackage
+it as an LC function type of the form `a -> b`.
 
 ### Primitive definitions:
 
@@ -578,14 +593,22 @@ curried function with the same name.  For example:
 
     -- Generated code:
     -- Corresponds to an LC function of type Word -> Word -> Word
-    foo :: [Word] ->> [[Word] ->> [Word]]
-    foo <- k2{}
+    foo      :: Word -> Word -> Word
+    foo      <- b2[]
 
-    k2 :: {} [Word] ->> [[Word] ->> [Word]]
-    k2{} t0 = k1{t0}
+    b2       :: [] >>= [Word -> Word -> Word]
+    b2[]      = t0 <- k1{}
+                Func(t0)
 
-    k1 :: {Word} [Word] ->> [Word]
-    k1{t0} t1 = foo((t0, t1))
+    k1       :: {} [Word] ->> [Word -> Word]
+    k1{} t0   = b1[t0]
+
+    b1       :: [Word] >>= [Word -> Word]
+    b1[t0]    = t1 <- k0{t0}
+                Func(t1)
+
+    k0       :: {Word} [Word] ->> [Word]
+    k0{t0} t1 = foo((t0, t1))
 
 If an additional `"[" "]"` annotation is included, then the generated
 code for the top-level variable will include an additional (empty tuple)
@@ -596,23 +619,42 @@ argument corresponding to a monadic thunks:
 
     -- Generated code:
     -- Corresponds to an LC function of type Word -> Word -> Proc Word
-    foo :: [Word] ->> [[Word] ->> [[] ->> [Word]]]
-    foo <- k2{}
+    foo        :: Word -> Word -> Proc Word
+    foo        <- b3[]
 
-    k2 :: {} [Word] ->> [[Word] ->> [[] ->> [Word]]]
-    k2{} t0 = k1{t0}
+    b3         :: [] >>= [Word -> Word -> Proc Word]
+    b3[]        = t0 <- k2{}
+                  Func(t0)
 
-    k1 :: {Word} [Word] ->> [[] ->> [Word]]
-    k1{t0} t1 = k0{t0, t1}
+    k2         :: {} [Word] ->> [Word -> Proc Word]
+    k2{} t0     = b2[t0]
 
-    k0 :: {Word, Word} [] ->> [Word]
+    b2         :: [Word] >>= [Word -> Proc Word]
+    b2[t0]      = t1 <- k1{t0}
+                  Func(t1)
+
+    k1         :: {Word} [Word] ->> [Proc Word]
+    k1{t0} t1   = b1[t0, t1]
+
+    b1         :: [Word, Word] >>= [Proc Word]
+    b1[t0, t1]  = t2 <- k0{t0, t1}
+                  Proc(t2)
+
+    k0           :: {Word, Word} [] ->> [Word]
     k0{t0, t1} [] = foo((t0, t1))
 
-The difference between these two code fragments occurs in the definition
-of closure `k1`, either invoking the primitive directly (with the `{}`
-annotation) or else creating a further closure (with the `{} []` annotation),
-which must then be entered (with an `[]` argument list) before the
-primitive function is invoked.
+Note that the `Proc` constructor used here is from the MIL definition
+of the `Proc` monad, which can be thought of as being introduced by a
+definition of the form:
+
+    data Proc a = Proc ([] ->> [a])
+
+A key difference in the two code fragments above is in the definition
+of closure `k0`, which invokes the primitive directly as soon as the
+second argument is provided (if the `{}` annotation is used), or else
+requires both arguments to have been captured in the closure and expects
+a further empty argument list, `[]`, before the primitive function is
+invoked (if the `{} []` annotation is used).
 
 ### Type annotations:
 
