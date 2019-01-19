@@ -22,20 +22,14 @@ import compiler.*;
 import core.*;
 import mil.*;
 
-class EFrom extends PosExpr {
-
-  private DefVar v;
+class EDo extends PosExpr {
 
   private Expr e;
 
-  private Expr e1;
-
   /** Default constructor. */
-  EFrom(Position pos, DefVar v, Expr e, Expr e1) {
+  EDo(Position pos, Expr e) {
     super(pos);
-    this.v = v;
     this.e = e;
-    this.e1 = e1;
   }
 
   /**
@@ -44,10 +38,8 @@ class EFrom extends PosExpr {
    * child nodes.
    */
   void indent(IndentOutput out, int n) {
-    indent(out, n, "EFrom");
-    out.indent(n + 1, v.toString());
+    indent(out, n, "EDo");
     e.indent(out, n + 1);
-    e1.indent(out, n + 1);
   }
 
   /**
@@ -55,10 +47,8 @@ class EFrom extends PosExpr {
    * that all of the identifiers it references correspond to bound variables, and returning the set
    * of free variables in the term.
    */
-  DefVars inScopeOf(Handler handler, MILEnv milenv, Env env) { // v <- e; e1
-    return DefVars.add(
-        e.inScopeOf(handler, milenv, env),
-        v.remove(e1.inScopeOf(handler, milenv, new VarEnv(env, v))));
+  DefVars inScopeOf(Handler handler, MILEnv milenv, Env env) { // do e
+    return e.inScopeOf(handler, milenv, env);
   }
 
   /**
@@ -82,34 +72,28 @@ class EFrom extends PosExpr {
    * fixed by rewriting the code (for this example, "length Nil" is an unnecessarily complicated way
    * of writing "0") or by adding type information.
    */
-  void findAmbigTVars(TVars gens) throws Failure { // id<-e; e1
+  void findAmbigTVars(TVars gens) throws Failure { // do e
     e.findAmbigTVars(gens);
-    e1.findAmbigTVars(gens);
   }
 
   /**
    * Infer a type for this expression, using information in the tis parameter to track the set of
    * type variables that appear in an assumption.
    */
-  Type inferType(TVarsInScope tis) throws Failure { // v <- e; e1
-    Type proc = DataType.proc.asType();
-    e.checkType(tis, new TAp(proc, v.freshType(Tyvar.star)));
-    type = new TAp(proc, new TVar(Tyvar.res));
-    e1.checkType(new TVISVar(tis, v), type);
+  Type inferType(TVarsInScope tis) throws Failure { // do e
+    type = new TAp(DataType.proc.asType(), new TVar(Tyvar.res));
+    e.checkType(tis, type);
     return type;
   }
 
   /** Check that this expression will produce a value of the specified type. */
-  void checkType(TVarsInScope tis, Type t) throws Failure { // v <- e; e1
-    Type proc = DataType.proc.asType();
-    e.checkType(tis, new TAp(proc, v.freshType(Tyvar.star)));
-    t.unify(pos, new TAp(proc, new TVar(Tyvar.res)));
-    e1.checkType(new TVISVar(tis, v), type = t);
+  void checkType(TVarsInScope tis, Type t) throws Failure { // do e
+    t.unify(pos, new TAp(DataType.proc.asType(), new TVar(Tyvar.res)));
+    e.checkType(tis, type = t);
   }
 
-  Expr lift(LiftEnv lenv) { // v <- e; e1
+  Expr lift(LiftEnv lenv) { // do e
     e = e.lift(lenv);
-    e1 = e1.lift(lenv);
     return this;
   }
 
@@ -117,10 +101,24 @@ class EFrom extends PosExpr {
    * Compile an expression into a Tail. The continuation kt maps tails (of the same type as this
    * expression) to code sequences (that return a value of the type specified by kty).
    */
-  Code compTail(
-      final CGEnv env, final Block abort, final Type kty, final TailCont kt) { // v <- e; e1
-    debug.Internal.error("Bind expressions have monadic type");
-    return null;
+  Code compTail(final CGEnv env, final Block abort, final Type kty, final TailCont kt) { // do e
+    // returns t <- k{...}; kt.with(Proc(t))
+    // where k{...} [] = b[...]
+    //       b[...]    = monadic code for e
+    Type rty = type.argOf(null); // Result type for this expression (i.e., e :: Proc rty)
+    Type cty = Type.milfun(Type.empty, Type.tuple(rty));
+    Temp t = new Temp(cty);
+    return new Bind(
+        t,
+        new ClosAlloc(
+            new LCClosureDefn(
+                pos,
+                cty,
+                Temp.noTemps,
+                new BlockCall(
+                    new LCBlock(
+                        pos, rty, e.compTailM(env, MILProgram.abort, rty, TailCont.done))))),
+        kt.with(Cfun.Proc.withArgs(t)));
   }
 
   /**
@@ -128,18 +126,7 @@ class EFrom extends PosExpr {
    * continuation kt maps tails (that produce values of type T) to code sequences (that return a
    * value of the type specified by kty).
    */
-  Code compTailM(
-      final CGEnv env, final Block abort, final Type kty, final TailCont kt) { // v <- e; e1
-    return e.compTailM(
-        env,
-        MILProgram.abort,
-        kty,
-        new TailCont() {
-          Code with(final Tail t) {
-            Temp t1 = v.freshTemp();
-            return new Bind(
-                t1, t, e1.compTailM(new CGEnvVar(env, v, t1), MILProgram.abort, kty, kt));
-          }
-        });
+  Code compTailM(final CGEnv env, final Block abort, final Type kty, final TailCont kt) { // do e
+    return e.compTailM(env, abort, kty, kt);
   }
 }

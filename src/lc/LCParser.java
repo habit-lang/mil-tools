@@ -294,8 +294,11 @@ public class LCParser extends CoreParser implements LCTokens {
         }
 
       case DO:
-        lexer.nextToken(/* DO */ );
-        return parseBlock();
+        {
+          Position pos = lexer.getPos();
+          lexer.nextToken(/* DO */ );
+          return new EDo(pos, parseBlock());
+        }
 
       case IF:
         return parseCond(false);
@@ -412,8 +415,10 @@ public class LCParser extends CoreParser implements LCTokens {
 
     if (ifFrom) {
       DefVar v = new FreshVar();
-      return new EFrom(
-          pos, v, test, Expr.ifthenelse(pos, new EVar(pos, v), post, ifTrue, posf, ifFalse));
+      return new EDo(
+          pos,
+          new EFrom(
+              pos, v, test, Expr.ifthenelse(pos, new EVar(pos, v), post, ifTrue, posf, ifFalse)));
     } else {
       return Expr.ifthenelse(pos, test, post, ifTrue, posf, ifFalse);
     }
@@ -439,7 +444,7 @@ public class LCParser extends CoreParser implements LCTokens {
 
     if (caseFrom) {
       DefVar v = new FreshVar();
-      return new EFrom(pos, v, discr, new ECase(pos, new EVar(pos, v), alts));
+      return new EDo(pos, new EFrom(pos, v, discr, new ECase(pos, new EVar(pos, v), alts)));
     } else {
       return new ECase(pos, discr, alts);
     }
