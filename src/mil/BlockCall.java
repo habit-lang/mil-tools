@@ -227,7 +227,7 @@ public class BlockCall extends Call {
   }
 
   Code forceSuffixInline(Block d) {
-    MILProgram.report("forced suffixInline for call to block " + this + " from block " + d);
+    MILProgram.report("forced suffixInline for call to block " + b + " from block " + d);
     return b.forceSuffixInline(args);
   }
 
