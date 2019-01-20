@@ -213,6 +213,14 @@ public class BlockCall extends Call {
     return (src.getScc() == b.getScc()) && b.detectLoops(new Blocks(src, visited));
   }
 
+  /**
+   * Return the number of occurrences of the block mentioned in this call; if the result is one,
+   * then this must be the only call to the block in this program.
+   */
+  int getOccurs() {
+    return b.getOccurs();
+  }
+
   Code prefixInline(Block src, Temp[] rs, Code c) {
     return b.prefixInline(src, args, rs, c);
   }

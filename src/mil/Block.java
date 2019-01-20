@@ -454,7 +454,7 @@ public class Block extends Defn {
     BlockCall bc = isGotoBlock();
     if (bc == null) {
       code = code.inlining(this);
-    } else if (isEntrypoint) {
+    } else if (isEntrypoint && bc.getOccurs() == 1) {
       code = bc.forceSuffixInline(this);
     }
   }
