@@ -43,9 +43,9 @@ element further along in the array segment.
 
 > selectSmallest :: (a -> a -> Bool) -> Ref (Array n (Stored a)) -> Ix n -> Ix n -> Proc Unit
 > selectSmallest lt a i n
->   = case i `ltInc` n of
->       Nothing -> return Unit
->       Just j  -> do ai <- get (a @ i)
+>   = do case i `ltInc` n of
+>          Nothing -> return Unit
+>          Just j  -> ai <- get (a @ i)
 >                     scan i ai j n
 >  where
 >   scan i ai j n               -- scan for item smaller than ai in [j..n]
@@ -57,13 +57,13 @@ element further along in the array segment.
 >                Nothing -> return Unit   -- segment end, ai is smallest value
 
 >   repl i ai j aj l n          -- will swap ai and aj ...
->    = case l `ltInc` n of      -- ... unless we find a smaller item in (l..n]
->        Just k  -> do ak <- get (a @ k)
+>    = do case l `ltInc` n of   -- ... unless we find a smaller item in (l..n]
+>           Just k  -> ak <- get (a @ k)
 >                      if ak `lt` aj then   -- ak is our new smallest element
 >                        repl i ai k ak k n
 >                      else                 -- aj is still smaller
 >                        repl i ai j aj k n
 >
->        Nothing -> do set (a @ i) aj  -- complete the swap of the values
+>           Nothing -> set (a @ i) aj  -- complete the swap of the values
 >                      set (a @ j) ai  -- at indices i and j
 

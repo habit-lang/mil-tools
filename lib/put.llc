@@ -7,7 +7,7 @@ formatting functions is parameterized by a "putchar" function.
 > require "bit.llc"
 > require "nonzero.llc"
 > require "string.llc"
-> require "noinline.mil"
+> -- require "noinline.mil"
 
 PRINTING STRINGS AND NUMBERS:
 -----------------------------
@@ -66,9 +66,9 @@ unsigned or signed interpretation:
 
 > export hputUnsigned, hputSigned :: Putchar -> Putnum
 > hputUnsigned     = hputDigits nz10
-> hputSigned put n = if n <+ 0
->                      then do put '-'; hputUnsigned put (neg n)
->                      else hputUnsigned put n
+> hputSigned put n = do if n <+ 0
+>                         then put '-'; hputUnsigned put (neg n)
+>                         else hputUnsigned put n
 
 We also provide simple functions for printing out values in
 binary, octal, and hexadecimal notation:
@@ -172,9 +172,9 @@ The complete implementation is as follows:
 >                                    if q == 0 then pad i
 >                                              else loop j q
 >        pad i     = do padloop i; output i
->        padloop i = case i `ltInc` min of
->                      Nothing -> return Unit
->                      Just j  -> do put padchar
+>        padloop i = do case i `ltInc` min of
+>                         Nothing -> return Unit
+>                         Just j  -> put padchar
 >                                    padloop j
 >        output i  = do c <- get (itoaBuf @ i)
 >                       put (bitsToWord c)
@@ -204,11 +204,11 @@ correspond to a notation that used all 10 numeric digits and all
 >        (hputUnsigned put)))) -- otherwise no suffix
 >    where 
 >     ifZero         :: Putnum -> Putnum
->     ifZero next val = if val == 0 then put '0' else next val
+>     ifZero next val = do if val == 0 then put '0' else next val
 >     multiplier     :: Word -> Word -> Putnum -> Putnum
 >     multiplier w c next val
->                     = if ((val `ashr` w) `shl` w) == val
->                         then do hputUnsigned put (val `ashr` w)
+>                     = do if ((val `ashr` w) `shl` w) == val
+>                            then hputUnsigned put (val `ashr` w)
 >                                 put c
->                         else next val
+>                            else next val
 
