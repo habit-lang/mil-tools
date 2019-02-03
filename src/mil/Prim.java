@@ -184,6 +184,8 @@ public class Prim {
 
   protected static final BlockType flagToWordType = new BlockType(flagTuple, wordTuple);
 
+  protected static final BlockType wordToFlagType = new BlockType(wordTuple, flagTuple);
+
   protected static final BlockType relopType = new BlockType(wordWordTuple, flagTuple);
 
   /** Make a clone of this Prim with a (possibly) new type. */
@@ -1506,6 +1508,43 @@ public class Prim {
         llvm.Local lhs,
         llvm.Code c) {
       return new llvm.Op(lhs, new llvm.Zext(args[0].toLLVMAtom(lm, vm, s), llvm.Type.word()), c);
+    }
+  }
+
+  public static final PrimWtoF wordToFlag = new wordToFlag();
+
+  public static class wordToFlag extends PrimWtoF {
+
+    private wordToFlag() {
+      this(wordToFlagType);
+    }
+
+    private wordToFlag(BlockType bt) {
+      super("wordToFlag", PURE, bt);
+    }
+
+    public Prim clone(BlockType bt) {
+      return new wordToFlag(bt);
+    }
+
+    public boolean op(long n) {
+      return (n & 1) != 0;
+    }
+
+    /**
+     * Generate code for a MIL PrimCall with the specified arguments in a context where the
+     * primitive is expected to return a result (that should be captured in the specified lhs), and
+     * then execution is expected to continue on to the specified code, c.
+     */
+    llvm.Code toLLVMPrimCont(
+        LLVMMap lm,
+        VarMap vm,
+        TempSubst s,
+        Atom[] args,
+        boolean isTail,
+        llvm.Local lhs,
+        llvm.Code c) {
+      return new llvm.Op(lhs, new llvm.Trunc(args[0].toLLVMAtom(lm, vm, s), llvm.Type.i1), c);
     }
   }
 

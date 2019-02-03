@@ -164,6 +164,12 @@ public class PrimCall extends Call {
       return (a == null) ? flagToWordVar(x, facts) : Prim.flagToWord.fold(a.getVal());
     }
 
+    if (p == Prim.wordToFlag) {
+      Atom x = args[0];
+      Word a = x.isWord();
+      return (a == null) ? wordToFlagVar(x, facts) : Prim.wordToFlag.fold(a.getVal());
+    }
+
     if (p == Prim.add) {
       Atom x = args[0], y = args[1];
       Word a = x.isWord(), b = y.isWord();
@@ -668,6 +674,10 @@ public class PrimCall extends Call {
   }
 
   private static Code flagToWordVar(Atom x, Facts facts) {
+    return null;
+  }
+
+  private static Code wordToFlagVar(Atom x, Facts facts) {
     return null;
   }
 
