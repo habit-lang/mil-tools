@@ -182,15 +182,17 @@ public class TopLevel extends TopDefn {
    * definitions are at the top level.)
    */
   void generalizeType(Handler handler) throws Failure {
-    TVars gens = defining.tvars();
-    generics = TVar.generics(gens, null);
-    debug.Log.println(
-        "generics for " + this + ": " + TVar.show(generics) + " in type " + defining.skeleton());
-    declared = defining.generalize(generics);
-    debug.Log.println("TopLevel group inferred " + toString() + " :: " + declared);
-    findAmbigTVars(handler, gens); // search for ambiguous type variables ...
-    for (int i = 0; i < lhs.length; i++) {
-      lhs[i].generalizeLhsType(pos, handler, gens, generics);
+    if (defining != null) { // defining will be null if previous stage of type checker failed
+      TVars gens = defining.tvars();
+      generics = TVar.generics(gens, null);
+      debug.Log.println(
+          "generics for " + this + ": " + TVar.show(generics) + " in type " + defining.skeleton());
+      declared = defining.generalize(generics);
+      debug.Log.println("TopLevel group inferred " + toString() + " :: " + declared);
+      findAmbigTVars(handler, gens); // search for ambiguous type variables ...
+      for (int i = 0; i < lhs.length; i++) {
+        lhs[i].generalizeLhsType(pos, handler, gens, generics);
+      }
     }
   }
 
