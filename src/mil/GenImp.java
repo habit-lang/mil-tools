@@ -306,7 +306,7 @@ public class GenImp extends ExtImp {
             int width = ts[0].validWidth();
             switch (width) {
               case 0:
-                return new DataAlloc(Cfun.Unit).withArgs().constClosure(pos, 1);
+                return unaryUnit(pos);
 
               case 1:
                 {
@@ -412,7 +412,11 @@ public class GenImp extends ExtImp {
             BigInteger v = ts[0].validNat(); // Value of literal
             BigInteger m = ts[1].validIndex(); // Modulus for index type
             Type.validBelow(v, m); // v < m
-            return new Return(new Word(v.longValue())).constClosure(pos, 1);
+            long n = m.longValue();
+            return (n == 1)
+                ? unaryUnit(pos)
+                : new Return((n == 2) ? Flag.fromBool(v.signum() > 0) : new Word(v.longValue()))
+                    .constClosure(pos, 1);
           }
         });
 
@@ -422,7 +426,10 @@ public class GenImp extends ExtImp {
         new Generator(Prefix.nat, ixA) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger m = ts[0].validIndex(); // Modulus for index type
-            return new Return(new Word(m.longValue() - 1));
+            long n = m.longValue();
+            return (n == 1)
+                ? new DataAlloc(Cfun.Unit).withArgs()
+                : new Return((n == 2) ? Flag.True : new Word(n - 1));
           }
         });
 
@@ -437,15 +444,38 @@ public class GenImp extends ExtImp {
               throw new GeneratorException(
                   "Width " + w + " is not large enough for index value " + m);
             }
+            long l = m.longValue(); // Modulus as a long
             Temp[] vs = Temp.makeTemps(1); // Argument holds incoming index
-            int n = Word.numWords(w);
-            Atom[] as = new Atom[n];
-            as[0] = vs[0];
-            for (int i = 1; i < n; i++) { // In general, could return multiple words
-              as[i] = Word.Zero;
+            Tail t;
+            if (w == 0) {
+              t = Cfun.Unit.withArgs(); // :: Unit -> Unit
+            } else if (w == 1) {
+              if (l == 1) { // :: Unit -> Flag
+                t = new Return(Flag.False);
+              } else { // :: Flag -> Flag
+                t = new Return(vs[0]);
+              }
+            } else {
+              int n = Word.numWords(w);
+              Atom[] as = new Atom[n]; // Array of atoms
+              t = new Return(as);
+              for (int i = 1; i < n; i++) { // all but least sig word will be zero
+                as[i] = Word.Zero;
+              }
+              if (l == 1) { // :: Unit -> Bit w ... return all zeros
+                as[0] = Word.Zero;
+              } else if (l == 2) { // :: Flag -> Bit w
+                Temp[] ws = Temp.makeTemps(1);
+                Temp u = new Temp();
+                as[0] = u;
+                Block b =
+                    new Block(pos, ws, new Bind(u, Prim.flagToWord.withArgs(ws[0]), new Done(t)));
+                t = new BlockCall(b).withArgs(vs[0]);
+              } else { // :: Word -> Bit w ... insert arg as lsw, any other words zero
+                as[0] = vs[0];
+              }
             }
-            ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, vs, new Return(as));
-            return new ClosAlloc(k).withArgs();
+            return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, vs, t)).withArgs();
           }
         });
   }
@@ -459,9 +489,19 @@ public class GenImp extends ExtImp {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger n = ts[0].validIndex(); // Modulus for index type
             int p = validIxShift(ts[1], n); // Modulus for shift amount such that n = 2^p
-            Temp[] vs = Temp.makeTemps(2); // One word for each Ix argument
-            Block b = new Block(pos, vs, maskTail(Prim.shl.withArgs(vs[0], vs[1]), p));
-            return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
+            Temp[] vs = Temp.makeTemps(2); // One parameter for each Ix argument
+            Code code;
+            if (p > 2) { // :: Word -> Word -> Word
+              code = maskTail(Prim.shl.withArgs(vs[0], vs[1]), p);
+            } else if (p == 2) { // :: Word -> Flag -> Word
+              Temp t = new Temp();
+              code =
+                  new Bind(
+                      t, Prim.flagToWord.withArgs(vs[1]), maskTail(Prim.shl.withArgs(vs[0], t), p));
+            } else /* (p==1) */ { // :: Flag -> Unit -> Flag
+              code = new Done(new Return(vs[0]));
+            }
+            return new BlockCall(new Block(pos, vs, code)).makeBinaryFuncClosure(pos, 1, 1);
           }
         });
 
@@ -472,7 +512,20 @@ public class GenImp extends ExtImp {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger n = ts[0].validIndex(); // Modulus for index type
             int p = validIxShift(ts[1], n); // Modulus for shift amount such that n = 2^p
-            return new PrimCall(Prim.lshr).makeBinaryFuncClosure(pos, 1, 1);
+            if (p > 2) { // :: Word -> Word -> Word
+              return new PrimCall(Prim.lshr).makeBinaryFuncClosure(pos, 1, 1);
+            }
+            Temp[] vs = Temp.makeTemps(2); // One parameter for each Ix argument
+            Code code;
+            if (p == 2) { // :: Word -> Flag -> Word
+              Temp t = new Temp();
+              code =
+                  new Bind(
+                      t, Prim.flagToWord.withArgs(vs[1]), new Done(Prim.lshr.withArgs(vs[0], t)));
+            } else /* (p==1) */ { // :: Flag -> Unit -> Flag
+              code = new Done(new Return(vs[0]));
+            }
+            return new BlockCall(new Block(pos, vs, code)).makeBinaryFuncClosure(pos, 1, 1);
           }
         });
   }
@@ -501,21 +554,40 @@ public class GenImp extends ExtImp {
         "primModIx",
         new Generator(Prefix.nat_nat, fun(bitA, ixB)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-            int w = ts[0].validWidth(2); // Width of bitdata type
-            long m = ts[1].validIndex().longValue(); // Modulus for index type
+            int w = ts[0].validWidth(); // Width of bitdata type
             int n = Word.numWords(w);
-            if ((m & (m - 1)) == 0) { // Special case for power of two
-              Temp[] args = Temp.makeTemps(n);
-              Tail t = Prim.and.withArgs(args[0], m - 1);
-              return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t)).withArgs();
-            } else if (n != 1) {
+            BigInteger bm = ts[1].validIndex(); // Modulus for index type
+            long m = bm.longValue();
+            if (m == 1) {
+              return unaryUnit(pos); // :: a -> Unit
+            } else if (m == 2) {
+              return (w == 0)
+                  ? new Return(Flag.False).constClosure(pos, n) // :: Unit -> Flag
+                  : (w == 1)
+                      ? new Return().makeUnaryFuncClosure(pos, 1) // :: Flag -> Flag
+                      : new PrimCall(Prim.wordToFlag)
+                          .makeUnaryFuncClosure(pos, n); // :: Word.. -> Flag
+            } else {
+              if (w == 0) { // :: Unit -> Word
+                return new Return(Word.Zero).constClosure(pos, 1);
+              } else if (w == 1) { // :: Flag -> Word
+                return new PrimCall(Prim.flagToWord).makeUnaryFuncClosure(pos, 1);
+              } else if (BigInteger.ONE.shiftLeft(w).compareTo(bm)
+                  <= 0) { // 2^w <= m: can use identity
+                return new Return().makeUnaryFuncClosure(pos, 1);
+              } else if ((m & (m - 1)) == 0) { // special case for power of two
+                Temp[] args = Temp.makeTemps(n);
+                Tail t = Prim.and.withArgs(args[0], m - 1);
+                return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t)).withArgs();
+              } else if (n == 1) {
+                Temp[] args = Temp.makeTemps(n);
+                Tail t = Prim.rem.withArgs(args[0], m);
+                return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t)).withArgs();
+              }
+              // TODO: add support for n>1, mod not a power of two ...
               throw new GeneratorException(
                   "Modulus must be a power of two, or bit vector must fit in one word.");
             }
-            Temp[] args =
-                Temp.makeTemps(n); // TODO: add support for n>1, mod not a power of two ...
-            Tail t = Prim.rem.withArgs(args[0], m);
-            return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t)).withArgs();
           }
         });
 
@@ -524,19 +596,26 @@ public class GenImp extends ExtImp {
         "primRelaxIx",
         new Generator(Prefix.nat_nat, fun(ixA, ixB)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-            BigInteger n = ts[0].validIndex(); // Smaller index modulus
-            BigInteger m = ts[1].validIndex(); // Larger index modulus
-            if (n.compareTo(m) > 0) {
+            long n = ts[0].validIndex().longValue(); // Smaller index modulus
+            long m = ts[1].validIndex().longValue(); // Larger index modulus
+            if (n > m) {
               throw new GeneratorException("First argument must not be larger than the second");
+            } else if (n == m || n > 2) {
+              // TODO: the type checker will infer a *polymorphic* type for the identity function
+              // used here, which could
+              // trip up the LLVM code generator if it is expecting a monomorphic type (although
+              // that may not happen
+              // often in practice because this definition is likely to be inlined by the
+              // optimizer).  (We could break
+              // out separate cases here for Word -> Word, Flag-> Flag, and Unit->Unit ...)
+              return new Return().makeUnaryFuncClosure(pos, 1);
+            } else if (n == 2) { // :: Flag -> Word
+              return new PrimCall(Prim.flagToWord).makeUnaryFuncClosure(pos, 1);
+            } else if (m > 2) { // :: Unit -> Word
+              return new Return(Word.Zero).constClosure(pos, 1);
+            } else /* n=1,m=2 */ { // :: Unit -> Flag
+              return new Return(Flag.False).constClosure(pos, 1);
             }
-            // We implement relaxIx as the identity function (Ix n and Ix m values are both
-            // represented as Word values).
-            // TODO: the type checker will infer a *polymorphic* type for this definition, which
-            // will trip up the LLVM
-            // code generator (although that will likely not happen in practice because this
-            // definition should be inlined
-            // by the optimizer).
-            return new Return().makeUnaryFuncClosure(pos, 1);
           }
         });
 
@@ -546,7 +625,7 @@ public class GenImp extends ExtImp {
         new Generator(Prefix.star_nat, fun(gA, fun(ixB, gA), ixB, fun(ixB, ixB, gA))) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
-            BigInteger m = ts[1].validIndex(); // Index modulus, will be > 0
+            long m = ts[1].validIndex().longValue(); // Index modulus, will be > 0
 
             // The intended semantics for genLtInc is given by the following:
             //   genLtInc nothing just n i j = let k = i + n
@@ -558,28 +637,79 @@ public class GenImp extends ExtImp {
             // we can be sure that (i + n) will not produce an overflow and that i <= k will be
             // trivially satisfied.  For that reason, the generated code only tests that k <= j.
 
-            Block yes = enterBlock(pos); // yes[j, k] = j @ k
-            Block no = returnBlock(pos, nl); // no[thing] = return thing
-
+            // Parameters for a block:   b[nothing,..., just, n, i, j] = ...
             Temp[] ns = Temp.makeTemps(nl); // arguments for nothing parameter
             Temp[] jnij = Temp.makeTemps(4); // arguments for just, n, i, j
-            Temp k = new Temp(); // temp to hold i + n
-            Temp t = new Temp(); // temp to hold result of test
-            return new BlockCall(
-                    new Block(
-                        pos,
-                        Temp.append(ns, jnij), // b[nothing,..., just, n, i, j]
-                        new Bind(
-                            k,
-                            Prim.add.withArgs(jnij[2], jnij[1]), //   = k <- add((i, n))
-                            new Bind(
-                                t,
-                                Prim.ule.withArgs(k, jnij[3]), //     t <- ule((k, j))
-                                new If(
-                                    t,
-                                    new BlockCall(
-                                        yes, new Atom[] {jnij[0], k}), //     if t then yes[just, k]
-                                    new BlockCall(no, ns)))))) //          else no[nothing..]
+            Code code;
+
+            if (m == 1) { // :: a -> (Unit -> a) -> Unit -> Unit -> Unit -> a
+              Temp u = new Temp();
+              code =
+                  new Bind(
+                      u,
+                      Cfun.Unit.withArgs(), // u <- Unit()
+                      new Done(new Enter(jnij[0], u))); // just @ u
+
+            } else if (m == 2) { // :: a -> (Flag -> a) -> Flag -> Flag -> Flag -> a
+              Temp[] js = Temp.makeTemps(2);
+              Temp s = new Temp(); // sum as a Flag
+              Block yes =
+                  new Block(
+                      pos,
+                      js, // yes[j, sw]
+                      new Bind(
+                          s,
+                          Prim.wordToFlag.withArgs(js[1]), //   = s <- wordToFlag((sw))
+                          new Done(new Enter(js[0], s)))); //     j @ s
+
+              Temp nw = new Temp(); // n as a word
+              Temp iw = new Temp(); // i as a word
+              Temp kw = new Temp(); // sum (of n and i) as a word
+              Temp jw = new Temp(); // j as a word
+              Temp t = new Temp(); // result of comparing kw <= jw
+              code =
+                  new Bind(
+                      nw,
+                      Prim.flagToWord.withArgs(jnij[1]), // nw <- flagToWord((n))
+                      new Bind(
+                          iw,
+                          Prim.flagToWord.withArgs(jnij[2]), // iw <- flagToWord((i))
+                          new Bind(
+                              kw,
+                              Prim.add.withArgs(nw, iw), // kw <- add((nw, iw))
+                              new Bind(
+                                  jw,
+                                  Prim.flagToWord.withArgs(jnij[3]), // jw <- flagToWord((j))
+                                  new Bind(
+                                      t,
+                                      Prim.ule.withArgs(kw, jw), // t  <- ule((kw, jw))
+                                      new If(
+                                          t,
+                                          new BlockCall(
+                                              yes,
+                                              new Atom[] {jnij[0], kw}), // if t then yes[j, kw]
+                                          new BlockCall(
+                                              returnBlock(pos, nl), ns))))))); //      else no[ns]
+
+            } else { // :: a -> (Word -> a) -> Word -> Word -> Word -> a
+              Block yes = enterBlock(pos); // yes[j, k] = j @ k
+              Temp k = new Temp(); // sum of n + i
+              Temp t = new Temp(); // result of comparing (n+i) <= j
+              code =
+                  new Bind(
+                      k,
+                      Prim.add.withArgs(jnij[2], jnij[1]), //   = k <- add((i, n))
+                      new Bind(
+                          t,
+                          Prim.ule.withArgs(k, jnij[3]), //     t <- ule((k, j))
+                          new If(
+                              t,
+                              new BlockCall(
+                                  yes, new Atom[] {jnij[0], k}), //     if t then yes[just, k]
+                              new BlockCall(
+                                  returnBlock(pos, nl), ns)))); //          else no[nothing..]
+            }
+            return new BlockCall(new Block(pos, Temp.append(ns, jnij), code))
                 .makeClosure(pos, nl + 3, 1)
                 .makeClosure(pos, nl + 2, 1)
                 .makeTernaryFuncClosure(pos, nl, 1, 1);
@@ -592,9 +722,9 @@ public class GenImp extends ExtImp {
         new Generator(Prefix.star_nat, fun(gA, fun(ixB, gA), ixB, fun(ixB, ixB, gA))) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
-            BigInteger m = ts[1].validIndex(); // Index modulus, will be > 0
+            long m = ts[1].validIndex().longValue(); // Index modulus, will be > 0
 
-            // The intended semantics for genLtInc is given by the following:
+            // The intended semantics for genLtDec is given by the following:
             //   genLtDec nothing just n i j = let k = j - n
             //                                 in if (i<=k) && (k<=j) then just k else nothing
             // with the assumption that the calculation of (j - n) does not produce any underflow.
@@ -603,28 +733,75 @@ public class GenImp extends ExtImp {
             // we can be sure that (j - n) will not produce an underflow and that k <= j will be
             // trivially satisfied.  For that reason, the generated code only tests that i <= k.
 
-            Block yes = enterBlock(pos); // yes[j, k] = j @ k
-            Block no = returnBlock(pos, nl); // no[thing] = return thing
-
+            // Parameters for a block:   b[nothing,..., just, n, i, j] = ...
             Temp[] ns = Temp.makeTemps(nl); // arguments for nothing parameter
             Temp[] jnij = Temp.makeTemps(4); // arguments for just, n, i, j
-            Temp k = new Temp(); // temp to hold i + n
-            Temp t = new Temp(); // temp to hold result of test
-            return new BlockCall(
-                    new Block(
-                        pos,
-                        Temp.append(ns, jnij), // b[nothing,..., just, n, i, j]
-                        new Bind(
-                            k,
-                            Prim.sub.withArgs(jnij[3], jnij[1]), //   = k <- sub((j, n))
-                            new Bind(
-                                t,
-                                Prim.sle.withArgs(jnij[2], k), //     t <- sle((i, k))
-                                new If(
-                                    t,
-                                    new BlockCall(
-                                        yes, new Atom[] {jnij[0], k}), //     if t then yes[just, k]
-                                    new BlockCall(no, ns)))))) //          else no[nothing..]
+            Code code;
+
+            if (m == 1) { // :: a -> (Unit -> a) -> Unit -> Unit -> Unit -> a
+              Temp u = new Temp();
+              code =
+                  new Bind(
+                      u,
+                      Cfun.Unit.withArgs(), // u <- Unit()
+                      new Done(new Enter(jnij[0], u))); // just @ u
+            } else if (m == 2) { // :: a -> (Flag -> a) -> Flag -> Flag -> Flag -> a
+              Temp[] jd = Temp.makeTemps(2);
+              Temp d = new Temp(); // difference j-n as a Flag
+              Block yes =
+                  new Block(
+                      pos,
+                      jd, // yes[j, dw]
+                      new Bind(
+                          d,
+                          Prim.wordToFlag.withArgs(jd[1]), //   = d <- wordToFlag((dw))
+                          new Done(new Enter(jd[0], d)))); //     j @ d
+
+              Temp jw = new Temp(); // j as a word
+              Temp nw = new Temp(); // n as a word
+              Temp kw = new Temp(); // difference (j - n) as a word
+              Temp iw = new Temp(); // i as a word
+              Temp t = new Temp(); // result of comparing iw <= kw
+              code =
+                  new Bind(
+                      jw,
+                      Prim.flagToWord.withArgs(jnij[3]), // jw <- flagToWord((j))
+                      new Bind(
+                          nw,
+                          Prim.flagToWord.withArgs(jnij[1]), // nw <- flagToWord((n))
+                          new Bind(
+                              kw,
+                              Prim.sub.withArgs(jw, nw), // kw <- sub((jw, nw))
+                              new Bind(
+                                  iw,
+                                  Prim.flagToWord.withArgs(jnij[2]), // iw <- flagToWord((i))
+                                  new Bind(
+                                      t,
+                                      Prim.sle.withArgs(iw, kw), // t  <- sle((iw, kw))
+                                      new If(
+                                          t,
+                                          new BlockCall(
+                                              yes,
+                                              new Atom[] {jnij[0], kw}), // if t then yes[j, kw]
+                                          new BlockCall(
+                                              returnBlock(pos, nl), ns))))))); //      else no[ns]
+            } else { // :: a -> (Word -> a) -> Word -> Word -> Word -> a
+              Block yes = enterBlock(pos); // yes[j, k] = j @ k
+              Temp k = new Temp(); // difference (j - n)
+              Temp t = new Temp(); // result of comparing i <= k
+              code =
+                  new Bind(
+                      k,
+                      Prim.sub.withArgs(jnij[3], jnij[1]), // k <- sub((j, n))
+                      new Bind(
+                          t,
+                          Prim.sle.withArgs(jnij[2], k), // t <- sle((i, k))
+                          new If(
+                              t,
+                              new BlockCall(yes, new Atom[] {jnij[0], k}), // if t then yes[just, k]
+                              new BlockCall(returnBlock(pos, nl), ns)))); //      else no[nothing..]
+            }
+            return new BlockCall(new Block(pos, Temp.append(ns, jnij), code))
                 .makeClosure(pos, nl + 3, 1)
                 .makeClosure(pos, nl + 2, 1)
                 .makeTernaryFuncClosure(pos, nl, 1, 1);
@@ -637,20 +814,40 @@ public class GenImp extends ExtImp {
         new Generator(Prefix.star_nat, fun(gA, fun(ixB, gA), ixB, gA)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
-            BigInteger m = ts[1].validIndex(); // Index modulus, will be > 0
+            long m = ts[1].validIndex().longValue(); // Index modulus, will be > 0
+            Block b;
+            if (m == 1) { // :: a -> (Unit -> a) -> Unit -> a
+              Temp[] as = Temp.makeTemps(nl); // params for a
+              Temp[] vs = Temp.append(as, Temp.makeTemps(2)); // add params for args 2 and 3
+              b = new Block(pos, vs, new Done(new Return(as)));
+            } else if (m == 2) { // :: a -> (Flag -> a) -> Flag -> a
+              // inc[j] = j @ True
+              Temp[] js = Temp.makeTemps(1);
+              Block inc = new Block(pos, js, new Done(new Enter(js[0], Flag.True)));
 
-            // inc[j, i] = v <- add((i, 1)); j @ v
-            Temp[] ji = Temp.makeTemps(2);
-            Temp v = new Temp();
-            Block inc =
-                new Block(
-                    pos,
-                    ji,
-                    new Bind(v, Prim.add.withArgs(ji[1], 1), new Done(new Enter(ji[0], v))));
+              // b[n,..., j, i] = if i then no[n,...] else inc[j]
+              Block no = returnBlock(pos, nl);
+              Temp[] as = Temp.makeTemps(nl);
+              Temp[] ji = Temp.makeTemps(2);
+              b =
+                  new Block(
+                      pos,
+                      Temp.append(as, ji),
+                      new If(ji[1], new BlockCall(no, as), new BlockCall(inc, new Atom[] {ji[0]})));
+            } else { // :: a -> (Word -> a) -> Word -> a
+              // inc[j, i] = v <- add((i, 1)); j @ v
+              Temp[] ji = Temp.makeTemps(2);
+              Temp v = new Temp();
+              Block inc =
+                  new Block(
+                      pos,
+                      ji,
+                      new Bind(v, Prim.add.withArgs(ji[1], 1), new Done(new Enter(ji[0], v))));
 
-            // b[n,..., j, i] = w <- ult((i, m-1)); if w then inc[j, i] else return [n,...]
-            Temp[] nji = Temp.makeTemps(nl + 2);
-            Block b = guardBlock(pos, nji, Prim.ult.withArgs(nji[nl + 1], m.intValue() - 1), inc);
+              // b[n,..., j, i] = w <- ult((i, m-1)); if w then inc[j, i] else return [n,...]
+              Temp[] nji = Temp.makeTemps(nl + 2);
+              b = guardBlock(pos, nji, Prim.ult.withArgs(nji[nl + 1], m - 1), inc);
+            }
             return new BlockCall(b).makeTernaryFuncClosure(pos, nl, 1, 1);
           }
         });
@@ -665,32 +862,60 @@ public class GenImp extends ExtImp {
             validBitdataRepresentations(); // ensure Maybe (Ix m) and Ix (m+1) have same
                                            // representation
             Temp[] vs = Temp.makeTemps(1);
-            Tail t = (m == 1) ? new Return(Flag.True) : Prim.add.withArgs(vs[0], 1);
-            Block b = new Block(pos, vs, new Done(t));
-            return new BlockCall(b).makeUnaryFuncClosure(pos, 1);
+            Code code;
+            if (m == 1) {
+              code = new Done(new Return(Flag.True));
+            } else if (m == 2) {
+              Temp t = new Temp();
+              code =
+                  new Bind(t, Prim.flagToWord.withArgs(vs[0]), new Done(Prim.add.withArgs(t, 1)));
+            } else {
+              code = new Done(Prim.add.withArgs(vs[0], 1));
+            }
+            return new BlockCall(new Block(pos, vs, code)).makeUnaryFuncClosure(pos, 1);
           }
         });
 
-    // primGenDecIx n :: a -> (Ix n -> a) -> Ix n -> a
+    // primGenDecIx a m :: a -> (Ix m -> a) -> Ix m -> a
     generators.put(
         "primGenDecIx",
         new Generator(Prefix.star_nat, fun(gA, fun(ixB, gA), ixB, gA)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
-            BigInteger m = ts[1].validIndex(); // Index modulus, must be > 0
+            long m = ts[1].validIndex().longValue(); // Index modulus, must be > 0
+            Block b;
+            if (m == 1) { // :: a -> (Unit -> a) -> Unit -> a
+              Temp[] as = Temp.makeTemps(nl); // params for a
+              Temp[] vs = Temp.append(as, Temp.makeTemps(2)); // add params for args 2 and 3
+              b = new Block(pos, vs, new Done(new Return(as)));
+            } else if (m == 2) { // :: a -> (Flag -> a) -> Flag -> a
+              // dec[j] = j @ False
+              Temp[] js = Temp.makeTemps(1);
+              Block dec = new Block(pos, js, new Done(new Enter(js[0], Flag.False)));
 
-            // dec[j, i] = v <- sub((i, 1)); j @ v
-            Temp[] ji = Temp.makeTemps(2);
-            Temp v = new Temp();
-            Block dec =
-                new Block(
-                    pos,
-                    ji,
-                    new Bind(v, Prim.sub.withArgs(ji[1], 1), new Done(new Enter(ji[0], v))));
+              // b[n,..., j, i] = if i then dec[j] else no[n,...]
+              Block no = returnBlock(pos, nl);
+              Temp[] as = Temp.makeTemps(nl);
+              Temp[] ji = Temp.makeTemps(2);
+              b =
+                  new Block(
+                      pos,
+                      Temp.append(as, ji),
+                      new If(ji[1], new BlockCall(dec, new Atom[] {ji[0]}), new BlockCall(no, as)));
+            } else {
+              // dec[j, i] = v <- sub((i, 1)); j @ v
+              Temp[] ji = Temp.makeTemps(2);
+              Temp v = new Temp();
+              Block dec =
+                  new Block(
+                      pos,
+                      ji,
+                      new Bind(v, Prim.sub.withArgs(ji[1], 1), new Done(new Enter(ji[0], v))));
 
-            // b[n,..., j, i] = w <- ugt((i, 0)); if w then dec[j, i] else return [n,...]
-            Temp[] nji = Temp.makeTemps(nl + 2);
-            Block b = guardBlock(pos, nji, Prim.ugt.withArgs(nji[nl + 1], 0), dec);
+              // b[n,..., j, i] = w <- ugt((i, 0)); if w then dec[j, i] else return [n,...]
+              Temp[] nji = Temp.makeTemps(nl + 2);
+              b = guardBlock(pos, nji, Prim.ugt.withArgs(nji[nl + 1], 0), dec);
+            }
             return new BlockCall(b).makeTernaryFuncClosure(pos, nl, 1, 1);
           }
         });
@@ -703,21 +928,33 @@ public class GenImp extends ExtImp {
         new Generator(Prefix.nat, fun(ixA, maybeIx)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             long m = ts[0].validIndex().longValue(); // Index modulus, must be > 0
-            if (((m + 1) & m) != 0) { // ... with a successor that is a power of two
-              throw new GeneratorException(m + " is not a power of two minus 1");
-            }
             validBitdataRepresentations(); // ensure that Nothing is represented by all 1s
             Temp[] vs = Temp.makeTemps(1);
-            Code c;
-            if (m == 1) {
-              c = new Done(new Return(Flag.True));
+            Code code;
+            if (m == 1) { // :: Unit -> Flag
+              code = new Done(new Return(Flag.True));
+            } else if (m == 2) { // :: Flag -> Word
+              Temp w = new Temp();
+              Temp t = new Temp();
+              code =
+                  new Bind(
+                      w,
+                      Prim.flagToWord.withArgs(vs[0]), // w <- flagToWord((v))
+                      new Bind(
+                          t,
+                          Prim.add.withArgs(w, 3), // t <- add((w, 3)) -- 0 |-> 3, 1 |-> 4
+                          new Done(
+                              Prim.and.withArgs(t, 2)))); // and((t,2))       -- 3 |-> 2, 4 |-> 0
+            } else if (((m + 1) & m)
+                != 0) { // check for modulus with a successor that is a power of two
+              throw new GeneratorException(m + " is not a power of two minus 1");
             } else {
               // In this special case, we can avoid a branching implementation by combining a
               // decrement with a mask:
               Temp w = new Temp();
-              c = new Bind(w, Prim.sub.withArgs(vs[0], 1), new Done(Prim.and.withArgs(w, m)));
+              code = new Bind(w, Prim.sub.withArgs(vs[0], 1), new Done(Prim.and.withArgs(w, m)));
             }
-            return new BlockCall(new Block(pos, vs, c)).makeUnaryFuncClosure(pos, 1);
+            return new BlockCall(new Block(pos, vs, code)).makeUnaryFuncClosure(pos, 1);
           }
         });
 
@@ -728,12 +965,66 @@ public class GenImp extends ExtImp {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
             long m = ts[1].validIndex().longValue(); // Index modulus
-            Block yes = enterBlock(pos); // yes[j, i] = j @ i
-            // b[n,..., j, i] = w <- ule((i, m-1)); if w then yes[j, i] else return [n,...]
-            // NOTE: using (v <= m-1) rather than (v < m) is important for the case where
-            // m=(2^WordSize)
-            Temp[] njv = Temp.makeTemps(nl + 2);
-            Block b = guardBlock(pos, njv, Prim.ule.withArgs(njv[nl + 1], m - 1), yes);
+            Block b;
+            if (m == 1) { // :: a -> (Unit -> a) -> Word -> a
+              Temp[] j = Temp.makeTemps(1);
+              Temp t = new Temp();
+              Block yes =
+                  new Block(
+                      pos,
+                      j, // yes[j]
+                      new Bind(
+                          t,
+                          Cfun.Unit.withArgs(), //   = t <- Unit()
+                          new Done(new Enter(j[0], t)))); //     j @ t
+              Temp[] as = Temp.makeTemps(nl);
+              Temp[] jv = Temp.makeTemps(2);
+              Temp w = new Temp();
+              // b[as, j, v] = w <- eq((v, 0)); if w then yes[j] else no[as]
+              b =
+                  new Block(
+                      pos,
+                      Temp.append(as, jv),
+                      new Bind(
+                          w,
+                          Prim.ule.withArgs(jv[1], 1),
+                          new If(
+                              w,
+                              new BlockCall(yes, new Atom[] {jv[0]}),
+                              new BlockCall(returnBlock(pos, nl), as))));
+            } else if (m == 2) { // :: a -> (Flag -> a) -> Word -> a
+              Temp[] jw = Temp.makeTemps(2);
+              Temp t = new Temp();
+              Block yes =
+                  new Block(
+                      pos,
+                      jw, // yes[j, w]
+                      new Bind(
+                          t,
+                          Prim.wordToFlag.withArgs(jw[1]), //   = t <- wordToFlag w
+                          new Done(new Enter(jw[0], t)))); //     j @ t
+              Temp[] as = Temp.makeTemps(nl);
+              Temp[] jv = Temp.makeTemps(2);
+              Temp w = new Temp();
+              b =
+                  new Block(
+                      pos,
+                      Temp.append(as, jv), // b[as, j, v]
+                      new Bind(
+                          w,
+                          Prim.ult.withArgs(jv[1], 2), //   = w <- ult((v, 2))
+                          new If(
+                              w,
+                              new BlockCall(yes, jv), //     if w then yes[j, v] else no[as]
+                              new BlockCall(returnBlock(pos, nl), as))));
+            } else { // :: a -> (Word -> a) -> Word -> a
+              Block yes = enterBlock(pos); // yes[j, i] = j @ i
+              // b[n,..., j, i] = w <- ule((i, m-1)); if w then yes[j, i] else return [n,...]
+              // NOTE: using (v <= m-1) rather than (v < m) is important for the case where
+              // m=(2^WordSize)
+              Temp[] njv = Temp.makeTemps(nl + 2);
+              b = guardBlock(pos, njv, Prim.ule.withArgs(njv[nl + 1], m - 1), yes);
+            }
             return new BlockCall(b).makeTernaryFuncClosure(pos, nl, 1, 1);
           }
         });
@@ -744,27 +1035,69 @@ public class GenImp extends ExtImp {
         new Generator(Prefix.star_nat, fun(gA, fun(ixB, gA), word, ixB, gA)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
-            ts[1].validIndex(); // Check for valid index modulus
-            Block yes = enterBlock(pos); // yes[j, i] = j @ i
-            Block no = returnBlock(pos, nl); // no[thing] = return thing
-            // b[n,..., j, v, i] = w <- ule((v, i)); if w then yes[j, v] else return [n,...]
-            Temp[] njvi = Temp.makeTemps(nl + 3);
-            Atom[] ns = new Atom[nl];
-            for (int i = 0; i < nl; i++) {
-              ns[i] = njvi[i];
+            long m = ts[1].validIndex().longValue(); // Modulus of index
+            Temp[] as = Temp.makeTemps(nl);
+            Temp[] jvi = Temp.makeTemps(3);
+            Code code;
+            if (m == 1) { // :: a -> (Unit -> a) -> Word -> Unit -> a
+              Temp[] j = Temp.makeTemps(1);
+              Temp t = new Temp();
+              Block yes =
+                  new Block(
+                      pos,
+                      j, // yes[j]
+                      new Bind(
+                          t,
+                          Cfun.Unit.withArgs(), //   = t <- Unit()
+                          new Done(new Enter(j[0], t)))); //     j @ t
+              Temp w = new Temp();
+              code =
+                  new Bind(
+                      w,
+                      Prim.ule.withArgs(jvi[1], 0), // w <- ule((v, 0))
+                      new If(
+                          w,
+                          new BlockCall(yes, new Atom[] {jvi[0]}), // if w then yes[j]
+                          new BlockCall(returnBlock(pos, nl), as))); //      else no[as]
+            } else if (m == 2) { // :: a -> (Flag -> a) -> Word -> Flag -> a
+              Temp[] jv = Temp.makeTemps(2);
+              Temp t = new Temp();
+              Block yes =
+                  new Block(
+                      pos,
+                      jv, // yes[j, v]
+                      new Bind(
+                          t,
+                          Prim.wordToFlag.withArgs(jv[1]), //   = t <- wordToFlag((v))
+                          new Done(new Enter(jv[0], t)))); //     j @ t
+              Temp u = new Temp();
+              Temp w = new Temp();
+              code =
+                  new Bind(
+                      u,
+                      Prim.flagToWord.withArgs(jvi[2]), // u <- flagToWord((i))
+                      new Bind(
+                          w,
+                          Prim.ule.withArgs(jvi[1], u), // w <- ule((v, u))
+                          new If(
+                              w,
+                              new BlockCall(
+                                  yes, new Atom[] {jvi[0], jvi[1]}), // if w then yes[j, v]
+                              new BlockCall(returnBlock(pos, nl), as)))); //      else no[as]
+            } else { // :: a -> (Word -> a) -> Word -> Word -> a
+              Block yes = enterBlock(pos); // yes[j, i] = j @ i
+              Temp w = new Temp();
+              // b[n,..., j, v, i] = w <- ule((v, i)); if w then yes[j, v] else return [n,...]
+              code =
+                  new Bind(
+                      w,
+                      Prim.ule.withArgs(jvi[1], jvi[2]), // w <- ule((v, i))
+                      new If(
+                          w,
+                          new BlockCall(yes, new Atom[] {jvi[0], jvi[1]}), // if w then yes[j, v]
+                          new BlockCall(returnBlock(pos, nl), as))); //      else no[as]
             }
-            Temp w = new Temp();
-            Block b =
-                new Block(
-                    pos,
-                    njvi,
-                    new Bind(
-                        w,
-                        Prim.ule.withArgs(njvi[nl + 1], njvi[nl + 2]),
-                        new If(
-                            w,
-                            new BlockCall(yes, new Atom[] {njvi[nl], njvi[nl + 1]}),
-                            new BlockCall(no, ns))));
+            Block b = new Block(pos, Temp.append(as, jvi), code);
             return new BlockCall(b)
                 .makeClosure(pos, nl + 2, 1)
                 .makeTernaryFuncClosure(pos, nl, 1, 1);
@@ -827,8 +1160,28 @@ public class GenImp extends ExtImp {
         ref,
         new Generator(Prefix.nat, fun(ixA, ixA, bool)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-            ts[0].validIndex(); // Index upper bound
-            return new PrimCall(cmp).makeBinaryFuncClosure(pos, 1, 1);
+            long m = ts[0].validIndex().longValue(); // Index upper bound
+            if (m == 1) {
+              return new Return(Flag.fromBool(cmp.op(0, 0)))
+                  .constClosure(pos, 1)
+                  .constClosure(pos, 1);
+            } else if (m == 2) {
+              Temp[] vs = Temp.makeTemps(2);
+              Temp t = new Temp();
+              Temp s = new Temp();
+              Block b =
+                  new Block(
+                      pos,
+                      vs,
+                      new Bind(
+                          t,
+                          Prim.flagToWord.withArgs(vs[0]),
+                          new Bind(
+                              s, Prim.flagToWord.withArgs(vs[1]), new Done(cmp.withArgs(t, s)))));
+              return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
+            } else {
+              return new PrimCall(cmp).makeBinaryFuncClosure(pos, 1, 1);
+            }
           }
         });
   }
@@ -1293,6 +1646,26 @@ public class GenImp extends ExtImp {
     }
 
     /**
+     * Generator for a Bitmanip operation, distinguishing between cases for width==1, width==2, and
+     * width>2.
+     */
+    Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+      int width = ts[0].validWidth(1); // Width of bit vector
+      return (width == 1)
+          ? generate1(pos)
+          : (width == 2) ? generate2(pos) : generateN(pos, width, Word.numWords(width));
+    }
+
+    /** Generate special case code for a bit vector of width 1. */
+    abstract Tail generate1(Position pos);
+
+    /** Generate special case code for a bit vector of width 2. */
+    abstract Tail generate2(Position pos);
+
+    /** Generate special case code for a bit vector of width N>2. */
+    abstract Tail generateN(Position pos, int width, int n);
+
+    /**
      * For each of the BitManip operators, once we have found the word (lo) that the index is
      * pointing to, then we can calculate a single bit mask that determines which specific bit will
      * be accessed/modified. Once this mask is calculated (in m below), a different method is
@@ -1315,7 +1688,7 @@ public class GenImp extends ExtImp {
 
     /**
      * Construct the final result of the computation in a code sequence where: vs is the list of
-     * arguments to the the enclosing block; m is a previously calculated mask for the relevant bit
+     * arguments to the enclosing block; m is a previously calculated mask for the relevant bit
      * within the selected word; n is the number of words in the representation for the Bit vector;
      * and lo is the index of the word containing the relevant bit.
      */
@@ -1329,9 +1702,7 @@ public class GenImp extends ExtImp {
       super(prefix, type);
     }
 
-    Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-      int width = ts[0].validWidth(2); // Width of bit vector
-      int n = Word.numWords(width);
+    Tail generateN(Position pos, int width, int n) {
       return new BlockCall(decisionTree(pos, width, n, 0, n - 1, 0)).makeUnaryFuncClosure(pos, 1);
     }
   }
@@ -1343,9 +1714,7 @@ public class GenImp extends ExtImp {
       super(prefix, type);
     }
 
-    Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-      int width = ts[0].validWidth(2); // Width of bit vector
-      int n = Word.numWords(width);
+    Tail generateN(Position pos, int width, int n) {
       return new BlockCall(decisionTree(pos, width, n, 0, n - 1, n))
           .makeBinaryFuncClosure(pos, n, 1);
     }
@@ -1363,6 +1732,21 @@ public class GenImp extends ExtImp {
     generators.put(
         "primBitBit",
         new ConstructBitmanipGenerator(Prefix.nat, fun(ixA, bitA)) {
+          Tail generate1(Position pos) {
+            return new Return(Flag.True).constClosure(pos, 1);
+          }
+
+          Tail generate2(Position pos) {
+            Temp[] i = Temp.makeTemps(1);
+            Temp t = new Temp();
+            Block b =
+                new Block(
+                    pos,
+                    i,
+                    new Bind(t, Prim.flagToWord.withArgs(i[0]), new Done(Prim.shl.withArgs(1, t))));
+            return new BlockCall(b).makeUnaryFuncClosure(pos, 1);
+          }
+
           Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
             Atom[] as = new Atom[n];
             for (int i = 0; i < n; i++) {
@@ -1375,6 +1759,28 @@ public class GenImp extends ExtImp {
     generators.put(
         "primBitSetBit",
         new ConsumeBitmanipGenerator(Prefix.nat, bitAixAbitA) {
+          Tail generate1(Position pos) {
+            return new Return(Flag.True).constClosure(pos, 1).constClosure(pos, 1);
+          }
+
+          Tail generate2(Position pos) {
+            Temp[] vi = Temp.makeTemps(2);
+            Temp t = new Temp();
+            Temp m = new Temp();
+            Block b =
+                new Block(
+                    pos,
+                    vi, // b[v, i]
+                    new Bind(
+                        t,
+                        Prim.flagToWord.withArgs(vi[1]), //    = t <- flagToWord((i))
+                        new Bind(
+                            m,
+                            Prim.shl.withArgs(1, t), //      m <- shl((1, t))
+                            new Done(Prim.or.withArgs(vi[0], m))))); //      or((v, m))
+            return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
+          }
+
           Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
             Temp w = new Temp();
             return new Bind(
@@ -1387,6 +1793,32 @@ public class GenImp extends ExtImp {
     generators.put(
         "primBitClearBit",
         new ConsumeBitmanipGenerator(Prefix.nat, bitAixAbitA) {
+          Tail generate1(Position pos) {
+            return new Return(Flag.False).constClosure(pos, 1).constClosure(pos, 1);
+          }
+
+          Tail generate2(Position pos) {
+            Temp[] vi = Temp.makeTemps(2);
+            Temp t = new Temp();
+            Temp m = new Temp();
+            Temp r = new Temp();
+            Block b =
+                new Block(
+                    pos,
+                    vi, // b[v, i]
+                    new Bind(
+                        t,
+                        Prim.flagToWord.withArgs(vi[1]), //    = t <- flagToWord((i))
+                        new Bind(
+                            m,
+                            Prim.shl.withArgs(1, t), //      m <- shl((1, t))
+                            new Bind(
+                                r,
+                                Prim.not.withArgs(m), //      r <- not((m))
+                                new Done(Prim.and.withArgs(vi[0], r)))))); //      and((v, r))
+            return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
+          }
+
           Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
             Temp w = new Temp();
             Temp x = new Temp();
@@ -1403,6 +1835,30 @@ public class GenImp extends ExtImp {
     generators.put(
         "primBitFlipBit",
         new ConsumeBitmanipGenerator(Prefix.nat, bitAixAbitA) {
+          Tail generate1(Position pos) {
+            Temp[] vi = Temp.makeTemps(2);
+            Block b = new Block(pos, vi, new Done(Prim.bnot.withArgs(vi[0])));
+            return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
+          }
+
+          Tail generate2(Position pos) {
+            Temp[] vi = Temp.makeTemps(2);
+            Temp t = new Temp();
+            Temp m = new Temp();
+            Block b =
+                new Block(
+                    pos,
+                    vi, // b[v, i]
+                    new Bind(
+                        t,
+                        Prim.flagToWord.withArgs(vi[1]), //    = t <- flagToWord((i))
+                        new Bind(
+                            m,
+                            Prim.shl.withArgs(1, t), //      m <- shl((1, t))
+                            new Done(Prim.xor.withArgs(vi[0], m))))); //      xor((v, m))
+            return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
+          }
+
           Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
             Temp w = new Temp();
             return new Bind(
@@ -1415,6 +1871,34 @@ public class GenImp extends ExtImp {
     generators.put(
         "primBitTestBit",
         new ConsumeBitmanipGenerator(Prefix.nat, fun(bitA, ixA, bool)) {
+          Tail generate1(Position pos) {
+            Temp[] vi = Temp.makeTemps(2);
+            Block b = new Block(pos, vi, new Done(new Return(vi[0])));
+            return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
+          }
+
+          Tail generate2(Position pos) {
+            Temp[] vi = Temp.makeTemps(2);
+            Temp t = new Temp();
+            Temp m = new Temp();
+            Temp r = new Temp();
+            Block b =
+                new Block(
+                    pos,
+                    vi, // b[v, i]
+                    new Bind(
+                        t,
+                        Prim.flagToWord.withArgs(vi[1]), //    = t <- flagToWord((i))
+                        new Bind(
+                            m,
+                            Prim.shl.withArgs(1, t), //      m <- shl((1, t))
+                            new Bind(
+                                r,
+                                Prim.and.withArgs(vi[0], m), //      r <- and((v, m))
+                                new Done(Prim.neq.withArgs(r, 0)))))); //      neq((r, 0))
+            return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
+          }
+
           Code makeResult(Temp[] vs, Atom mask, int n, int lo) {
             Temp w = new Temp();
             return new Bind(
@@ -1428,15 +1912,19 @@ public class GenImp extends ExtImp {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validWidth(1); // Bit vector width
             int n = Word.numWords(width);
-            Tail t = new Return(new Word(width - 1));
+            Tail t =
+                (width == 1)
+                    ? Cfun.Unit.withArgs()
+                    : (width == 2) ? new Return(Flag.True) : new Return(new Word(width - 1));
             // TODO: The Temp.makeTemps(n) call in the following creates the proxy argument of type
-            // Bit w that is required as an input
-            // for this function (to avoid ambiguity).  Because it is not actually used, however, it
-            // will result in a polymorphic
-            // definition in post-specialization code, which may break subsequent attempts to
-            // generate code from monomorphic MIL code
-            // ... unless this definition is optimized away (which, it should be ... assuming that
-            // the optimizer is invoked ...)
+            // Bit w that is
+            // required as an input for this function (to avoid ambiguity).  Because it is not
+            // actually used,
+            // however, it will result in a polymorphic definition in post-specialization code,
+            // which may break
+            // subsequent attempts to generate code from monomorphic MIL code ... unless this
+            // definition is
+            // optimized away (which, it should be ... assuming that the optimizer is invoked ...)
             ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(n), t);
             return new ClosAlloc(k).withArgs();
           }
@@ -1445,17 +1933,37 @@ public class GenImp extends ExtImp {
 
   static {
 
-    // primBitShiftL w :: Bit w -> Ix w -> Bit w,  for w>1
+    // primBitShiftL w :: Bit w -> Ix w -> Bit w,  for w>=1
     generators.put(
         "primBitShiftL",
         new BitPosGenerator(Prefix.nat, bitAixAbitA) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-            int width =
-                ts[0].validWidth(
-                    2); // Width of bit vector // TODO: add support for width 0 and width 1?
+            int width = ts[0].validWidth(1); // Width of bit vector
             int n = Word.numWords(width);
-            return new BlockCall(decisionTree(pos, width, n, 0, n - 1, n))
-                .makeBinaryFuncClosure(pos, n, 1);
+            Call call;
+            if (width == 1) { // :: Flag -> Unit -> Flag
+              Temp[] vi = Temp.makeTemps(2);
+              call = new BlockCall(new Block(pos, vi, new Done(new Return(vi[0]))));
+            } else if (width == 2) { // :: Bit 2 -> Flag -> Bit 2
+              Temp[] vi = Temp.makeTemps(2);
+              Temp s = new Temp();
+              Temp r = new Temp();
+              call =
+                  new BlockCall(
+                      new Block(
+                          pos,
+                          vi, // b[v, i]
+                          new Bind(
+                              s,
+                              Prim.flagToWord.withArgs(vi[1]), //   = s <- flagToWord((i))
+                              new Bind(
+                                  r,
+                                  Prim.shl.withArgs(vi[0], s), //     r <- shl((v, s))
+                                  new Done(Prim.and.withArgs(r, 3)))))); //     and((r, 3))
+            } else { // :: Bit w -> Word -> Bit w
+              call = new BlockCall(decisionTree(pos, width, n, 0, n - 1, n));
+            }
+            return call.makeBinaryFuncClosure(pos, n, 1);
           }
 
           Block decisionLeaf(Position pos, Temp[] vs, int width, int n, int lo, int numArgs) {
@@ -1562,17 +2070,33 @@ public class GenImp extends ExtImp {
           }
         });
 
-    // primBitShiftRu w :: Bit w -> Ix w -> Bit w,  for w>1
+    // primBitShiftRu w :: Bit w -> Ix w -> Bit w,  for w>=1
     generators.put(
         "primBitShiftRu",
         new BitPosGenerator(Prefix.nat, bitAixAbitA) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-            int width =
-                ts[0].validWidth(
-                    2); // Width of bit vector // TODO: add support for width 0 and width 1?
+            int width = ts[0].validWidth(1); // Width of bit vector
             int n = Word.numWords(width);
-            return new BlockCall(decisionTree(pos, width, n, 0, n - 1, n))
-                .makeBinaryFuncClosure(pos, n, 1);
+            Call call;
+            if (width == 1) { // :: Flag -> Unit -> Flag
+              Temp[] vi = Temp.makeTemps(2);
+              call = new BlockCall(new Block(pos, vi, new Done(new Return(vi[0]))));
+            } else if (width == 2) { // :: Bit 2 -> Flag -> Bit 2
+              Temp[] vi = Temp.makeTemps(2);
+              Temp s = new Temp();
+              call =
+                  new BlockCall(
+                      new Block(
+                          pos,
+                          vi, // b[v, i]
+                          new Bind(
+                              s,
+                              Prim.flagToWord.withArgs(vi[1]), //   = s <- flagToWord((i))
+                              new Done(Prim.lshr.withArgs(vi[0], s))))); //     lshr((v, s))
+            } else { // :: Bit w -> Word -> Bit w
+              call = new BlockCall(decisionTree(pos, width, n, 0, n - 1, n));
+            }
+            return call.makeBinaryFuncClosure(pos, n, 1);
           }
 
           Block decisionLeaf(Position pos, Temp[] vs, int width, int n, int lo, int numArgs) {
@@ -1815,20 +2339,27 @@ public class GenImp extends ExtImp {
         "@",
         new Generator(Prefix.nat_area, fun(Type.ref(arrayAB), ixA, Type.ref(gB))) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-            BigInteger n = ts[0].validNat(); // Array length
-            Type.validSigned(n);
+            long n = ts[0].validIndex().longValue(); // Array length/Modulus for index type
             long size = ts[1].validArrayArea(); // Size of array elements
             Temp[] ri = Temp.makeTemps(2);
-            Temp v = new Temp();
-            Block b =
-                new Block(
-                    pos,
-                    ri, // b[r,i]
+            Code code;
+            if (n == 1) { // :: Ref 1 a -> Unit -> Ref a
+              code = new Done(new Return(ri[0])); // return r
+            } else {
+              Temp v = new Temp();
+              code = new Done(Prim.add.withArgs(ri[0], v)); // add((r, v))
+              if (n == 2) { // :: Ref 2 a -> Flag -> Ref a
+                Temp t = new Temp();
+                code =
                     new Bind(
-                        v,
-                        Prim.mul.withArgs(ri[1], size), //  = v <- mul((i, size))
-                        new Done(Prim.add.withArgs(ri[0], v)))); //    add((r, v))
-            return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
+                        t,
+                        Prim.flagToWord.withArgs(ri[1]), // t <- flagToWord((i))
+                        new Bind(v, Prim.mul.withArgs(t, size), code)); // v <- mul((t, size))
+              } else { // :: Ref n a -> Word -> Ref a
+                code = new Bind(v, Prim.mul.withArgs(ri[1], size), code); // v <- mul((i, size))
+              }
+            }
+            return new BlockCall(new Block(pos, ri, code)).makeBinaryFuncClosure(pos, 1, 1);
           }
         });
   }
@@ -1840,11 +2371,11 @@ public class GenImp extends ExtImp {
         "primInitArray",
         new Generator(Prefix.nat_area, fun(fun(ixA, Type.init(gB)), Type.init(arrayAB))) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-            BigInteger n = ts[0].validNat(); // Array length
-            Type.validSigned(n);
-            long len = n.longValue();
+            long len = ts[0].validIndex().longValue(); // Array length/Modulus for index type
             long size = ts[1].validArrayArea(); // Size of array elements
-            return (len <= 4) ? initArrayUnroll(pos, len, size) : initArrayLoop(pos, len, size);
+            return (len <= 4)
+                ? initArrayUnroll(pos, len, size) // TODO: 4 is an arbitrary choice here ...
+                : initArrayLoop(pos, len, size);
           }
         });
   }
@@ -1905,18 +2436,20 @@ public class GenImp extends ExtImp {
    * likely produce a lot of code unless the array length is small. The structure of the generated
    * code is as follows:
    *
-   * <p>initArray <- k0{} k0{} f = k1{f} k1{f} r = work[f, r] work[f, r] = g0 <- f @ 0 x0 <- f0 @ r
-   * //... r1 <- add((r0, size)) g1 <- f @ 1 x1 <- g1 @ r1 //... Unit()
+   * <p>initArray <- k0{} k0{} f = k1{f} k1{f} r = work[f, r] work[f, r] = u <- Unit() g0 <- f @ 0
+   * x0 <- f0 @ r //... r1 <- add((r0, size)) g1 <- f @ 1 x1 <- g1 @ r1 //... return u
    */
   private static Tail initArrayUnroll(Position pos, long len, long size) {
-    Code code = new Done(Cfun.Unit.withArgs());
+    Temp unit = new Temp();
+    Code code = new Done(new Return(unit));
     Temp f = new Temp();
     Temp r = new Temp();
     if (len > 0) {
       long i = len - 1;
       for (; ; ) {
         Temp g = new Temp();
-        code = new Bind(g, new Enter(f, new Word(i)), new Bind(new Temp(), new Enter(g, r), code));
+        Atom a = (len == 1) ? unit : (len == 2) ? Flag.fromBool(i > 0) : new Word(i);
+        code = new Bind(g, new Enter(f, a), new Bind(new Temp(), new Enter(g, r), code));
         if (i > 0) {
           Temp r1 = new Temp();
           code = new Bind(r, Prim.add.withArgs(r1, size), code);
@@ -1927,8 +2460,9 @@ public class GenImp extends ExtImp {
         }
       }
     }
-    Block work = new Block(pos, new Temp[] {f, r}, code);
-    return new BlockCall(work).makeBinaryFuncClosure(pos, 1, 1);
+    return new BlockCall(
+            new Block(pos, new Temp[] {f, r}, new Bind(unit, Cfun.Unit.withArgs(), code)))
+        .makeBinaryFuncClosure(pos, 1, 1);
   }
 
   static {

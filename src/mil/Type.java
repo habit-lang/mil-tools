@@ -629,6 +629,14 @@ public abstract class Type extends Scheme {
   }
 
   /**
+   * Return the representation for a value of type Ix n, assuming that this object is the TNat for
+   * n.
+   */
+  Type[] ixbitvectorRep() {
+    return null;
+  }
+
+  /**
    * Continue the work of generatePrim() in the special case where we have found a type of the form
    * [d1,...,dn] ->> rt. The type rt is the receiver here and the types d1,...,dn are in the array
    * ds.
@@ -744,7 +752,10 @@ public abstract class Type extends Scheme {
     return null;
   }
 
-  BigInteger ixBound(Type[] tenv) {
+  /**
+   * Find the upper bound, n-1, for a type of the form Ix n, assuming that this is the TNat for n.
+   */
+  BigInteger ixUpper(Type[] tenv) {
     BigInteger n = simplifyNatType(tenv).getNat();
     if (n == null) {
       debug.Internal.error("invalid Ix bound: " + skeleton(tenv));

@@ -124,6 +124,15 @@ public class TNat extends TLit {
     return Word.numWords(num.intValue()) == 1 ? Tycon.wordRep : null;
   }
 
+  /**
+   * Return the representation for a value of type Ix n, assuming that this object is the TNat for
+   * n.
+   */
+  Type[] ixbitvectorRep() {
+    long n = num.longValue();
+    return (n == 0) ? null : (n == 1) ? Tycon.unitRep : (n == 2) ? Tycon.flagRep : Tycon.wordRep;
+  }
+
   BigInteger validNat() throws GeneratorException {
     return num;
   }

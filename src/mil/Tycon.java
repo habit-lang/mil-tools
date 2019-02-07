@@ -319,8 +319,7 @@ public abstract class Tycon extends Name {
             : (this == nzbit)
                 ? a.simplifyNatType(null).nzbitvectorRep()
                 : (this == ix)
-                    ? Tycon
-                        .wordRep // N.B. even Ix 1, a singleton type, is represented by a Word ...
+                    ? a.simplifyNatType(null).ixbitvectorRep()
                     : (this == init) ? Tycon.initRep : null;
   }
 
@@ -400,23 +399,19 @@ public abstract class Tycon extends Name {
    * to the argument a). The specified type environment, tenv, is used for both this and a.
    */
   Type bitSize(Type[] tenv, Type a) {
-    if (this == bit || this == nzbit) { // BitSize(Bit n) ==>  n,  same for (NZBit n)
-      return a.simplifyNatType(tenv);
-    } else if (this == ix) { // BitSize(Ix n)  ==>  (calculation below)
-      BigInteger n = a.ixBound(tenv);
-      if (n.signum() <= 0) {
-        return new TNat(BigInteger.ZERO);
-      }
-      int w = n.bitLength();
-      if (w < 0 || w >= Word.size()) {
-        return null;
-      }
-      return new TNat(BigInteger.valueOf(w));
-    } else if (this == ref
-        || this == ptr
-        || this == phys) { // BitSize (Ref a) ==>  (calculation below)
+    if (this == ref || this == ptr || this == phys) { // BitSize (Ref a) ==>  (calculation follows)
       int w = a.refWidth(tenv);
       return (w > 0) ? new TNat(w) : null;
+    } else if (this == bit || this == nzbit) { // BitSize(Bit n) ==>  n,  same for (NZBit n)
+      return a.simplifyNatType(tenv);
+    } else if (this == ix) { // BitSize(Ix n)  ==>  (calculation follows)
+      BigInteger upper = a.ixUpper(tenv); // Find upper bound, upper = n-1
+      if (upper.signum() >= 0) {
+        int w = upper.bitLength();
+        if (w >= 0 && w < Word.size()) {
+          return new TNat(BigInteger.valueOf(w));
+        }
+      }
     }
     return null;
   }
@@ -449,16 +444,13 @@ public abstract class Tycon extends Name {
       int w = a.bitWidth(tenv);
       return (w > 0) ? obdd.Pat.nonzero(w) : null;
     } else if (this == ix) {
-      BigInteger n = a.ixBound(tenv);
-      if (n.signum() <= 0) {
-        return obdd.Pat.empty(0);
+      BigInteger upper = a.ixUpper(tenv);
+      if (upper.signum() >= 0) {
+        int w = upper.bitLength();
+        if (w >= 0 && w < Word.size()) {
+          return obdd.Pat.lessEq(w, upper.intValue());
+        }
       }
-      int w = n.bitLength();
-      if (w < 0 || w >= Word.size()) {
-        // TODO: generate an internal error?  or make above internals return null instead?
-        return null;
-      }
-      return obdd.Pat.lessEq(w, n.intValue());
     }
     return null;
   }
