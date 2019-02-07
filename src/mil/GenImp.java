@@ -1732,11 +1732,11 @@ public class GenImp extends ExtImp {
     generators.put(
         "primBitBit",
         new ConstructBitmanipGenerator(Prefix.nat, fun(ixA, bitA)) {
-          Tail generate1(Position pos) {
+          Tail generate1(Position pos) { // \i -> True
             return new Return(Flag.True).constClosure(pos, 1);
           }
 
-          Tail generate2(Position pos) {
+          Tail generate2(Position pos) { // \i -> (1 << flagToWord i)
             Temp[] i = Temp.makeTemps(1);
             Temp t = new Temp();
             Block b =
@@ -1759,11 +1759,11 @@ public class GenImp extends ExtImp {
     generators.put(
         "primBitSetBit",
         new ConsumeBitmanipGenerator(Prefix.nat, bitAixAbitA) {
-          Tail generate1(Position pos) {
+          Tail generate1(Position pos) { // \v i -> True
             return new Return(Flag.True).constClosure(pos, 1).constClosure(pos, 1);
           }
 
-          Tail generate2(Position pos) {
+          Tail generate2(Position pos) { // \v i -> v `or` (1 << flagToWord i)
             Temp[] vi = Temp.makeTemps(2);
             Temp t = new Temp();
             Temp m = new Temp();
@@ -1793,11 +1793,11 @@ public class GenImp extends ExtImp {
     generators.put(
         "primBitClearBit",
         new ConsumeBitmanipGenerator(Prefix.nat, bitAixAbitA) {
-          Tail generate1(Position pos) {
+          Tail generate1(Position pos) { // \v i -> False
             return new Return(Flag.False).constClosure(pos, 1).constClosure(pos, 1);
           }
 
-          Tail generate2(Position pos) {
+          Tail generate2(Position pos) { // \v i -> v & not (1 << flagToWord i)
             Temp[] vi = Temp.makeTemps(2);
             Temp t = new Temp();
             Temp m = new Temp();
@@ -1835,13 +1835,13 @@ public class GenImp extends ExtImp {
     generators.put(
         "primBitFlipBit",
         new ConsumeBitmanipGenerator(Prefix.nat, bitAixAbitA) {
-          Tail generate1(Position pos) {
+          Tail generate1(Position pos) { // \v i -> bnot v
             Temp[] vi = Temp.makeTemps(2);
             Block b = new Block(pos, vi, new Done(Prim.bnot.withArgs(vi[0])));
             return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
           }
 
-          Tail generate2(Position pos) {
+          Tail generate2(Position pos) { // \v i -> v `xor` (1 << flagToWord i)
             Temp[] vi = Temp.makeTemps(2);
             Temp t = new Temp();
             Temp m = new Temp();
@@ -1871,13 +1871,13 @@ public class GenImp extends ExtImp {
     generators.put(
         "primBitTestBit",
         new ConsumeBitmanipGenerator(Prefix.nat, fun(bitA, ixA, bool)) {
-          Tail generate1(Position pos) {
+          Tail generate1(Position pos) { // \v i -> v
             Temp[] vi = Temp.makeTemps(2);
             Block b = new Block(pos, vi, new Done(new Return(vi[0])));
             return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
           }
 
-          Tail generate2(Position pos) {
+          Tail generate2(Position pos) { // \v i -> (v `and` (1 << flagToWord i)) `neq` 0
             Temp[] vi = Temp.makeTemps(2);
             Temp t = new Temp();
             Temp m = new Temp();
