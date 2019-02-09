@@ -6,11 +6,12 @@ LC or MIL source files, optimizing MIL code, and translating MIL
 to LLVM.
 
 These tools are primarily intended for use as a backend for
-the alb compiler for Habit.  However, they can also be used
-independently, as suggested by the following quick demo.
+the alb compiler for Habit.  (See https://github.com/habit-lang/alb.)
+However, they can also be used independently, as suggested by
+the examples described below.
 
-A draft paper with more details about MIL is available from 
-https://web.cecs.pdx.edu/~mpj/pubs/mil.pdf.
+A paper with more details about MIL is available via
+https://web.cecs.pdx.edu/~mpj/pubs/mil.html.
 
 A first cut at a test suite for mil-tools is available
 from https://github.com/zipwith/mil-tester.
