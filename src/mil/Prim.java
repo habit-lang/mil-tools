@@ -2211,18 +2211,20 @@ public class Prim {
             new ClosureDefn(
                 BuiltinPosition.pos,
                 ij,
-                r, //  impl{i, j} r = b[i, j, r]
-                new BlockCall(b).withArgs(Temp.append(ij, r)));
+                r, // impl{i, j} r
+                new BlockCall(b).withArgs(Temp.append(ij, r))); //   = b[i, j, r]
       }
       return new ClosAlloc(impl).withArgs(targs);
     }
   }
 
-  public static final Type ref0Type = Type.ref(Type.gen(1));
+  public static final Type ref0Type = Type.ref(Type.gen(0));
 
   public static final BlockType initSelfType =
       new PolyBlockType(
-          Type.tuple(Type.milfun(ref0Type, init0Type)), Type.tuple(init0Type), Prefix.nat_area);
+          Type.tuple(Type.milfun(Type.tuple(ref0Type), Type.tuple(init0Type))),
+          Type.tuple(init0Type),
+          Prefix.area);
 
   public static final Prim initSelf = new initSelf();
 
@@ -2261,8 +2263,8 @@ public class Prim {
             new ClosureDefn(
                 BuiltinPosition.pos,
                 f,
-                r, //  impl{f} r = b[f, r]
-                new BlockCall(b).withArgs(Temp.append(f, r)));
+                r, // impl{f} r
+                new BlockCall(b).withArgs(Temp.append(f, r))); //   = b[f, r]
       }
       return new ClosAlloc(impl).withArgs(targs);
     }
