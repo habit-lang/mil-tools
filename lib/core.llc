@@ -84,9 +84,19 @@ immediately writes it to another:
 >                  set r2 s1
 >                  set r1 s2
 
-We also provide a function to build initializers for `Stored` values:
+We also provide functions to build initializers for `Stored` values:
 
-> external initStored {primInitStored t}  :: t -> Init (Stored t)
+> external initStored {primInitStored t} :: t -> Init (Stored t)
+
+and to build initializers that have access to the reference of the
+object that is being initialized:
+
+> external initSelf {primInitSelf a} :: (Ref a -> Init a) -> Init a
+
+We also provide a function for using an initializer to reinitialize
+a memory area:
+
+> external reInit {primReInit a} :: Init a -> Ref a -> Proc Unit
 
 Arrays:
 

@@ -258,6 +258,14 @@ public class GenImp extends ExtImp {
 
   public static Type arrayAB = Type.array(gA, gB);
 
+  public static Type refA = Type.ref(gA);
+
+  public static Type refB = Type.ref(gB);
+
+  public static Type refC = Type.ref(gC);
+
+  public static Type initA = Type.init(gA);
+
   static {
 
     // primBitFromLiteral v w ... :: Proxy v -> Bit w
@@ -2334,10 +2342,38 @@ public class GenImp extends ExtImp {
 
   static {
 
+    // primInitSelf t :: (Ref a -> Init a) -> Init a
+    generators.put(
+        "primInitSelf",
+        new Generator(Prefix.area, fun(fun(refA, initA), initA)) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            Temp[] fr = Temp.makeTemps(2);
+            Temp g = new Temp();
+            Block b =
+                new Block(
+                    pos, fr, new Bind(g, new Enter(fr[0], fr[1]), new Done(new Enter(g, fr[1]))));
+            return new BlockCall(b).makeBinaryFuncClosure(pos, 1, 1);
+          }
+        });
+
+    // primReInit t :: Init a -> Ref a -> Proc Unit
+    generators.put(
+        "primReInit",
+        new Generator(Prefix.area, fun(initA, fun(refA, Type.proc(unit)))) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            Temp[] ir = Temp.makeTemps(2);
+            ClosureDefn k = new ClosureDefn(pos, ir, Temp.noTemps, new Enter(ir[0], ir[1]));
+            return new ClosAlloc(k).makeBinaryFuncClosure(pos, 1, 1);
+          }
+        });
+  }
+
+  static {
+
     // (@) n a :: Ref (Array n a) -> Ix n -> Ref a
     generators.put(
         "@",
-        new Generator(Prefix.nat_area, fun(Type.ref(arrayAB), ixA, Type.ref(gB))) {
+        new Generator(Prefix.nat_area, fun(Type.ref(arrayAB), ixA, refB)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             long n = ts[0].validIndex().longValue(); // Array length/Modulus for index type
             long size = ts[1].validArrayArea(); // Size of array elements
@@ -2470,7 +2506,7 @@ public class GenImp extends ExtImp {
     // primStructSelect st lab t :: Ref st -> #lab -> Ref t
     generators.put(
         "primStructSelect",
-        new Generator(Prefix.area_lab_area, fun(Type.ref(gA), proxy(gB), Type.ref(gC))) {
+        new Generator(Prefix.area_lab_area, fun(refA, proxy(gB), refC)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             StructType st = ts[0].structType(); // Structure type
             if (st == null) {
