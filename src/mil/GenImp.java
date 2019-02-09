@@ -2356,13 +2356,13 @@ public class GenImp extends ExtImp {
           }
         });
 
-    // primReInit t :: Init a -> Ref a -> Proc Unit
+    // primReInit t :: Ref a -> Init a -> Proc Unit
     generators.put(
         "primReInit",
-        new Generator(Prefix.area, fun(initA, fun(refA, Type.proc(unit)))) {
+        new Generator(Prefix.area, fun(refA, fun(initA, Type.proc(unit)))) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-            Temp[] ir = Temp.makeTemps(2);
-            ClosureDefn k = new ClosureDefn(pos, ir, Temp.noTemps, new Enter(ir[0], ir[1]));
+            Temp[] ri = Temp.makeTemps(2);
+            ClosureDefn k = new ClosureDefn(pos, ri, Temp.noTemps, new Enter(ri[1], ri[0]));
             return new ClosAlloc(k).makeBinaryFuncClosure(pos, 1, 1);
           }
         });

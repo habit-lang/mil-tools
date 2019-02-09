@@ -2271,7 +2271,7 @@ public class Prim {
   }
 
   public static final BlockType reInitType =
-      new PolyBlockType(Type.tuple(init0Type, ref0Type), Type.empty, Prefix.area);
+      new PolyBlockType(Type.tuple(ref0Type, init0Type), Type.empty, Prefix.area);
 
   public static final Prim reInit = new reInit();
 
@@ -2294,20 +2294,20 @@ public class Prim {
 
     Tail repTransformPrim(RepTypeSet set, Atom[] targs) {
       if (impl == null) {
-        Temp[] ir = Temp.makeTemps(2);
+        Temp[] ri = Temp.makeTemps(2);
         Block b =
             new Block(
                 BuiltinPosition.pos,
-                ir, // b[i, r]
-                new Done(new Enter(ir[0], ir[1]))); //   = i @ r
-        Temp[] i = Temp.makeTemps(1);
+                ri, // b[r, i]
+                new Done(new Enter(ri[1], ri[0]))); //   = i @ r
         Temp[] r = Temp.makeTemps(1);
+        Temp[] i = Temp.makeTemps(1);
         impl =
             new ClosureDefn(
                 BuiltinPosition.pos,
-                i,
-                r, // impl{i} r
-                new BlockCall(b).withArgs(Temp.append(i, r))); //   = b[i, r]
+                r,
+                i, // impl{r} i
+                new BlockCall(b).withArgs(Temp.append(r, i))); //   = b[r, i]
       }
       return new ClosAlloc(impl).withArgs(targs);
     }
