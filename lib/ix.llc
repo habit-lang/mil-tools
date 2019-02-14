@@ -125,3 +125,7 @@ with at least 8 bits:
 > export ixToWord :: Ix m -> Word
 > ixToWord i       = bitToWord (ixToBit i)
 
+Relaxing index values:
+
+> external relaxIx {primRelaxIx m n} :: Ix m -> Ix n
+

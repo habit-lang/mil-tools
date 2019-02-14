@@ -8,6 +8,12 @@ A (currently underdeveloped) library for working with Bit vectors.
 >          bitFlip    {primBitFlipBit n}       :: Bit n -> Ix n -> Bit n
 > external bitTest    {primBitTestBit n}       :: Bit n -> Ix n -> Bool
 
+> export bitSetWord   :: Word -> Ix WordBits -> Word
+> bitSetWord w ix      = bitToWord (bitSet (wordToBit w) ix)
+
+> export bitClearWord :: Word -> Ix WordBits -> Word
+> bitClearWord w ix    = bitToWord (bitClear (wordToBit w) ix)
+
 > external bitNot     {primBitNot n}           :: Bit n -> Bit n
 > external bitOr      {primBitOr n},
 >          bitAnd     {primBitAnd n},

@@ -191,7 +191,7 @@ correspond to a notation that used all 10 numeric digits and all
 26 alphabetic lowercase characters for a total of 36 different
 "digit" characters.)
 
-> digitToByte  :: Word -> Byte
+> export digitToByte :: Word -> Byte
 > digitToByte d = wordToByte (if d <= 9
 >                               then ('0' + d)
 >                               else ('a' + (d - 10)))
