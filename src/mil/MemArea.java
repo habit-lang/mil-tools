@@ -182,10 +182,14 @@ public class MemArea extends Area {
       debug.Internal.error("Unable to determine size of area " + id);
     }
     llvm.Type at = new llvm.ArrayType(bigsize.longValue(), llvm.Type.i8);
-    String rawName = prog.freshName("raw");
-    prog.add(id.charAt(0)=='x'
-             ? new llvm.GlobalVarDecl(rawName, at)
-             : new llvm.GlobalVarDefn(llvm.Mods.INTERNAL, rawName, at.defaultValue(), alignment));
+    String rawName;
+    if (id.startsWith("x_")) {
+        rawName = id + "_raw";
+        prog.add(new llvm.GlobalVarDecl(rawName, at));
+    } else {
+        rawName = prog.freshName("raw");
+        prog.add(new llvm.GlobalVarDefn(llvm.Mods.INTERNAL, rawName, at.defaultValue(), alignment));
+    }
     prog.add(
         new llvm.Alias(
             llvm.Mods.entry(isEntrypoint),
