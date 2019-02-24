@@ -77,6 +77,56 @@ class Main {
     }
   }
 
+  /** Represents a stream of command line arguments. */
+  abstract static class ArgStream {
+
+    /** Advance to the next argument in this argument stream, returning null at the end. */
+    abstract String nextArg();
+  }
+
+  /** An argument stream from a list of strings. */
+  static class StringArgStream extends ArgStream {
+
+    private String[] args;
+
+    /** Default constructor. */
+    StringArgStream(String[] args) {
+      this.args = args;
+    }
+
+    private int i = 0;
+
+    /** Advance to the next argument in this argument stream, returning null at the end. */
+    String nextArg() {
+      return (args == null || i >= args.length) ? null : args[i++];
+    }
+  }
+
+  /** An argument stream that reads lines from a specified source. */
+  static class SourceArgStream extends ArgStream {
+
+    private Source source;
+
+    /** Default constructor. */
+    SourceArgStream(Source source) {
+      this.source = source;
+    }
+
+    /** Advance to the next argument in this argument stream, returning null at the end. */
+    String nextArg() {
+      if (source == null) {
+        return null;
+      } else {
+        String arg = source.readLine();
+        if (arg == null) {
+          source.close();
+          source = null;
+        }
+        return arg;
+      }
+    }
+  }
+
   /** Store the list of passes to run (null ==> run with a sensible default for other options) */
   private String passes = null;
 
@@ -119,102 +169,119 @@ class Main {
   /** Track the number of output actions executed. */
   private int numActions = 0;
 
+  /** Set the maximum allowed nesting for .milc files. */
+  private static final int MAX_NESTING = 5;
+
   /** Simple command line argument processing. */
-  private void options(Handler handler, String str, LCLoader loader, boolean nested)
+  private void processArgs(Handler handler, ArgStream args, LCLoader loader, int nesting)
       throws Failure {
-    if (str.startsWith("-")) {
-      String special;
-      if ((special = nonemptyOptString("--llvm-main=", str)) != null) {
-        llvm.FuncDefn.mainFunctionName = special;
-        return;
-      } else if ((special = nonemptyOptString("--mil-main=", str)) != null) {
-        milMain = special;
-        return;
-      } else if (optMatches("--standalone", str)) {
-        milMain = llvm.FuncDefn.mainFunctionName = "main";
-        return;
-      } else if ((special = nonemptyOptString("--target=", str)) != null) {
-        llvm.Program.targetTriple = special;
-        return;
-      } else if (optMatches("--32", str)) {
-        Word.setSize(32);
-        return;
-      } else if (optMatches("--64", str)) {
-        Word.setSize(64);
-        return;
-      } else if (optMatches("--help", str) || optMatches("-help", str)) {
-        usage();
-        numActions++;
-        return;
-      }
-      for (int i = 1; i < str.length(); i++) {
-        switch (str.charAt(i)) {
-          case 'd':
-            debug.Log.on();
-            break;
-          case 'v':
-            trace = true;
-            break;
-          case 'i':
-            loader.extendSearchPath(str, i + 1);
-            return;
-          case 'p':
-            addPasses(str.substring(i + 1));
-            return;
-          case 'm':
-            milOutput.setName(str, i);
-            return;
-          case 't':
-            typeDefnsOutput.setName(str, i);
-            return;
-          case 'g':
-            graphvizOutput.setName(str, i);
-            return;
-          case 'c':
-            typeSetOutput.setName(str, i);
-            return;
-          case 's':
-            specTypeSetOutput.setName(str, i);
-            return;
-          case 'r':
-            repTypeSetOutput.setName(str, i);
-            return;
-          case 'e':
-            generatorsOutput.setName(str, i);
-            return;
-          case 'h':
-            primitivesOutput.setName(str, i);
-            return;
-          case 'l':
-            llvmOutput.setName(str, i);
-            return;
-          case 'f':
-            llvmInterfaceOutput.setName(str, i);
-            return;
-          case 'G':
-            cfgsGraphvizOutput.setName(str, i);
-            return;
-          case 'b':
-            bytecodeOutput.setName(str, i);
-            return;
-          case 'x':
-            execOutput.setName(str, i);
-            return;
-          default:
-            throw new Failure("Unrecognized option character '" + str.charAt(i) + "'");
+    String str;
+    while ((str = args.nextArg()) != null) {
+      if (str.startsWith("-")) {
+        processOptions(str, args, loader);
+      } else if (str.endsWith(".milc")) {
+        if (nesting > MAX_NESTING) {
+          throw new Failure("Cannot read options from nested configuration file \"" + str + "\"");
+        } else if (!optionsFromFile(handler, str, loader, ++nesting)) {
+          throw new Failure("Error reading options from \"" + str + "\"; file not accessible");
         }
+      } else { // Treat as a source file name
+        if (!loader.loadMIL(str)) { // Try first to load as mil ...
+          loader.require(str); // ... but otherwise load as lc
+        }
+        numSourceFiles++; // Either way, it counts as a source file
       }
-    } else if (str.endsWith(".milc")) {
-      if (nested) {
-        throw new Failure("Cannot read options from nested configuration file \"" + str + "\"");
-      } else if (!optionsFromFile(handler, str, loader, true)) {
-        throw new Failure("Error reading options from \"" + str + "\"; file not accessible");
+    }
+  }
+
+  /** Process command line options after an initial "-" character. */
+  private void processOptions(String str, ArgStream args, LCLoader loader) throws Failure {
+    String special;
+    if ((special = nonemptyOptString("--llvm-main=", str)) != null) {
+      llvm.FuncDefn.mainFunctionName = special;
+      return;
+    } else if ((special = nonemptyOptString("--mil-main=", str)) != null) {
+      milMain = special;
+      return;
+    } else if (optMatches("--standalone", str)) {
+      milMain = llvm.FuncDefn.mainFunctionName = "main";
+      return;
+    } else if ((special = nonemptyOptString("--target=", str)) != null) {
+      llvm.Program.targetTriple = special;
+      return;
+    } else if (optMatches("--32", str)) {
+      Word.setSize(32);
+      return;
+    } else if (optMatches("--64", str)) {
+      Word.setSize(64);
+      return;
+    } else if (optMatches("--help", str) || optMatches("-help", str)) {
+      usage();
+      numActions++;
+      return;
+    }
+    for (int i = 1; i < str.length(); i++) {
+      switch (str.charAt(i)) {
+        case 'd':
+          debug.Log.on();
+          break;
+        case 'v':
+          trace = true;
+          break;
+        case 'i':
+          if (i + 1 < str.length()) {
+            loader.extendSearchPath(str, i + 1);
+          } else if ((str = args.nextArg()) != null) {
+            loader.extendSearchPath(str, 0);
+          } else {
+            throw new Failure("Missing argument for -i option");
+          }
+          return;
+        case 'p':
+          addPasses(str.substring(i + 1));
+          return;
+        case 'm':
+          milOutput.setName(str, i);
+          return;
+        case 't':
+          typeDefnsOutput.setName(str, i);
+          return;
+        case 'g':
+          graphvizOutput.setName(str, i);
+          return;
+        case 'c':
+          typeSetOutput.setName(str, i);
+          return;
+        case 's':
+          specTypeSetOutput.setName(str, i);
+          return;
+        case 'r':
+          repTypeSetOutput.setName(str, i);
+          return;
+        case 'e':
+          generatorsOutput.setName(str, i);
+          return;
+        case 'h':
+          primitivesOutput.setName(str, i);
+          return;
+        case 'l':
+          llvmOutput.setName(str, i);
+          return;
+        case 'f':
+          llvmInterfaceOutput.setName(str, i);
+          return;
+        case 'G':
+          cfgsGraphvizOutput.setName(str, i);
+          return;
+        case 'b':
+          bytecodeOutput.setName(str, i);
+          return;
+        case 'x':
+          execOutput.setName(str, i);
+          return;
+        default:
+          throw new Failure("Unrecognized option character '" + str.charAt(i) + "'");
       }
-    } else { // Treat as a source file name
-      if (!loader.loadMIL(str)) { // Try first to load as mil ...
-        loader.require(str); // ... but otherwise load as lc
-      }
-      numSourceFiles++; // Either way, it counts as a source file
     }
   }
 
@@ -239,17 +306,12 @@ class Main {
     return s;
   }
 
-  private boolean optionsFromFile(Handler handler, String name, LCLoader loader, boolean nested)
+  private boolean optionsFromFile(Handler handler, String name, LCLoader loader, int nesting)
       throws Failure {
+    message("Reading options from " + name + " ...");
     try {
-      message("Reading options from " + name + " ...");
-      Reader reader = new FileReader(name);
-      Source source = new OptionSource(handler, reader, name);
-      String line;
-      while ((line = source.readLine()) != null) {
-        options(handler, line, loader, true);
-      }
-      source.close();
+      ArgStream args = new SourceArgStream(new OptionSource(handler, new FileReader(name), name));
+      processArgs(handler, args, loader, nesting);
       return true;
     } catch (FileNotFoundException e) {
       return false;
@@ -265,14 +327,12 @@ class Main {
     try {
       // TODO: initial messages will not appear so long as trace is initialized to false :-)
       LCLoader loader = new LCLoader();
-      if (optionsFromFile(handler, ".milc", loader, false)) {
+      if (optionsFromFile(handler, ".milc", loader, 0)) {
         message("Read options from .milc ..."); // Process options in .milc file, if present
       }
       ;
       message("Reading command line arguments ..."); // Process command line arguments
-      for (int i = 0; i < args.length; i++) {
-        options(handler, args[i], loader, false);
-      }
+      processArgs(handler, new StringArgStream(args), loader, 0);
       handler.abortOnFailures();
 
       if (numSourceFiles > 0) {
