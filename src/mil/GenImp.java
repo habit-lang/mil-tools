@@ -2199,8 +2199,9 @@ public class GenImp extends ExtImp {
             BigInteger v = ts[0].validNat(); // Value of literal (must be nonzero!)
             int w = ts[1].validWidth(); // Width of bit vector
             if (v.signum() <= 0) {
-              throw new GeneratorException("A nonzero value is required");
+              throw new GeneratorException("A positive value is required");
             }
+            validSingleWord(w);
             Type.validBelow(v, BigInteger.ONE.shiftLeft(w)); // v < 2 ^ w
             ClosureDefn k =
                 new ClosureDefn(
@@ -2212,13 +2213,24 @@ public class GenImp extends ExtImp {
           }
         });
 
+    // primNZBitForget w :: NZBit w -> Bit w
+    generators.put(
+        "primNZBitForget",
+        new Generator(Prefix.nat, fun(Type.nzbit(gA), bitA)) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            validSingleWord(
+                ts[0].validWidth(2)); // bit vector width (must fit within a single word)
+            return new Return().makeUnaryFuncClosure(pos, 1);
+          }
+        });
+
     // primNZBitNonZero w :: Bit w -> Maybe (NZBit w)
     generators.put(
         "primNZBitNonZero",
         new Generator(Prefix.nat, fun(bitA, maybeIx)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-            int w = ts[0].validWidth(2); // Width of bit vector
-            validSingleWord(w);
+            validSingleWord(
+                ts[0].validWidth(2)); // bit vector width (must fit within a single word)
             validBitdataRepresentations(); // ensures same rep for Maybe (NZBit w), Bit w.
             return new Return().makeUnaryFuncClosure(pos, 1);
           }
@@ -2236,8 +2248,8 @@ public class GenImp extends ExtImp {
         ref,
         new Generator(Prefix.nat, fun(bitA, Type.nzbit(gA), bitA)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-            int w = ts[0].validWidth(2); // Width of bit vector (must fit within a single word)
-            validSingleWord(w);
+            validSingleWord(
+                ts[0].validWidth(2)); // bit vector width (must fit within a single word)
             return new PrimCall(p).makeBinaryFuncClosure(pos, 1, 1);
           }
         });
