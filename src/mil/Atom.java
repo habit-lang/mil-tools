@@ -249,13 +249,20 @@ public abstract class Atom {
     copyTo(dst, builder);
   }
 
-  boolean isLive() {
-    return false;
+  /**
+   * Mark a temporary to indicate that its value is not referenced in the remainder of a given code
+   * sequence by setting its name to an underscore.
+   */
+  Temp markUsed() {
+    debug.Internal.error("markUsed should only be called on a Temp");
+    return null;
   }
 
-  Temp notLive() {
-    debug.Internal.error("notLive should only be called on a Temp");
-    return null;
+  /**
+   * Test to see if a temporary has had its name replaced with an underscore to mark it as unused.
+   */
+  boolean markedUnused() {
+    return true;
   }
 
   boolean isStatic() {

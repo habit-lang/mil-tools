@@ -62,7 +62,7 @@ public class Temp extends Atom {
      * constant factor would be the same) and the task of building the list would be more complex.  Another alternative
      * would be to use a more efficient lookup structure than a list, although that would likely add other overhead.
      */
-    if (isLive()) { // TODO: isLive() is currently part of optimizer, not MIL AST
+    if (!markedUnused()) { // TODO: markedUnused() is currently part of optimizer, not MIL AST
       for (; ts != null; ts = ts.next) {
         if (ts.head == this) {
           int i = 0;
@@ -190,22 +190,29 @@ public class Temp extends Atom {
     /* do nothing */
   }
 
-  /** Return true if none of the variables in the given array are live. */
-  static boolean noneLive(Temp[] vs) {
+  /**
+   * Mark a temporary to indicate that its value is not referenced in the remainder of a given code
+   * sequence by setting its name to an underscore.
+   */
+  Temp markUsed() {
+    return new Temp("_", type);
+  }
+
+  /**
+   * Test to see if a temporary has had its name replaced with an underscore to mark it as unused.
+   */
+  boolean markedUnused() {
+    return id.equals("_");
+  }
+
+  /** Return true if all of the variables in the given array are marked as unused. */
+  static boolean allMarkedUnused(Temp[] vs) {
     for (int i = 0; i < vs.length; i++) {
-      if (vs[i].isLive()) {
+      if (!vs[i].markedUnused()) {
         return false;
       }
     }
     return true;
-  }
-
-  boolean isLive() {
-    return !id.equals("_");
-  }
-
-  Temp notLive() {
-    return new Temp("_", type);
   }
 
   public Facts kills(Facts facts) {
@@ -218,7 +225,7 @@ public class Temp extends Atom {
    * case.)
    */
   public Facts addFact(Tail t, Facts facts) {
-    return (this.isLive() && t.isRepeatable() && !t.contains(this))
+    return (!this.markedUnused() && t.isRepeatable() && !t.contains(this))
         ? new Facts(this, t, facts)
         : facts;
   }

@@ -59,6 +59,14 @@ public abstract class Code {
    */
   public abstract Code apply(TempSubst s);
 
+  /**
+   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
+   * loop).
+   */
+  boolean blackholes() {
+    return false;
+  }
+
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   abstract TVars tvars(TVars tvs);
 
@@ -144,10 +152,6 @@ public abstract class Code {
   /** Test for code that is guaranteed not to return. */
   abstract boolean doesntReturn();
 
-  boolean detectLoops(Block src, Blocks visited) {
-    return false;
-  }
-
   /**
    * Return a possibly shortened version of this code sequence by applying some simple
    * transformations. The src Block is passed as an argument for use in reporting any optimizations
@@ -158,21 +162,14 @@ public abstract class Code {
   }
 
   /**
-   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
-   * loop).
+   * Test whether a given Code/Tail has the form return vs, with the specified Temp[] vs as its
+   * argument list.
    */
-  boolean blackholes() {
+  boolean isReturn(Temp[] vs) {
     return false;
   }
 
-  /**
-   * Test whether a given Code/Tail value is an expression of the form return vs, with the specified
-   * Temp[] vs as parameter. We also return a true result for a Tail of the form return _, where the
-   * wildcard indicates that any return value is acceptable because the result will be ignored by
-   * the caller. This allows us to turn more calls into tail calls when they occur at the end of
-   * "void functions" that do not return a useful result.
-   */
-  boolean isReturn(Temp[] vs) {
+  boolean detectLoops(Block src, Blocks visited) {
     return false;
   }
 

@@ -55,6 +55,14 @@ public class PrimCall extends Call {
     return p.withArgs(args);
   }
 
+  /**
+   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
+   * loop).
+   */
+  boolean blackholes() {
+    return p.blackholes();
+  }
+
   private BlockType type;
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
@@ -94,14 +102,6 @@ public class PrimCall extends Call {
   /** Test for code that is guaranteed not to return. */
   boolean doesntReturn() {
     return p.doesntReturn();
-  }
-
-  /**
-   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
-   * loop).
-   */
-  boolean blackholes() {
-    return p.blackholes();
   }
 
   /**

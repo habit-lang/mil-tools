@@ -58,6 +58,14 @@ public class Done extends Code {
     return new Done(t.apply(s));
   }
 
+  /**
+   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
+   * loop).
+   */
+  boolean blackholes() {
+    return t.blackholes();
+  }
+
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   TVars tvars(TVars tvs) {
     return t.tvars(tvs);
@@ -112,27 +120,16 @@ public class Done extends Code {
     return t.doesntReturn();
   }
 
-  boolean detectLoops(Block src, Blocks visited) { // look for src[x] = b[x]
-    return t.detectLoops(src, visited);
-  }
-
   /**
-   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
-   * loop).
-   */
-  boolean blackholes() {
-    return t.blackholes();
-  }
-
-  /**
-   * Test whether a given Code/Tail value is an expression of the form return vs, with the specified
-   * Temp[] vs as parameter. We also return a true result for a Tail of the form return _, where the
-   * wildcard indicates that any return value is acceptable because the result will be ignored by
-   * the caller. This allows us to turn more calls into tail calls when they occur at the end of
-   * "void functions" that do not return a useful result.
+   * Test whether a given Code/Tail has the form return vs, with the specified Temp[] vs as its
+   * argument list.
    */
   boolean isReturn(Temp[] vs) {
     return t.isReturn(vs);
+  }
+
+  boolean detectLoops(Block src, Blocks visited) { // look for src[x] = b[x]
+    return t.detectLoops(src, visited);
   }
 
   /**

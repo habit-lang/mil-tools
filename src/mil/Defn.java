@@ -320,13 +320,13 @@ public abstract class Defn {
     return false;
   }
 
-  boolean detectLoops(Blocks visited) {
-    return false;
-  }
-
   /** Perform pre-inlining cleanup on each Block in this SCC. */
   void cleanup() {
     /* Nothing to do here */
+  }
+
+  boolean detectLoops(Blocks visited) {
+    return false;
   }
 
   /** Apply inlining. */

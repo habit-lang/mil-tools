@@ -93,6 +93,7 @@ public class FailAlt extends Alts {
     return null;
   }
 
+  /** Test to see if all of the block calls in this case are the same as a given candidate. */
   boolean sameBlockCalls(BlockCall cand) {
     return false;
   }
