@@ -138,7 +138,7 @@ public abstract class Tail {
    * and any a1,...,an (so long as they do not include w), returning the argument list a1,...,an as
    * a result.
    */
-  public Atom[] enters(Temp w) {
+  Atom[] enters(Temp w) {
     return null;
   }
 

@@ -115,7 +115,7 @@ public class Bind extends Code {
    * Given an expression of the form (w <- b[..]; c), attempt to construct an equivalent code
    * sequence that instead calls a block whose code includes a trailing enter.
    */
-  public Code enters(Temp w, BlockCall bc) {
+  Code enters(Temp w, BlockCall bc) {
     Atom[] iargs = t.enters(w);
     return (iargs != null && !c.contains(w)) ? new Bind(vs, bc.deriveWithEnter(iargs), c) : null;
   }

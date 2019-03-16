@@ -115,7 +115,7 @@ public class BlockCall extends Call {
    * Generate a new version of this block call by passing the specified argument to a derived block
    * with a trailing enter.
    */
-  public BlockCall deriveWithEnter(Atom[] iargs) {
+  BlockCall deriveWithEnter(Atom[] iargs) {
     return new BlockCall(b.deriveWithEnter(iargs.length), Atom.append(args, iargs));
   }
 
@@ -183,11 +183,7 @@ public class BlockCall extends Call {
       debug.Internal.error("BlockCall argument list length mismatch in deriveWithKnownCons");
     }
     Block nb = b.deriveWithKnownCons(calls);
-    if (nb == null) {
-      return null;
-    } else {
-      return new BlockCall(nb, specializedArgs(calls));
-    }
+    return (nb == null) ? null : new BlockCall(nb, specializedArgs(calls));
   }
 
   /** Generate a new version of a block call that omits duplicate arguments. */

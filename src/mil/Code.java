@@ -90,7 +90,7 @@ public abstract class Code {
    * is this code sequence and ws and bc are passed as parameters---by deriving a new block with a
    * trailing enter.
    */
-  public Code enters(Temp[] ws, BlockCall bc) {
+  Code enters(Temp[] ws, BlockCall bc) {
     return (ws.length == 1) ? enters(ws[0], bc) : null;
   }
 
@@ -98,7 +98,7 @@ public abstract class Code {
    * Given an expression of the form (w <- b[..]; c), attempt to construct an equivalent code
    * sequence that instead calls a block whose code includes a trailing enter.
    */
-  public Code enters(Temp w, BlockCall bc) {
+  Code enters(Temp w, BlockCall bc) {
     return null;
   }
 
