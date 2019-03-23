@@ -121,10 +121,6 @@ public class Assert extends Code {
     return c.doesntReturn();
   }
 
-  boolean detectLoops(Block src, Blocks visited) {
-    return c.detectLoops(src, visited);
-  }
-
   /**
    * Return a possibly shortened version of this code sequence by applying some simple
    * transformations. The src Block is passed as an argument for use in reporting any optimizations
@@ -132,11 +128,15 @@ public class Assert extends Code {
    */
   Code cleanup(Block src) {
     c = c.cleanup(src);
-    if (!a.isLive()) { // Rewrite (assert cf _; c) ==> c
+    if (a.markedUnused()) { // Rewrite (assert _ cf ; c) ==> c
       MILProgram.report("eliminated an unused assertion in " + src);
       return c;
     }
     return this;
+  }
+
+  boolean detectLoops(Block src, Blocks visited) {
+    return c.detectLoops(src, visited);
   }
 
   /**
@@ -208,9 +208,9 @@ public class Assert extends Code {
    */
   Temps liveness() {
     Temps us = c.liveness();
-    if (a.isLive() && !a.isIn(us)) {
+    if (!a.markedUnused() && !a.isIn(us)) {
       MILProgram.report("liveness replaced " + a + " in assertion with a wildcard");
-      a = a.notLive();
+      a = a.markUsed();
     }
     return us;
   }

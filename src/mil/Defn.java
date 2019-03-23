@@ -304,11 +304,9 @@ public abstract class Defn {
   }
 
   /**
-   * Reset the doesntReturn flag, if there is one, for this definition ahead of a returnAnalysis().
-   * For this analysis, we use true as the initial value, reducing it to false if we find a path
-   * that allows a block's code to return.
+   * Set the doesntReturn flag, if there is one, for this definition ahead of a returnAnalysis().
    */
-  void resetDoesntReturn() {
+  void setDoesntReturn() {
     /* Nothing to do in this case */
   }
 
@@ -320,13 +318,13 @@ public abstract class Defn {
     return false;
   }
 
-  boolean detectLoops(Blocks visited) {
-    return false;
-  }
-
   /** Perform pre-inlining cleanup on each Block in this SCC. */
   void cleanup() {
     /* Nothing to do here */
+  }
+
+  boolean detectLoops(Blocks visited) {
+    return false;
   }
 
   /** Apply inlining. */

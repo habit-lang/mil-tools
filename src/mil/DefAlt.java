@@ -103,6 +103,7 @@ public class DefAlt extends Alts {
     return bc;
   }
 
+  /** Test to see if all of the block calls in this case are the same as a given candidate. */
   boolean sameBlockCalls(BlockCall cand) {
     return cand.sameBlockCall(bc);
   }

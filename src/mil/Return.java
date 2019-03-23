@@ -98,25 +98,11 @@ public class Return extends Call {
   }
 
   /**
-   * Test whether a given Code/Tail value is an expression of the form return vs, with the specified
-   * Temp[] vs as parameter. We also return a true result for a Tail of the form return _, where the
-   * wildcard indicates that any return value is acceptable because the result will be ignored by
-   * the caller. This allows us to turn more calls into tail calls when they occur at the end of
-   * "void functions" that do not return a useful result.
+   * Test whether a given Code/Tail has the form return vs, with the specified Temp[] vs as its
+   * argument list.
    */
-  boolean isReturn(Temp[] vs) { // TODO: Refactor as separate sameTemps() method (viz sameAtoms)?
-    if (vs.length != args.length) {
-      return false;
-    }
-    for (int i = 0; i < vs.length; i++) {
-      if (args[i]
-          != vs[
-              i]) { // TODO: is this equality enough?  (e.g., does it compare two TopDefs
-                    // correctly?)
-        return false;
-      }
-    }
-    return true;
+  boolean isReturn(Temp[] vs) {
+    return Atom.sameAtoms(vs, args);
   }
 
   /**

@@ -79,6 +79,7 @@ public abstract class Alts {
    */
   abstract BlockCall sameBlockCalls();
 
+  /** Test to see if all of the block calls in this case are the same as a given candidate. */
   abstract boolean sameBlockCalls(BlockCall cand);
 
   abstract void inlining();

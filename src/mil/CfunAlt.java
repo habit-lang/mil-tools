@@ -118,6 +118,7 @@ public class CfunAlt extends Alts {
     return next.sameBlockCalls(bc) ? bc : null;
   }
 
+  /** Test to see if all of the block calls in this case are the same as a given candidate. */
   boolean sameBlockCalls(BlockCall cand) {
     return cand.sameBlockCall(bc) && next.sameBlockCalls(cand);
   }

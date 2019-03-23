@@ -1567,16 +1567,16 @@ public class Prim {
       return new halt(bt);
     }
 
-    void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
-      throw new Failure("halt primitive executed");
-    }
-
     /**
      * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
      * loop).
      */
     boolean blackholes() {
       return true;
+    }
+
+    void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
+      throw new Failure("halt primitive executed");
     }
   }
 
@@ -1603,6 +1603,14 @@ public class Prim {
     boolean blackholes() {
       return true;
     }
+  }
+
+  /**
+   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
+   * loop).
+   */
+  boolean blackholes() {
+    return false;
   }
 
   BlockType instantiate() {
@@ -1645,14 +1653,6 @@ public class Prim {
 
   void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
     throw new Failure("primitive \"" + id + "\" not available");
-  }
-
-  /**
-   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
-   * loop).
-   */
-  boolean blackholes() {
-    return false;
   }
 
   protected static final BlockType nopType = new BlockType(Type.empty, Type.empty);

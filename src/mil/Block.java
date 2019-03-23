@@ -231,7 +231,7 @@ public class Block extends Defn {
    * code where it is immediately entered and then discarded. The parameter m determines the number
    * of additional arguments that will eventually be passed when the closure is entered.
    */
-  public Block deriveWithEnter(int m) {
+  Block deriveWithEnter(int m) {
     // Look to see if we have already derived a suitable version of this block:
     for (Blocks bs = derived; bs != null; bs = bs.next) {
       if (bs.head instanceof BlockWithEnter) {
@@ -242,8 +242,8 @@ public class Block extends Defn {
     // Generate a fresh block; we have to make sure that the new block is added to the derived list
     // before we begin
     // generating code to ensure that we do not end up with multiple (or potentially, infinitely
-    // many copies of the
-    // new block).
+    // many) copies of the
+    // new block.
     Temp[] iargs = Temp.makeTemps(m); // temps for extra args
     Temp[] nps = Temp.append(params, iargs); // added to original params
     Block b = new BlockWithEnter(pos, nps, null);
@@ -267,9 +267,8 @@ public class Block extends Defn {
     // Generate a fresh block; we have to make sure that the new block is added to the derived list
     // before we
     // begin generating code to ensure that we do not end up with multiple (or potentially,
-    // infinitely many
+    // infinitely many)
     // copies of the new block).
-
     Temp arg = new Temp(); // represents continuation
     int l = params.length; // extend params with arg
     Temp[] nps = new Temp[l + 1];
@@ -394,15 +393,7 @@ public class Block extends Defn {
     return false;
   }
 
-  /**
-   * Flag to identify blocks that "do not return". In other words, if the value of this flag for a
-   * given block b is true, then we can be sure that (x <- b[args]; c) == b[args] for any
-   * appropriate set of arguments args and any valid code sequence c. There are two situations that
-   * can cause a block to "not return". The first is when the block enters an infinite loop; such
-   * blocks may still be productive (such as the block defined by b[x] = (_ <- print((1)); b[x])),
-   * so we cannot assume that they will be eliminated by eliminateLoops(). The second is when the
-   * block's code sequence makes a call to a primitive call that does not return.
-   */
+  /** Flag to identify blocks that "do not return". */
   private boolean doesntReturn = false;
 
   /**
@@ -413,11 +404,9 @@ public class Block extends Defn {
   }
 
   /**
-   * Reset the doesntReturn flag, if there is one, for this definition ahead of a returnAnalysis().
-   * For this analysis, we use true as the initial value, reducing it to false if we find a path
-   * that allows a block's code to return.
+   * Set the doesntReturn flag, if there is one, for this definition ahead of a returnAnalysis().
    */
-  void resetDoesntReturn() {
+  void setDoesntReturn() {
     this.doesntReturn = true;
   }
 
@@ -434,6 +423,11 @@ public class Block extends Defn {
     return false; // no change
   }
 
+  /** Perform pre-inlining cleanup on each Block in this SCC. */
+  void cleanup() {
+    code = code.cleanup(this);
+  }
+
   boolean detectLoops(Blocks visited) {
     // Check to see if this block calls code for an already visited block:
     if (Blocks.isIn(this, visited) || code.detectLoops(this, visited)) {
@@ -442,11 +436,6 @@ public class Block extends Defn {
       return true;
     }
     return false;
-  }
-
-  /** Perform pre-inlining cleanup on each Block in this SCC. */
-  void cleanup() {
-    code = code.cleanup(this);
   }
 
   /** Apply inlining. */

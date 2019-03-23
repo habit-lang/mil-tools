@@ -170,7 +170,7 @@ public class DefnSCC {
   void returnAnalysis() {
     // Initialize return analysis information for each definition in this scc:
     for (Defns ds = getBindings(); ds != null; ds = ds.next) {
-      ds.head.resetDoesntReturn();
+      ds.head.setDoesntReturn();
     }
 
     // Compute return analysis results for each item in this scc:
@@ -183,16 +183,16 @@ public class DefnSCC {
     } while (changed);
   }
 
-  void detectLoops() {
-    for (Defns ds = getBindings(); ds != null; ds = ds.next) {
-      ds.head.detectLoops(null);
-    }
-  }
-
   /** Perform pre-inlining cleanup on each Block in this SCC. */
   void cleanup() {
     for (Defns ds = getBindings(); ds != null; ds = ds.next) {
       ds.head.cleanup();
+    }
+  }
+
+  void detectLoops() {
+    for (Defns ds = getBindings(); ds != null; ds = ds.next) {
+      ds.head.detectLoops(null);
     }
   }
 

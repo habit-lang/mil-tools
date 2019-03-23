@@ -115,7 +115,7 @@ public class Bind extends Code {
    * Given an expression of the form (w <- b[..]; c), attempt to construct an equivalent code
    * sequence that instead calls a block whose code includes a trailing enter.
    */
-  public Code enters(Temp w, BlockCall bc) {
+  Code enters(Temp w, BlockCall bc) {
     Atom[] iargs = t.enters(w);
     return (iargs != null && !c.contains(w)) ? new Bind(vs, bc.deriveWithEnter(iargs), c) : null;
   }
@@ -141,19 +141,13 @@ public class Bind extends Code {
     return t.doesntReturn() || c.doesntReturn();
   }
 
-  boolean detectLoops(
-      Block src, Blocks visited) { // look for src[x] = (vs <- b[x]; ...), possibly with some
-    // initial prefix of pure bindings xs1 <- pt1; ...; xsn <- ptn
-    return t.detectLoops(src, visited) || (t.hasNoEffect() && c.detectLoops(src, visited));
-  }
-
   /**
    * Return a possibly shortened version of this code sequence by applying some simple
    * transformations. The src Block is passed as an argument for use in reporting any optimizations
    * that are enabled.
    */
   Code cleanup(Block src) {
-    if (Temp.noneLive(vs)
+    if (Temp.allMarkedUnused(vs)
         && t.hasNoEffect()) { // Rewrite (_ <- t; c) ==> c, if t has no visible effect
       MILProgram.report("inlining eliminated a wildcard binding in " + src);
       return c.cleanup(src);
@@ -165,12 +159,20 @@ public class Bind extends Code {
       return new Done(Prim.loop.withArgs());
     } else if (t.doesntReturn()
         && !c.blackholes()) { // Rewrite (vs <- t; c) ==> vs <- t; loop(()), if t doesn't return
+      // The test for c.blackholes() prevents us from making repeated attempts to apply this
+      // transformation.
       MILProgram.report("removed code after a tail that does not return in " + src);
       return new Bind(vs, t, new Done(Prim.loop.withArgs()));
     } else {
       c = c.cleanup(src);
       return this;
     }
+  }
+
+  boolean detectLoops(
+      Block src, Blocks visited) { // look for src[x] = (vs <- b[x]; ...), possibly with some
+    // initial prefix of pure bindings xs1 <- pt1; ...; xsn <- ptn
+    return t.detectLoops(src, visited) || (t.hasNoEffect() && c.detectLoops(src, visited));
   }
 
   /**
@@ -355,7 +357,7 @@ public class Bind extends Code {
     // Stub out any unused variables with a wildcard
     Temp[] nvs = null;
     for (int i = 0; i < vs.length; i++) {
-      if (vs[i].isLive() && !vs[i].isIn(us)) {
+      if (!vs[i].markedUnused() && !vs[i].isIn(us)) {
         if (nvs == null) {
           nvs = new Temp[vs.length];
           for (int j = 0; j < i; j++) {
@@ -363,7 +365,7 @@ public class Bind extends Code {
           }
         }
         MILProgram.report("liveness replaced " + vs[i] + " with a wildcard");
-        nvs[i] = vs[i].notLive();
+        nvs[i] = vs[i].markUsed();
       }
     }
     if (nvs != null) {
