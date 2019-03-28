@@ -120,7 +120,7 @@ sets every value in an array of pointers to `Null`:
 
 Array indexing is represented by the `@` operator:
 
-> external @ {@ n a} :: Ref (Array n a) -> Ix n -> Ref a
+> external @ {primAt n a} :: Ref (Array n a) -> Ix n -> Ref a
 
 An expression of the form `a @ i` returns a reference to the
 `i`th element of the array referenced by the first argument, `a`;
