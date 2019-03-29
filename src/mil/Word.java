@@ -57,12 +57,6 @@ public class Word extends Const {
     Word.nonzeroPat = obdd.Pat.nonzero(size);
   }
 
-  static {
-
-    /* Default word size is 32 bits. */
-    setSize(32);
-  }
-
   /** Return the current Word size. */
   public static int size() {
     return size;

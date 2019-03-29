@@ -335,6 +335,10 @@ class Main {
       processArgs(handler, new StringArgStream(args), loader, 0);
       handler.abortOnFailures();
 
+      if (Word.size() == 0) { // Ensure that a word size is set, defaulting to 32 bits
+        Word.setSize(32); // TODO: figure out how to set this automatically ...
+      }
+
       if (numSourceFiles > 0) {
         message("Loading source files ..."); // Load and compile everything
         MILProgram mil = loader.load(handler, milMain);
