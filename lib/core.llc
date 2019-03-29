@@ -2,9 +2,7 @@
 
 Words and Bytes:
 
-> type WordSize  = 32        -- TODO: deprecate in favor of WordBits
-> type WordBits  = WordSize
-> type WordSize1 = 33        -- TODO: should be (WordSize+1)
+> type WordSize  = WordBits  -- TODO: should WordSize be deprecated?
 
 > external wordToBit  {primWordToBit WordSize} :: Word -> Bit WordSize
 > external bitToWord  {primBitToWord WordSize} :: Bit WordSize -> Word

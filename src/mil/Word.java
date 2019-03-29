@@ -50,6 +50,7 @@ public class Word extends Const {
     Word.size = size;
     Word.sizeBig = BigInteger.valueOf(size);
     Word.sizeType = new TNat(sizeBig);
+    Tycon.wordBits.setExpansion(Word.sizeType);
     Word.maxSigned = BigInteger.ONE.shiftLeft(size - 1).subtract(BigInteger.ONE);
     Word.maxUnsigned = BigInteger.ONE.shiftLeft(size).subtract(BigInteger.ONE);
     Word.allPat = obdd.Pat.all(size);

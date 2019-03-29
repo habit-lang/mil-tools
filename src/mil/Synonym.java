@@ -98,6 +98,12 @@ public class Synonym extends Tycon {
     return expansion.simplifyNatType(null);
   }
 
+  /** A constructor for defining Synonyms that have BuiltinPosition. */
+  public Synonym(String id, Kind kind, Type expansion) {
+    this(BuiltinPosition.pos, id, kind, expansion);
+    TyconEnv.builtin.add(this);
+  }
+
   /**
    * Find the arity of this tuple type (i.e., the number of components) or return (-1) if it is not
    * a tuple type. Parameter n specifies the number of arguments that have already been found; it

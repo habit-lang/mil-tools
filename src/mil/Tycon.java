@@ -156,6 +156,8 @@ public abstract class Tycon extends Name {
 
   public static final Kind natToAreaToArea = new KFun(KAtom.NAT, areaToArea);
 
+  public static final Synonym wordBits = new Synonym("WordBits", KAtom.NAT, null);
+
   public static final Tycon word = new PrimTycon("Word", KAtom.STAR, 0);
 
   public static final Tycon nzword = new PrimTycon("NZWord", KAtom.STAR, 0);
