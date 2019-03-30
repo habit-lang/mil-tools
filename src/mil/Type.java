@@ -80,8 +80,8 @@ public abstract class Type extends Scheme {
     return false;
   }
 
-  /** Test to determine whether this type is equal to a given TTycon. */
-  boolean alphaTTycon(TTycon right) {
+  /** Test to determine whether this type is equal to a given Tycon. */
+  boolean alphaTycon(Tycon right) {
     return false;
   }
 

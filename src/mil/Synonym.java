@@ -67,6 +67,37 @@ public class Synonym extends Tycon {
     kind = kind.fixKind();
   }
 
+  /**
+   * Test to determine whether this type is alpha equivalent to another type, by checking to see if
+   * the two type skeletons are equal, possibly with some correspondence between the TGen objects in
+   * the two types. We use the names left and right to keep track of which types were on the left
+   * and the right in the original alphaEquiv() call so that we can build the TGenCorresp in a
+   * consistent manner.
+   */
+  boolean alphaType(Type left, TGenCorresp corresp) {
+    return expansion.alphaType(left, corresp);
+  }
+
+  /** Test to determine whether this type is equal to a given type application. */
+  boolean alphaTAp(TAp right, TGenCorresp corresp) {
+    return expansion.alphaTAp(right, corresp);
+  }
+
+  /** Test to determine whether this type is equal to a given Tycon. */
+  boolean alphaTycon(Tycon right) {
+    return expansion.alphaTycon(right);
+  }
+
+  /** Test to determine whether this type is equal to a given TNat. */
+  boolean alphaTNat(TNat right) {
+    return expansion.alphaTNat(right);
+  }
+
+  /** Test to determine whether this type is equal to a given TLab. */
+  boolean alphaTLab(TLab right) {
+    return expansion.alphaTLab(right);
+  }
+
   public int level = 0;
 
   public int getLevel() {

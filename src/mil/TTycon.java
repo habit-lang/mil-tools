@@ -39,12 +39,27 @@ public class TTycon extends TConst {
    * consistent manner.
    */
   boolean alphaType(Type left, TGenCorresp corresp) {
-    return left.alphaTTycon(this);
+    return this.tycon.alphaType(left, corresp);
   }
 
-  /** Test to determine whether this type is equal to a given TTycon. */
-  boolean alphaTTycon(TTycon right) {
-    return this.tycon == right.tycon;
+  /** Test to determine whether this type is equal to a given type application. */
+  boolean alphaTAp(TAp right, TGenCorresp corresp) {
+    return tycon.alphaTAp(right, corresp);
+  }
+
+  /** Test to determine whether this type is equal to a given Tycon. */
+  boolean alphaTycon(Tycon right) {
+    return this.tycon.alphaTycon(right);
+  }
+
+  /** Test to determine whether this type is equal to a given TNat. */
+  boolean alphaTNat(TNat right) {
+    return tycon.alphaTNat(right);
+  }
+
+  /** Test to determine whether this type is equal to a given TLab. */
+  boolean alphaTLab(TLab right) {
+    return tycon.alphaTLab(right);
   }
 
   /**
