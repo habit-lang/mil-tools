@@ -20,24 +20,19 @@ package mil;
 
 import compiler.*;
 import core.*;
-import java.io.PrintWriter;
 
-/** A base class for primitive unary flag operators. */
-public abstract class PrimUnFOp extends PrimSing {
+public abstract class PrimSing extends Prim {
 
   /** Default constructor. */
-  public PrimUnFOp(String id, int purity, BlockType blockType) {
+  public PrimSing(String id, int purity, BlockType blockType) {
     super(id, purity, blockType);
   }
 
-  abstract boolean op(boolean b);
-
-  void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
-    stack[fp] = BoolValue.make(op(stack[fp].getBool()));
-  }
-
-  Code fold(boolean n) {
-    MILProgram.report("constant folding for " + getId());
-    return PrimCall.done(op(n));
+  /**
+   * Test whether this primitive is the same as a given primitive. For PrimSing, this requires a
+   * class equality; for other primitives, we can use a pointer equality test.
+   */
+  public boolean samePrim(Prim p) {
+    return this.getClass() == p.getClass();
   }
 }

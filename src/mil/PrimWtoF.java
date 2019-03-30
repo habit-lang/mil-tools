@@ -23,7 +23,7 @@ import core.*;
 import java.io.PrintWriter;
 
 /** A base class for primitives that convert a word to a flag. */
-public abstract class PrimWtoF extends Prim {
+public abstract class PrimWtoF extends PrimSing {
 
   /** Default constructor. */
   public PrimWtoF(String id, int purity, BlockType blockType) {

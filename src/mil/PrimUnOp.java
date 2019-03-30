@@ -23,7 +23,7 @@ import core.*;
 import java.io.PrintWriter;
 
 /** A base class for primitive unary integer operators. */
-public abstract class PrimUnOp extends Prim {
+public abstract class PrimUnOp extends PrimSing {
 
   /** Default constructor. */
   public PrimUnOp(String id, int purity, BlockType blockType) {

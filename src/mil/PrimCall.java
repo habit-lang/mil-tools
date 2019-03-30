@@ -131,7 +131,7 @@ public class PrimCall extends Call {
   }
 
   Atom isBnot() {
-    return p == Prim.bnot ? args[0] : null;
+    return p.samePrim(Prim.bnot) ? args[0] : null;
   }
 
   public Code rewrite(Defn d, Facts facts) {
@@ -140,37 +140,37 @@ public class PrimCall extends Call {
 
   Code rewritePrimCall(Facts facts) {
 
-    if (p == Prim.bnot) {
+    if (p.samePrim(Prim.bnot)) {
       Atom x = args[0];
       Flag a = x.isFlag();
       return (a == null) ? bnotVar(x, facts) : Prim.bnot.fold(a.getVal());
     }
 
-    if (p == Prim.not) {
+    if (p.samePrim(Prim.not)) {
       Atom x = args[0];
       Word a = x.isWord();
       return (a == null) ? notVar(x, facts) : Prim.not.fold(a.getVal());
     }
 
-    if (p == Prim.neg) {
+    if (p.samePrim(Prim.neg)) {
       Atom x = args[0];
       Word a = x.isWord();
       return (a == null) ? negVar(x, facts) : Prim.neg.fold(a.getVal());
     }
 
-    if (p == Prim.flagToWord) {
+    if (p.samePrim(Prim.flagToWord)) {
       Atom x = args[0];
       Flag a = x.isFlag();
       return (a == null) ? flagToWordVar(x, facts) : Prim.flagToWord.fold(a.getVal());
     }
 
-    if (p == Prim.wordToFlag) {
+    if (p.samePrim(Prim.wordToFlag)) {
       Atom x = args[0];
       Word a = x.isWord();
       return (a == null) ? wordToFlagVar(x, facts) : Prim.wordToFlag.fold(a.getVal());
     }
 
-    if (p == Prim.add) {
+    if (p.samePrim(Prim.add)) {
       Atom x = args[0], y = args[1];
       Word a = x.isWord(), b = y.isWord();
       if (a == null) {
@@ -183,7 +183,7 @@ public class PrimCall extends Call {
       }
     }
 
-    if (p == Prim.mul) {
+    if (p.samePrim(Prim.mul)) {
       Atom x = args[0], y = args[1];
       Word a = x.isWord(), b = y.isWord();
       if (a == null) {
@@ -196,7 +196,7 @@ public class PrimCall extends Call {
       }
     }
 
-    if (p == Prim.or) {
+    if (p.samePrim(Prim.or)) {
       Atom x = args[0], y = args[1];
       Word a = x.isWord(), b = y.isWord();
       if (a == null) {
@@ -209,7 +209,7 @@ public class PrimCall extends Call {
       }
     }
 
-    if (p == Prim.and) {
+    if (p.samePrim(Prim.and)) {
       Atom x = args[0], y = args[1];
       Word a = x.isWord(), b = y.isWord();
       if (a == null) {
@@ -222,7 +222,7 @@ public class PrimCall extends Call {
       }
     }
 
-    if (p == Prim.xor) {
+    if (p.samePrim(Prim.xor)) {
       Atom x = args[0], y = args[1];
       Word a = x.isWord(), b = y.isWord();
       if (a == null) {
@@ -235,7 +235,7 @@ public class PrimCall extends Call {
       }
     }
 
-    if (p == Prim.sub) {
+    if (p.samePrim(Prim.sub)) {
       Atom x = args[0];
       Atom y = args[1];
       Word a = x.isWord();
@@ -247,7 +247,7 @@ public class PrimCall extends Call {
               : Prim.sub.fold(a.getVal(), b.getVal()));
     }
 
-    if (p == Prim.shl) {
+    if (p.samePrim(Prim.shl)) {
       Atom x = args[0];
       Atom y = args[1];
       Word a = x.isWord();
@@ -259,7 +259,7 @@ public class PrimCall extends Call {
               : Prim.shl.fold(a.getVal(), b.getVal()));
     }
 
-    if (p == Prim.lshr) {
+    if (p.samePrim(Prim.lshr)) {
       Atom x = args[0];
       Atom y = args[1];
       Word a = x.isWord();
@@ -271,7 +271,7 @@ public class PrimCall extends Call {
               : Prim.lshr.fold(a.getVal(), b.getVal()));
     }
 
-    if (p == Prim.ashr) {
+    if (p.samePrim(Prim.ashr)) {
       Atom x = args[0];
       Atom y = args[1];
       Word a = x.isWord();
@@ -283,10 +283,7 @@ public class PrimCall extends Call {
               : Prim.ashr.fold(a.getVal(), b.getVal()));
     }
 
-    // TODO: We use instanceof below because representation transformation can replace nzdiv
-    // with a new canonical form that has a different type.  Perhaps we should use instanceof
-    // throughout instead of testing for equality with Prim.XXX?
-    if (p instanceof Prim.nzdiv || p == Prim.div) {
+    if (p.samePrim(Prim.nzdiv) || p.samePrim(Prim.div)) {
       Word y = args[1].isWord();
       long d;
       if (y != null && (d = y.getVal()) > 0) { // Look for a constant denominator
@@ -314,7 +311,7 @@ public class PrimCall extends Call {
       }
       return null;
     }
-    if (p instanceof Prim.nzrem || p == Prim.rem) {
+    if (p.samePrim(Prim.nzrem) || p.samePrim(Prim.rem)) {
       Word y = args[1].isWord();
       long d;
       if (y != null && (d = y.getVal()) > 0) { // Look for a constant denominator
@@ -339,7 +336,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.eq) {
+    if (p.samePrim(Prim.eq)) {
       Atom x = args[0];
       Atom y = args[1];
       Word a = x.isWord();
@@ -352,7 +349,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.neq) {
+    if (p.samePrim(Prim.neq)) {
       Atom x = args[0];
       Atom y = args[1];
       Word a = x.isWord();
@@ -365,7 +362,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.slt) {
+    if (p.samePrim(Prim.slt)) {
       Atom x = args[0];
       Atom y = args[1];
       Word a = x.isWord();
@@ -378,7 +375,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.sgt) {
+    if (p.samePrim(Prim.sgt)) {
       Atom x = args[0];
       Atom y = args[1];
       Word a = x.isWord();
@@ -391,7 +388,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.sle) {
+    if (p.samePrim(Prim.sle)) {
       Atom x = args[0];
       Atom y = args[1];
       Word a = x.isWord();
@@ -404,7 +401,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.sge) {
+    if (p.samePrim(Prim.sge)) {
       Atom x = args[0];
       Atom y = args[1];
       Word a = x.isWord();
@@ -417,7 +414,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.ult) {
+    if (p.samePrim(Prim.ult)) {
       Atom x = args[0];
       Atom y = args[1];
       Word a = x.isWord();
@@ -430,7 +427,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.ugt) {
+    if (p.samePrim(Prim.ugt)) {
       Atom x = args[0];
       Atom y = args[1];
       Word a = x.isWord();
@@ -443,7 +440,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.ule) {
+    if (p.samePrim(Prim.ule)) {
       Atom x = args[0];
       Atom y = args[1];
       Word a = x.isWord();
@@ -456,7 +453,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.uge) {
+    if (p.samePrim(Prim.uge)) {
       Atom x = args[0];
       Atom y = args[1];
       Word a = x.isWord();
@@ -469,7 +466,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.beq) {
+    if (p.samePrim(Prim.beq)) {
       Atom x = args[0];
       Atom y = args[1];
       Flag a = x.isFlag();
@@ -482,7 +479,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.bxor) {
+    if (p.samePrim(Prim.bxor)) {
       Atom x = args[0];
       Atom y = args[1];
       Flag a = x.isFlag();
@@ -495,7 +492,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.blt) {
+    if (p.samePrim(Prim.blt)) {
       Atom x = args[0];
       Atom y = args[1];
       Flag a = x.isFlag();
@@ -508,7 +505,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.bgt) {
+    if (p.samePrim(Prim.bgt)) {
       Atom x = args[0];
       Atom y = args[1];
       Flag a = x.isFlag();
@@ -521,7 +518,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.ble) {
+    if (p.samePrim(Prim.ble)) {
       Atom x = args[0];
       Atom y = args[1];
       Flag a = x.isFlag();
@@ -534,7 +531,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.bge) {
+    if (p.samePrim(Prim.bge)) {
       Atom x = args[0];
       Atom y = args[1];
       Flag a = x.isFlag();
@@ -547,7 +544,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.band) {
+    if (p.samePrim(Prim.band)) {
       Atom x = args[0];
       Atom y = args[1];
       Flag a = x.isFlag();
@@ -560,7 +557,7 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p == Prim.bor) {
+    if (p.samePrim(Prim.bor)) {
       Atom x = args[0];
       Atom y = args[1];
       Flag a = x.isFlag();
@@ -617,7 +614,7 @@ public class PrimCall extends Call {
    * (most likely) case that it is not.
    */
   Atom[] isPrim(Prim p) {
-    return (p == this.p) ? args : null;
+    return (this.p.samePrim(p)) ? args : null;
   }
 
   private static Code bnotVar(Atom x, Facts facts) {
@@ -628,7 +625,7 @@ public class PrimCall extends Call {
   /** Look for a rewrite of bnot(x) where x is the result of this Tail. */
   Code bnotRewrite() {
     // Eliminate double negation:
-    if (p == Prim.bnot) {
+    if (p.samePrim(Prim.bnot)) {
       MILProgram.report("eliminated double bnot");
       return done(args[0]); // bnot(bnot(u)) == u
     }
@@ -1673,7 +1670,7 @@ public class PrimCall extends Call {
 
   /** Test two items for alpha equivalence. */
   boolean alphaPrimCall(Temps thisvars, PrimCall that, Temps thatvars) {
-    return this.p == that.p && this.alphaArgs(thisvars, that, thatvars);
+    return this.p.samePrim(that.p) && this.alphaArgs(thisvars, that, thatvars);
   }
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */

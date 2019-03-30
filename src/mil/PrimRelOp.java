@@ -23,7 +23,7 @@ import core.*;
 import java.io.PrintWriter;
 
 /** A base class for primitive relational operators on integers. */
-public abstract class PrimRelOp extends Prim {
+public abstract class PrimRelOp extends PrimSing {
 
   /** Default constructor. */
   public PrimRelOp(String id, int purity, BlockType blockType) {

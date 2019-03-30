@@ -22,7 +22,7 @@ import compiler.*;
 import core.*;
 
 /** A base class for primitive binary flag operators. */
-public abstract class PrimBinFOp extends Prim {
+public abstract class PrimBinFOp extends PrimSing {
 
   /** Default constructor. */
   public PrimBinFOp(String id, int purity, BlockType blockType) {
