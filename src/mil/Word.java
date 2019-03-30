@@ -42,9 +42,6 @@ public class Word extends Const {
   /** A bit pattern for all Word values. */
   private static obdd.Pat allPat;
 
-  /** A bit pattern for all nonzero Word values. */
-  private static obdd.Pat nonzeroPat;
-
   /** Set the current word size, and dependent variables. */
   public static void setSize(int size) {
     Word.size = size;
@@ -54,7 +51,6 @@ public class Word extends Const {
     Word.maxSigned = BigInteger.ONE.shiftLeft(size - 1).subtract(BigInteger.ONE);
     Word.maxUnsigned = BigInteger.ONE.shiftLeft(size).subtract(BigInteger.ONE);
     Word.allPat = obdd.Pat.all(size);
-    Word.nonzeroPat = obdd.Pat.nonzero(size);
   }
 
   /** Return the current Word size. */
@@ -85,11 +81,6 @@ public class Word extends Const {
   /** Return the bit pattern for all Word values. */
   public static obdd.Pat allPat() {
     return allPat;
-  }
-
-  /** Return the bit pattern for all nonzero Word values. */
-  public static obdd.Pat nonzeroPat() {
-    return nonzeroPat;
   }
 
   /** The value of this Word constant. */

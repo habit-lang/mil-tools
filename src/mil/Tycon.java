@@ -156,12 +156,6 @@ public abstract class Tycon extends Name {
 
   public static final Kind natToAreaToArea = new KFun(KAtom.NAT, areaToArea);
 
-  public static final Synonym wordBits = new Synonym("WordBits", KAtom.NAT, null);
-
-  public static final Tycon word = new PrimTycon("Word", KAtom.STAR, 0);
-
-  public static final Tycon nzword = new PrimTycon("NZWord", KAtom.STAR, 0);
-
   public static final Tycon addr = new PrimTycon("Addr", KAtom.STAR, 0);
 
   public static final Tycon flag = new PrimTycon("Flag", KAtom.STAR, 0);
@@ -183,6 +177,13 @@ public abstract class Tycon extends Name {
   public static final Tycon stored = new PrimTycon("Stored", starToArea, 1);
 
   public static final Tycon string = new PrimTycon("String", KAtom.AREA, 0);
+
+  public static final Synonym wordBits = new Synonym("WordBits", KAtom.NAT, null);
+
+  public static final Tycon word = new PrimTycon("Word", KAtom.STAR, 0);
+
+  public static final Synonym nzword =
+      new Synonym("NZWord", KAtom.STAR, Type.nzbit(wordBits.asType()));
 
   public static final DataType ptr = new Ptr("Ptr", areaToStar, 1);
 
@@ -304,7 +305,7 @@ public abstract class Tycon extends Name {
 
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
-    return (this == addr || this == nzword) ? Tycon.wordRep : null;
+    return (this == addr) ? Tycon.wordRep : null;
   }
 
   /**
@@ -420,16 +421,12 @@ public abstract class Tycon extends Name {
 
   /** Return the nat that specifies the bit size of the type produced by this type constructor. */
   public Type bitSize() {
-    return (this == word || this == nzword)
-        ? Word.sizeType()
-        : (this == flag) ? Flag.sizeType : null;
+    return (this == word) ? Word.sizeType() : (this == flag) ? Flag.sizeType : null;
   }
 
   /** Return the bit pattern for the values of this type. */
   public Pat bitPat() {
-    return (this == word)
-        ? Word.allPat()
-        : (this == nzword) ? Word.nonzeroPat() : (this == flag) ? Flag.allPat : null;
+    return (this == word) ? Word.allPat() : (this == flag) ? Flag.allPat : null;
   }
 
   Pat bitPat(Type[] tenv, Type a) {

@@ -32,7 +32,6 @@ class LLVMMap extends TypeSet {
 
     // Create some basic mappings
     typeMap.put(Tycon.word.asType(), llvm.Type.word());
-    typeMap.put(Tycon.nzword.asType(), llvm.Type.word());
     typeMap.put(Tycon.flag.asType(), llvm.Type.i1);
   }
 
