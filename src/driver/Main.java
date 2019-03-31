@@ -1,5 +1,5 @@
 /*
-    Copyright 2018 Mark P Jones, Portland State University
+    Copyright 2018-19 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -334,6 +334,10 @@ class Main {
       message("Reading command line arguments ..."); // Process command line arguments
       processArgs(handler, new StringArgStream(args), loader, 0);
       handler.abortOnFailures();
+
+      if (Word.size() == 0) { // Ensure that a word size is set, defaulting to 32 bits
+        Word.setSize(32); // TODO: figure out how to set this automatically ...
+      }
 
       if (numSourceFiles > 0) {
         message("Loading source files ..."); // Load and compile everything

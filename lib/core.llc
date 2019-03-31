@@ -2,9 +2,7 @@
 
 Words and Bytes:
 
-> type WordSize  = 32        -- TODO: deprecate in favor of WordBits
-> type WordBits  = WordSize
-> type WordSize1 = 33        -- TODO: should be (WordSize+1)
+> type WordSize  = WordBits  -- TODO: should WordSize be deprecated?
 
 > external wordToBit  {primWordToBit WordSize} :: Word -> Bit WordSize
 > external bitToWord  {primBitToWord WordSize} :: Bit WordSize -> Word
@@ -120,7 +118,7 @@ sets every value in an array of pointers to `Null`:
 
 Array indexing is represented by the `@` operator:
 
-> external @ {@ n a} :: Ref (Array n a) -> Ix n -> Ref a
+> external @ {primAt n a} :: Ref (Array n a) -> Ix n -> Ref a
 
 An expression of the form `a @ i` returns a reference to the
 `i`th element of the array referenced by the first argument, `a`;

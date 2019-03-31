@@ -1,5 +1,5 @@
 /*
-    Copyright 2018 Mark P Jones, Portland State University
+    Copyright 2018-19 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -23,7 +23,7 @@ import core.*;
 import java.io.PrintWriter;
 
 /** A base class for primitives that convert a flag to a word. */
-public abstract class PrimFtoW extends Prim {
+public abstract class PrimFtoW extends PrimSing {
 
   /** Default constructor. */
   public PrimFtoW(String id, int purity, BlockType blockType) {

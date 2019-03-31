@@ -192,9 +192,9 @@ correspond to a notation that used all 10 numeric digits and all
 "digit" characters.)
 
 > export digitToByte :: Word -> Byte
-> digitToByte d = wordToByte (if d <= 9
->                               then ('0' + d)
->                               else ('a' + (d - 10)))
+> digitToByte d       = wordToByte (if d <= 9
+>                                     then ('0' + d)
+>                                     else ('a' + (d - 10)))
 
 > hputSize put
 >  = ifZero                    -- special treatment for zero

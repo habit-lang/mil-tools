@@ -1,5 +1,5 @@
 /*
-    Copyright 2018 Mark P Jones, Portland State University
+    Copyright 2018-19 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,6 +21,7 @@ package mil;
 import compiler.*;
 import core.*;
 
+/** Represents a top-level variable. */
 public abstract class Top extends Atom {
 
   protected Type type;

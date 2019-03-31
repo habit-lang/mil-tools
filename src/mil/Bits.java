@@ -1,5 +1,5 @@
 /*
-    Copyright 2018 Mark P Jones, Portland State University
+    Copyright 2018-19 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import java.math.BigInteger;
 
+/** Represents a Bit vector constant. */
 public class Bits extends Const {
 
   private BigInteger val;

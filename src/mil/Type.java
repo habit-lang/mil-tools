@@ -1,5 +1,5 @@
 /*
-    Copyright 2018 Mark P Jones, Portland State University
+    Copyright 2018-19 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -80,8 +80,8 @@ public abstract class Type extends Scheme {
     return false;
   }
 
-  /** Test to determine whether this type is equal to a given TTycon. */
-  boolean alphaTTycon(TTycon right) {
+  /** Test to determine whether this type is equal to a given Tycon. */
+  boolean alphaTycon(Tycon right) {
     return false;
   }
 
@@ -614,7 +614,8 @@ public abstract class Type extends Scheme {
 
   /**
    * Return the representation for a value of type Bit n, assuming that this object is the TNat for
-   * n.
+   * n. For n==1 or n==WORDSIZE, there is no change of representation. For other cases, the
+   * representation will be a vector of words.
    */
   Type[] bitvectorRep() {
     return null;
@@ -1101,6 +1102,12 @@ public abstract class Type extends Scheme {
    */
   llvm.Type toLLVMCalc(Type c, LLVMMap lm, int args) {
     debug.Internal.error("toLLVM not defined for type " + this);
+    return llvm.Type.vd; // not reached
+  }
+
+  /** Calculate an LLVM type corresponding to a MIL type of the form Bit this. */
+  llvm.Type llvmBitType() {
+    debug.Internal.error("toLLVM not defined for " + Type.bit(this));
     return llvm.Type.vd; // not reached
   }
 

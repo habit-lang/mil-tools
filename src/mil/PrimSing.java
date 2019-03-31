@@ -16,18 +16,23 @@
     You should have received a copy of the GNU General Public License
     along with mil-tools.  If not, see <https://www.gnu.org/licenses/>.
 */
-package lc;
+package mil;
 
 import compiler.*;
 import core.*;
-import mil.*;
 
-/**
- * Represents a continuation that takes an atom containing the result of a previous calculation and
- * returns a code sequence that uses that atom to complete a computation.
- */
-abstract class AtomCont {
+public abstract class PrimSing extends Prim {
 
-  /** Invoke this AtomCont with the given Atom to be embedded in a complete code sequence. */
-  abstract Code with(final Atom v);
+  /** Default constructor. */
+  public PrimSing(String id, int purity, BlockType blockType) {
+    super(id, purity, blockType);
+  }
+
+  /**
+   * Test whether this primitive is the same as a given primitive. For PrimSing, this requires a
+   * class equality; for other primitives, we can use a pointer equality test.
+   */
+  public boolean samePrim(Prim p) {
+    return this.getClass() == p.getClass();
+  }
 }

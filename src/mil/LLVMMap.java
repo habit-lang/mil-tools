@@ -1,5 +1,5 @@
 /*
-    Copyright 2018 Mark P Jones, Portland State University
+    Copyright 2018-19 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -29,11 +29,6 @@ class LLVMMap extends TypeSet {
   /** Default constructor. */
   LLVMMap(llvm.Program prog) {
     this.prog = prog;
-
-    // Create some basic mappings
-    typeMap.put(Tycon.word.asType(), llvm.Type.word());
-    typeMap.put(Tycon.nzword.asType(), llvm.Type.word());
-    typeMap.put(Tycon.flag.asType(), llvm.Type.i1);
   }
 
   /** Add a type definition to the program associated with this LLVMMap. */

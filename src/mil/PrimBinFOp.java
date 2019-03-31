@@ -1,5 +1,5 @@
 /*
-    Copyright 2018 Mark P Jones, Portland State University
+    Copyright 2018-19 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,7 +22,7 @@ import compiler.*;
 import core.*;
 
 /** A base class for primitive binary flag operators. */
-public abstract class PrimBinFOp extends Prim {
+public abstract class PrimBinFOp extends PrimSing {
 
   /** Default constructor. */
   public PrimBinFOp(String id, int purity, BlockType blockType) {

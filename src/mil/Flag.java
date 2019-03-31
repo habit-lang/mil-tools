@@ -1,5 +1,5 @@
 /*
-    Copyright 2018 Mark P Jones, Portland State University
+    Copyright 2018-19 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -20,11 +20,11 @@ package mil;
 
 import compiler.*;
 import core.*;
-import java.math.BigInteger;
-import obdd.Pat;
 
+/** Represents a Flag (Boolean) constant. */
 public class Flag extends Const {
 
+  /** The value of this Flag constant. */
   private boolean val;
 
   /** Default constructor. */
@@ -32,13 +32,6 @@ public class Flag extends Const {
     this.val = val;
   }
 
-  /** Specifies the number of bits in every value of type Flag. (Should be 1.) */
-  public static final Type sizeType = new TNat(BigInteger.ONE);
-
-  /** A bit pattern for all word values. */
-  public static obdd.Pat allPat = Pat.all(1);
-
-  /** The value of this Flag constant. */
   public boolean getVal() {
     return val;
   }

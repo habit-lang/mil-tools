@@ -1,5 +1,5 @@
 /*
-    Copyright 2018 Mark P Jones, Portland State University
+    Copyright 2018-19 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -58,6 +58,37 @@ public abstract class Tycon extends Name {
 
   public TTycon asType() {
     return type;
+  }
+
+  /**
+   * Test to determine whether this type is alpha equivalent to another type, by checking to see if
+   * the two type skeletons are equal, possibly with some correspondence between the TGen objects in
+   * the two types. We use the names left and right to keep track of which types were on the left
+   * and the right in the original alphaEquiv() call so that we can build the TGenCorresp in a
+   * consistent manner.
+   */
+  boolean alphaType(Type left, TGenCorresp corresp) {
+    return left.alphaTycon(this);
+  }
+
+  /** Test to determine whether this type is equal to a given type application. */
+  boolean alphaTAp(TAp right, TGenCorresp corresp) {
+    return false;
+  }
+
+  /** Test to determine whether this type is equal to a given Tycon. */
+  boolean alphaTycon(Tycon right) {
+    return this == right;
+  }
+
+  /** Test to determine whether this type is equal to a given TNat. */
+  boolean alphaTNat(TNat right) {
+    return false;
+  }
+
+  /** Test to determine whether this type is equal to a given TLab. */
+  boolean alphaTLab(TLab right) {
+    return false;
   }
 
   /**
@@ -156,13 +187,7 @@ public abstract class Tycon extends Name {
 
   public static final Kind natToAreaToArea = new KFun(KAtom.NAT, areaToArea);
 
-  public static final Tycon word = new PrimTycon("Word", KAtom.STAR, 0);
-
-  public static final Tycon nzword = new PrimTycon("NZWord", KAtom.STAR, 0);
-
   public static final Tycon addr = new PrimTycon("Addr", KAtom.STAR, 0);
-
-  public static final Tycon flag = new PrimTycon("Flag", KAtom.STAR, 0);
 
   public static final Tycon bit = new PrimTycon("Bit", natToStar, 1);
 
@@ -181,6 +206,15 @@ public abstract class Tycon extends Name {
   public static final Tycon stored = new PrimTycon("Stored", starToArea, 1);
 
   public static final Tycon string = new PrimTycon("String", KAtom.AREA, 0);
+
+  public static final Synonym wordBits = new Synonym("WordBits", KAtom.NAT, null);
+
+  public static final Synonym word = new Synonym("Word", KAtom.STAR, Type.bit(wordBits.asType()));
+
+  public static final Synonym nzword =
+      new Synonym("NZWord", KAtom.STAR, Type.nzbit(wordBits.asType()));
+
+  public static final Synonym flag = new Synonym("Flag", KAtom.STAR, Type.bit(1));
 
   public static final DataType ptr = new Ptr("Ptr", areaToStar, 1);
 
@@ -302,7 +336,7 @@ public abstract class Tycon extends Name {
 
   /** Return the representation vector for values of this type. */
   Type[] repCalc() {
-    return (this == addr || this == nzword) ? Tycon.wordRep : null;
+    return (this == addr) ? Tycon.wordRep : null;
   }
 
   /**
@@ -418,16 +452,12 @@ public abstract class Tycon extends Name {
 
   /** Return the nat that specifies the bit size of the type produced by this type constructor. */
   public Type bitSize() {
-    return (this == word || this == nzword)
-        ? Word.sizeType()
-        : (this == flag) ? Flag.sizeType : null;
+    return null;
   }
 
   /** Return the bit pattern for the values of this type. */
   public Pat bitPat() {
-    return (this == word)
-        ? Word.allPat()
-        : (this == nzword) ? Word.nonzeroPat() : (this == flag) ? Flag.allPat : null;
+    return null;
   }
 
   Pat bitPat(Type[] tenv, Type a) {
@@ -562,6 +592,11 @@ public abstract class Tycon extends Name {
         debug.Internal.error("MILArrow toLLVM arity mismatch");
       }
       return lm.closurePtrTypeCalc(c);
+    } else if (this == bit) {
+      if (args != 1) {
+        debug.Internal.error("Bit toLLVM arity mismatch");
+      }
+      return lm.stackArg(1).simplifyNatType(null).llvmBitType();
     }
     debug.Internal.error("toLLVM not defined for tycon " + this.asType());
     return llvm.Type.vd; // not reached

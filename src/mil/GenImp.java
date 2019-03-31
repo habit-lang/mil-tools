@@ -1,5 +1,5 @@
 /*
-    Copyright 2018 Mark P Jones, Portland State University
+    Copyright 2018-19 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -340,9 +340,9 @@ public class GenImp extends ExtImp {
           }
         });
 
-    // primBitConcat m n p :: Bit m -> Bit n -> Bit p,  where m+n = p
+    // primBitsConcat m n p :: Bit m -> Bit n -> Bit p,  where m+n = p
     generators.put(
-        ":#",
+        "primBitsConcat",
         new Generator(Prefix.nat_nat_nat, fun(bitA, bitB, bitC)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int m = ts[0].validWidth(1); // Width of first input (most significant bits)
@@ -2382,9 +2382,9 @@ public class GenImp extends ExtImp {
 
   static {
 
-    // (@) n a :: Ref (Array n a) -> Ix n -> Ref a
+    // primAt n a :: Ref (Array n a) -> Ix n -> Ref a
     generators.put(
-        "@",
+        "primAt",
         new Generator(Prefix.nat_area, fun(Type.ref(arrayAB), ixA, refB)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             long n = ts[0].validIndex().longValue(); // Array length/Modulus for index type

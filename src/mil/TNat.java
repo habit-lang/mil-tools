@@ -1,5 +1,5 @@
 /*
-    Copyright 2018 Mark P Jones, Portland State University
+    Copyright 2018-19 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -110,10 +110,12 @@ public class TNat extends TLit {
 
   /**
    * Return the representation for a value of type Bit n, assuming that this object is the TNat for
-   * n.
+   * n. For n==1 or n==WORDSIZE, there is no change of representation. For other cases, the
+   * representation will be a vector of words.
    */
   Type[] bitvectorRep() {
-    return Type.repBits(num.intValue());
+    int n = num.intValue();
+    return (n == 1 || n == Word.size()) ? null : Type.repBits(n);
   }
 
   /**
@@ -135,5 +137,18 @@ public class TNat extends TLit {
 
   BigInteger validNat() throws GeneratorException {
     return num;
+  }
+
+  /** Calculate an LLVM type corresponding to a MIL type of the form Bit this. */
+  llvm.Type llvmBitType() {
+    switch (num.intValue()) {
+      case 1:
+        return llvm.Type.i1;
+      case 32:
+        return llvm.Type.i32;
+      case 64:
+        return llvm.Type.i64;
+    }
+    return super.llvmBitType(); // fall through to error case
   }
 }

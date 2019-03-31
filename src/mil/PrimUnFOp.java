@@ -1,5 +1,5 @@
 /*
-    Copyright 2018 Mark P Jones, Portland State University
+    Copyright 2018-19 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -23,7 +23,7 @@ import core.*;
 import java.io.PrintWriter;
 
 /** A base class for primitive unary flag operators. */
-public abstract class PrimUnFOp extends Prim {
+public abstract class PrimUnFOp extends PrimSing {
 
   /** Default constructor. */
   public PrimUnFOp(String id, int purity, BlockType blockType) {
