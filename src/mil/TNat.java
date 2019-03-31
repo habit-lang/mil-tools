@@ -113,7 +113,8 @@ public class TNat extends TLit {
    * n.
    */
   Type[] bitvectorRep() {
-    return Type.repBits(num.intValue());
+    int n = num.intValue();
+    return (n == 1) ? null : Type.repBits(n);
   }
 
   /**
@@ -135,5 +136,12 @@ public class TNat extends TLit {
 
   BigInteger validNat() throws GeneratorException {
     return num;
+  }
+
+  llvm.Type llvmBitType() {
+    if (num.compareTo(BigInteger.ONE) == 0) { // Bit 1 ==> i1
+      return llvm.Type.i1;
+    }
+    return super.llvmBitType();
   }
 }

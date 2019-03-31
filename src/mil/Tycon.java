@@ -189,8 +189,6 @@ public abstract class Tycon extends Name {
 
   public static final Tycon addr = new PrimTycon("Addr", KAtom.STAR, 0);
 
-  public static final Tycon flag = new PrimTycon("Flag", KAtom.STAR, 0);
-
   public static final Tycon bit = new PrimTycon("Bit", natToStar, 1);
 
   public static final Tycon nzbit = new PrimTycon("NZBit", natToStar, 1);
@@ -215,6 +213,8 @@ public abstract class Tycon extends Name {
 
   public static final Synonym nzword =
       new Synonym("NZWord", KAtom.STAR, Type.nzbit(wordBits.asType()));
+
+  public static final Synonym flag = new Synonym("Flag", KAtom.STAR, Type.bit(1));
 
   public static final DataType ptr = new Ptr("Ptr", areaToStar, 1);
 
@@ -452,12 +452,12 @@ public abstract class Tycon extends Name {
 
   /** Return the nat that specifies the bit size of the type produced by this type constructor. */
   public Type bitSize() {
-    return (this == word) ? Word.sizeType() : (this == flag) ? Flag.sizeType : null;
+    return (this == word) ? Word.sizeType() : null;
   }
 
   /** Return the bit pattern for the values of this type. */
   public Pat bitPat() {
-    return (this == word) ? Word.allPat() : (this == flag) ? Flag.allPat : null;
+    return (this == word) ? Word.allPat() : null;
   }
 
   Pat bitPat(Type[] tenv, Type a) {
@@ -592,6 +592,11 @@ public abstract class Tycon extends Name {
         debug.Internal.error("MILArrow toLLVM arity mismatch");
       }
       return lm.closurePtrTypeCalc(c);
+    } else if (this == bit) {
+      if (args != 1) {
+        debug.Internal.error("Bit toLLVM arity mismatch");
+      }
+      return lm.stackArg(1).simplifyNatType(null).llvmBitType();
     }
     debug.Internal.error("toLLVM not defined for tycon " + this.asType());
     return llvm.Type.vd; // not reached

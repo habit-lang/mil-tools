@@ -1104,6 +1104,11 @@ public abstract class Type extends Scheme {
     return llvm.Type.vd; // not reached
   }
 
+  llvm.Type llvmBitType() {
+    debug.Internal.error("toLLVM not defined for " + Type.bit(this));
+    return llvm.Type.vd; // not reached
+  }
+
   /** Returns the LLVM type for value that is returned by a function. */
   llvm.Type retType(LLVMMap lm) {
     return lm.toLLVM(this.canonType(lm).getArg());
