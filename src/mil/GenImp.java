@@ -317,11 +317,7 @@ public class GenImp extends ExtImp {
                 return unaryUnit(pos);
 
               case 1:
-                {
-                  Temp[] vs = Temp.makeTemps(1);
-                  Tail t = Prim.neq.withArgs(vs[0], Word.Zero);
-                  return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, vs, t)).withArgs();
-                }
+                return new PrimCall(Prim.wordToFlag).makeUnaryFuncClosure(pos, 1);
 
               default:
                 if (width < 0 || width > Word.size()) {
