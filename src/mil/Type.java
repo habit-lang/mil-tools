@@ -614,7 +614,8 @@ public abstract class Type extends Scheme {
 
   /**
    * Return the representation for a value of type Bit n, assuming that this object is the TNat for
-   * n.
+   * n. For n==1 or n==WORDSIZE, there is no change of representation. For other cases, the
+   * representation will be a vector of words.
    */
   Type[] bitvectorRep() {
     return null;
@@ -1104,6 +1105,7 @@ public abstract class Type extends Scheme {
     return llvm.Type.vd; // not reached
   }
 
+  /** Calculate an LLVM type corresponding to a MIL type of the form Bit this. */
   llvm.Type llvmBitType() {
     debug.Internal.error("toLLVM not defined for " + Type.bit(this));
     return llvm.Type.vd; // not reached

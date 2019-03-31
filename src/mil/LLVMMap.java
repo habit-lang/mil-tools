@@ -29,9 +29,6 @@ class LLVMMap extends TypeSet {
   /** Default constructor. */
   LLVMMap(llvm.Program prog) {
     this.prog = prog;
-
-    // Create some basic mappings
-    typeMap.put(Tycon.word.asType(), llvm.Type.word());
   }
 
   /** Add a type definition to the program associated with this LLVMMap. */

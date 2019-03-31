@@ -21,6 +21,7 @@ package mil;
 import compiler.*;
 import core.*;
 
+/** Represents a temporary variable. */
 public class Temp extends Atom {
 
   private String id;

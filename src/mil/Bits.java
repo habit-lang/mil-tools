@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import java.math.BigInteger;
 
+/** Represents a Bit vector constant. */
 public class Bits extends Const {
 
   private BigInteger val;

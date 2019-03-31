@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import java.math.BigInteger;
 
+/** Represents a Word (integer) constant. */
 public class Word extends Const {
 
   /** Specifies the number of bits in every value of type Word. (Should be either 32 or 64.) */
@@ -30,27 +31,19 @@ public class Word extends Const {
   /** The current Word size, expressed as a BigInteger. */
   private static BigInteger sizeBig;
 
-  /** The current Word size, expressed as a type of kind nat. */
-  private static Type sizeType;
-
   /** The maximum signed value that can be represented in a Word. */
   private static BigInteger maxSigned;
 
   /** The maximum unsigned value that can be represented in a Word. */
   private static BigInteger maxUnsigned;
 
-  /** A bit pattern for all Word values. */
-  private static obdd.Pat allPat;
-
   /** Set the current word size, and dependent variables. */
   public static void setSize(int size) {
     Word.size = size;
     Word.sizeBig = BigInteger.valueOf(size);
-    Word.sizeType = new TNat(sizeBig);
-    Tycon.wordBits.setExpansion(Word.sizeType);
+    Tycon.wordBits.setExpansion(new TNat(sizeBig));
     Word.maxSigned = BigInteger.ONE.shiftLeft(size - 1).subtract(BigInteger.ONE);
     Word.maxUnsigned = BigInteger.ONE.shiftLeft(size).subtract(BigInteger.ONE);
-    Word.allPat = obdd.Pat.all(size);
   }
 
   /** Return the current Word size. */
@@ -63,11 +56,6 @@ public class Word extends Const {
     return sizeBig;
   }
 
-  /** Return the current Word size as a Type. */
-  public static Type sizeType() {
-    return sizeType;
-  }
-
   /** Return the maximum signed value that can be represented in a Word. */
   public static BigInteger maxSigned() {
     return maxSigned;
@@ -76,11 +64,6 @@ public class Word extends Const {
   /** Return the maximum unsigned value that can be represented in a Word. */
   public static BigInteger maxUnsigned() {
     return maxUnsigned;
-  }
-
-  /** Return the bit pattern for all Word values. */
-  public static obdd.Pat allPat() {
-    return allPat;
   }
 
   /** The value of this Word constant. */

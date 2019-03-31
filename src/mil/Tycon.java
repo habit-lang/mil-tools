@@ -209,7 +209,7 @@ public abstract class Tycon extends Name {
 
   public static final Synonym wordBits = new Synonym("WordBits", KAtom.NAT, null);
 
-  public static final Tycon word = new PrimTycon("Word", KAtom.STAR, 0);
+  public static final Synonym word = new Synonym("Word", KAtom.STAR, Type.bit(wordBits.asType()));
 
   public static final Synonym nzword =
       new Synonym("NZWord", KAtom.STAR, Type.nzbit(wordBits.asType()));
@@ -452,12 +452,12 @@ public abstract class Tycon extends Name {
 
   /** Return the nat that specifies the bit size of the type produced by this type constructor. */
   public Type bitSize() {
-    return (this == word) ? Word.sizeType() : null;
+    return null;
   }
 
   /** Return the bit pattern for the values of this type. */
   public Pat bitPat() {
-    return (this == word) ? Word.allPat() : null;
+    return null;
   }
 
   Pat bitPat(Type[] tenv, Type a) {

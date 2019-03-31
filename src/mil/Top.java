@@ -21,6 +21,7 @@ package mil;
 import compiler.*;
 import core.*;
 
+/** Represents a top-level variable. */
 public abstract class Top extends Atom {
 
   protected Type type;
