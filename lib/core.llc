@@ -4,15 +4,19 @@ Words and Bytes:
 
 > type WordSize  = WordBits  -- TODO: should WordSize be deprecated?
 
-> external wordToBit  {primWordToBit WordSize} :: Word -> Bit WordSize
-> external bitToWord  {primBitToWord WordSize} :: Bit WordSize -> Word
-> external bitsToWord {primBitToWord n}        :: Bit n -> Word
+> external bitsToWord {primBitToWord n} :: Bit n -> Word
 
 > type ByteBits = 8
 > type Byte     = Bit ByteBits
 
 > external wordToByte {primWordToBit 8} :: Word -> Byte
 > external addByte    {primBitPlus 8}   :: Byte -> Byte -> Byte
+
+> external not {primBitNot n} :: Bit n -> Bit n
+
+> external and {primBitAnd n},
+>          or  {primBitOr  n},
+>          xor {primBitXor n} :: Bit n -> Bit n -> Bit n
 
 Pointer/Reference equality:
 

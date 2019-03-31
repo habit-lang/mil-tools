@@ -6,13 +6,8 @@ A (currently underdeveloped) library for working with Bit vectors.
 > external bitSet     {primBitSetBit n},
 >          bitClear   {primBitClearBit n},
 >          bitFlip    {primBitFlipBit n}       :: Bit n -> Ix n -> Bit n
+
 > external bitTest    {primBitTestBit n}       :: Bit n -> Ix n -> Bool
-
-> export bitSetWord   :: Word -> Ix WordBits -> Word
-> bitSetWord w ix      = bitToWord (bitSet (wordToBit w) ix)
-
-> export bitClearWord :: Word -> Ix WordBits -> Word
-> bitClearWord w ix    = bitToWord (bitClear (wordToBit w) ix)
 
 > external bitNot     {primBitNot n}           :: Bit n -> Bit n
 > external bitOr      {primBitOr n},
@@ -20,15 +15,15 @@ A (currently underdeveloped) library for working with Bit vectors.
 >          bitAdd     {primBitPlus n},
 >          bitSub     {primBitMinus n}         :: Bit n -> Bit n -> Bit n
 
+> external bitEq      {primBitEq n},
+>          bitNe      {primBitNe n}            :: Bit n -> Bit n -> Bool
+
 > external bit0u      {primBitFromLiteral 0 n},
 >          bit1u      {primBitFromLiteral 1 n} :: Unit -> Bit n
 
 > export bit0, bit1 :: Bit n
 > bit0 = bit0u Unit
 > bit1 = bit1u Unit
-
-> external bitEq      {primBitEq n},
->          bitNe      {primBitNe n}            :: Bit n -> Bit n -> Bool
 
 > export bitDec  :: Bit n -> Bit n
 > bitDec n        = bitSub n bit1

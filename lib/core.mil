@@ -28,27 +28,17 @@ export neg :: Word -> Word
 neg <- {x} neg((x))
 
 -- Bitwise operators:
-export and, or, xor :: Word -> Word -> Word
-and <- {x,y} and((x,y))
-or  <- {x,y} or((x,y))
-xor <- {x,y} xor((x,y))
 
 export shl, lshr, ashr :: Word -> Word -> Word
 shl  <- {x,y} shl((x,y))
 lshr <- {x,y} lshr((x,y))
 ashr <- {x,y} ashr((x,y))
 
-export not :: Word -> Word
-not <- {x} not((x))
-
 -- "Convert" a MIL-level boolean result into an LC-level Bool value
 bconv   :: [Flag] >>= [Bool]
 bconv[t] = if t then btrue[] else bfalse[]
 btrue[]  = return true
 bfalse[] = return false
-
-export bnot :: Flag -> Flag
-bnot <- {x} bnot((x))
 
 -- Basic Comparisons:
 -- These cannot be expressed in LC because they require the

@@ -43,9 +43,6 @@ Other mechanisms for constructing Index values:
 > export <=?           :: Word -> Ix m -> Maybe (Ix m)
 > (<=?)                 = genLeqIx Nothing Just
 
-> export wordModIx     :: Word -> Ix m
-> wordModIx w           = modIx (wordToBit w)
-
 Index-oriented arithmetic:
 
 > external genLtInc {primGenLtInc (Maybe (Ix m)) m},
@@ -121,9 +118,6 @@ with an index of 256, for example, we will need a bit vector
 with at least 8 bits:
 
 > external ixToBit    {primIxToBit m n}  :: Ix m -> Bit n
-
-> export ixToWord :: Ix m -> Word
-> ixToWord i       = bitToWord (ixToBit i)
 
 Relaxing index values:
 

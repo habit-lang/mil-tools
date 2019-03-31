@@ -4,14 +4,8 @@ A (currently underdeveloped) library for working with NonZero Bit vectors.
 
 NonZero Values, Division, and Remainder:
 
-> external nzbitdiv {primNZBitDiv n} :: Bit n -> NZBit n -> Bit n
-> external nzbitrem {primNZBitRem n} :: Bit n -> NZBit n -> Bit n
-
-> export nzdiv :: Word -> NZBit WordSize -> Word
-> x `nzdiv` y   = bitToWord (wordToBit x `nzbitdiv` y)
-
-> export nzrem :: Word -> NZBit WordSize -> Word
-> x `nzrem` y   = bitToWord (wordToBit x `nzbitrem` y)
+> external nzdiv {primNZBitDiv n} :: Bit n -> NZBit n -> Bit n
+> external nzrem {primNZBitRem n} :: Bit n -> NZBit n -> Bit n
 
 > external nz2u       {primNZBitFromLiteral  2 n} :: Unit -> NZBit n
 > external nz8u       {primNZBitFromLiteral  8 n} :: Unit -> NZBit n
