@@ -671,6 +671,29 @@ public class PrimCall extends Call {
   }
 
   private static Code flagToWordVar(Atom x, Facts facts) {
+    Tail a = x.lookupFact(facts);
+    Atom[] ap;
+    if (a != null && (ap = a.isPrim(Prim.neq)) != null) {
+      Word w = ap[1].isWord();
+      if (w != null && w.getVal() == 0) {
+        Tail b = ap[0].lookupFact(facts);
+        Atom[] bp;
+        if (b != null && (bp = b.isPrim(Prim.and)) != null) {
+          if ((w = bp[1].isWord()) != null) {
+            long d = w.getVal();
+            if ((d & (d - 1)) == 0) { // Look for a mask with a single bit, d=(1L<<n)
+              int n = 0; // Calculate the value of n (TODO: make reusable function for this)
+              for (long i = d; (i >>>= 1) > 0; n++) {
+                /* no extra work here */
+              }
+              MILProgram.report("rewrite: flagToWord((x&" + d + ")/=0) ==> (x>>" + n + ")&1");
+              Temp v = new Temp();
+              return new Bind(v, Prim.lshr.withArgs(bp[0], n), done(Prim.and, v, 1));
+            }
+          }
+        }
+      }
+    }
     return null;
   }
 
