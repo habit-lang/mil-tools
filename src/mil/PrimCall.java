@@ -1138,17 +1138,42 @@ public class PrimCall extends Call {
   }
 
   private static Code orVarVar(Atom x, Atom y, Facts facts) {
-    Code nc = idempotent(x, y);
-    if (nc == null) {
-      Tail a = x.lookupFact(facts);
-      Tail b = y.lookupFact(facts);
-      if ((a != null || b != null)
-          && (nc = commuteRearrange(Prim.or, x, a, y, b)) == null
-          && (nc = distRearrange(Prim.or, Prim.and, x, a, y, b)) == null) {
-        nc = deMorgan(Prim.and, Prim.not, a, b);
+    Code nc;
+    if ((nc = idempotent(x, y)) != null) {
+      return nc;
+    }
+    Tail a, b;
+    if ((a = x.lookupFact(facts)) != null && (b = y.lookupFact(facts)) != null) {
+      if ((nc = commuteRearrange(Prim.or, x, a, y, b)) != null
+          || (nc = distRearrange(Prim.or, Prim.and, x, a, y, b)) != null
+          || (nc = deMorgan(Prim.and, Prim.not, a, b)) != null) {
+        return nc;
+      }
+      Atom[] ap = a.isPrim(Prim.or);
+      Atom[] bp = b.isPrim(Prim.and);
+      Word n;
+      if (ap != null && bp != null && (n = bp[1].isWord()) != null) {
+        Word m = andVarWith(ap[1], bp[0], facts);
+        if (m != null) {
+          Temp t = new Temp();
+          MILProgram.report("rewrite: (x | (u&m)) | (u&n) ==> x | (u & (m|n))");
+          return new Bind(
+              t, Prim.and.withArgs(bp[0], n.getVal() | m.getVal()), done(Prim.or, ap[0], t));
+        } else if ((m = andVarWith(ap[0], bp[0], facts)) != null) {
+          Temp t = new Temp();
+          MILProgram.report("rewrite: ((u&m) | x) | (u&n) ==> x | (u & (m|n))");
+          return new Bind(
+              t, Prim.and.withArgs(bp[0], n.getVal() | m.getVal()), done(Prim.or, ap[1], t));
+        }
       }
     }
-    return nc;
+    return null;
+  }
+
+  private static Word andVarWith(Atom t, Atom u, Facts facts) {
+    Tail c = t.lookupFact(facts);
+    Atom[] cp;
+    return (c != null && (cp = c.isPrim(Prim.and)) != null && cp[0] == u) ? cp[1].isWord() : null;
   }
 
   private static Code orVarConst(Atom x, long m, Facts facts) {
