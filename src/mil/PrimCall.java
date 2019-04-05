@@ -1121,13 +1121,15 @@ public class PrimCall extends Call {
       Atom[] ap;
       if ((ap = a.isPrim(Prim.mul)) != null) {
         Word b = ap[1].isWord();
-        if (b != null) { // (u * c) * m == u * (c * m)
+        if (b != null) {
+          MILProgram.report("rewrite: (u * c) * m ==> u * (c * m)");
           return done(Prim.mul, ap[0], b.getVal() * m);
         }
       } else if ((ap = a.isPrim(Prim.add)) != null) {
         Word b = ap[1].isWord();
-        if (b != null) { // (u + n) * m == (u * m) + (n * m)
+        if (b != null) {
           Temp v = new Temp();
+          MILProgram.report("rewrite: (u + n) * m ==> (u * m) + (n * m)");
           return new Bind(v, Prim.mul.withArgs(ap[0], m), done(Prim.add, v, b.getVal() * m));
         }
       }
