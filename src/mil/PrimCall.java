@@ -1237,6 +1237,22 @@ public class PrimCall extends Call {
           return new Bind(
               v, Prim.and.withArgs(ap[0], m), done(Prim.or.withArgs(v, c.getVal() & m)));
         }
+        Tail l = ap[0].lookupFact(facts);
+        Atom[] lp;
+        if (l != null && (lp = l.isPrim(Prim.and)) != null && (c = lp[1].isWord()) != null) {
+          Tail r = ap[1].lookupFact(facts);
+          Atom[] rp;
+          Word n;
+          if (r != null && (rp = r.isPrim(Prim.and)) != null && (n = rp[1].isWord()) != null) {
+            Temp nl = new Temp();
+            Temp nr = new Temp();
+            MILProgram.report("rewrite: ((x & c) | (y & n)) & m ==> (x & (c&m)) | (y & (n&m))");
+            return new Bind(
+                nl,
+                Prim.and.withArgs(lp[0], c.getVal() & m),
+                new Bind(nr, Prim.and.withArgs(rp[0], n.getVal() & m), done(Prim.or, nl, nr)));
+          }
+        }
       } else if ((ap = a.isPrim(Prim.shl)) != null) {
         // TODO: would it be better to rewrite (x << c) & m ==> (x & (m>>c)) << c?
         // (observation: rewriting would avoid repeated triggering the logic here)
