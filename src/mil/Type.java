@@ -433,6 +433,11 @@ public abstract class Type extends Scheme {
     return Tycon.array.asType().tap(n, a);
   }
 
+  /** Convenience method for making types of the form Pad n a for some nat n and area type a. */
+  public static Type pad(Type n, Type a) {
+    return Tycon.pad.asType().tap(n, a);
+  }
+
   /** Find the name of the associated bitdata type, if any. */
   public BitdataType bitdataType() {
     return null;

@@ -258,6 +258,8 @@ public class GenImp extends ExtImp {
 
   public static Type arrayAB = Type.array(gA, gB);
 
+  public static Type padAB = Type.pad(gA, gB);
+
   public static Type refA = Type.ref(gA);
 
   public static Type refB = Type.ref(gB);
@@ -2507,6 +2509,20 @@ public class GenImp extends ExtImp {
     return new BlockCall(
             new Block(pos, new Temp[] {f, r}, new Bind(unit, Cfun.Unit.withArgs(), code)))
         .makeBinaryFuncClosure(pos, 1, 1);
+  }
+
+  static {
+
+    // primInitPad n a :: Init (Pad n a)
+    generators.put(
+        "primInitPad",
+        new Generator(Prefix.nat_area, Type.init(padAB)) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            long len = ts[0].validIndex().longValue(); // Array length/Modulus for index type
+            long size = ts[1].validArrayArea(); // Size of array elements
+            return unaryUnit(pos); // A pad doesn't need initialization
+          }
+        });
   }
 
   static {
