@@ -585,7 +585,7 @@ public class GenImp extends ExtImp {
                 return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t)).withArgs();
               } else if (n == 1) {
                 Temp[] args = Temp.makeTemps(n);
-                Tail t = Prim.rem.withArgs(args[0], m);
+                Tail t = Prim.nzrem.canonPrim(set).withArgs(args[0], m);
                 return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, args, t)).withArgs();
               }
               // TODO: add support for n>1, mod not a power of two ...
@@ -2233,10 +2233,10 @@ public class GenImp extends ExtImp {
         });
 
     // primNZBitDiv w :: Bit w -> NZBit w -> Bit w
-    genNZDivOp("primNZBitDiv", Prim.div);
+    genNZDivOp("primNZBitDiv", Prim.nzdiv);
 
     // primNZBitRem w :: Bit w -> NZBit w -> Bit w
-    genNZDivOp("primNZBitRem", Prim.rem);
+    genNZDivOp("primNZBitRem", Prim.nzrem);
   }
 
   static void genNZDivOp(String ref, final Prim p) {
@@ -2246,7 +2246,7 @@ public class GenImp extends ExtImp {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             validSingleWord(
                 ts[0].validWidth(2)); // bit vector width (must fit within a single word)
-            return new PrimCall(p).makeBinaryFuncClosure(pos, 1, 1);
+            return new PrimCall(p.canonPrim(set)).makeBinaryFuncClosure(pos, 1, 1);
           }
         });
   }
