@@ -1249,7 +1249,7 @@ public class PrimCall extends Call {
       if ((ap = a.isPrim(Prim.and)) != null) {
         Word c = ap[1].isWord();
         if (c != null) {
-          MILProgram.report("rewrite: (u & c) & m ==> u & (c & n)");
+          MILProgram.report("rewrite: (u & c) & m ==> u & (c & m)");
           return done(Prim.and.withArgs(ap[0], c.getVal() & m));
         }
       } else if ((ap = a.isPrim(Prim.not)) != null) {
