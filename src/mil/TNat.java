@@ -131,7 +131,14 @@ public class TNat extends TLit {
    * n.
    */
   Type[] ixbitvectorRep() {
-    long n = num.longValue();
+    return rangeRep(num.longValue());
+  }
+
+  Type[] inxbitvectorRep() {
+    return rangeRep(1 + num.longValue());
+  }
+
+  private Type[] rangeRep(long n) {
     return (n == 0) ? null : (n == 1) ? Tycon.unitRep : (n == 2) ? Tycon.flagRep : Tycon.wordRep;
   }
 

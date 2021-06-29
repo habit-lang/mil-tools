@@ -413,6 +413,11 @@ public abstract class Type extends Scheme {
     return Tycon.ix.asType().tap(n);
   }
 
+  /** Convenience method for making types of the form Inx n for some type n. */
+  public static Type inx(Type n) {
+    return Tycon.inx.asType().tap(n);
+  }
+
   /** Convenience method for making types of the form Ref a for some area type a. */
   public static Type ref(Type areaType) {
     return Tycon.ref.asType().tap(areaType);
@@ -642,6 +647,10 @@ public abstract class Type extends Scheme {
     return null;
   }
 
+  Type[] inxbitvectorRep() {
+    return null;
+  }
+
   /**
    * Continue the work of generatePrim() in the special case where we have found a type of the form
    * [d1,...,dn] ->> rt. The type rt is the receiver here and the types d1,...,dn are in the array
@@ -759,14 +768,14 @@ public abstract class Type extends Scheme {
   }
 
   /**
-   * Find the upper bound, n-1, for a type of the form Ix n, assuming that this is the TNat for n.
+   * Find the argument value, n, for a type of the form Ix n, assuming that this is the TNat for n.
    */
   BigInteger ixUpper(Type[] tenv) {
     BigInteger n = simplifyNatType(tenv).getNat();
     if (n == null) {
       debug.Internal.error("invalid Ix bound: " + skeleton(tenv));
     }
-    return n.subtract(BigInteger.ONE);
+    return n;
   }
 
   /**

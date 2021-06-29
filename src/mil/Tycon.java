@@ -195,6 +195,8 @@ public abstract class Tycon extends Name {
 
   public static final Tycon ix = new PrimTycon("Ix", natToStar, 1);
 
+  public static final Tycon inx = new PrimTycon("Inx", natToStar, 1);
+
   public static final Tycon pad = new PrimTycon("Pad", natToAreaToArea, 2);
 
   public static final Tycon array = new PrimTycon("Array", natToAreaToArea, 2);
@@ -354,7 +356,9 @@ public abstract class Tycon extends Name {
                 ? a.simplifyNatType(null).nzbitvectorRep()
                 : (this == ix)
                     ? a.simplifyNatType(null).ixbitvectorRep()
-                    : (this == init) ? Tycon.initRep : null;
+                    : (this == inx)
+                        ? a.simplifyNatType(null).inxbitvectorRep()
+                        : (this == init) ? Tycon.initRep : null;
   }
 
   /**
@@ -438,13 +442,23 @@ public abstract class Tycon extends Name {
       return (w > 0) ? new TNat(w) : null;
     } else if (this == bit || this == nzbit) { // BitSize(Bit n) ==>  n,  same for (NZBit n)
       return a.simplifyNatType(tenv);
-    } else if (this == ix) { // BitSize(Ix n)  ==>  (calculation follows)
-      BigInteger upper = a.ixUpper(tenv); // Find upper bound, upper = n-1
-      if (upper.signum() >= 0) {
-        int w = upper.bitLength();
-        if (w >= 0 && w < Word.size()) {
-          return new TNat(BigInteger.valueOf(w));
-        }
+    } else if (this == ix) { // BitSize(Ix n)  ==>  (see below, upper bound n-1)
+      return rangeBitSize(a.ixUpper(tenv).subtract(BigInteger.ONE));
+    } else if (this == inx) { // BitSize(Inx n)  ==>  (see below, upper bound n)
+      return rangeBitSize(a.ixUpper(tenv));
+    }
+    return null;
+  }
+
+  /**
+   * Find a type for the width of a bit field that contains numbers in the range 0 to n inclusive,
+   * or null if n is negative.
+   */
+  private Type rangeBitSize(BigInteger n) {
+    if (n.signum() >= 0) {
+      int w = n.bitLength();
+      if (w >= 0 && w < Word.size()) {
+        return new TNat(BigInteger.valueOf(w));
       }
     }
     return null;
@@ -474,12 +488,18 @@ public abstract class Tycon extends Name {
       int w = a.bitWidth(tenv);
       return (w > 0) ? obdd.Pat.nonzero(w) : null;
     } else if (this == ix) {
-      BigInteger upper = a.ixUpper(tenv);
-      if (upper.signum() >= 0) {
-        int w = upper.bitLength();
-        if (w >= 0 && w < Word.size()) {
-          return obdd.Pat.lessEq(w, upper.intValue());
-        }
+      return rangeBitPat(a.ixUpper(tenv).subtract(BigInteger.ONE));
+    } else if (this == inx) {
+      return rangeBitPat(a.ixUpper(tenv));
+    }
+    return null;
+  }
+
+  private Pat rangeBitPat(BigInteger n) {
+    if (n.signum() >= 0) {
+      int w = n.bitLength();
+      if (w >= 0 && w < Word.size()) {
+        return obdd.Pat.lessEq(w, n.intValue());
       }
     }
     return null;
