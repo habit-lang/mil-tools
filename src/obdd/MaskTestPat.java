@@ -71,17 +71,33 @@ public class MaskTestPat extends Pat {
     } else if (fullMask()) {
       buf.append("x ");
       buf.append(op ? "!=" : "==");
-      buf.append(" 0b");
-      buf.append(bits.toString(2));
+      buf.append(" ");
+      displayBits(buf, bits);
     } else {
-      buf.append("(x & 0b");
-      buf.append(mask.toString(2));
+      buf.append("(x & ");
+      displayBits(buf, mask);
       buf.append(") ");
       buf.append(op ? "!=" : "==");
-      buf.append(" 0b");
-      buf.append(bits.toString(2));
+      buf.append(" ");
+      displayBits(buf, bits);
     }
     return buf.toString();
+  }
+
+  /**
+   * Display a string representation for the given number, adding underscores between every fourth
+   * digit (from the right) for readability.
+   */
+  private static void displayBits(StringBuilder buf, BigInteger num) {
+    String s = num.toString(16);
+    int l = s.length();
+    buf.append("0x");
+    for (int i = 0; i < l; i++) {
+      if (i > 0 && ((l - i) % 4) == 0) {
+        buf.append('_');
+      }
+      buf.append(s.charAt(i));
+    }
   }
 
   public MaskTestPat blur(Pat butnot, int wordsize) {
