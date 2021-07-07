@@ -465,6 +465,14 @@ public class LCParser extends CoreParser implements LCTokens {
   /** Parse a single alternative. */
   private EAlt parseAlt(boolean isMonadic) throws Failure {
     switch (lexer.getToken()) {
+      case VARID:
+        {
+          Position pos = lexer.getPos();
+          LamVar v = new LamVar(lexer.getLexeme(), null);
+          lexer.nextToken(/* VARID */ );
+          require(TO);
+          return new EVarAlt(pos, isMonadic ? parseBlock() : parseTExpr(), v);
+        }
       case CONID:
       case CONSYM:
         {
@@ -473,7 +481,7 @@ public class LCParser extends CoreParser implements LCTokens {
           lexer.nextToken(/* CONID|CONSYM */ );
           LamVar[] vs = parseVars(0);
           require(TO);
-          return new EAlt(pos, c, vs, isMonadic ? parseBlock() : parseTExpr());
+          return new EPatAlt(pos, isMonadic ? parseBlock() : parseTExpr(), c, vs);
         }
     }
     throw new ParseFailure(lexer.getPos(), "Missing CONID for alternative");

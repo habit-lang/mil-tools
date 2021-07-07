@@ -23,21 +23,15 @@ import core.*;
 import mil.*;
 
 /** Represents an alternative in a case expression. */
-class EAlt {
+abstract class EAlt {
 
-  private Position pos;
+  protected Position pos;
 
-  private String id;
-
-  private DefVar[] vs;
-
-  private Expr e;
+  protected Expr e;
 
   /** Default constructor. */
-  EAlt(Position pos, String id, DefVar[] vs, Expr e) {
+  EAlt(Position pos, Expr e) {
     this.pos = pos;
-    this.id = id;
-    this.vs = vs;
     this.e = e;
   }
 
@@ -46,28 +40,14 @@ class EAlt {
    * itself at the specified level of indentation, plus more deeply indented descriptions of any
    * child nodes.
    */
-  void indent(IndentOutput out, int n) {
-    out.indent(n, "EAlt");
-    out.indent(n + 1, DefVar.toString(id + " ", vs));
-    e.indent(out, n + 2);
-  }
-
-  private Cfun cf;
+  abstract void indent(IndentOutput out, int n);
 
   /**
    * Perform scope analysis on this expression, creating a Temp for each variable binding, checking
    * that all of the identifiers it references correspond to bound variables, and returning the set
    * of free variables in the term.
    */
-  DefVars inScopeOf(Handler handler, MILEnv milenv, Env env) { //  cf vs -> e
-    cf = milenv.findCfun(id);
-    if (cf == null) {
-      handler.report(new UnknownConstructorFailure(pos, id));
-    } else if (cf.getArity() != vs.length) {
-      handler.report(new ConstructorArgsFailure(pos, cf));
-    }
-    return DefVars.remove(vs, e.inScopeOf(handler, milenv, new VarsEnv(env, vs)));
-  }
+  abstract DefVars inScopeOf(Handler handler, MILEnv milenv, Env env);
 
   /**
    * Search for and report failures for "ambiguous" type variables in the types of identifiers that
@@ -82,7 +62,7 @@ class EAlt {
    * fixed by rewriting the code (for this example, "length Nil" is an unnecessarily complicated way
    * of writing "0") or by adding type information.
    */
-  void findAmbigTVars(TVars gens) throws Failure { // cf vs -> e
+  void findAmbigTVars(TVars gens) throws Failure { // ... -> e
     e.findAmbigTVars(gens);
   }
 
@@ -90,94 +70,34 @@ class EAlt {
    * Infer the type of value that is returned by this expression, also ensuring that the type of
    * value that is matched can be unified with the specified domtype.
    */
-  Type inferAltType(TVarsInScope tis, Type domtype) throws Failure { // alternative, cf vs -> e
-    lambdaType(domtype) // bind types of vs by unifying with
-        .unify(pos, cf.getDeclared().instantiate()); // a fresh instance of cf's type
-    return e.inferType(new TVISVars(tis, vs));
-  }
-
-  /**
-   * Set each of the variables in the given array to have a (distinct) fresh type variable as their
-   * type and return a function type with an argument for each of the variables.
-   */
-  Type lambdaType(Type result) {
-    for (int i = vs.length; --i >= 0; ) {
-      result = Type.fun(vs[i].freshType(Tyvar.star), result);
-    }
-    return result;
-  }
+  abstract Type inferAltType(TVarsInScope tis, Type domtype) throws Failure;
 
   /**
    * Check that this alternative will match a value of the specified domtype and return a value of
    * the given resulttype.
    */
-  void checkAltType(TVarsInScope tis, Type domtype, Type resulttype)
-      throws Failure { // alternative, cf vs -> e
-    lambdaType(domtype) // bind types of vs by unifying with
-        .unify(pos, cf.getDeclared().instantiate()); // a fresh instance of cf's type
-    e.checkType(new TVISVars(tis, vs), resulttype);
-  }
+  abstract void checkAltType(TVarsInScope tis, Type domtype, Type resulttype) throws Failure;
 
-  EAlt lift(LiftEnv lenv) { // cf vs -> e
+  EAlt lift(LiftEnv lenv) { // ... -> e
     e = e.lift(lenv);
     return this;
   }
 
-  Alts compAlt(
+  abstract Alts compAlt(
       final CGEnv env,
       final Block abort,
       final Atom dv,
       final Temp r,
       final Alts next,
       final Type jty,
-      final Block join) { // cf vs -> e
-    Temp[] ts = DefVar.freshTemps(vs);
-    return makeAlt(
-        dv,
-        ts,
-        next,
-        jty,
-        e.compTail(
-            new CGEnvVars(env, vs, ts),
-            abort,
-            jty,
-            new TailCont() {
-              Code with(final Tail t) {
-                return new Bind(r, t, new Done(new BlockCall(join)));
-              }
-            }));
-  }
+      final Block join);
 
-  CfunAlt makeAlt(Atom dv, Temp[] ts, Alts next, Type jty, Code code) {
-    // Add selectors to extract components:
-    for (int i = ts.length - 1; i >= 0; i--) {
-      code = new Bind(ts[i], new Sel(cf, i, dv), code);
-    }
-    return new CfunAlt(cf, new BlockCall(new LCBlock(pos, jty, code)), next);
-  }
-
-  Alts compAltM(
+  abstract Alts compAltM(
       final CGEnv env,
       final Block abort,
       final Atom dv,
       final Temp r,
-      final Alts nalts,
+      final Alts next,
       final Type jty,
-      final Block join) { // cf vs -> e
-    Temp[] ts = DefVar.freshTemps(vs);
-    return makeAlt(
-        dv,
-        ts,
-        nalts,
-        jty,
-        e.compTailM(
-            new CGEnvVars(env, vs, ts),
-            abort,
-            jty,
-            new TailCont() {
-              Code with(final Tail t) {
-                return new Bind(r, t, new Done(new BlockCall(join)));
-              }
-            }));
-  }
+      final Block join);
 }

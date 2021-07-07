@@ -80,8 +80,8 @@ abstract class Expr {
         pos,
         test,
         new EAlt[] {
-          new EAlt(post, trueName, Var.noVars, trueBranch),
-          new EAlt(posf, falseName, Var.noVars, falseBranch)
+          new EPatAlt(post, trueBranch, trueName, Var.noVars),
+          new EPatAlt(posf, falseBranch, falseName, Var.noVars)
         });
   }
 
