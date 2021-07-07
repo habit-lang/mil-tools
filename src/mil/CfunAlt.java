@@ -208,21 +208,26 @@ public class CfunAlt extends Alts {
    * Alts.
    */
   Cfun[] cfunsUsed() {
-    return cfunsUsed(new Cfun[cf.getCfuns().length]);
+    Cfun[] used = new Cfun[cf.getCfuns().length];
+    used[cf.getNum()] = cf;
+    next = cfunsUsed(used);
+    return used;
   }
 
-  Cfun[] cfunsUsed(Cfun[] used) {
+  Alts cfunsUsed(Cfun[] used) {
     // Flag use of this constructor as having been mentioned:
     int num = cf.getNum(); // flag use of this constructor
     if (num >= 0 && num < used.length) {
       if (used[num] != null) {
-        debug.Internal.error("multiple alternatives for " + cf);
+        // This constructor (number) has been used earlier in the list of Alts.
+        return next.cfunsUsed(used);
       }
       used[num] = cf;
+      next = next.cfunsUsed(used);
     } else {
       debug.Internal.error("cfun index out of range");
     }
-    return next.cfunsUsed(used);
+    return this;
   }
 
   /** Return the BlockCall for the first CfunAlt in this list, or null if there is no CfunAlt. */

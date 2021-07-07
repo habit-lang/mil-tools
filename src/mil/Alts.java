@@ -148,8 +148,8 @@ public abstract class Alts {
     return null;
   }
 
-  Cfun[] cfunsUsed(Cfun[] used) {
-    return used;
+  Alts cfunsUsed(Cfun[] used) {
+    return this;
   }
 
   /** Return the BlockCall for the first CfunAlt in this list, or null if there is no CfunAlt. */
