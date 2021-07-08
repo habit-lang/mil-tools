@@ -279,7 +279,7 @@ public class LCParser extends CoreParser implements LCTokens {
         {
           Position pos = lexer.getPos();
           lexer.nextToken(/* \ */ );
-          LamVar[] vs = parseVars(0);
+          DefVar[] vs = parseVars(0);
           require(TO);
           return new ELam(pos, vs, parseExpr());
         }
@@ -356,7 +356,7 @@ public class LCParser extends CoreParser implements LCTokens {
           if (e == null) {
             return null;
           } else if (lexer.match(FROM)) {
-            LamVar v = e.asLamVar(null);
+            DefVar v = e.asLamVar(null);
             Position pos = e.getPos();
             e = parseTExpr();
             // stmts -> id <- e _ ; stmts
@@ -477,7 +477,7 @@ public class LCParser extends CoreParser implements LCTokens {
           Position pos = lexer.getPos();
           String c = lexer.getLexeme();
           lexer.nextToken(/* CONID|CONSYM */ );
-          LamVar[] vs = parseVars(0);
+          DefVar[] vs = parseVars(0);
           require(TO);
           return new EPatAlt(pos, isMonadic ? parseBlock() : parseTExpr(), c, vs);
         }
@@ -495,14 +495,20 @@ public class LCParser extends CoreParser implements LCTokens {
    * Parse a sequence of identifiers as an array of DefVars. The parameter records the number of
    * arguments that have already been seen.
    */
-  private LamVar[] parseVars(int i) throws Failure {
-    Expr e = maybeAExpr();
-    if (e != null) {
-      LamVar[] vs = parseVars(i + 1);
-      vs[i] = e.asLamVar(null);
-      return vs;
+  private DefVar[] parseVars(int i) throws Failure {
+    DefVar v;
+    if (lexer.match(UNDER)) {
+      v = new FreshVar();
+    } else {
+      Expr e = maybeAExpr();
+      if (e == null) {
+        return new DefVar[i];
+      }
+      v = e.asLamVar(null);
     }
-    return new LamVar[i];
+    DefVar[] vs = parseVars(i + 1);
+    vs[i] = v;
+    return vs;
   }
 
   /**
