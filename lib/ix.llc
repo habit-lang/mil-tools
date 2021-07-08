@@ -90,11 +90,20 @@ these are determined automatically from the type of the
 function `f`:
 
 > export foreach :: (Ix n -> Proc Unit) -> Proc Unit
-> foreach f = loop ix0
->  where loop i = do f i
->                    case incIx i of
->                      Nothing -> return Unit
->                      Just j  -> loop j
+> foreach         = foreachFrom ix0
+
+> foreachFrom    :: Ix n -> (Ix n -> Proc Unit) -> Proc Unit
+> foreachFrom i   = foreachFromTo i maxBound
+
+> foreachTo      :: Ix n -> (Ix n -> Proc Unit) -> Proc Unit
+> foreachTo n     = foreachFromTo ix0 n
+
+> -- "do { p i; } while (++i < n);"
+> foreachFromTo        :: Ix n -> Ix n -> (Ix n -> Proc Unit) -> Proc Unit
+> foreachFromTo i n p   = do p i
+>                            case i `ltInc` n of
+>                              Just j  -> foreachFromTo j n p
+>                              Nothing -> return Unit
 
 Basic comparisons on index values:
 
