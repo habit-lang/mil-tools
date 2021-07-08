@@ -27,13 +27,11 @@ interface MILTokens extends CoreTokens {
 
   int APPLY = 2;
 
-  int UNDER = 3;
+  int RETURN = 3;
 
-  int RETURN = 4;
+  int ASSERT = 4;
 
-  int ASSERT = 5;
+  int TBIND = 5;
 
-  int TBIND = 6;
-
-  int MILTO = 7;
+  int MILTO = 6;
 }

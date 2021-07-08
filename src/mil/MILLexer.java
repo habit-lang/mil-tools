@@ -31,7 +31,6 @@ public class MILLexer extends LayoutLexer implements MILTokens {
     reserved.put("return", new Integer(RETURN));
     reserved.put("assert", new Integer(ASSERT));
     reserved.put("@", new Integer(APPLY));
-    reserved.put("_", new Integer(UNDER));
     reserved.put(">>=", new Integer(TBIND));
     reserved.put(Tycon.milArrowId, new Integer(MILTO));
     nextToken(); // force reading of first token
@@ -48,8 +47,6 @@ public class MILLexer extends LayoutLexer implements MILTokens {
         return "\"assert\" keyword";
       case APPLY:
         return "@";
-      case UNDER:
-        return "_ (underscore)";
       case TBIND:
         return ">>= (block type arrow)";
       case MILTO:

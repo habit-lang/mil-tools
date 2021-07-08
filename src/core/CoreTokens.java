@@ -23,47 +23,49 @@ import mil.*;
 
 public interface CoreTokens {
 
-  int ENDINPUT = 8;
+  int ENDINPUT = 7;
 
-  int POPEN = 9;
+  int POPEN = 8;
 
-  int PCLOSE = 10;
+  int PCLOSE = 9;
 
-  int SOPEN = 11;
+  int SOPEN = 10;
 
-  int SCLOSE = 12;
+  int SCLOSE = 11;
 
-  int BOPEN = 13;
+  int BOPEN = 12;
 
-  int BCLOSE = 14;
+  int BCLOSE = 13;
 
-  int COMMA = 15;
+  int COMMA = 14;
 
-  int SEMI = 16;
+  int SEMI = 15;
 
-  int BACKTICK = 17;
+  int BACKTICK = 16;
 
-  int VARID = 18;
+  int VARID = 17;
 
-  int CONID = 19;
+  int CONID = 18;
 
-  int VARSYM = 20;
+  int VARSYM = 19;
 
-  int CONSYM = 21;
+  int CONSYM = 20;
 
-  int NATLIT = 22;
+  int NATLIT = 21;
 
-  int BITLIT = 23;
+  int BITLIT = 22;
 
-  int STRLIT = 24;
+  int STRLIT = 23;
 
-  int EQ = 25;
+  int EQ = 24;
 
-  int COCO = 26;
+  int COCO = 25;
 
-  int BAR = 27;
+  int BAR = 26;
 
-  int DOT = 28;
+  int DOT = 27;
+
+  int UNDER = 28;
 
   int FROM = 29;
 
