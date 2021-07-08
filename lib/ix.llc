@@ -89,17 +89,17 @@ to specify the upper and lower bounds for the loop because
 these are determined automatically from the type of the
 function `f`:
 
-> export foreach :: (Ix n -> Proc Unit) -> Proc Unit
-> foreach         = foreachFrom ix0
+> export foreach       :: (Ix n -> Proc Unit) -> Proc Unit
+> foreach               = foreachFrom ix0
 
-> foreachFrom    :: Ix n -> (Ix n -> Proc Unit) -> Proc Unit
-> foreachFrom i   = foreachFromTo i maxBound
+> export foreachFrom   :: Ix n -> (Ix n -> Proc Unit) -> Proc Unit
+> foreachFrom i         = foreachFromTo i maxBound
 
-> foreachTo      :: Ix n -> (Ix n -> Proc Unit) -> Proc Unit
-> foreachTo n     = foreachFromTo ix0 n
+> export foreachTo     :: Ix n -> (Ix n -> Proc Unit) -> Proc Unit
+> foreachTo n           = foreachFromTo ix0 n
 
 > -- "do { p i; } while (++i < n);"
-> foreachFromTo        :: Ix n -> Ix n -> (Ix n -> Proc Unit) -> Proc Unit
+> export foreachFromTo :: Ix n -> Ix n -> (Ix n -> Proc Unit) -> Proc Unit
 > foreachFromTo i n p   = do p i
 >                            case i `ltInc` n of
 >                              Just j  -> foreachFromTo j n p
