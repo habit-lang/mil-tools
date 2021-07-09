@@ -34,6 +34,14 @@ Pairs:
 > export snd :: Pair a b -> b
 > snd p = case p of Pair a b -> b
 
+Functions:
+
+> export $   :: (a -> b) -> a -> b
+> f $ x       = f x
+
+> export id  :: a -> a
+> id x        = x
+
 Procedures:
 
 Habit uses values of type `Proc t` to represent procedures that,
@@ -51,6 +59,12 @@ does no computation other than to return a specified value:
 
 > export return :: a -> Proc a
 > return  = primRet
+
+The `fmap` operator applies a function to result that is
+produced by a procedure:
+
+> export fmap :: (a -> b) -> Proc a -> Proc b
+> fmap f p     = do v <- p; return (f v)
 
 Stored Values:
 
