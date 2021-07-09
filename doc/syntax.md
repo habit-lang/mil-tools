@@ -120,17 +120,31 @@ The following are tokens in core/mil/lc:
 
 - Identifiers, which take one of two forms:
 
-  - Alphanumeric: Following the syntax of Java, every alphanumeric
-    identifier starts with a character described by
-    `isJavaIdentifierStart`, followed by 0 or more characters
-    described by `isJavaIdentifierPart`.  Some identifiers are
-    treated as reserved words; these will be written between
-    double quotes in the following, as in `"where"`.  Character
-    sequences that start with `'B'`, `'O'`, or `'X'` and that
-    match the syntax for bit literals will be treated as literals,
-    as in `B101`.  The remaining set of identifiers are classified
-    as instances of either `CONID` (if they begin with a capital
-    letter) or `VARID` (all other identifiers).
+  - Alphanumeric: Loosely following the syntax of Haskell, every
+    alphanumeric identifier is made up from a sequence of letters and
+    digits that begins with a letter.  More precisely, each of the
+    characters in an identifier must be one of the following:
+
+      - Any character that is included in one of the following UNICODE
+	general categories: `UPPERCASE_LETTER`, `TITLECASE_LETTER`,
+	`LOWERCASE_LETTER`, `MODIFIER_LETTER`, `OTHER_LETTER`,
+	`DECIMAL_DIGIT_NUMBER`, `LETTER_NUMBER`, or `OTHER_NUMBER`.
+	Note that numeric digits cannot appear at the start of an
+	identifier (leading digits will be interpreted instead as a
+	numeric literal).
+
+      - An apostrophe/prime (`'`) or an underscore (`_`).  Note that
+	the apostrophe cannot be used at the start of an identifier
+	where it will instead be interpreted as the start of a character
+	literal.
+
+    Some identifiers are treated as reserved words; these will be
+    written between double quotes in the following, as in `"where"`.
+    Character sequences that start with `'B'`, `'O'`, or `'X'` and that
+    match the syntax for bit literals will be treated as literals, as in
+    `B101`.  The remaining set of identifiers are classified as
+    instances of either `CONID` (if they begin with a capital letter) or
+    `VARID` (all other identifiers).
 
   - Symbols: Based on the syntax of Haskell, a symbol is a
     sequence of one or more symbol characters, each of which is
@@ -141,22 +155,26 @@ The following are tokens in core/mil/lc:
           `\` `^` `|` `-` `~`
 
       - Any character that is included in one of the following
-        UNICODE classes: `DASH_PUNCTUATION`, `START_PUNCTUTATION`,
+        UNICODE general categories: `DASH_PUNCTUATION`, `START_PUNCTUTATION`,
         `END_PUNCTUATION`, `CONNECTOR_PUNCTUATION`,
         `OTHER_PUNCTUATION`, `MATH_SYMBOL`, `CURRENCY_SYMBOL`,
         `MODIFIER_SYMBOL`, `OTHER_SYMBOL`.
-
-    A symbol may optionally end with a `$` character followed
-    immediately by an arbitrary identifier.  (This feature is used
-    specifically to support the generation of "unique names" for
-    specialized versions of operator symbols in the Habit compiler
-    pipeline.)
 
     Some symbols are treated as reserved; these will be written
     between double quotes in the following, such as `"|"`.  The
     remaining symbols are classified as either `CONSYM` (if the
     first character is a colon) or as `VARSYM` (all other
     symbols).
+
+Both alphanumeric and symbol operators may optionally end with a `$`
+character followed immediately by an arbitrary alphanumeric identifier.
+(This feature is used specifically to support the generation of "unique
+names" for specialized versions of operator symbols in the Habit
+compiler pipeline.)  One implication of this is that `f$x` will be
+treated as a single identifier, and spaces must be inserted, as in
+`f $ x`, if the intention is to apply a `$` operator to two arguments
+`f` and `x`.
+
 
 ### Layout:
 

@@ -236,13 +236,13 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
           }
 
         default:
-          if (Character.isJavaIdentifierStart((char) c)) {
+          if (Character.digit((char) c, 10) >= 0) { // check digits first (also matches isIdsym)
+            return number();
+          } else if (isIdsym((char) c)) {
             return identifier(col);
           } else if (isOpsym((char) c)) {
             nextChar();
             return symbol(col - 1);
-          } else if (Character.digit((char) c, 10) >= 0) {
-            return number();
           } else {
             report(new Warning(getPos(), "Ignoring illegal character"));
             nextChar();
@@ -584,11 +584,26 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
         "\177 DEL"
       };
 
-  private int identifier(int start) { // Assumes isJavaIdentifierStart(c)
+  /**
+   * Several parts of the Alb front end adds suffixes (possibly more than one) of the form $id to
+   * the names of identifiers and operators so that they can be both related to the original symbol
+   * (before the $) and distinguished from it (by the part after the $). The following flag is used
+   * to enable support for these forms of symbol name. At some point this may become a command line
+   * option. In the meantime, it does mean that we need to be careful with spaces around uses of the
+   * $ operator because f$x is not necessarily going to be treated in the same way as f $ x.
+   */
+  private static boolean albSyntax = true;
+
+  private int identifier(int start) { // Assumes isIdsym(c)
     token = Character.isUpperCase(c) ? CONID : VARID;
     do {
       nextChar();
-    } while (c != EOF && Character.isJavaIdentifierPart((char) c));
+    } while (c != EOF && isIdsym((char) c));
+    while (c == '$' && (col + 1) < line.length() && isIdsym(line.charAt(col + 1)) && albSyntax) {
+      do {
+        nextChar();
+      } while (c != EOF && isIdsym((char) c));
+    }
     lexemeText = line.substring(start, col);
     Integer kw = reserved.get(lexemeText);
     if (kw != null) {
@@ -600,6 +615,28 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
     } else {
       return token = VARID;
     }
+  }
+
+  /**
+   * Determine if the given character can be used in an identifier, broadly following the lexical
+   * rules of Haskell. There are some special rules about which characters can appear at the start
+   * of an identifier that exclude the apostrophe ' (which starts a character literal) and decimal
+   * digits (which start numeric literals); these should be handled by checking for the special
+   * cases before calling isIdsym.
+   */
+  private boolean isIdsym(char c) {
+    switch (Character.getType(c)) {
+      case Character.UPPERCASE_LETTER:
+      case Character.TITLECASE_LETTER:
+      case Character.LOWERCASE_LETTER:
+      case Character.MODIFIER_LETTER:
+      case Character.OTHER_LETTER:
+      case Character.DECIMAL_DIGIT_NUMBER:
+      case Character.LETTER_NUMBER:
+      case Character.OTHER_NUMBER:
+        return true;
+    }
+    return c == '\'' || c == '_'; // allow primes and underscores in names
   }
 
   private int numBits;
@@ -646,21 +683,25 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
     return numBits > 0;
   }
 
-  private int symbol(int start) {
+  private int symbol(int start) { // Assumes isOpsym(c)
     token = (c == ':') ? CONSYM : VARSYM;
     while (isOpsym((char) c)) {
       nextChar();
     }
-    if (Character.isJavaIdentifierStart((char) c) && line.charAt(col - 1) == '$') {
+    if (line.charAt(col - 1) == '$' && isIdsym((char) c) && albSyntax) {
       do {
         nextChar();
-      } while (c != EOF && Character.isJavaIdentifierPart((char) c));
+      } while (c != EOF && isIdsym((char) c));
     }
     lexemeText = line.substring(start, col);
     Integer kw = reserved.get(lexemeText);
     return (kw == null) ? token : (token = kw.intValue());
   }
 
+  /**
+   * Determine if the given character can be used in an operator symbol, broadly following the
+   * lexical rules of Haskell.
+   */
   private boolean isOpsym(char c) {
     if (c < 128) {
       switch (c) {
