@@ -19,11 +19,13 @@ A (currently underdeveloped) library for working with Bit vectors.
 >          bitNe      {primBitNe n}            :: Bit n -> Bit n -> Bool
 
 > external bit0u      {primBitFromLiteral 0 n},
->          bit1u      {primBitFromLiteral 1 n} :: Unit -> Bit n
+>          bit1u      {primBitFromLiteral 1 n},
+>          bit2u      {primBitFromLiteral 2 n} :: Unit -> Bit n
 
-> export bit0, bit1 :: Bit n
+> export bit0, bit1, bit2 :: Bit n
 > bit0 = bit0u Unit
 > bit1 = bit1u Unit
+> bit2 = bit2u Unit
 
 > export bitDec  :: Bit n -> Bit n
 > bitDec n        = bitSub n bit1

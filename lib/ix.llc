@@ -9,7 +9,7 @@ Numeric literals are interpreted as values of type Word.  As
 a convenience, we provide the following definitions that
 make it easy to use small index values:
 
-> export ix0, ix1, ix2, ix3, ix4, ix5, ix6, ix7 :: Ix n
+> export ix0, ix1, ix2, ix3, ix4, ix5, ix6, ix7, ix8, ix9 :: Ix n
 > ix0 = ix0u Unit
 > ix1 = ix1u Unit
 > ix2 = ix2u Unit
@@ -18,6 +18,8 @@ make it easy to use small index values:
 > ix5 = ix5u Unit
 > ix6 = ix6u Unit
 > ix7 = ix7u Unit
+> ix8 = ix8u Unit
+> ix9 = ix9u Unit
 
 > external ix0u {primIxFromLiteral 0 n},
 >          ix1u {primIxFromLiteral 1 n},
@@ -26,7 +28,9 @@ make it easy to use small index values:
 >          ix4u {primIxFromLiteral 4 n},
 >          ix5u {primIxFromLiteral 5 n},
 >          ix6u {primIxFromLiteral 6 n},
->          ix7u {primIxFromLiteral 7 n}  :: Unit -> Ix n
+>          ix7u {primIxFromLiteral 7 n},
+>          ix8u {primIxFromLiteral 8 n},
+>          ix9u {primIxFromLiteral 9 n}  :: Unit -> Ix n
 
 Other mechanisms for constructing Index values:
 
