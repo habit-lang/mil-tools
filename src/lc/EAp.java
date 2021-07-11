@@ -100,14 +100,17 @@ class EAp extends Expr {
    * type variables that appear in an assumption.
    */
   Type inferType(TVarsInScope tis) throws Failure { // f x
-    type = new TVar(Tyvar.res);
-    f.checkType(tis, Type.fun(x.inferType(tis), type));
+    Type dom = new TVar(Tyvar.star);
+    f.inferType(tis).unify(getPos(), Type.fun(dom, type = new TVar(Tyvar.res)));
+    x.checkType(tis, dom);
     return type;
   }
 
   /** Check that this expression will produce a value of the specified type. */
   void checkType(TVarsInScope tis, Type t) throws Failure { // f x
-    f.checkType(tis, Type.fun(x.inferType(tis), type = t));
+    Type dom = new TVar(Tyvar.star);
+    f.checkType(tis, Type.fun(dom, type = t));
+    x.checkType(tis, dom);
   }
 
   EAp(Expr f, Expr x, Type type) {
