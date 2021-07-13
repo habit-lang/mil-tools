@@ -20,11 +20,13 @@ Words and Bytes:
 
 Pointer/Reference equality:
 
-> export refEq :: Ref a -> Ref a -> Bool
-> refEq p q     = refToWord p == refToWord q
+> export refEq, refNeq :: Ref a -> Ref a -> Bool
+> refEq p q             = refToWord p == refToWord q
+> refNeq p q            = refToWord p /= refToWord q
 
-> export ptrEq :: Ptr a -> Ptr a -> Bool
-> ptrEq p q     = ptrToWord p == ptrToWord q
+> export ptrEq, ptrNeq :: Ptr a -> Ptr a -> Bool
+> ptrEq p q             = ptrToWord p == ptrToWord q
+> ptrNeq p q            = ptrToWord p /= ptrToWord q
 
 Pairs:
 
