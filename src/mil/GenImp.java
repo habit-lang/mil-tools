@@ -252,6 +252,8 @@ public class GenImp extends ExtImp {
 
   public static Type ixB = Type.ix(gB);
 
+  public static Type inxA = Type.inx(gA);
+
   public static Type bitAixAbitA = fun(bitA, ixA, bitA);
 
   public static Type ixAixBixA = fun(ixA, ixB, ixA);
@@ -431,11 +433,20 @@ public class GenImp extends ExtImp {
         "primIxMaxBound",
         new Generator(Prefix.nat, ixA) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-            BigInteger m = ts[0].validIndex(); // Modulus for index type
-            long n = m.longValue();
+            long n = ts[0].validIndex().longValue(); // Modulus for index type
             return (n == 1)
                 ? new DataAlloc(Cfun.Unit).withArgs()
                 : new Return((n == 2) ? Flag.True : new Word(n - 1));
+          }
+        });
+
+    // primInxMaxBound m :: Inx m
+    generators.put(
+        "primInxMaxBound",
+        new Generator(Prefix.nat, inxA) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            long n = ts[0].validIndex().longValue(); // Modulus for index type
+            return new Return((n == 1) ? Flag.True : new Word(n));
           }
         });
 
