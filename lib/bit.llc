@@ -34,3 +34,6 @@ A (currently underdeveloped) library for working with Bit vectors.
 > export bitDec  :: Bit n -> Bit n
 > bitDec n        = bitSub n bit1
 
+> external bitsHi {primBitsHi n m} :: Bit n -> Bit m   -- requires n>=m
+> external bitsLo {primBitsLo n m} :: Bit n -> Bit m   -- requires n>=m
+
