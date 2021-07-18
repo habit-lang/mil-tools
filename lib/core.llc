@@ -85,8 +85,14 @@ General applications of these functions include implementing:
 1) a "copy" operator that reads a value from one reference and
 immediately writes it to another:
 
-> export >-> :: Ref (Stored t) -> Ref (Stored t) -> Proc Unit
-> src >-> dst = get src >>= set dst
+> export >->, <-< :: Ref (Stored t) -> Ref (Stored t) -> Proc Unit
+> src >-> dst = copyWith id src dst
+> dst <-< src = copyWith id src dst
+
+And the general variant that applies a function during the transfer:
+
+> export copyWith   :: (a -> b) -> Ref (Stored a) -> Ref (Stored b) -> Proc Unit
+> copyWith f src dst = do v <- get src; set dst (f v)
 
 2) Using a function to update the value at a given reference:
 
