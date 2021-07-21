@@ -477,10 +477,10 @@ public abstract class Tycon extends Name {
   Pat bitPat(Type[] tenv, Type a) {
     if (this == ref) {
       int w = a.refWidth(tenv);
-      return (w > 0) ? obdd.Pat.nonzero(w) : null;
+      return (w > 0) ? obdd.Pat.nonzero(w).restrict() : null;
     } else if (this == ptr || this == phys) {
       int w = a.refWidth(tenv);
-      return (w > 0) ? obdd.Pat.all(w) : null;
+      return (w > 0) ? obdd.Pat.all(w).restrict() : null;
     } else if (this == bit) {
       int w = a.bitWidth(tenv);
       return (w >= 0) ? obdd.Pat.all(w) : null;

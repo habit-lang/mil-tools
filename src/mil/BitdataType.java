@@ -101,7 +101,8 @@ public class BitdataType extends DataName {
       layouts[i].dumpBitdataLayout(out);
     }
     out.println();
-    out.println("-- bit pattern:");
+    out.print("-- bit pattern:");
+    out.println(pat.isRestricted() ? " (restricted)" : "");
     pat.dump(out);
     out.println();
   }

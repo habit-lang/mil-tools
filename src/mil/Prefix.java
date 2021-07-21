@@ -98,6 +98,8 @@ public class Prefix {
 
   public static final Prefix star_nat = new Prefix(new Tyvar[] {Tyvar.star, Tyvar.nat});
 
+  public static final Prefix nat_star = new Prefix(new Tyvar[] {Tyvar.nat, Tyvar.star});
+
   public static final Prefix nat_area = new Prefix(new Tyvar[] {Tyvar.nat, Tyvar.area});
 
   public static final Prefix nat_nat_nat =

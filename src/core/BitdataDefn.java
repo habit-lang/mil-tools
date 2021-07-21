@@ -117,7 +117,7 @@ public class BitdataDefn extends TyconDefn {
 
     // Calculate region lists for each of the constructors and a bit pattern for the full type:
     if (constrs.length == 0) {
-      bt.setPat(obdd.Pat.all(w));
+      bt.setPat(obdd.Pat.all(w).restrict());
     } else {
       obdd.Pat pat = obdd.Pat.empty(w);
       for (int i = 0; i < constrs.length; i++) {
@@ -126,8 +126,8 @@ public class BitdataDefn extends TyconDefn {
       bt.setPat(pat);
 
       // Test for junk:
-      obdd.Pat junk = pat.not();
-      if (!junk.isEmpty()) {
+      if (!pat.isAll()) {
+        obdd.Pat junk = pat.not();
         BigInteger n = junk.size();
         debug.Log.println(
             "Warning: bitdata type "

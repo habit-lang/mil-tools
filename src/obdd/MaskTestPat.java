@@ -29,7 +29,7 @@ public class MaskTestPat extends Pat {
   private boolean op;
 
   private MaskTestPat(int width, OBDD bdd, boolean op) {
-    super(width, bdd);
+    super(width, bdd, false);
     this.op = op;
     this.mask = bdd.mask(op);
     this.bits = bdd.bits(op);

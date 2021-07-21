@@ -24,6 +24,7 @@ import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.TreeSet;
+import obdd.Pat;
 
 /**
  * Requests the generation of an implementation for an external using a given tag and list of type
@@ -188,6 +189,29 @@ public class GenImp extends ExtImp {
     }
   }
 
+  /** Check that the specified type corresponds to a bitdata type. */
+  private static BitdataType validBitdataType(Type t) throws GeneratorException {
+    BitdataType bt = t.bitdataType();
+    if (bt == null) {
+      throw new GeneratorException(t + " is not a bitdata type");
+    }
+    return bt;
+  }
+
+  /**
+   * Check that the type t is a natural number whose value matches the width of the given bitdata
+   * type.
+   */
+  private static void checkBitdataWidth(BitdataType bt, Type t) throws GeneratorException {
+    int width = t.validWidth(); // make sure that t is a natural number
+    Pat pat = bt.getPat();
+    int btwidth = pat.getWidth();
+    if (btwidth != width) { // ensure that t matches width of bitdata Type
+      throw new GeneratorException(
+          "Bitdata " + bt + " has width " + btwidth + " which does not match " + width);
+    }
+  }
+
   static Tail unaryUnit(Position pos) { // Tail for \x -> Unit, i.e., k{} where k{} x = Unit()
     return new DataAlloc(Cfun.Unit).withArgs().constClosure(pos, 1);
   }
@@ -281,6 +305,36 @@ public class GenImp extends ExtImp {
             int w = ts[1].validWidth(); // Width of bit vector
             Type.validBelow(v, BigInteger.ONE.shiftLeft(w)); // v < 2 ^ w
             return new Return(Const.atoms(v, w)).constClosure(pos, 1);
+          }
+        });
+
+    // primBitdataToBit :: bitdataType -> Bit n  where n==width of the bitdata type
+    generators.put(
+        "primBitdataToBit",
+        new Generator(Prefix.star_nat, fun(gA, bitB)) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            BitdataType bt = validBitdataType(ts[0]);
+            checkBitdataWidth(bt, ts[1]);
+            return new Return().makeUnaryFuncClosure(pos, ts[0].repLen());
+          }
+        });
+
+    // primBitToBitdata :: Bit n -> bitdataType   where n==width of the bitdata type
+    generators.put(
+        "primBitToBitdata",
+        new Generator(Prefix.nat_star, fun(bitA, gB)) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            BitdataType bt = validBitdataType(ts[1]);
+            checkBitdataWidth(bt, ts[0]);
+
+            Pat pat = bt.getPat();
+            if (pat.isRestricted()) {
+              throw new GeneratorException(
+                  "Bitdata type " + bt + " has restricted (reference) fields");
+            } else if (!pat.isAll()) {
+              throw new GeneratorException("Bitdata type " + bt + " contains junk");
+            }
+            return new Return().makeUnaryFuncClosure(pos, ts[1].repLen());
           }
         });
 

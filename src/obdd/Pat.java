@@ -28,10 +28,13 @@ public class Pat {
 
   protected OBDD bdd;
 
+  protected boolean restricted;
+
   /** Default constructor. */
-  public Pat(int width, OBDD bdd) {
+  public Pat(int width, OBDD bdd, boolean restricted) {
     this.width = width;
     this.bdd = bdd;
+    this.restricted = restricted;
   }
 
   /** Return the width of this bit pattern. */
@@ -44,11 +47,20 @@ public class Pat {
     return this.width == that.width && this.bdd.same(that.bdd);
   }
 
+  public Pat restrict() {
+    restricted = true;
+    return this;
+  }
+
+  public boolean isRestricted() {
+    return restricted;
+  }
+
   /** A pattern representing the single bit pattern 0. */
-  public static final Pat ZERO = new Pat(1, new ITE(0, OBDD.FALSE, OBDD.TRUE));
+  public static final Pat ZERO = new Pat(1, new ITE(0, OBDD.FALSE, OBDD.TRUE), false);
 
   /** A pattern representing the single bit pattern 1. */
-  public static final Pat ONE = new Pat(1, new ITE(0, OBDD.TRUE, OBDD.FALSE));
+  public static final Pat ONE = new Pat(1, new ITE(0, OBDD.TRUE, OBDD.FALSE), false);
 
   /**
    * Returns a bit pattern that represents the singleton set corresponding to the specified boolean.
@@ -59,7 +71,7 @@ public class Pat {
 
   /** Returns a pattern that matches all bit patterns of a given width. */
   public static Pat all(int width) {
-    return new Pat(width, OBDD.TRUE);
+    return new Pat(width, OBDD.TRUE, false);
   }
 
   /** Test to see if this pattern represents a set of all bit patterns of some given width. */
@@ -69,7 +81,7 @@ public class Pat {
 
   /** Returns a pattern that doesn't match any bit patterns of the specified width. */
   public static Pat empty(int width) {
-    return new Pat(width, OBDD.FALSE);
+    return new Pat(width, OBDD.FALSE, false);
   }
 
   /**
@@ -86,7 +98,7 @@ public class Pat {
 
   /** Calculate the complement/negation of a given pattern. */
   public Pat not() {
-    return new Pat(width, bdd.not());
+    return new Pat(width, bdd.not(), restricted);
   }
 
   /**
@@ -94,7 +106,7 @@ public class Pat {
    * have the same width.
    */
   public Pat and(Pat that) {
-    return new Pat(width, bdd.and(that.bdd));
+    return new Pat(width, bdd.and(that.bdd), this.restricted | that.restricted);
   }
 
   /**
@@ -102,7 +114,7 @@ public class Pat {
    * same width.
    */
   public Pat or(Pat that) {
-    return new Pat(width, bdd.or(that.bdd));
+    return new Pat(width, bdd.or(that.bdd), this.restricted | that.restricted);
   }
 
   public boolean ordered() {
@@ -139,7 +151,7 @@ public class Pat {
    * bits).
    */
   public Pat padLeft(int padding) {
-    return new Pat(padding + width, bdd);
+    return new Pat(padding + width, bdd, restricted);
   }
 
   /**
@@ -148,7 +160,7 @@ public class Pat {
    */
   public Pat padLeftTo(int width) {
     int padding = width - this.width;
-    return (padding > 0) ? new Pat(width, bdd) : this;
+    return (padding > 0) ? new Pat(width, bdd, restricted) : this;
   }
 
   /**
@@ -156,7 +168,7 @@ public class Pat {
    * significant bits).
    */
   public Pat padRight(int padding) {
-    return padding == 0 ? this : new Pat(width + padding, this.bdd.shiftLeft(padding));
+    return padding == 0 ? this : new Pat(width + padding, this.bdd.shiftLeft(padding), restricted);
   }
 
   /**
@@ -164,7 +176,10 @@ public class Pat {
    * significant) portion matches p and whose right (least significant) portion matches q.
    */
   public Pat concat(Pat that) {
-    return new Pat(this.width + that.width, this.bdd.shiftLeft(that.width).and(that.bdd));
+    return new Pat(
+        this.width + that.width,
+        this.bdd.shiftLeft(that.width).and(that.bdd),
+        this.restricted | that.restricted);
   }
 
   /**
@@ -189,11 +204,11 @@ public class Pat {
    * given val (modulo 2^width).
    */
   public static Pat intmod(int width, long val) {
-    return new Pat(width, OBDD.intmod(width, val));
+    return new Pat(width, OBDD.intmod(width, val), false);
   }
 
   public static Pat intmod(int width, BigInteger val, int offset) {
-    return new Pat(width + offset, OBDD.intmod(width, val, offset));
+    return new Pat(width + offset, OBDD.intmod(width, val, offset), false);
   }
 
   /**
@@ -218,7 +233,7 @@ public class Pat {
       }
       val >>= 1;
     }
-    return new Pat(width, bdd);
+    return new Pat(width, bdd, false);
   }
 
   /**
@@ -251,7 +266,7 @@ public class Pat {
     for (int i = 0; i < width; i++) {
       bdd = new ITE(i, OBDD.TRUE, bdd);
     }
-    return new Pat(width, bdd);
+    return new Pat(width, bdd, false);
   }
 
   /** Generate a pattern that matches the zero bit pattern of the given width. */
@@ -260,7 +275,7 @@ public class Pat {
     for (int i = 0; i < width; i++) {
       bdd = new ITE(i, OBDD.FALSE, bdd);
     }
-    return new Pat(width, bdd);
+    return new Pat(width, bdd, false);
   }
 
   public String[] showBits() {
