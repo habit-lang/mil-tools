@@ -91,17 +91,19 @@ public interface CoreTokens {
 
   int ALIGNED = 40;
 
-  int CASE = 41;
+  int PROXY = 41;
 
-  int OF = 42;
+  int CASE = 42;
 
-  int IF = 43;
+  int OF = 43;
 
-  int THEN = 44;
+  int IF = 44;
 
-  int ELSE = 45;
+  int THEN = 45;
 
-  int LET = 46;
+  int ELSE = 46;
 
-  int IN = 47;
+  int LET = 47;
+
+  int IN = 48;
 }

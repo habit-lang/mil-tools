@@ -22,11 +22,23 @@ import compiler.*;
 import core.*;
 import mil.*;
 
-abstract class ELit extends PosExpr {
+class ELit extends PosExpr {
+
+  Atom a;
 
   /** Default constructor. */
-  ELit(Position pos) {
+  ELit(Position pos, Atom a) {
     super(pos);
+    this.a = a;
+  }
+
+  /**
+   * Print an indented description of this abstract syntax node, including a name for the node
+   * itself at the specified level of indentation, plus more deeply indented descriptions of any
+   * child nodes.
+   */
+  void indent(IndentOutput out, int n) {
+    indent(out, n, "ELit: " + a);
   }
 
   /**
@@ -56,8 +68,24 @@ abstract class ELit extends PosExpr {
     // variable.
   }
 
+  /**
+   * Infer a type for this expression, using information in the tis parameter to track the set of
+   * type variables that appear in an assumption.
+   */
+  Type inferType(TVarsInScope tis) throws Failure { // Atom literal
+    return type = a.instantiate();
+  }
+
   Expr lift(LiftEnv lenv) { // literal
     return this;
+  }
+
+  /**
+   * Compile an expression into an Atom. The continuation ka expects an Atom (of the same type as
+   * this expression) and produces a code sequence (that returns a value of the type kty).
+   */
+  Code compAtom(final CGEnv env, final Type kty, final AtomCont ka) {
+    return ka.with(a);
   }
 
   /**

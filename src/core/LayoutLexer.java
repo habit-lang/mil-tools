@@ -56,13 +56,13 @@ public class LayoutLexer extends CoreLexer implements CoreTokens {
    * absence of a delayedToken, or to avoid returning the code for a real token when an implicit END
    * is required.
    */
-  private static final int NOTOKEN = 48;
+  private static final int NOTOKEN = 49;
 
   /**
    * SOFTEND is a dummy token code that is used to indicate that an implicit '}' has been inserted
    * at the end of a layout section.
    */
-  private static final int SOFTEND = 49;
+  private static final int SOFTEND = 50;
 
   public String describeToken(int token, String lexeme) {
     switch (token) {

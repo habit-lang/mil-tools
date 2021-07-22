@@ -88,6 +88,16 @@ public abstract class Atom {
     return false;
   }
 
+  /** Test to determine whether this Atom refers to the given ProxyNat constant. */
+  public boolean sameProxyNat(ProxyNat c) {
+    return false;
+  }
+
+  /** Test to determine whether this Atom refers to the given ProxyLab constant. */
+  public boolean sameProxyLab(ProxyLab c) {
+    return false;
+  }
+
   /** Test to determine whether this Atom refers to the ith TopLhs in the given TopLevel. */
   boolean sameTopDef(TopLevel topLevel, int i) {
     return false;

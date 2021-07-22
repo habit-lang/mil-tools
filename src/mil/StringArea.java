@@ -38,8 +38,9 @@ public class StringArea extends Area {
 
   private Type expected = refString;
 
-  public StringArea(Position pos, String str) {
+  public StringArea(Position pos, String str) { // Used for anonymous string literals
     this(pos, "str" + count++, str);
+    declared = StringArea.refString;
   }
 
   /** Find the list of Defns that this Defn depends on. */

@@ -21,13 +21,13 @@ package mil;
 import compiler.*;
 import core.*;
 
-class WordExp extends AtomExp {
+class LitExp extends AtomExp {
 
-  private long n;
+  private Atom a;
 
   /** Default constructor. */
-  WordExp(long n) {
-    this.n = n;
+  LitExp(Atom a) {
+    this.a = a;
   }
 
   /**
@@ -35,6 +35,6 @@ class WordExp extends AtomExp {
    * and returning a corresponding MIL Atom.
    */
   Atom inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
-    return new Word(n);
+    return a;
   }
 }

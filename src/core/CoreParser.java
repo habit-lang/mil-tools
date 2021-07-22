@@ -119,6 +119,55 @@ public class CoreParser extends Phase implements CoreTokens {
     }
   }
 
+  /** Parse an (optional) literal as a MIL Atom. */
+  protected Atom parseCoreLiteral(Position pos) throws Failure {
+    switch (lexer.getToken()) {
+      case BITLIT:
+        {
+          Atom a = new Bits(lexer.getNat(), lexer.getNumBits());
+          lexer.nextToken(/* BITLIT */ );
+          return a;
+        }
+
+      case NATLIT:
+        {
+          Atom a;
+          try {
+            a = new Word(lexer.getWord());
+          } finally {
+            lexer.nextToken(/* NATLIT */ );
+          }
+          return a;
+        }
+
+      case STRLIT:
+        {
+          Atom a = new TopArea(new StringArea(pos, lexer.getLexeme()));
+          lexer.nextToken(/* STRLIT */ );
+          return a;
+        }
+
+      case PROXY:
+        switch (lexer.nextToken(/* PROXY */ )) {
+          case NATLIT:
+            {
+              Atom a = new ProxyNat(lexer.getNat());
+              lexer.nextToken(/* NATLIT */ );
+              return a;
+            }
+
+          case STRLIT:
+            {
+              Atom a = new ProxyLab(lexer.getLexeme());
+              lexer.nextToken(/* STRLIT */ );
+              return a;
+            }
+        }
+        throw new Failure(pos, "Missing proxy constant");
+    }
+    return null;
+  }
+
   /** Parse a kind expression. */
   private KindExp kindExp() {
     KindExp k = maybeKindExp();

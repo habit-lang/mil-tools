@@ -21,23 +21,16 @@ package mil;
 import compiler.*;
 import core.*;
 
-class StringExp extends AtomExp {
+/** Represents a proxy/singleton value. */
+public abstract class Proxy extends Const {
 
-  private Position pos;
-
-  private String str;
-
-  /** Default constructor. */
-  StringExp(Position pos, String str) {
-    this.pos = pos;
-    this.str = str;
+  /** Find the Value for a given mil constant. */
+  Value constValue() {
+    return new WordValue(0);
   }
 
-  /**
-   * Perform scope analysis on this AtomExp, checking that any referenced identifier is in scope,
-   * and returning a corresponding MIL Atom.
-   */
-  Atom inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
-    return new TopArea(new StringArea(pos, str));
+  /** Calculate an LLVM Value corresponding to a given MIL argument. */
+  llvm.Value toLLVMAtom(LLVMMap lm, VarMap vm) {
+    return new llvm.Word(0);
   }
 }

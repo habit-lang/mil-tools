@@ -24,13 +24,13 @@ import mil.*;
 
 interface LCTokens extends CoreTokens {
 
-  int DO = 50;
+  int DO = 51;
 
-  int LAMBDA = 51;
+  int LAMBDA = 52;
 
-  int AMPAMP = 52;
+  int AMPAMP = 53;
 
-  int BARBAR = 53;
+  int BARBAR = 54;
 
-  int WHERE = 54;
+  int WHERE = 55;
 }

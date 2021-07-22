@@ -177,6 +177,8 @@ public abstract class Tycon extends Name {
 
   public static final Kind natToStar = new KFun(KAtom.NAT, KAtom.STAR);
 
+  public static final Kind labToStar = new KFun(KAtom.LAB, KAtom.STAR);
+
   public static final Kind areaToStar = new KFun(KAtom.AREA, KAtom.STAR);
 
   public static final Kind starToArea = new KFun(KAtom.STAR, KAtom.AREA);
@@ -196,6 +198,10 @@ public abstract class Tycon extends Name {
   public static final Tycon ix = new PrimTycon("Ix", natToStar, 1);
 
   public static final Tycon inx = new PrimTycon("Inx", natToStar, 1);
+
+  public static final Tycon nat = new PrimTycon("ProxyNat", natToStar, 1);
+
+  public static final Tycon lab = new PrimTycon("ProxyLab", labToStar, 1);
 
   public static final Tycon pad = new PrimTycon("Pad", natToAreaToArea, 2);
 
@@ -258,11 +264,12 @@ public abstract class Tycon extends Name {
   /**
    * Attempt to translate a type with this type constructor at its head and some number of arguments
    * on the stack to eliminate newtypes. This will only succeed if the head is a newtype constructor
-   * and there are enough arguments; otherwise the call will return null to indicate that no
-   * translation was possible.
+   * or a proxy and there are enough arguments; otherwise the call will return null to indicate that
+   * no translation was possible.
    */
   Type translate(NewtypeTypeSet set, int args) {
-    return null;
+    // Translate proxy types as the unit type:
+    return (args == 1 && (this == Tycon.nat || this == Tycon.lab)) ? Tycon.unit.asType() : null;
   }
 
   /**

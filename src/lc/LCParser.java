@@ -576,54 +576,30 @@ public class LCParser extends CoreParser implements LCTokens {
 
   /** Parse an atomic expression (aexpr), or return null if no valid expression is found. */
   private Expr maybeAExpr() throws Failure {
+    Position pos = lexer.getPos();
     Expr e = null;
-
-    switch (lexer.getToken()) {
-      case VARID:
-        {
-          e = new EId(lexer.getPos(), lexer.getLexeme());
+    Atom a = parseCoreLiteral(pos);
+    if (a != null) {
+      e = new ELit(pos, a);
+    } else {
+      switch (lexer.getToken()) {
+        case VARID:
+          e = new EId(pos, lexer.getLexeme());
           lexer.nextToken(/* VARID */ );
           break;
-        }
 
-      case CONID:
-        {
-          Position pos = lexer.getPos();
-          String id = lexer.getLexeme();
-          if (lexer.nextToken(/* CONID */ ) == SOPEN) {
-            e = new EConstruct(pos, id, parseFields());
-          } else {
-            e = new EId(pos, id);
+        case CONID:
+          {
+            String id = lexer.getLexeme();
+            if (lexer.nextToken(/* CONID */ ) == SOPEN) {
+              e = new EConstruct(pos, id, parseFields());
+            } else {
+              e = new EId(pos, id);
+            }
+            break;
           }
-          break;
-        }
 
-      case NATLIT:
-        {
-          try {
-            e = new ENat(lexer.getPos(), lexer.getWord());
-          } finally {
-            lexer.nextToken(/* NATLIT */ );
-          }
-          break;
-        }
-
-      case BITLIT:
-        {
-          e = new EBit(lexer.getPos(), lexer.getNat(), lexer.getNumBits());
-          lexer.nextToken(/* BITLIT */ );
-          break;
-        }
-
-      case STRLIT:
-        {
-          e = new EStr(lexer.getPos(), lexer.getLexeme());
-          lexer.nextToken(/* STRLIT */ );
-          break;
-        }
-
-      case POPEN:
-        {
+        case POPEN:
           switch (lexer.nextToken(/* ( */ )) {
             case VARSYM:
             case CONSYM:
@@ -637,10 +613,10 @@ public class LCParser extends CoreParser implements LCTokens {
           }
           require(PCLOSE);
           break;
-        }
 
-      default:
-        return null;
+        default:
+          return null;
+      }
     }
 
     // Parse zero or more suffixes: either a selection or an update
@@ -658,7 +634,7 @@ public class LCParser extends CoreParser implements LCTokens {
 
         case SOPEN:
           {
-            Position pos = lexer.getPos();
+            pos = lexer.getPos();
             e = new EUpdate(pos, e, parseFields());
             continue;
           }

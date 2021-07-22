@@ -576,39 +576,19 @@ public class MILParser extends CoreParser implements MILTokens {
 
   /** Parse an Atom, or return null if there is no atom. */
   private AtomExp maybeParseAtom() throws Failure {
+    Position pos = lexer.getPos();
+    Atom a = parseCoreLiteral(pos);
+    if (a != null) {
+      return new LitExp(a);
+    }
     switch (lexer.getToken()) {
       case VARID:
       case VARSYM:
       case CONID:
       case CONSYM:
         {
-          VarExp e = new VarExp(lexer.getPos(), lexer.getLexeme());
+          VarExp e = new VarExp(pos, lexer.getLexeme());
           lexer.nextToken(/* var|con */ );
-          return e;
-        }
-
-      case NATLIT:
-        {
-          WordExp e;
-          try {
-            e = new WordExp(lexer.getWord());
-          } finally {
-            lexer.nextToken(/* NATLIT */ );
-          }
-          return e;
-        }
-
-      case BITLIT:
-        {
-          BitsExp e = new BitsExp(lexer.getNat(), lexer.getNumBits());
-          lexer.nextToken(/* BITLIT */ );
-          return e;
-        }
-
-      case STRLIT:
-        {
-          StringExp e = new StringExp(lexer.getPos(), lexer.getLexeme());
-          lexer.nextToken(/* STRLIT */ );
           return e;
         }
     }

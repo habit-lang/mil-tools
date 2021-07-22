@@ -418,6 +418,16 @@ public abstract class Type extends Scheme {
     return Tycon.inx.asType().tap(n);
   }
 
+  /** Convenience method for making types of the form Nat n for some type n. */
+  public static Type nat(Type n) {
+    return Tycon.nat.asType().tap(n);
+  }
+
+  /** Convenience method for making types of the form Lab n for some type n. */
+  public static Type lab(Type n) {
+    return Tycon.lab.asType().tap(n);
+  }
+
   /** Convenience method for making types of the form Ref a for some area type a. */
   public static Type ref(Type areaType) {
     return Tycon.ref.asType().tap(areaType);

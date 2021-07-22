@@ -20,25 +20,37 @@ package mil;
 
 import compiler.*;
 import core.*;
-import java.math.BigInteger;
 
-class BitsExp extends AtomExp {
+public class ProxyLab extends Proxy {
 
-  private BigInteger n;
-
-  private int w;
+  private String lab;
 
   /** Default constructor. */
-  BitsExp(BigInteger n, int w) {
-    this.n = n;
-    this.w = w;
+  public ProxyLab(String lab) {
+    this.lab = lab;
+  }
+
+  /** Generate a printable description of this atom. */
+  public String toString() {
+    return "!" + lab.toString();
   }
 
   /**
-   * Perform scope analysis on this AtomExp, checking that any referenced identifier is in scope,
-   * and returning a corresponding MIL Atom.
+   * Test to see if two atoms are the same. For Temp values, we use pointer equality to determine
+   * object equality. For all other types of Atom, we use double dispatch to compare component
+   * values.
    */
-  Atom inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
-    return new Bits(n, w);
+  public boolean sameAtom(Atom that) {
+    return that.sameProxyLab(this);
+  }
+
+  /** Test to determine whether this Atom refers to the given ProxyLab constant. */
+  public boolean sameProxyLab(ProxyLab c) {
+    return this.lab.equals(c.lab);
+  }
+
+  /** Return a type for an instantiated version of this item when used as Atom (input operand). */
+  public Type instantiate() {
+    return Type.lab(new TLab(lab));
   }
 }
