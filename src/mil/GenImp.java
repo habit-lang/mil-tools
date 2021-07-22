@@ -1273,41 +1273,46 @@ public class GenImp extends ExtImp {
         "primBitNot",
         new Generator(Prefix.nat, bitAbitA) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-            int width = ts[0].validWidth(); // Width of bit vector
-            switch (width) {
-              case 0:
-                return unaryUnit(pos);
-
-              case 1:
-                return new PrimCall(Prim.bnot).makeUnaryFuncClosure(pos, 1);
-
-              default:
-                {
-                  int n = Word.numWords(width);
-                  Temp[] vs = Temp.makeTemps(n); // variables returned from block
-                  Temp[] ws = Temp.makeTemps(n); // arguments to closure
-                  Code code = new Done(new Return(Temp.clone(vs)));
-                  int rem = width % Word.size(); // nonzero => unused bits in most sig word
-
-                  // Use Prim.xor on the most significant word if not all bits are used:
-                  if (rem != 0) {
-                    Temp v = vs[--n];
-                    code =
-                        new Bind(v, Prim.xor.withArgs(vs[n] = new Temp(), (1L << rem) - 1), code);
-                  }
-
-                  // Use Prim.not on any remaining words:
-                  while (n > 0) {
-                    Temp v = vs[--n];
-                    code = new Bind(v, Prim.not.withArgs(vs[n] = new Temp()), code);
-                  }
-
-                  return new BlockCall(new Block(pos, vs, code))
-                      .makeUnaryFuncClosure(pos, vs.length);
-                }
-            }
+            return genBitwiseNotTail(pos, ts[0].validWidth());
           }
         });
+  }
+
+  /**
+   * Generate an implementation for a bitwise not operation for a bitdata type of the given width
+   * (assuming that such an operation makes sense for the bitdata type in question; that requires
+   * additional checks).
+   */
+  static Tail genBitwiseNotTail(Position pos, int width) {
+    switch (width) {
+      case 0:
+        return unaryUnit(pos);
+
+      case 1:
+        return new PrimCall(Prim.bnot).makeUnaryFuncClosure(pos, 1);
+
+      default:
+        {
+          int n = Word.numWords(width);
+          Temp[] vs = Temp.makeTemps(n); // variables returned from block
+          Temp[] ws = Temp.makeTemps(n); // arguments to closure
+          Code code = new Done(new Return(Temp.clone(vs)));
+          int rem = width % Word.size(); // nonzero => unused bits in most sig word
+
+          // Use Prim.xor on the most significant word if not all bits are used:
+          if (rem != 0) {
+            Temp v = vs[--n];
+            code = new Bind(v, Prim.xor.withArgs(vs[n] = new Temp(), (1L << rem) - 1), code);
+          }
+
+          // Use Prim.not on any remaining words:
+          while (n > 0) {
+            Temp v = vs[--n];
+            code = new Bind(v, Prim.not.withArgs(vs[n] = new Temp()), code);
+          }
+          return new BlockCall(new Block(pos, vs, code)).makeUnaryFuncClosure(pos, vs.length);
+        }
+    }
   }
 
   /**
@@ -1322,31 +1327,39 @@ public class GenImp extends ExtImp {
         ref,
         new Generator(Prefix.nat, bitAbitAbitA) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-            int width = ts[0].validWidth(); // Width of bit vector
-            switch (width) {
-              case 0:
-                return binaryUnit(pos);
-
-              case 1:
-                return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
-
-              default:
-                {
-                  // Block: b[a0,...b0,...] = c0 <- p((a0,b0)); ...; return [c0,...]
-                  int n = Word.numWords(width);
-                  Temp[] as = Temp.makeTemps(n); // inputs
-                  Temp[] bs = Temp.makeTemps(n);
-                  Temp[] cs = Temp.makeTemps(n); // output
-                  Code code = new Done(new Return(cs));
-                  for (int i = n; 0 < i--; ) {
-                    code = new Bind(cs[i], p.withArgs(as[i], bs[i]), code);
-                  }
-                  return new BlockCall(new Block(pos, Temp.append(as, bs), code))
-                      .makeBinaryFuncClosure(pos, n, n);
-                }
-            }
+            return genBitwiseBinOpTail(pos, ts[0].validWidth(), p, pf);
           }
         });
+  }
+
+  /**
+   * Generate an implementation for a bitwise binary operation for a bitdata type of the given width
+   * (assuming that such an operation makes sense for the bitdata type in question; that requires
+   * additional checks).
+   */
+  static Tail genBitwiseBinOpTail(Position pos, int width, final PrimBinOp p, final PrimBinFOp pf) {
+    switch (width) {
+      case 0:
+        return binaryUnit(pos);
+
+      case 1:
+        return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
+
+      default:
+        {
+          // Block: b[a0,...b0,...] = c0 <- p((a0,b0)); ...; return [c0,...]
+          int n = Word.numWords(width);
+          Temp[] as = Temp.makeTemps(n); // inputs
+          Temp[] bs = Temp.makeTemps(n);
+          Temp[] cs = Temp.makeTemps(n); // output
+          Code code = new Done(new Return(cs));
+          for (int i = n; 0 < i--; ) {
+            code = new Bind(cs[i], p.withArgs(as[i], bs[i]), code);
+          }
+          return new BlockCall(new Block(pos, Temp.append(as, bs), code))
+              .makeBinaryFuncClosure(pos, n, n);
+        }
+    }
   }
 
   static {
@@ -1454,23 +1467,36 @@ public class GenImp extends ExtImp {
         ref,
         new Generator(Prefix.nat, bitAbitABool) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-            int width = ts[0].validWidth(); // Width of bit vector
-            switch (width) {
-              case 0:
-                return new BlockCall(bz).withArgs().constClosure(pos, 1).constClosure(pos, 1);
-
-              case 1:
-                return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
-
-              default:
-                {
-                  int n = Word.numWords(width);
-                  return new BlockCall(bitEqBlock(pos, n, test, bearly))
-                      .makeBinaryFuncClosure(pos, n, n);
-                }
-            }
+            return genBitwiseEqBinOpTail(pos, ts[0].validWidth(), test, bearly, pf, bz);
           }
         });
+  }
+
+  /**
+   * Generate an implementation for an equality comparison on a bitdata type of the given width
+   * (assuming that such an operation makes sense for the bitdata type in question; that requires
+   * additional checks).
+   */
+  static Tail genBitwiseEqBinOpTail(
+      Position pos,
+      int width,
+      final PrimRelOp test,
+      final Block bearly,
+      final PrimBinFOp pf,
+      final Block bz) {
+    switch (width) {
+      case 0:
+        return new BlockCall(bz).withArgs().constClosure(pos, 1).constClosure(pos, 1);
+
+      case 1:
+        return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
+
+      default:
+        {
+          int n = Word.numWords(width);
+          return new BlockCall(bitEqBlock(pos, n, test, bearly)).makeBinaryFuncClosure(pos, n, n);
+        }
+    }
   }
 
   /**
