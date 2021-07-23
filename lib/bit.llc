@@ -36,3 +36,6 @@ A (currently underdeveloped) library for working with Bit vectors.
 > external bitsHi {primBitsHi n m} :: Bit n -> Bit m   -- requires n>=m
 > external bitsLo {primBitsLo n m} :: Bit n -> Bit m   -- requires n>=m
 
+> external fromBits {primBitToBitdata n bt} :: Bit n -> bt  -- requires bitdata type bt
+> external toBits   {primBitdataToBit bt n} :: bt -> Bit n  -- requires bitdata type bt
+
