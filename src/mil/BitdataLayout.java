@@ -307,7 +307,7 @@ public class BitdataLayout extends DataName {
           args[k] = Temp.makeTemps(Word.numWords(w));
           code = fields[k].genUpdateZeroedField(total, ws, args[k], code);
         } else { // create an argument variable, but no code
-          args[k] = Temp.makeTemps(1);
+          args[k] = Temp.makeTemps(Tycon.unitRep);
         }
       }
 
@@ -372,7 +372,7 @@ public class BitdataLayout extends DataName {
     BigInteger bitsNat = maskTest.getBits();
     boolean eq = maskTest.getOp();
     if (total < 2) { // special case for width 0 and width 1 types
-      Temp[] vs = Temp.makeTemps(1);
+      Temp[] vs = Temp.makeTemps(Type.repBits(total));
       Tail t =
           total == 0 // width 0 case
               ? new Return(Flag.True)

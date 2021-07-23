@@ -248,7 +248,7 @@ public class BitdataField extends Name {
       Temp[] args; // arguments to hold new field value
       Code code;
       if (width == 0) { // If width==0, then update just returns original value
-        args = Temp.makeTemps(1);
+        args = Temp.makeTemps(Tycon.unitRep);
         code = new Done(new Return(ws));
       } else { // If width>0, do the proper logic to update the field
         args = Temp.makeTemps(Word.numWords(width));

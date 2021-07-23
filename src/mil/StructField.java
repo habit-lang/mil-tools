@@ -83,7 +83,7 @@ public class StructField extends Name {
 
   /** Generate code for a selection operator for this field. */
   public void generateSelector(StructType st) {
-    Temp[] args = Temp.makeTemps(1);
+    Temp[] args = Temp.makeTemps(Tycon.wordRep);
     Block impl = new Block(pos, args, new Done(Prim.add.withArgs(args[0], offset)));
     BlockType bt = new BlockType(Type.tuple(Type.ref(st.asType())), Type.tuple(Type.ref(type)));
     selectPrim = new Prim.blockImpl("select_" + id, Prim.PURE, bt, impl);

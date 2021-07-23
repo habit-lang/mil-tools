@@ -152,9 +152,12 @@ public class Word extends Const {
     return (int) val;
   }
 
-  /** Return the number of words that are needed to hold a value with the specified bitsize. */
-  public static int numWords(int numBits) {
-    return (numBits == 0) ? 1 : ((numBits + size - 1) / size);
+  /**
+   * Return the number of words that are needed to hold a value with the specified bitsize. Note
+   * that we expect Type.repBits(w).length == Word.numWords(w) for all w>=0.
+   */
+  public static int numWords(int w) {
+    return (w == 0) ? 1 : ((w + size - 1) / size);
   }
 
   /**

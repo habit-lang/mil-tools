@@ -439,6 +439,11 @@ public abstract class Tail {
     return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(n), this)).withArgs();
   }
 
+  /** Variant of constClosure that specifies the types of the (ignored) arguments. */
+  public Tail constClosure(Position pos, Type[] ts) {
+    return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(ts), this)).withArgs();
+  }
+
   /**
    * Find the argument variables that are used in this Tail, adding results to an accumulating list.
    * This is mostly just the same as adding the the variables defined in the Tail except that we

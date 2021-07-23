@@ -302,7 +302,7 @@ public class GenImp extends ExtImp {
             BigInteger v = ts[0].validNat(); // Value of literal
             int w = ts[1].validWidth(); // Width of bit vector
             Type.validBelow(v, BigInteger.ONE.shiftLeft(w)); // v < 2 ^ w
-            return new Return(Const.atoms(v, w)).constClosure(pos, 1);
+            return new Return(Const.atoms(v, w)).constClosure(pos, Tycon.wordRep);
           }
         });
 
@@ -344,7 +344,7 @@ public class GenImp extends ExtImp {
             int width = ts[0].validWidth();
             switch (width) {
               case 0:
-                return new Return(Word.Zero).constClosure(pos, 1);
+                return new Return(Word.Zero).constClosure(pos, Tycon.unitRep);
 
               case 1:
                 return new PrimCall(Prim.flagToWord).makeUnaryFuncClosure(pos, 1);
@@ -383,7 +383,7 @@ public class GenImp extends ExtImp {
                           + " not accepted; value must be in the range 0 to "
                           + Word.size());
                 } else if (width != Word.size()) {
-                  Temp[] vs = Temp.makeTemps(1);
+                  Temp[] vs = Temp.makeTemps(Tycon.wordRep);
                   Tail t = Prim.and.withArgs(vs[0], (1L << width) - 1);
                   return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, vs, t)).withArgs();
                 }
@@ -426,11 +426,12 @@ public class GenImp extends ExtImp {
                       + m);
             }
             int w = Word.numWords(m); // How many words do we need for Bit m argument?
-            Temp[] vs = Temp.makeTemps(w); // Make corresponding parameters
+            Temp[] vs = Temp.makeTemps(Type.repBits(m)); // Make corresponding parameters
             Tail tail =
                 new BlockCall(BitdataField.generateBitSelector(pos, true, n < m, o, n, m), vs);
             ClosureDefn k =
-                new ClosureDefn(pos, vs, Temp.makeTemps(1), tail); // ignore unit argument
+                new ClosureDefn(
+                    pos, vs, Temp.makeTemps(Tycon.unitRep), tail); // ignore unit argument
             return new ClosAlloc(k).makeUnaryFuncClosure(pos, w);
           }
         });
@@ -480,7 +481,7 @@ public class GenImp extends ExtImp {
             return (n == 1)
                 ? unaryUnit(pos)
                 : new Return((n == 2) ? Flag.fromBool(v.signum() > 0) : new Word(v.longValue()))
-                    .constClosure(pos, 1);
+                    .constClosure(pos, Tycon.unitRep);
           }
         });
 
@@ -518,7 +519,7 @@ public class GenImp extends ExtImp {
                   "Width " + w + " is not large enough for index value " + m);
             }
             long l = m.longValue(); // Modulus as a long
-            Temp[] vs = Temp.makeTemps(1); // Argument holds incoming index
+            Temp[] vs = Temp.makeTemps(Tycon.wordRep); // Argument holds incoming index
             Tail t;
             if (w == 0) {
               t = Cfun.Unit.withArgs(); // :: Unit -> Unit
@@ -538,7 +539,7 @@ public class GenImp extends ExtImp {
               if (l == 1) { // :: Unit -> Bit w ... return all zeros
                 as[0] = Word.Zero;
               } else if (l == 2) { // :: Flag -> Bit w
-                Temp[] ws = Temp.makeTemps(1);
+                Temp[] ws = Temp.makeTemps(Tycon.flagRep);
                 Temp u = new Temp();
                 as[0] = u;
                 Block b =
@@ -635,14 +636,14 @@ public class GenImp extends ExtImp {
               return unaryUnit(pos); // :: a -> Unit
             } else if (m == 2) {
               return (w == 0)
-                  ? new Return(Flag.False).constClosure(pos, n) // :: Unit -> Flag
+                  ? new Return(Flag.False).constClosure(pos, Tycon.unitRep) // :: Unit -> Flag
                   : (w == 1)
                       ? new Return().makeUnaryFuncClosure(pos, 1) // :: Flag -> Flag
                       : new PrimCall(Prim.wordToFlag)
                           .makeUnaryFuncClosure(pos, n); // :: Word.. -> Flag
             } else {
               if (w == 0) { // :: Unit -> Word
-                return new Return(Word.Zero).constClosure(pos, 1);
+                return new Return(Word.Zero).constClosure(pos, Tycon.unitRep);
               } else if (w == 1) { // :: Flag -> Word
                 return new PrimCall(Prim.flagToWord).makeUnaryFuncClosure(pos, 1);
               } else if (BigInteger.ONE.shiftLeft(w).compareTo(bm)
@@ -685,9 +686,9 @@ public class GenImp extends ExtImp {
             } else if (n == 2) { // :: Flag -> Word
               return new PrimCall(Prim.flagToWord).makeUnaryFuncClosure(pos, 1);
             } else if (m > 2) { // :: Unit -> Word
-              return new Return(Word.Zero).constClosure(pos, 1);
+              return new Return(Word.Zero).constClosure(pos, Tycon.unitRep);
             } else /* n=1,m=2 */ { // :: Unit -> Flag
-              return new Return(Flag.False).constClosure(pos, 1);
+              return new Return(Flag.False).constClosure(pos, Tycon.unitRep);
             }
           }
         });
@@ -1388,7 +1389,7 @@ public class GenImp extends ExtImp {
               default:
                 {
                   validSingleWord(width);
-                  Temp[] args = Temp.makeTemps(1);
+                  Temp[] args = Temp.makeTemps(Type.repBits(width));
                   Code code = maskTail(Prim.neg.withArgs(args), width);
                   return new BlockCall(new Block(pos, args, code)).makeUnaryFuncClosure(pos, 1);
                 }
@@ -1558,7 +1559,10 @@ public class GenImp extends ExtImp {
             int width = ts[0].validWidth(); // Width of bit vector
             switch (width) {
               case 0:
-                return new BlockCall(bz).withArgs().constClosure(pos, 1).constClosure(pos, 1);
+                return new BlockCall(bz)
+                    .withArgs()
+                    .constClosure(pos, Tycon.unitRep)
+                    .constClosure(pos, Tycon.unitRep);
 
               case 1:
                 return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
@@ -1642,7 +1646,10 @@ public class GenImp extends ExtImp {
             int width = ts[0].validWidth(); // Width of bit vector
             switch (width) {
               case 0:
-                return new BlockCall(bz).withArgs().constClosure(pos, 1).constClosure(pos, 1);
+                return new BlockCall(bz)
+                    .withArgs()
+                    .constClosure(pos, Tycon.unitRep)
+                    .constClosure(pos, Tycon.unitRep);
 
               case 1:
                 return new PrimCall(pf).makeBinaryFuncClosure(pos, 1, 1);
@@ -1832,11 +1839,11 @@ public class GenImp extends ExtImp {
         "primBitBit",
         new ConstructBitmanipGenerator(Prefix.nat, fun(ixA, bitA)) {
           Tail generate1(Position pos) { // \i -> True
-            return new Return(Flag.True).constClosure(pos, 1);
+            return new Return(Flag.True).constClosure(pos, Tycon.unitRep);
           }
 
           Tail generate2(Position pos) { // \i -> (1 << flagToWord i)
-            Temp[] i = Temp.makeTemps(1);
+            Temp[] i = Temp.makeTemps(Tycon.flagRep);
             Temp t = new Temp();
             Block b =
                 new Block(
@@ -1859,7 +1866,9 @@ public class GenImp extends ExtImp {
         "primBitSetBit",
         new ConsumeBitmanipGenerator(Prefix.nat, bitAixAbitA) {
           Tail generate1(Position pos) { // \v i -> True
-            return new Return(Flag.True).constClosure(pos, 1).constClosure(pos, 1);
+            return new Return(Flag.True)
+                .constClosure(pos, Tycon.unitRep)
+                .constClosure(pos, Tycon.flagRep);
           }
 
           Tail generate2(Position pos) { // \v i -> v `or` (1 << flagToWord i)
@@ -1893,7 +1902,9 @@ public class GenImp extends ExtImp {
         "primBitClearBit",
         new ConsumeBitmanipGenerator(Prefix.nat, bitAixAbitA) {
           Tail generate1(Position pos) { // \v i -> False
-            return new Return(Flag.False).constClosure(pos, 1).constClosure(pos, 1);
+            return new Return(Flag.False)
+                .constClosure(pos, Tycon.unitRep)
+                .constClosure(pos, Tycon.flagRep);
           }
 
           Tail generate2(Position pos) { // \v i -> v & not (1 << flagToWord i)
@@ -2010,7 +2021,6 @@ public class GenImp extends ExtImp {
         new Generator(Prefix.nat, fun(bitA, ixA)) { // :: Bit w -> Ix w
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int width = ts[0].validWidth(1); // Bit vector width
-            int n = Word.numWords(width);
             Tail t =
                 (width == 1)
                     ? Cfun.Unit.withArgs()
@@ -2024,7 +2034,8 @@ public class GenImp extends ExtImp {
             // subsequent attempts to generate code from monomorphic MIL code ... unless this
             // definition is
             // optimized away (which, it should be ... assuming that the optimizer is invoked ...)
-            ClosureDefn k = new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(n), t);
+            ClosureDefn k =
+                new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(Type.repBits(width)), t);
             return new ClosAlloc(k).withArgs();
           }
         });
@@ -2298,7 +2309,7 @@ public class GenImp extends ExtImp {
                 new ClosureDefn(
                     pos,
                     Temp.noTemps,
-                    Temp.makeTemps(1),
+                    Temp.makeTemps(Tycon.unitRep),
                     new Return(new Word(v.longValue()))); //  k{} _ = return [v]
             return new ClosAlloc(k).withArgs();
           }
@@ -2396,7 +2407,7 @@ public class GenImp extends ExtImp {
               return new DataAlloc(Cfun.Unit).withArgs().constClosure(pos, 0).constClosure(pos, 1);
             }
             Prim load = findStoredAccess(width).load; // select appropriate load primitive
-            Temp[] vs = Temp.makeTemps(1);
+            Temp[] vs = Temp.makeTemps(Tycon.wordRep);
             ClosureDefn k = new ClosureDefn(pos, vs, Temp.noTemps, load.repTransformPrim(set, vs));
             return new ClosAlloc(k).makeUnaryFuncClosure(pos, 1);
           }
@@ -2639,9 +2650,9 @@ public class GenImp extends ExtImp {
               throw new GeneratorException("There is no \"" + lab + "\" field in " + st);
             }
             // TODO: should check type in ts[2] ...
-            Temp[] vs = Temp.makeTemps(1);
+            Temp[] vs = Temp.makeTemps(Tycon.wordRep);
             Tail tail = fields[i].getSelectPrim().repTransformPrim(set, vs);
-            ClosureDefn k = new ClosureDefn(pos, vs, Temp.makeTemps(1), tail);
+            ClosureDefn k = new ClosureDefn(pos, vs, Temp.makeTemps(Tycon.unitRep), tail);
             return new ClosAlloc(k).makeUnaryFuncClosure(pos, 1);
           }
         });

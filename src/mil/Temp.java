@@ -126,6 +126,16 @@ public class Temp extends Atom {
     return vs;
   }
 
+  /** Create a list of new variables with the given types. */
+  public static Temp[] makeTemps(Type[] ts) {
+    int n = ts.length;
+    Temp[] vs = new Temp[n];
+    for (int i = 0; i < n; i++) {
+      vs[i] = new Temp(ts[i]);
+    }
+    return vs;
+  }
+
   /** Test to determine whether this atom appears in the given list of Temps. */
   boolean isIn(Temps vs) {
     return Temps.isIn(this, vs);
