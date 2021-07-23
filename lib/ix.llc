@@ -9,38 +9,24 @@ Numeric literals are interpreted as values of type Word.  As
 a convenience, we provide the following definitions that
 make it easy to use small index values:
 
-> export ix0, ix1, ix2, ix3, ix4, ix5, ix6, ix7, ix8, ix9, ix10, ix11, ix12, ix13, ix14 :: Ix n
-> ix0  = ix0u  Unit
-> ix1  = ix1u  Unit
-> ix2  = ix2u  Unit
-> ix3  = ix3u  Unit
-> ix4  = ix4u  Unit
-> ix5  = ix5u  Unit
-> ix6  = ix6u  Unit
-> ix7  = ix7u  Unit
-> ix8  = ix8u  Unit
-> ix9  = ix9u  Unit
-> ix10 = ix10u Unit
-> ix11 = ix11u Unit
-> ix12 = ix12u Unit
-> ix13 = ix13u Unit
-> ix14 = ix14u Unit
+> external ixl {primIxFromLiteral v n} :: ProxyNat v -> Ix n
 
-> external ix0u  {primIxFromLiteral 0  n},
->          ix1u  {primIxFromLiteral 1  n},
->          ix2u  {primIxFromLiteral 2  n},
->          ix3u  {primIxFromLiteral 3  n},
->          ix4u  {primIxFromLiteral 4  n},
->          ix5u  {primIxFromLiteral 5  n},
->          ix6u  {primIxFromLiteral 6  n},
->          ix7u  {primIxFromLiteral 7  n},
->          ix8u  {primIxFromLiteral 8  n},
->          ix9u  {primIxFromLiteral 9  n},
->          ix10u {primIxFromLiteral 10 n},
->          ix11u {primIxFromLiteral 11 n},
->          ix12u {primIxFromLiteral 12 n},
->          ix13u {primIxFromLiteral 13 n},
->          ix14u {primIxFromLiteral 14 n}  :: Unit -> Ix n
+> export ix0, ix1, ix2, ix3, ix4, ix5, ix6, ix7, ix8, ix9, ix10, ix11, ix12, ix13, ix14 :: Ix n
+> ix0  = ixl!0
+> ix1  = ixl!1
+> ix2  = ixl!2
+> ix3  = ixl!3
+> ix4  = ixl!4
+> ix5  = ixl!5
+> ix6  = ixl!6
+> ix7  = ixl!7
+> ix8  = ixl!8
+> ix9  = ixl!9
+> ix10 = ixl!10
+> ix11 = ixl!11
+> ix12 = ixl!12
+> ix13 = ixl!13
+> ix14 = ixl!14
 
 Other mechanisms for constructing Index values:
 

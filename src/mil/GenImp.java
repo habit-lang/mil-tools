@@ -264,6 +264,8 @@ public class GenImp extends ExtImp {
 
   public static Type bitC = Type.bit(gC);
 
+  public static Type natA = Type.nat(gA);
+
   public static Type bitAbitA = fun(bitA, bitA);
 
   public static Type bitAbitB = fun(bitA, bitB);
@@ -296,10 +298,10 @@ public class GenImp extends ExtImp {
 
   static {
 
-    // primBitFromLiteral v w ... :: Proxy v -> Bit w
+    // primBitFromLiteral v w :: ProxyNat v -> Bit w
     generators.put(
         "primBitFromLiteral",
-        new Generator(Prefix.nat_nat, fun(proxy(gA), bitB)) {
+        new Generator(Prefix.nat_nat, fun(natA, bitB)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger v = ts[0].validNat(); // Value of literal
             int w = ts[1].validWidth(); // Width of bit vector
@@ -466,10 +468,10 @@ public class GenImp extends ExtImp {
 
   static {
 
-    // primIxFromLiteral v m :: Proxy v -> Ix m
+    // primIxFromLiteral v m :: ProxyNat v -> Ix m
     generators.put(
         "primIxFromLiteral",
-        new Generator(Prefix.nat_nat, fun(proxy(gA), ixB)) {
+        new Generator(Prefix.nat_nat, fun(natA, ixB)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger v = ts[0].validNat(); // Value of literal
             BigInteger m = ts[1].validIndex(); // Modulus for index type
@@ -2280,10 +2282,10 @@ public class GenImp extends ExtImp {
 
   static {
 
-    // primNZBitFromLiteral v w ... :: Proxy v -> NZBit w
+    // primNZBitFromLiteral v w ... :: ProxyNat v -> NZBit w
     generators.put(
         "primNZBitFromLiteral",
-        new Generator(Prefix.nat_nat, fun(proxy(gA), Type.nzbit(gB))) {
+        new Generator(Prefix.nat_nat, fun(natA, Type.nzbit(gB))) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BigInteger v = ts[0].validNat(); // Value of literal (must be nonzero!)
             int w = ts[1].validWidth(); // Width of bit vector
