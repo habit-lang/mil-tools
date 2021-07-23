@@ -29,6 +29,10 @@ public abstract class Proxy extends Const {
     return new WordValue(0);
   }
 
+  Atom[] repArg(RepTypeSet set, RepEnv env) {
+    return Const.unit;
+  }
+
   /** Calculate an LLVM Value corresponding to a given MIL argument. */
   llvm.Value toLLVMAtom(LLVMMap lm, VarMap vm) {
     return new llvm.Word(0);

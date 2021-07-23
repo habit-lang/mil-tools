@@ -123,8 +123,8 @@ public class DataType extends DataName {
   /**
    * Attempt to translate a type with this type constructor at its head and some number of arguments
    * on the stack to eliminate newtypes. This will only succeed if the head is a newtype constructor
-   * or a proxy and there are enough arguments; otherwise the call will return null to indicate that
-   * no translation was possible.
+   * and there are enough arguments; otherwise the call will return null to indicate that no
+   * translation was possible.
    */
   Type translate(NewtypeTypeSet set, int args) {
     if (arity <= args && isNewtype()) { // newtype with enough arguments to expand?

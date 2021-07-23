@@ -64,6 +64,9 @@ public abstract class Const extends Atom {
     return null;
   }
 
+  /** All values of singleton types will be represented by the unit value. */
+  public static Atom[] unit = new Atom[] {Top.Unit};
+
   /** Construct an array of Atoms that represents the bit vector with the given value and width. */
   public static Atom[] atoms(BigInteger v, int w) {
     return atoms(v, w, false);
@@ -71,7 +74,7 @@ public abstract class Const extends Atom {
 
   public static Atom[] atoms(BigInteger v, int w, boolean wantMask) {
     if (w == 0) {
-      return new Atom[] {Top.Unit};
+      return unit;
     } else if (w == 1) {
       return new Flag[] {Flag.fromBool(v.compareTo(BigInteger.ZERO) != 0)};
     } else {

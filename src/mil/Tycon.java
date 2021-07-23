@@ -264,12 +264,11 @@ public abstract class Tycon extends Name {
   /**
    * Attempt to translate a type with this type constructor at its head and some number of arguments
    * on the stack to eliminate newtypes. This will only succeed if the head is a newtype constructor
-   * or a proxy and there are enough arguments; otherwise the call will return null to indicate that
-   * no translation was possible.
+   * and there are enough arguments; otherwise the call will return null to indicate that no
+   * translation was possible.
    */
   Type translate(NewtypeTypeSet set, int args) {
-    // Translate proxy types as the unit type:
-    return (args == 1 && (this == Tycon.nat || this == Tycon.lab)) ? Tycon.unit.asType() : null;
+    return null;
   }
 
   /**
@@ -365,7 +364,9 @@ public abstract class Tycon extends Name {
                     ? a.simplifyNatType(null).ixbitvectorRep()
                     : (this == inx)
                         ? a.simplifyNatType(null).inxbitvectorRep()
-                        : (this == init) ? Tycon.initRep : null;
+                        : (this == init)
+                            ? Tycon.initRep
+                            : (this == nat) ? Tycon.unitRep : (this == lab) ? Tycon.unitRep : null;
   }
 
   /**
