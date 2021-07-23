@@ -254,10 +254,6 @@ public class GenImp extends ExtImp {
     return fun(d1, fun(d2, d3, d4, r));
   }
 
-  public static Type proxy(Type w) {
-    return unit;
-  }
-
   public static Type bitA = Type.bit(gA);
 
   public static Type bitB = Type.bit(gB);
@@ -412,15 +408,14 @@ public class GenImp extends ExtImp {
           }
         });
 
-    // primBitSelect m n o :: Bit m -> Bit n, where o is the offset, o+n<=m
-    // TODO: Add a proxy type argument ...
+    // primBitSelect m o n :: Bit m -> ProxyNat o -> Bit n, where o is the offset, o+n<=m
     generators.put(
         "primBitSelect",
-        new Generator(Prefix.nat_nat_nat, bitAbitB) {
+        new Generator(Prefix.nat_nat_nat, fun(bitA, fun(Type.nat(gB), bitC))) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int m = ts[0].validWidth(); // Width of input bit vector
-            int n = ts[1].validWidth(); // Width of output bit vector
-            int o = ts[2].validWidth(); // Offset to output bits within the input vector
+            int n = ts[2].validWidth(); // Width of output bit vector
+            int o = ts[1].validWidth(); // Offset to output bits within the input vector
             if ((o + n) > m) {
               throw new GeneratorException(
                   "A field of width "
@@ -430,8 +425,13 @@ public class GenImp extends ExtImp {
                       + " will not fit in a bit vector of width "
                       + m);
             }
-            return new BlockCall(BitdataField.generateBitSelector(pos, true, n < m, o, n, m))
-                .makeUnaryFuncClosure(pos, Word.numWords(m));
+            int w = Word.numWords(m); // How many words do we need for Bit m argument?
+            Temp[] vs = Temp.makeTemps(w); // Make corresponding parameters
+            Tail tail =
+                new BlockCall(BitdataField.generateBitSelector(pos, true, n < m, o, n, m), vs);
+            ClosureDefn k =
+                new ClosureDefn(pos, vs, Temp.makeTemps(1), tail); // ignore unit argument
+            return new ClosAlloc(k).makeUnaryFuncClosure(pos, w);
           }
         });
 
@@ -2620,10 +2620,10 @@ public class GenImp extends ExtImp {
 
   static {
 
-    // primStructSelect st lab t :: Ref st -> #lab -> Ref t
+    // primStructSelect st lab t :: Ref st -> ProxyLab lab -> Ref t
     generators.put(
         "primStructSelect",
-        new Generator(Prefix.area_lab_area, fun(refA, proxy(gB), refC)) {
+        new Generator(Prefix.area_lab_area, fun(refA, Type.lab(gB), refC)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             StructType st = ts[0].structType(); // Structure type
             if (st == null) {
@@ -2638,6 +2638,7 @@ public class GenImp extends ExtImp {
             if (i < 0) {
               throw new GeneratorException("There is no \"" + lab + "\" field in " + st);
             }
+            // TODO: should check type in ts[2] ...
             Temp[] vs = Temp.makeTemps(1);
             Tail tail = fields[i].getSelectPrim().repTransformPrim(set, vs);
             ClosureDefn k = new ClosureDefn(pos, vs, Temp.makeTemps(1), tail);
