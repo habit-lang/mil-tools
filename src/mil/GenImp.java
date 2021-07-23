@@ -302,7 +302,7 @@ public class GenImp extends ExtImp {
             BigInteger v = ts[0].validNat(); // Value of literal
             int w = ts[1].validWidth(); // Width of bit vector
             Type.validBelow(v, BigInteger.ONE.shiftLeft(w)); // v < 2 ^ w
-            return new Return(Const.atoms(v, w)).constClosure(pos, Tycon.wordRep);
+            return new Return(Const.atoms(v, w)).constClosure(pos, Tycon.unitRep);
           }
         });
 
