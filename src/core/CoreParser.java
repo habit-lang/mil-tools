@@ -156,6 +156,8 @@ public class CoreParser extends Phase implements CoreTokens {
               return a;
             }
 
+          case VARID:
+          case CONID:
           case STRLIT:
             {
               Atom a = new ProxyLab(lexer.getLexeme());
