@@ -65,7 +65,9 @@ public class GenImp extends ExtImp {
     for (int i = 0; i < ts.length; i++) {
       nts[i] = ts[i].canonType(tenv, spec);
     }
-    return new GenImp(ref, nts);
+    GenImp newImp = new GenImp(ref, nts);
+    newImp.gen = gen;
+    return newImp;
   }
 
   /** Update all declared types with canonical versions. */
@@ -90,17 +92,21 @@ public class GenImp extends ExtImp {
     }
 
     /** Check that a given list of arguments is valid for this generator. */
-    void checkArguments(Position pos, String ref, Type[] ts) throws GeneratorException {
+    void checkArguments(Position pos, String ref, Type[] ts, Scheme declared) throws Failure {
       int n = prefix.numGenerics();
       if (ts.length < n) { // Check that there are enough arguments
-        throw new GeneratorException(ref + " requires (at least) " + n + " arguments");
+        throw new Failure(
+            pos, "Generator " + ref + " requires " + n + " argument" + ((n == 1) ? "" : "s"));
       }
+      Type[] declEnv = declared.getPrefix().instantiate();
+      Type[] instEnv = new Type[n];
       for (int i = 0; i < n; i++) { // Check that the arguments have the expected kinds
         Kind ekind = prefix.getGen(i).getKind(); // expected kind
-        Kind tkind = ts[i].calcKind(null); // actual kind of parameter
+        Kind tkind = ts[i].calcKind(declEnv); // actual kind of parameter
         if (tkind == null || !ekind.same(tkind)) {
-          throw new GeneratorException(
-              "Argument "
+          throw new Failure(
+              pos,
+              "Generator argument "
                   + (i + 1)
                   + " ("
                   + ts[i]
@@ -108,7 +114,14 @@ public class GenImp extends ExtImp {
                   + ekind
                   + ")");
         }
+        instEnv[i] = ts[i].with(declEnv);
       }
+      //    TODO: uncomment this and replace with more appropriate diagnostic when ready to check
+      // declared types
+      //    if (!declared.getType().same(declEnv, type, instEnv)) {
+      //      System.out.println("Declared type (" + declared.getType().skeleton(declEnv) +
+      //                         ") does not match inst type (" + type.skeleton(instEnv) + ")");
+      //    }
     }
 
     /**
@@ -130,6 +143,25 @@ public class GenImp extends ExtImp {
    * Stores a mapping from String references to generators for external function implementations.
    */
   public static HashMap<String, Generator> generators = new HashMap();
+
+  /** Stores a pointer to the generator for this GenImp, if there is one. */
+  private Generator gen;
+
+  /**
+   * Validate a generator implementation in context and construct abstract syntax for full external
+   * definition.
+   */
+  public External validate(Position pos, String id, Scheme declared) throws Failure {
+    // Called when the this GenImp is created to check for a valid call and initialize the
+    // associated Generator:
+    gen = generators.get(ref); // look for a generator ...
+    if (gen != null) { // If found ...
+      gen.checkArguments(pos, ref, ts, declared); // ... then check arguments
+    } else if (ts.length > 0) { // No generator, but arguments supplied
+      throw new Failure(pos, "No generator for " + ref);
+    }
+    return new External(pos, id, declared, this);
+  }
 
   /** Write the current list of external generators to the given PrintWriter. */
   public static void dumpGenerators(PrintWriter out) {
@@ -156,18 +188,14 @@ public class GenImp extends ExtImp {
    * primitive.
    */
   TopDefn repImplement(Handler handler, External ext, Type[] reps, RepTypeSet set) throws Failure {
-    Generator gen = generators.get(ref); // Otherwise, look for a generator ...
     Position pos = ext.getPos();
     if (gen != null) {
-      Tail t;
       try {
-        gen.checkArguments(pos, ref, ts); // ... with valid arguments
-        t = gen.generate(pos, ts, set); // ... and try to produce an implementation
+        // Use generator to make a new top level definition as replacement for ext
+        return repImplement(pos, ext, reps, gen.generate(pos, ts, set));
       } catch (GeneratorException e) {
         throw new Failure(pos, "No generated implementation: " + e.getReason());
       }
-      return repImplement(
-          pos, ext, reps, t); // Make new top level definition as replacement for ext
     }
     if (ts.length > 0) {
       throw new Failure(pos, "No generator for " + ref);

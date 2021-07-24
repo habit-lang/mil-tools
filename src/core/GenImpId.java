@@ -48,6 +48,6 @@ class GenImpId extends ExtImpId {
     for (int i = 0; i < spec.length; i++) {
       ts[i] = spec[i].toType(prefix);
     }
-    return new External(pos, id, declared, new GenImp(ref, ts));
+    return new GenImp(ref, ts).validate(pos, id, declared); // TODO: forward ref to GenImp
   }
 }
