@@ -180,8 +180,13 @@ class Main {
       if (str.startsWith("-")) {
         processOptions(str, args, loader);
       } else if (str.endsWith(".milc")) {
-        if (nesting > MAX_NESTING) {
-          throw new Failure("Cannot read options from nested configuration file \"" + str + "\"");
+        if (nesting >= MAX_NESTING) {
+          throw new Failure(
+              "Cannot read options from nested configuration file \""
+                  + str
+                  + "\" (a maximum of "
+                  + MAX_NESTING
+                  + " levels is allowed)");
         } else if (!optionsFromFile(handler, str, loader, ++nesting)) {
           throw new Failure("Error reading options from \"" + str + "\"; file not accessible");
         }
@@ -327,7 +332,7 @@ class Main {
     try {
       // TODO: initial messages will not appear so long as trace is initialized to false :-)
       LCLoader loader = new LCLoader();
-      if (optionsFromFile(handler, ".milc", loader, 0)) {
+      if (optionsFromFile(handler, ".milc", loader, 1)) {
         message("Read options from .milc ..."); // Process options in .milc file, if present
       }
       ;
