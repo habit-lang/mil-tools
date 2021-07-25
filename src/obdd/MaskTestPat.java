@@ -70,14 +70,14 @@ public class MaskTestPat extends Pat {
       buf.append(op ^ (bits.signum() == 0) ? "true" : "false");
     } else if (fullMask()) {
       buf.append("x ");
-      buf.append(op ? "!=" : "==");
+      buf.append(op ? "/=" : "==");
       buf.append(" ");
       displayBits(buf, bits);
     } else {
       buf.append("(x & ");
       displayBits(buf, mask);
       buf.append(") ");
-      buf.append(op ? "!=" : "==");
+      buf.append(op ? "/=" : "==");
       buf.append(" ");
       displayBits(buf, bits);
     }

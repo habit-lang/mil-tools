@@ -102,22 +102,25 @@ class BitdataConDefn extends Name {
    * if the type has confusion.
    */
   static void calcMaskTest(BitdataConDefn[] constrs, int i, int w) throws Failure {
-    BitdataConDefn ci = constrs[i];
-    obdd.Pat cpat = ci.layout.getPat(); // the associated bit pattern
-    obdd.MaskTestPat eq = cpat.masktest(false); // a candidate mask-test predicate using ==
-    int ceq = (-1); // constructor # that conflicts with eq, if any
-    obdd.MaskTestPat neq = cpat.masktest(true); // a candidate mask-test predicate using /=
-    int cneq = (-1); // constructor # that conflicts with neq, if any
-    obdd.Pat bnot = obdd.Pat.empty(w); // patterns from other constructors
-
+    obdd.Pat cpat = constrs[i].layout.getPat(); // the associated bit pattern
+    obdd.Pat other = obdd.Pat.empty(w); // patterns from other constructors
     for (int j = 0; j < constrs.length; j++) {
       if (i != j) {
-        BitdataConDefn cj = constrs[j];
-        obdd.Pat dpat = cj.layout.getPat();
-        bnot = bnot.or(dpat);
+        obdd.Pat dpat = constrs[j].layout.getPat();
         if (!cpat.disjoint(dpat)) {
-          throw new CfunConfusionFailure(ci, cj, cpat.and(dpat));
+          throw new CfunConfusionFailure(constrs[i], constrs[j], cpat.and(dpat));
         }
+        other = other.or(dpat);
+      }
+    }
+    // We want a mask test predicate that will include cpat or exclude other:
+    obdd.MaskTestPat eq = cpat.masktest(false); // a candidate mask-test predicate using ==
+    int ceq = (-1); // constructor # that conflicts with eq, if any
+    obdd.MaskTestPat neq = other.not().masktest(true); // a candidate mask-test predicate using /=
+    int cneq = (-1); // constructor # that conflicts with neq, if any
+    for (int j = 0; j < constrs.length; j++) {
+      if (i != j) {
+        obdd.Pat dpat = constrs[j].layout.getPat();
         if (ceq < 0 && !eq.disjoint(dpat)) { // Does eq reject all of dpat?
           ceq = j; // If not, then eq is not usable because it conflicts with constr[j]
         }
@@ -131,11 +134,11 @@ class BitdataConDefn extends Name {
     obdd.MaskTestPat test;
     int wordsize = Word.size();
     if (ceq < 0) {
-      test = eq.blur(bnot, wordsize);
+      test = eq.blur(other, wordsize);
     } else if (cneq < 0) {
-      test = neq.blur(bnot, wordsize);
+      test = neq.blur(other, wordsize);
     } else {
-      throw new NoMaskTestPredicateFailure(ci, constrs[ceq], constrs[cneq]);
+      throw new NoMaskTestPredicateFailure(constrs[i], constrs[ceq], constrs[cneq]);
     }
     debug.Log.println(test.toString(constrs[i].id));
     constrs[i].layout.setMaskTest(test);

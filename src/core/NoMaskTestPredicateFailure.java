@@ -28,10 +28,12 @@ class NoMaskTestPredicateFailure extends Failure {
         cf.getPos(),
         "Unable to find a mask test for "
             + cf.getId()
-            + " (the test using == conflicts with "
-            + ceq.getId()
-            + ", and the test using /= conflicts with "
-            + cneq.getId()
-            + ")");
+            + ((ceq == cneq)
+                ? (" (the tests using == and /= conflict with " + ceq.getId() + ")")
+                : (" (the test using == conflicts with "
+                    + ceq.getId()
+                    + ", and the test using /= conflicts with "
+                    + cneq.getId()
+                    + ")")));
   }
 }
