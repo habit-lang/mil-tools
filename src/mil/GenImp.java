@@ -240,6 +240,17 @@ public class GenImp extends ExtImp {
     }
   }
 
+  /** Check that bitdata bt is not restricted (not restricted, abstract or contains junk) */
+  static void checkBitdataNotRestricted(BitdataType bt) throws GeneratorException {
+    Pat pat = bt.getPat();
+    if (pat.isRestricted()) {
+      throw new GeneratorException(
+          "Bitdata type " + bt + " has restricted (reference or abstract) fields");
+    } else if (!pat.isAll()) {
+      throw new GeneratorException("Bitdata type " + bt + " contains junk");
+    }
+  }
+
   static Tail unaryUnit(Position pos) { // Tail for \x -> Unit, i.e., k{} where k{} x = Unit()
     return new DataAlloc(Cfun.Unit).withArgs().constClosure(pos, 1);
   }
@@ -298,6 +309,12 @@ public class GenImp extends ExtImp {
 
   public static Type bitAbitABool = fun(bitA, bitA, bool);
 
+  public static Type gAgA = fun(gA, gA);
+
+  public static Type gAgAgA = fun(gA, gAgA);
+
+  public static Type gAgAbool = fun(gA, fun(gA, bool));
+
   public static Type ixA = Type.ix(gA);
 
   public static Type ixB = Type.ix(gB);
@@ -352,14 +369,7 @@ public class GenImp extends ExtImp {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             BitdataType bt = validBitdataType(ts[1]);
             checkBitdataWidth(bt, ts[0]);
-
-            Pat pat = bt.getPat();
-            if (pat.isRestricted()) {
-              throw new GeneratorException(
-                  "Bitdata type " + bt + " has restricted (reference) fields");
-            } else if (!pat.isAll()) {
-              throw new GeneratorException("Bitdata type " + bt + " contains junk");
-            }
+            checkBitdataNotRestricted(bt);
             return new Return().makeUnaryFuncClosure(pos, ts[1].repLen());
           }
         });
@@ -1307,6 +1317,17 @@ public class GenImp extends ExtImp {
             return genBitwiseNotTail(pos, ts[0].validWidth());
           }
         });
+
+    // primBitdataNot w :: bitdataType -> bitdataType
+    generators.put(
+        "primBitdataNot",
+        new Generator(Prefix.star, gAgA) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            BitdataType bt = validBitdataType(ts[0]);
+            checkBitdataNotRestricted(bt);
+            return genBitwiseNotTail(pos, bt.getPat().getWidth());
+          }
+        });
   }
 
   /**
@@ -1363,6 +1384,19 @@ public class GenImp extends ExtImp {
         });
   }
 
+  static void genBitwiseBitdataBinOp(String ref, final PrimBinOp p, final PrimBinFOp pf) {
+    // primBitRef w :: bitdataType -> bitdataType -> bitdataType
+    generators.put(
+        ref,
+        new Generator(Prefix.star, gAgAgA) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            BitdataType bt = validBitdataType(ts[0]);
+            checkBitdataNotRestricted(bt);
+            return genBitwiseBinOpTail(pos, bt.getPat().getWidth(), p, pf);
+          }
+        });
+  }
+
   /**
    * Generate an implementation for a bitwise binary operation for a bitdata type of the given width
    * (assuming that such an operation makes sense for the bitdata type in question; that requires
@@ -1397,6 +1431,9 @@ public class GenImp extends ExtImp {
     genBitwiseBinOp("primBitAnd", Prim.and, Prim.band);
     genBitwiseBinOp("primBitOr", Prim.or, Prim.bor);
     genBitwiseBinOp("primBitXor", Prim.xor, Prim.bxor);
+    genBitwiseBitdataBinOp("primBitdataAnd", Prim.and, Prim.band);
+    genBitwiseBitdataBinOp("primBitdataOr", Prim.or, Prim.bor);
+    genBitwiseBitdataBinOp("primBitdataXor", Prim.xor, Prim.bxor);
   }
 
   static {
@@ -1493,12 +1530,25 @@ public class GenImp extends ExtImp {
    */
   static void genEqBinOp(
       String ref, final PrimRelOp test, final Block bearly, final PrimBinFOp pf, final Block bz) {
-    // primBitRef w :: Bit w -> Bit w -> Flag
+    // primBitRef w :: Bit w -> Bit w -> Bool
     generators.put(
         ref,
         new Generator(Prefix.nat, bitAbitABool) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             return genBitwiseEqBinOpTail(pos, ts[0].validWidth(), test, bearly, pf, bz);
+          }
+        });
+  }
+
+  static void genEqBitdataBinOp(
+      String ref, final PrimRelOp test, final Block bearly, final PrimBinFOp pf, final Block bz) {
+    // primBitRef w :: bitdataType -> bitdataType -> Bool
+    generators.put(
+        ref,
+        new Generator(Prefix.star, fun(gA, fun(gA, bool))) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            BitdataType bt = validBitdataType(ts[0]);
+            return genBitwiseEqBinOpTail(pos, bt.getPat().getWidth(), test, bearly, pf, bz);
           }
         });
   }
@@ -1569,6 +1619,8 @@ public class GenImp extends ExtImp {
   static {
     genEqBinOp("primBitEq", Prim.eq, Block.returnFalse, Prim.beq, Block.returnTrue);
     genEqBinOp("primBitNe", Prim.neq, Block.returnTrue, Prim.bxor, Block.returnFalse);
+    genEqBitdataBinOp("primBitdataEq", Prim.eq, Block.returnFalse, Prim.beq, Block.returnTrue);
+    genEqBitdataBinOp("primBitdataNe", Prim.neq, Block.returnTrue, Prim.bxor, Block.returnFalse);
   }
 
   /**
