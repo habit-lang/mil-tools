@@ -1,7 +1,4 @@
 bitdata Bool = False [B0] | True [B1]
-export true, false :: Bool
-true  <- True()
-false <- False()
 
 -- Monadic primitives:
 export primRet :: a -> Proc a
@@ -18,14 +15,8 @@ data Maybe a = Nothing | Just a
 data List a = Nil | Cons a (List a)
 
 -- Arithmetic primitives:
-export +, -, *, / :: Word -> Word -> Word
-+ <- {x,y} add((x,y))
-- <- {x,y} sub((x,y))
-* <- {x,y} mul((x,y))
-/ <- {x,y} div((x,y))
-
-export neg :: Word -> Word
-neg <- {x} neg((x))
+export / :: Word -> Word -> Word
+/ <- {x,y} div((x,y))  -- TODO: unsafe
 
 -- Bitwise operators:
 
@@ -33,32 +24,6 @@ export shl, lshr, ashr :: Word -> Word -> Word
 shl  <- {x,y} shl((x,y))
 lshr <- {x,y} lshr((x,y))
 ashr <- {x,y} ashr((x,y))
-
--- "Convert" a MIL-level boolean result into an LC-level Bool value
-bconv   :: [Flag] >>= [Bool]
-bconv[t] = if t then btrue[] else bfalse[]
-btrue[]  = return true
-bfalse[] = return false
-
--- Basic Comparisons:
--- These cannot be expressed in LC because they require the
--- MIL-level boolean type / if construct:
-
-export ==, /= :: Word -> Word -> Bool
-== <- {x,y} t <- primEq((x,y));  bconv[t]
-/= <- {x,y} t <- primNeq((x,y)); bconv[t]
-
-export >+, >=+, <+, <=+ :: Word -> Word -> Bool
->+  <- {x,y} t <- primSgt((x,y)); bconv[t]
->=+ <- {x,y} t <- primSge((x,y)); bconv[t]
-<+  <- {x,y} t <- primSlt((x,y)); bconv[t]
-<=+ <- {x,y} t <- primSle((x,y)); bconv[t]
-
-export >, >=, <, <= :: Word -> Word -> Bool
->  <- {x,y} t <- primUgt((x,y)); bconv[t]
->= <- {x,y} t <- primUge((x,y)); bconv[t]
-<  <- {x,y} t <- primUlt((x,y)); bconv[t]
-<= <- {x,y} t <- primUle((x,y)); bconv[t]
 
 -- Pointers/References:
 

@@ -12,9 +12,24 @@ Words and Bytes:
 > external wordToByte {primWordToBit 8} :: Word -> Byte
 > external addByte    {primBitPlus 8}   :: Byte -> Byte -> Byte
 
-> external not {primBitNot n} :: Bit n -> Bit n
+> external ==  {primBitEq n},
+>          /=  {primBitNe n},
+>          >   {primBitGt n},
+>          >=  {primBitGe n},
+>          <   {primBitLt n},
+>          <=  {primBitLe n},
+>          >+  {primBitGt n},
+>          >=+ {primBitGe n},
+>          <+  {primBitLt n},
+>          <=+ {primBitLe n} :: Bit n -> Bit n -> Bool
 
-> external and {primBitAnd n},
+> external neg {primBitNegate n},
+>          not {primBitNot n} :: Bit n -> Bit n
+
+> external +   {primBitPlus n},
+>          -   {primBitMinus n},
+>          *   {primBitTimes n},
+>          and {primBitAnd n},
 >          or  {primBitOr  n},
 >          xor {primBitXor n} :: Bit n -> Bit n -> Bit n
 
