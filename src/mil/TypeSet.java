@@ -311,7 +311,7 @@ public class TypeSet {
   }
 
   /**
-   * Build a list of all the zero arity (no parameters), nonrecursive, datatypes with one or more
+   * Build a list of all the zero arity (no parameters), non-recursive, datatypes with one or more
    * constructors that do not already have an associated bitSize, and might therefore be candidates
    * for replacing with bitdata types.
    */

@@ -611,8 +611,8 @@ public abstract class Tycon extends Name {
   }
 
   /**
-   * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full
-   * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.
+   * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full (canonical)
+   * type is passed in for reference as we unwind it on the underlying TypeSet stack.
    */
   llvm.Type toLLVMCalc(Type c, LLVMMap lm, int args) {
     if (this == milArrow) {

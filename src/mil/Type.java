@@ -498,7 +498,7 @@ public abstract class Type extends Scheme {
 
   /**
    * Find the canonical version of this type skeleton for the given TypeSet using the specified
-   * environment to intepret TGen values.
+   * environment to interpret TGen values.
    */
   Type canonType(Type[] env, TypeSet set) {
     return canonType(env, set, 0);
@@ -1121,8 +1121,8 @@ public abstract class Type extends Scheme {
   }
 
   /**
-   * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full
-   * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.
+   * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full (canonical)
+   * type is passed in for reference as we unwind it on the underlying TypeSet stack.
    */
   llvm.Type toLLVMCalc(Type c, LLVMMap lm, int args) {
     debug.Internal.error("toLLVM not defined for type " + this);

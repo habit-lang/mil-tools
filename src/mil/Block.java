@@ -227,7 +227,7 @@ public class Block extends Defn {
 
   /**
    * Derive a new version of this block using a code sequence that applies its final result to a
-   * specifed argument value instead of returning that value (presumably a closure) to the calling
+   * specified argument value instead of returning that value (presumably a closure) to the calling
    * code where it is immediately entered and then discarded. The parameter m determines the number
    * of additional arguments that will eventually be passed when the closure is entered.
    */
@@ -254,7 +254,7 @@ public class Block extends Defn {
 
   /**
    * Derive a new version of this block using a code sequence that passes its final result to a
-   * specifed continuation function instead of returning that value to the calling code.
+   * specified continuation function instead of returning that value to the calling code.
    */
   public Block deriveWithCont() {
     // Look to see if we have already derived a suitable version of this block:

@@ -227,7 +227,7 @@ public class Cfun extends Name {
 
   /**
    * Return true if this is a newtype constructor (i.e., a single argument constructor function for
-   * a nonrecursive type that only has one constructor).
+   * a non-recursive type that only has one constructor).
    */
   public boolean isNewtype() {
     return num == 0 && dn.isNewtype();

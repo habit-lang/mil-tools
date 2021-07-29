@@ -516,7 +516,7 @@ public class TopLevel extends TopDefn {
   private llvm.Value[] staticValue;
 
   /**
-   * Return the static value for the ith component of this toplevel, or null if there is no known
+   * Return the static value for the ith component of this TopLevel, or null if there is no known
    * static value.
    */
   public llvm.Value staticValue(int i) {

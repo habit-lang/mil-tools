@@ -26,7 +26,7 @@ import core.*;
  * the Any class. All other lattice values are represented as joins of lists of pairs that we will
  * write in the form d.j, where d is a definition and j is a valid index for a parameter of d. The
  * bottom element of the lattice would be represented by the empty list, but we will never actually
- * use the bottom value because all of the lattice values in our calculations are initialied to
+ * use the bottom value because all of the lattice values in our calculations are initialized to
  * singleton joins and increase monotonically from there. A key property for these lattices is that
  * the join of two values with the same definition but different index values is equal to the top
  * value in the lattice. In symbols, this means that, if i/=j, then d.i `join` d.j == any.

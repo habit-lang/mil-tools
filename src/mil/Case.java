@@ -202,7 +202,7 @@ public class Case extends Code {
   }
 
   public Code andThen(Temp[] vs, Code rest) {
-    debug.Internal.error("andThen requires straightline code");
+    debug.Internal.error("andThen requires straight-line code");
     return this;
   }
 

@@ -138,7 +138,7 @@ public class DataType extends DataName {
 
   /**
    * Return true if this is a newtype constructor (i.e., a single argument constructor function for
-   * a nonrecursive type that only has one constructor).
+   * a non-recursive type that only has one constructor).
    */
   public boolean isNewtype() {
     return !isRecursive && isSingleConstructor() && cfuns[0].getArity() == 1;
@@ -270,7 +270,7 @@ public class DataType extends DataName {
     // At this point, we know that:
     // - There are numNullary constructors with zero arguments and numNonNullary constructors with
     // 1+ arguments
-    // - All fields of all constructors are bit representable; if constructor is non nullary, then
+    // - All fields of all constructors are bit representable; if constructor is non-nullary, then
     // the bit patterns
     //   for its fields are in pats[i]
     // - The number of bits needed to represent any value of this type, not including tagbits, is
@@ -618,8 +618,8 @@ public class DataType extends DataName {
   }
 
   /**
-   * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full
-   * (canononical) type is passed in for reference as we unwind it on the underlying TypeSet stack.
+   * Calculate an LLVM type corresponding to (a canonical form of) a MIL type. The full (canonical)
+   * type is passed in for reference as we unwind it on the underlying TypeSet stack.
    */
   llvm.Type toLLVMCalc(Type c, LLVMMap lm, int args) {
     if (args != 0 || arity != 0) {

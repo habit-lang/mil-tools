@@ -48,8 +48,8 @@ public abstract class TypeWriter {
   /**
    * Maintains a stack of type arguments as we decode the TAp structure of a given Type value. We
    * choose a small initial size but allow this to increase dynamically for more complex types that
-   * require a larger stack. (TODO: in the "idle curiousity" category: I wonder what the
-   * distribution of maximum stack sizes actually needed will look like in practice ...)
+   * require a larger stack. (TODO: in the "idle curiosity" category: I wonder what the distribution
+   * of maximum stack sizes actually needed will look like in practice ...)
    */
   private Type[] stack = new Type[4];
 

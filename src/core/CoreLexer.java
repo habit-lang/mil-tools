@@ -221,7 +221,7 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
             nextChar();
             if (c == '-') {
               /* Haskell is, IMHO, broken in its attempt to apply maximal munch to one
-               * line comments.  But, in the interests of avoiding unneccessary
+               * line comments.  But, in the interests of avoiding unnecessary
                * differences, we follow its lead here.  A better approach would be to
                * replace this block with: nextLine(); break;
                * TODO: revisit this decision!
