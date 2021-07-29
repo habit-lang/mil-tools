@@ -78,7 +78,7 @@ public class MILProgram {
     for (Defns ds = reachable(); ds != null; ds = ds.next) {
       if (ds.head.dotInclude()) {
         String dlab = ds.head.toString();
-        out.println("  \"" + dlab + "\"[" + ds.head.dotAttrs() + "];");
+        out.println("  \"" + dlab + "\"[" + ds.head.dotShape() + ds.head.dotAttrs() + "];");
         for (Defns cs = ds.head.getCallers(); cs != null; cs = cs.next) {
           String clab = cs.head.toString();
           out.println("  \"" + clab + "\" -> \"" + dlab + "\";");

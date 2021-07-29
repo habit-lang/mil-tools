@@ -62,7 +62,7 @@ public abstract class Area extends TopDefn {
   }
 
   String dotAttrs() {
-    return "style=filled, fillcolor=darkolivegreen1";
+    return "style=filled fillcolor=darkolivegreen1";
   }
 
   /** Display a printable representation of this definition on the specified PrintWriter. */

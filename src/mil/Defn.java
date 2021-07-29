@@ -126,6 +126,10 @@ public abstract class Defn {
 
   private int visitNum = 0;
 
+  /**
+   * Begin a new depth-first search. Warning: in theory, this could overflow if we do a large number
+   * of depth-first searchs in a single run.
+   */
   public static void newDFS() { // Begin a new depth-first search
     dfsNum++;
   }
@@ -136,20 +140,26 @@ public abstract class Defn {
     return occurs;
   }
 
+  protected int header;
+
   /**
    * Visit this Defn as part of a depth first search, and build a list of Defn nodes that can be
    * used to compute strongly-connected components.
    */
   Defns visitDepends(Defns defns) {
-    if (visitNum == dfsNum) { // Repeat visit to this Defn?
+    if (visitNum == dfsNum) { // Repeat visit to this Defn (from outside)?
       occurs++;
+    } else if (-visitNum == dfsNum) { // Repeat visit from within its own definition
+      occurs++;
+      header++;
     } else { // First time at this Defn
       // Mark this Defn as visited, and initialize fields
-      visitNum = dfsNum;
+      visitNum = -dfsNum; // Negative number indicates that we are visiting this definition
       occurs = 1;
       scc = null;
       callers = null;
       callees = null;
+      header = 0;
 
       // Find immediate dependencies
       Defns deps = dependencies();
@@ -166,6 +176,7 @@ public abstract class Defn {
       this.calls(callees);
       // And add it to the list of all definitions.
       defns = new Defns(this, defns);
+      visitNum = dfsNum; // Set positive to indicate node visited
     }
     return defns;
   }
@@ -178,8 +189,12 @@ public abstract class Defn {
     return Defns.isIn(this, ds) ? ds : new Defns(this, ds);
   }
 
+  String dotShape() {
+    return (header > 0) ? "shape=rectangle " : "";
+  }
+
   String dotAttrs() {
-    return "style=filled, fillcolor=white";
+    return "style=filled fillcolor=white";
   }
 
   boolean dotInclude() {

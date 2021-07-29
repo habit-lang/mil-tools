@@ -82,7 +82,7 @@ public class Block extends Defn {
   }
 
   String dotAttrs() {
-    return "style=filled, fillcolor=lightblue";
+    return "style=filled fillcolor=lightblue";
   }
 
   /** Display a printable representation of this definition on the specified PrintWriter. */

@@ -76,7 +76,7 @@ public class ClosureDefn extends Defn {
   }
 
   String dotAttrs() {
-    return "style=filled, fillcolor=salmon";
+    return "style=filled fillcolor=salmon";
   }
 
   /** Display a printable representation of this definition on the specified PrintWriter. */
