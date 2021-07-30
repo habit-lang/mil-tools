@@ -45,7 +45,7 @@ class AssertExp extends CodeExp {
    * identifiers are in scope, introducing new temporaries for each identifier that is bound in a
    * BindExp, and returning the corresponding mil Code sequence.
    */
-  public Code inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
+  Code inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
     return new Assert(
         a.inScopeOf(handler, milenv, tenv),
         milenv.mustFindCfun(handler, pos, id, subid),

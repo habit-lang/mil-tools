@@ -275,11 +275,11 @@ public class AllocType {
     return new AllocType(set.canonTypes(stored, null), result.canonType(set));
   }
 
-  public AllocType apply(TVarSubst s) {
+  AllocType apply(TVarSubst s) {
     return apply(null, s);
   }
 
-  public AllocType apply(Type[] tenv, TVarSubst s) {
+  AllocType apply(Type[] tenv, TVarSubst s) {
     Type[] nsts = new Type[stored.length];
     for (int i = 0; i < stored.length; i++) {
       nsts[i] = stored[i].apply(tenv, s);
@@ -291,7 +291,7 @@ public class AllocType {
    * Extend a substitution by matching this (potentially polymorphic) AllocType against a
    * monomorphic instance.
    */
-  public TVarSubst specializingSubst(TVar[] generics, AllocType inst) {
+  TVarSubst specializingSubst(TVar[] generics, AllocType inst) {
     if (generics.length != 0 || !this.alphaEquiv(inst)) {
       debug.Internal.error("specializingSubst fails on AllocType");
     }

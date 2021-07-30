@@ -21,14 +21,14 @@ package mil;
 import compiler.*;
 import core.*;
 
-public class Builtin extends MILEnvHash {
+class Builtin extends MILEnvHash {
 
   /** Default constructor. */
-  public Builtin(TyconEnv tyconEnv) {
+  Builtin(TyconEnv tyconEnv) {
     super(tyconEnv);
   }
 
-  public void print() {
+  void print() {
     System.out.println("Builtin: --------");
     printThis();
   }

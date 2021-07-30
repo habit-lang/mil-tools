@@ -83,12 +83,12 @@ public class Temp extends Atom {
    * object equality. For all other types of Atom, we use double dispatch to compare component
    * values.
    */
-  public boolean sameAtom(Atom that) {
+  boolean sameAtom(Atom that) {
     return this == that;
   }
 
   /** Test for an occurrence of this variable in the given array of atoms. */
-  public boolean occursIn(Atom[] as) {
+  boolean occursIn(Atom[] as) {
     for (int i = 0; i < as.length; i++) {
       if (as[i] == this) {
         return true;
@@ -118,7 +118,7 @@ public class Temp extends Atom {
   }
 
   /** Create a list of new variables of a given length. */
-  public static Temp[] makeTemps(int n) {
+  static Temp[] makeTemps(int n) {
     Temp[] vs = new Temp[n];
     for (int i = 0; i < n; i++) {
       vs[i] = new Temp();
@@ -127,7 +127,7 @@ public class Temp extends Atom {
   }
 
   /** Create a list of new variables with the given types. */
-  public static Temp[] makeTemps(Type[] ts) {
+  static Temp[] makeTemps(Type[] ts) {
     int n = ts.length;
     Temp[] vs = new Temp[n];
     for (int i = 0; i < n; i++) {
@@ -146,7 +146,7 @@ public class Temp extends Atom {
    * are treated as argument variables because wildcards are ignored and all other atoms can be
    * accessed as constants.
    */
-  public Temps add(Temps vs) {
+  Temps add(Temps vs) {
     return Temps.add(this, vs);
   }
 
@@ -154,12 +154,12 @@ public class Temp extends Atom {
    * Extend the given substitution with a mapping from this Temp to the specified Atom. If this is
    * an Atom but not a Temp, then just return the input substitution without modifications.
    */
-  public TempSubst mapsTo(Atom a, TempSubst s) {
+  TempSubst mapsTo(Atom a, TempSubst s) {
     return new TempSubst(this, a, s);
   }
 
   /** Apply a TempSubst to this Atom. */
-  public Atom apply(TempSubst s) {
+  Atom apply(TempSubst s) {
     return TempSubst.apply(this, s);
   }
 
@@ -172,7 +172,7 @@ public class Temp extends Atom {
    * Set this variable's type to be a fresh type variable. Used to initialize the type field of a
    * Temp (output operand).
    */
-  public Type freshType(Tyvar tyvar) {
+  Type freshType(Tyvar tyvar) {
     return type = new TVar(tyvar);
   }
 
@@ -342,7 +342,7 @@ public class Temp extends Atom {
    * Generate a specialized version of this (lambda-bound, monomorphically typed) variable using the
    * same name and the instance of its type under the substitution s.
    */
-  public Temp specializeTemp(TVarSubst s) {
+  Temp specializeTemp(TVarSubst s) {
     return new Temp(id, type.apply(s));
   }
 

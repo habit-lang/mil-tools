@@ -185,11 +185,11 @@ public class BlockType {
     return new BlockType(dom.canonType(set), rng.canonType(set));
   }
 
-  public BlockType apply(TVarSubst s) {
+  BlockType apply(TVarSubst s) {
     return apply(null, s);
   }
 
-  public BlockType apply(Type[] tenv, TVarSubst s) {
+  BlockType apply(Type[] tenv, TVarSubst s) {
     return new BlockType(dom.apply(tenv, s), rng.apply(tenv, s));
   }
 
@@ -197,7 +197,7 @@ public class BlockType {
    * Extend a substitution by matching this (potentially polymorphic) BlockType against a
    * monomorphic instance.
    */
-  public TVarSubst specializingSubst(TVar[] generics, BlockType inst) {
+  TVarSubst specializingSubst(TVar[] generics, BlockType inst) {
     if (generics.length != 0 || !this.alphaEquiv(inst)) {
       debug.Internal.error("specializingSubst fails on BlockType");
     }

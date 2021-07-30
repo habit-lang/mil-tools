@@ -23,9 +23,9 @@ import core.*;
 import mil.*;
 
 /** A lexical analyzer for the LC language. */
-public class LCLexer extends LayoutLexer implements LCTokens {
+class LCLexer extends LayoutLexer implements LCTokens {
 
-  public LCLexer(Handler handler, boolean optional, Source source) {
+  LCLexer(Handler handler, boolean optional, Source source) {
     super(handler, optional, source);
     reserved.put("do", new Integer(DO));
     reserved.put("\\", new Integer(LAMBDA));

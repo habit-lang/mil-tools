@@ -41,7 +41,7 @@ public class Bits extends Const {
   }
 
   /** Generate a printable representation of a bit vector constant. */
-  public static String toString(BigInteger nat, int width) {
+  static String toString(BigInteger nat, int width) {
     // TODO: does this produce correct results if width=0?
     StringBuilder buf = new StringBuilder();
     if (width > 0 && (width % 4) == 0) { // Use hexadecimal notation if we can
@@ -70,12 +70,12 @@ public class Bits extends Const {
    * object equality. For all other types of Atom, we use double dispatch to compare component
    * values.
    */
-  public boolean sameAtom(Atom that) {
+  boolean sameAtom(Atom that) {
     return that.sameBits(this);
   }
 
   /** Test to determine whether this Atom refers to the specified bit vector constant. */
-  public boolean sameBits(Bits c) {
+  boolean sameBits(Bits c) {
     return this.width == c.width && this.val.equals(c.val);
   }
 

@@ -130,13 +130,13 @@ public abstract class Defn {
    * Begin a new depth-first search. Warning: in theory, this could overflow if we do a large number
    * of depth-first searchs in a single run.
    */
-  public static void newDFS() { // Begin a new depth-first search
+  static void newDFS() { // Begin a new depth-first search
     dfsNum++;
   }
 
   protected int occurs;
 
-  public int getOccurs() {
+  int getOccurs() {
     return occurs;
   }
 
@@ -182,10 +182,10 @@ public abstract class Defn {
   }
 
   /** Find the list of Defns that this Defn depends on. */
-  public abstract Defns dependencies();
+  abstract Defns dependencies();
 
   /** Find the dependencies of this AST fragment. */
-  public Defns dependencies(Defns ds) {
+  Defns dependencies(Defns ds) {
     return Defns.isIn(this, ds) ? ds : new Defns(this, ds);
   }
 
@@ -201,7 +201,7 @@ public abstract class Defn {
     return true;
   }
 
-  public Defns getCallers() {
+  Defns getCallers() {
     return callers;
   }
 
@@ -343,7 +343,7 @@ public abstract class Defn {
   }
 
   /** Apply inlining. */
-  public abstract void inlining();
+  abstract void inlining();
 
   void liftAllocators() {
     /* Nothing to do */
@@ -373,7 +373,7 @@ public abstract class Defn {
   }
 
   /** Perform flow analysis on this definition. */
-  public abstract void flow();
+  abstract void flow();
 
   Call[] collectCalls(Atom[] args, Facts facts, boolean allowWord) {
     int len = args.length;

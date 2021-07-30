@@ -32,7 +32,7 @@ abstract class TailCont {
   abstract Code with(final Tail t);
 
   /** A TailCont that wraps the incoming Tail in a simple Done. */
-  public static final TailCont done =
+  static final TailCont done =
       new TailCont() {
         Code with(final Tail t) {
           return new Done(t);

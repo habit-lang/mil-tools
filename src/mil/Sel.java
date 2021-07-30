@@ -38,12 +38,12 @@ public class Sel extends Tail {
   }
 
   /** Test to determine whether a given tail expression has no externally visible side effect. */
-  public boolean hasNoEffect() {
+  boolean hasNoEffect() {
     return true;
   }
 
   /** Test if this Tail expression includes a free occurrence of a particular variable. */
-  public boolean contains(Temp w) {
+  boolean contains(Temp w) {
     return a == w;
   }
 
@@ -51,17 +51,17 @@ public class Sel extends Tail {
    * Test if this Tail expression includes an occurrence of any of the variables listed in the given
    * array.
    */
-  public boolean contains(Temp[] ws) {
+  boolean contains(Temp[] ws) {
     return a.occursIn(ws);
   }
 
   /** Add the variables mentioned in this tail to the given list of variables. */
-  public Temps add(Temps vs) {
+  Temps add(Temps vs) {
     return a.add(vs);
   }
 
   /** Test if two Tail expressions are the same. */
-  public boolean sameTail(Tail that) {
+  boolean sameTail(Tail that) {
     return that.sameSel(this);
   }
 
@@ -70,12 +70,12 @@ public class Sel extends Tail {
   }
 
   /** Find the dependencies of this AST fragment. */
-  public Defns dependencies(Defns ds) {
+  Defns dependencies(Defns ds) {
     return a.dependencies(ds);
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out, Temps ts) {
+  void dump(PrintWriter out, Temps ts) {
     out.print(cf + " " + n + " " + a.toString(ts));
   }
 
@@ -83,7 +83,7 @@ public class Sel extends Tail {
    * Apply a TempSubst to this Tail, forcing construction of a new Tail, even if the substitution is
    * empty.
    */
-  public Tail apply(TempSubst s) {
+  Tail apply(TempSubst s) {
     return new Sel(cf, n, a.apply(s));
   }
 
@@ -98,7 +98,7 @@ public class Sel extends Tail {
   }
 
   /** Return the type tuple describing the result that is produced by executing this Tail. */
-  public Type resultType() {
+  Type resultType() {
     return outputs;
   }
 

@@ -65,7 +65,7 @@ class EFrom extends PosExpr {
    * Test to determine whether this expression can be used on the right hand side of a binding in a
    * recursive binding group.
    */
-  public boolean isSafeToRecurse() {
+  boolean isSafeToRecurse() {
     return true;
   }
 

@@ -22,14 +22,14 @@ import compiler.*;
 import core.*;
 import mil.*;
 
-public class TypeAnn extends LCDefn {
+class TypeAnn extends LCDefn {
 
   private String[] ids;
 
   private TypeExp type;
 
   /** Default constructor. */
-  public TypeAnn(Position pos, String[] ids, TypeExp type) {
+  TypeAnn(Position pos, String[] ids, TypeExp type) {
     super(pos);
     this.ids = ids;
     this.type = type;
@@ -39,7 +39,7 @@ public class TypeAnn extends LCDefn {
    * Annotate bindings in the given list using information (such as a type signature or fixity) that
    * is provided by this definition.
    */
-  public void annotateBindings(Handler handler, TyconEnv tenv, Bindings bs) {
+  void annotateBindings(Handler handler, TyconEnv tenv, Bindings bs) {
     try {
       // Validate declared type scheme:
       Scheme declared = type.toScheme(tenv);

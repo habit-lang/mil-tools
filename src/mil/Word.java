@@ -70,7 +70,7 @@ public class Word extends Const {
   private long val;
 
   /** Return the value of this Word constant. */
-  public long getVal() {
+  long getVal() {
     return val;
   }
 
@@ -87,12 +87,12 @@ public class Word extends Const {
    * we can represent Word constants when Word.size()==64), but to limit the range to that of an int
    * (when necessary, so that we can represent Word constants when Word.size()==32).
    */
-  public static long fromLong(long val) {
+  static long fromLong(long val) {
     int offset = 64 - Word.size;
     return (val << offset) >> offset;
   }
 
-  public static long fromBig(BigInteger v) {
+  static long fromBig(BigInteger v) {
     if (size == 32) {
       return (long) v.intValue();
     } else if (size == 64) {
@@ -116,17 +116,17 @@ public class Word extends Const {
    * object equality. For all other types of Atom, we use double dispatch to compare component
    * values.
    */
-  public boolean sameAtom(Atom that) {
+  boolean sameAtom(Atom that) {
     return that.sameWord(this);
   }
 
   /** Test to determine whether this Atom refers to the given Word value. */
-  public boolean sameWord(Word c) {
+  boolean sameWord(Word c) {
     return this.val == c.val;
   }
 
   /** Test to determine whether this Atom is an integer constant (or not). */
-  public Word isWord() {
+  Word isWord() {
     return this;
   }
 
@@ -156,7 +156,7 @@ public class Word extends Const {
    * Return the number of words that are needed to hold a value with the specified bitsize. Note
    * that we expect Type.repBits(w).length == Word.numWords(w) for all w>=0.
    */
-  public static int numWords(int w) {
+  static int numWords(int w) {
     return (w == 0) ? 1 : ((w + size - 1) / size);
   }
 

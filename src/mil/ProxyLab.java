@@ -40,12 +40,12 @@ public class ProxyLab extends Proxy {
    * object equality. For all other types of Atom, we use double dispatch to compare component
    * values.
    */
-  public boolean sameAtom(Atom that) {
+  boolean sameAtom(Atom that) {
     return that.sameProxyLab(this);
   }
 
   /** Test to determine whether this Atom refers to the given ProxyLab constant. */
-  public boolean sameProxyLab(ProxyLab c) {
+  boolean sameProxyLab(ProxyLab c) {
     return this.lab.equals(c.lab);
   }
 

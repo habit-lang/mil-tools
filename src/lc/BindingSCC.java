@@ -98,7 +98,7 @@ public class BindingSCC {
    * Check that the binding groups in a list of SCCs are valid: each one must either be
    * non-recursive, or else must contain only function bindings (and perhaps monadic thunks?).
    */
-  public static void checkSafeRecursion(Handler handler, BindingSCCs sccs) {
+  static void checkSafeRecursion(Handler handler, BindingSCCs sccs) {
     for (; sccs != null; sccs = sccs.next) {
       BindingSCC scc = sccs.head;
       Bindings bindings = scc.getBindings();

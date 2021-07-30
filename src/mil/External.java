@@ -80,7 +80,7 @@ public class External extends TopDefn {
   }
 
   /** Find the list of Defns that this Defn depends on. */
-  public Defns dependencies() {
+  Defns dependencies() {
     return imp.dependencies();
   }
 
@@ -144,7 +144,7 @@ public class External extends TopDefn {
   }
 
   /** Apply inlining. */
-  public void inlining() {
+  void inlining() {
     /* Nothing to do here */
   }
 
@@ -157,7 +157,7 @@ public class External extends TopDefn {
   }
 
   /** Perform flow analysis on this definition. */
-  public void flow() {
+  void flow() {
     /* Nothing to do here */
   }
 

@@ -22,7 +22,7 @@ import compiler.*;
 import core.*;
 
 /** TempSubst value represent substitutions of Atoms for Temps as simple linked list structures. */
-public class TempSubst {
+class TempSubst {
 
   private Temp v;
 
@@ -31,14 +31,14 @@ public class TempSubst {
   private TempSubst rest;
 
   /** Default constructor. */
-  public TempSubst(Temp v, Atom a, TempSubst rest) {
+  TempSubst(Temp v, Atom a, TempSubst rest) {
     this.v = v;
     this.a = a;
     this.rest = rest;
   }
 
   /** Extend a substitution with bindings given by a pair of arrays. */
-  public static TempSubst extend(Temp[] vs, Atom[] as, TempSubst s) {
+  static TempSubst extend(Temp[] vs, Atom[] as, TempSubst s) {
     if (vs.length != as.length) {
       debug.Internal.error("TempSubst.extend: variable/atom counts do not match.");
     }
@@ -64,7 +64,7 @@ public class TempSubst {
   }
 
   /** Apply the given substitution to the specified Temp. */
-  public static Atom apply(Temp w, TempSubst s) {
+  static Atom apply(Temp w, TempSubst s) {
     for (; s != null; s = s.rest) {
       if (s.v == w) {
         return s.a;
@@ -74,7 +74,7 @@ public class TempSubst {
   }
 
   /** Apply the given substitution to an array of atoms. */
-  public static Atom[] apply(Atom[] args, TempSubst s) {
+  static Atom[] apply(Atom[] args, TempSubst s) {
     Atom[] nargs = new Atom[args.length];
     for (int i = 0; i < args.length; i++) {
       nargs[i] = args[i].apply(s);

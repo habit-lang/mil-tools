@@ -49,7 +49,7 @@ public class Block extends Defn {
    * generating code for recursively defined blocks whose Code cannot be constucted until the Block
    * itself has been defined.
    */
-  public void setCode(Code code) {
+  void setCode(Code code) {
     this.code = code;
   }
 
@@ -77,7 +77,7 @@ public class Block extends Defn {
   }
 
   /** Find the list of Defns that this Defn depends on. */
-  public Defns dependencies() {
+  Defns dependencies() {
     return code.dependencies(null);
   }
 
@@ -439,7 +439,7 @@ public class Block extends Defn {
   }
 
   /** Apply inlining. */
-  public void inlining() {
+  void inlining() {
     BlockCall bc = isGotoBlock();
     if (bc == null) {
       code = code.inlining(this);
@@ -707,7 +707,7 @@ public class Block extends Defn {
   }
 
   /** Perform flow analysis on this definition. */
-  public void flow() {
+  void flow() {
     code = code.flow(this, null /*facts*/, null /*substitution*/);
     code.liveness();
   }
@@ -972,15 +972,15 @@ public class Block extends Defn {
     return (params.length == 0) ? new BlockCall(this, Atom.noAtoms) : super.makeTail();
   }
 
-  public static Block returnTrue = atomBlock("returnTrue", Flag.True);
+  static Block returnTrue = atomBlock("returnTrue", Flag.True);
 
-  public static Block returnFalse = atomBlock("returnFalse", Flag.False);
+  static Block returnFalse = atomBlock("returnFalse", Flag.False);
 
   /**
    * Make a block of the following form that immediately returns the atom a, which could be an Word
    * or a Top, but not a Temp (because that would be out of scope). b :: [] >>= [t] b[] = return a
    */
-  public static Block atomBlock(String name, Atom a) {
+  static Block atomBlock(String name, Atom a) {
     return new Block(BuiltinPosition.pos, name, Temp.noTemps, new Done(new Return(a)));
   }
 
@@ -989,7 +989,7 @@ public class Block extends Defn {
    * input parameters and checking that all identifiers used in the given code sequence have a
    * corresponding binding.
    */
-  public void inScopeOf(Handler handler, MILEnv milenv, String[] ids, CodeExp cexp) throws Failure {
+  void inScopeOf(Handler handler, MILEnv milenv, String[] ids, CodeExp cexp) throws Failure {
     Temp[] ps = Temp.makeTemps(ids.length);
     this.params = ps;
     this.code = cexp.inScopeOf(handler, milenv, new TempEnv(ids, ps, null));

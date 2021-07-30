@@ -67,7 +67,7 @@ public class Temps {
     return ts;
   }
 
-  public static String toString(Temps vs) {
+  static String toString(Temps vs) {
     StringBuilder b = new StringBuilder("{");
     if (vs != null) {
       b.append(vs.head.toString());
@@ -101,7 +101,7 @@ public class Temps {
     return vs;
   }
 
-  public static Temps add(Atom[] args, Temps us) {
+  static Temps add(Atom[] args, Temps us) {
     for (int i = 0; i < args.length; i++) {
       us = args[i].add(us);
     }

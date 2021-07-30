@@ -85,12 +85,12 @@ public abstract class DataName extends Tycon {
    * Return true if this is a newtype constructor (i.e., a single argument constructor function for
    * a non-recursive type that only has one constructor).
    */
-  public boolean isNewtype() { // Don't treat bitdata types as newtypes
+  boolean isNewtype() { // Don't treat bitdata types as newtypes
     return false;
   }
 
   /** Return true if this is a single constructor type. */
-  public boolean isSingleConstructor() {
+  boolean isSingleConstructor() {
     return false;
   }
 

@@ -26,10 +26,10 @@ import java.io.PrintWriter;
 public abstract class Code {
 
   /** Test for a free occurrence of a particular variable. */
-  public abstract boolean contains(Temp w);
+  abstract boolean contains(Temp w);
 
   /** Find the dependencies of this AST fragment. */
-  public abstract Defns dependencies(Defns ds);
+  abstract Defns dependencies(Defns ds);
 
   /** Display a printable representation of this object on the standard output. */
   public void dump() {
@@ -39,15 +39,15 @@ public abstract class Code {
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public abstract void dump(PrintWriter out, Temps ts);
+  abstract void dump(PrintWriter out, Temps ts);
 
   /** Print an indent at the beginning of a line. */
-  public static final void indent(PrintWriter out) {
+  static final void indent(PrintWriter out) {
     out.print("  ");
   }
 
   /** Print a suitably indented string at the start of a line. */
-  public static final void indentln(PrintWriter out, String s) {
+  static final void indentln(PrintWriter out, String s) {
     indent(out);
     out.println(s);
   }
@@ -57,7 +57,7 @@ public abstract class Code {
    * structure, including the introduction of new temporaries in place of any variables introduced
    * by Binds.
    */
-  public abstract Code apply(TempSubst s);
+  abstract Code apply(TempSubst s);
 
   /**
    * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or

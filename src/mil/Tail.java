@@ -25,24 +25,24 @@ import java.io.PrintWriter;
 public abstract class Tail {
 
   /** Test to determine whether a given tail expression has no externally visible side effect. */
-  public boolean hasNoEffect() {
+  boolean hasNoEffect() {
     return false;
   }
 
   /** Test if this Tail expression includes a free occurrence of a particular variable. */
-  public abstract boolean contains(Temp w);
+  abstract boolean contains(Temp w);
 
   /**
    * Test if this Tail expression includes an occurrence of any of the variables listed in the given
    * array.
    */
-  public abstract boolean contains(Temp[] ws);
+  abstract boolean contains(Temp[] ws);
 
   /** Add the variables mentioned in this tail to the given list of variables. */
-  public abstract Temps add(Temps vs);
+  abstract Temps add(Temps vs);
 
   /** Test if two Tail expressions are the same. */
-  public abstract boolean sameTail(Tail that);
+  abstract boolean sameTail(Tail that);
 
   boolean sameSel(Sel that) {
     return false;
@@ -73,7 +73,7 @@ public abstract class Tail {
   }
 
   /** Find the dependencies of this AST fragment. */
-  public abstract Defns dependencies(Defns ds);
+  abstract Defns dependencies(Defns ds);
 
   /** Display a printable representation of this object on the standard output. */
   public void dump() {
@@ -83,10 +83,10 @@ public abstract class Tail {
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public abstract void dump(PrintWriter out, Temps ts);
+  abstract void dump(PrintWriter out, Temps ts);
 
   /** Display a Tail value and then move to the next line. */
-  public void displayln(PrintWriter out, Temps ts) {
+  void displayln(PrintWriter out, Temps ts) {
     dump(out, ts);
     out.println();
   }
@@ -95,7 +95,7 @@ public abstract class Tail {
    * Apply a TempSubst to this Tail, forcing construction of a new Tail, even if the substitution is
    * empty.
    */
-  public abstract Tail apply(TempSubst s);
+  abstract Tail apply(TempSubst s);
 
   /**
    * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
@@ -109,7 +109,7 @@ public abstract class Tail {
   abstract TVars tvars(TVars tvs);
 
   /** Return the type tuple describing the result that is produced by executing this Tail. */
-  public abstract Type resultType();
+  abstract Type resultType();
 
   abstract Type inferType(Position pos) throws Failure;
 
@@ -435,12 +435,12 @@ public abstract class Tail {
   }
 
   /** Return a closure k{}, where k{} [x1,...,xn] = this. */
-  public Tail constClosure(Position pos, int n) {
+  Tail constClosure(Position pos, int n) {
     return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(n), this)).withArgs();
   }
 
   /** Variant of constClosure that specifies the types of the (ignored) arguments. */
-  public Tail constClosure(Position pos, Type[] ts) {
+  Tail constClosure(Position pos, Type[] ts) {
     return new ClosAlloc(new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(ts), this)).withArgs();
   }
 

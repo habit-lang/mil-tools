@@ -37,7 +37,7 @@ class EnterExp extends TailExp {
    * Perform scope analysis on this TailExp, checking that all of the referenced identifiers are in
    * scope and returning a corresponding mil Tail.
    */
-  public Tail inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
+  Tail inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
     return new Enter(
         fun.inScopeOf(handler, milenv, tenv), AtomExp.inScopeOf(handler, milenv, tenv, args));
   }

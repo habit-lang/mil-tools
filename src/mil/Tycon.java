@@ -330,16 +330,16 @@ public abstract class Tycon extends Name {
   }
 
   /** Representation vector for singleton types. */
-  public static final Type[] unitRep = new Type[] {unit.asType()};
+  static final Type[] unitRep = new Type[] {unit.asType()};
 
   /** Representation vector for bitdata types of width one. */
-  public static final Type[] flagRep = new Type[] {flag.asType()};
+  static final Type[] flagRep = new Type[] {flag.asType()};
 
   /** Representation vector for Ix, Ref, Ptr, etc. types that fit in a single word. */
-  public static final Type[] wordRep = new Type[] {word.asType()};
+  static final Type[] wordRep = new Type[] {word.asType()};
 
   /** Representation vector for Init a types as functions of type [Word] ->> [Unit]. */
-  public static final Type[] initRep =
+  static final Type[] initRep =
       new Type[] {Type.milfun(Type.tuple(word.asType()), Type.tuple(unit.asType()))};
 
   /** Return the representation vector for values of this type. */

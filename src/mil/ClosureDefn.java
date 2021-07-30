@@ -71,7 +71,7 @@ public class ClosureDefn extends Defn {
   }
 
   /** Find the list of Defns that this Defn depends on. */
-  public Defns dependencies() {
+  Defns dependencies() {
     return tail.dependencies(null);
   }
 
@@ -287,7 +287,7 @@ public class ClosureDefn extends Defn {
   }
 
   /** Apply inlining. */
-  public void inlining() {
+  void inlining() {
     tail = tail.inlineTail();
   }
 
@@ -442,7 +442,7 @@ public class ClosureDefn extends Defn {
   }
 
   /** Perform flow analysis on this definition. */
-  public void flow() {
+  void flow() {
     tail = tail.rewriteTail(this, null /* facts */, false); // TODO: allowWord here too?
     tail.liveness(null /*facts*/);
   }
@@ -706,7 +706,7 @@ public class ClosureDefn extends Defn {
    * (stored) parameters and input arguments, and checking that all of the identifiers in the given
    * tail have a corresponding binding.
    */
-  public void inScopeOf(Handler handler, MILEnv milenv, String[] ids, String[] args, CodeExp cexp)
+  void inScopeOf(Handler handler, MILEnv milenv, String[] ids, String[] args, CodeExp cexp)
       throws Failure {
     this.params = Temp.makeTemps(ids.length);
     this.args = Temp.makeTemps(args.length);

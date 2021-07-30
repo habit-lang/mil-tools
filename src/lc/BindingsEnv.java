@@ -23,18 +23,18 @@ import core.*;
 import mil.*;
 
 /** An environment that extends the enclosing environment with entries from a list of Bindings. */
-public class BindingsEnv extends Env {
+class BindingsEnv extends Env {
 
   private Bindings bindings;
 
   /** Default constructor. */
-  public BindingsEnv(Env enclosing, Bindings bindings) {
+  BindingsEnv(Env enclosing, Bindings bindings) {
     super(enclosing);
     this.bindings = bindings;
   }
 
   /** Lookup the definition for an identifier in this environment node. */
-  public DefVar findInThis(String id) {
+  DefVar findInThis(String id) {
     return Bindings.find(id, bindings);
   }
 }

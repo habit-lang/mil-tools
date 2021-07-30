@@ -32,12 +32,12 @@ public class PrimCall extends Call {
   }
 
   /** Test to determine whether a given tail expression has no externally visible side effect. */
-  public boolean hasNoEffect() {
+  boolean hasNoEffect() {
     return p.hasNoEffect();
   }
 
   /** Test if two Tail expressions are the same. */
-  public boolean sameTail(Tail that) {
+  boolean sameTail(Tail that) {
     return that.samePrimCall(this);
   }
 
@@ -46,7 +46,7 @@ public class PrimCall extends Call {
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out, Temps ts) {
+  void dump(PrintWriter out, Temps ts) {
     dump(out, p.getId(), "((", args, "))", ts);
   }
 
@@ -71,7 +71,7 @@ public class PrimCall extends Call {
   }
 
   /** Return the type tuple describing the result that is produced by executing this Tail. */
-  public Type resultType() {
+  Type resultType() {
     return type.rngType();
   }
 

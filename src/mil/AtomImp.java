@@ -36,7 +36,7 @@ public class AtomImp extends ExtImp {
   }
 
   /** Find the list of Defns that this Defn depends on. */
-  public Defns dependencies() {
+  Defns dependencies() {
     return a.dependencies(null);
   }
 

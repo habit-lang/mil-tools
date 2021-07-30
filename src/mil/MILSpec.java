@@ -87,12 +87,12 @@ public class MILSpec extends TypeSet {
   private SpecReqs requested = null;
 
   /** Request a new specialization. */
-  public void request(SpecReq req) {
+  void request(SpecReq req) {
     requested = new SpecReqs(req, requested);
   }
 
   /** Request a version of a definition that is specialized to a given monomorphic type. */
-  public Block specializedBlock(Block d, BlockType inst) {
+  Block specializedBlock(Block d, BlockType inst) {
     debug.Log.println("Requesting specialization of " + d + " :: " + inst);
     // Get the list of previous specializations:
     Defns specs = specialized.get(d);
@@ -117,7 +117,7 @@ public class MILSpec extends TypeSet {
   }
 
   /** Request a version of a definition that is specialized to a given monomorphic type. */
-  public ClosureDefn specializedClosureDefn(ClosureDefn d, AllocType inst) {
+  ClosureDefn specializedClosureDefn(ClosureDefn d, AllocType inst) {
     debug.Log.println("Requesting specialization of " + d + " :: " + inst);
     // Get the list of previous specializations:
     Defns specs = specialized.get(d);
@@ -142,7 +142,7 @@ public class MILSpec extends TypeSet {
   }
 
   /** Request a version of a definition that is specialized to a given monomorphic type. */
-  public TopLevel specializedTopLevel(TopLevel d, Scheme inst) {
+  TopLevel specializedTopLevel(TopLevel d, Scheme inst) {
     debug.Log.println("Requesting specialization of " + d + " :: " + inst);
     // Get the list of previous specializations:
     Defns specs = specialized.get(d);
@@ -167,7 +167,7 @@ public class MILSpec extends TypeSet {
   }
 
   /** Request a version of a definition that is specialized to a given monomorphic type. */
-  public External specializedExternal(External d, Scheme inst) {
+  External specializedExternal(External d, Scheme inst) {
     debug.Log.println("Requesting specialization of " + d + " :: " + inst);
     // Get the list of previous specializations:
     Defns specs = specialized.get(d);
@@ -192,7 +192,7 @@ public class MILSpec extends TypeSet {
   }
 
   /** Request a version of a definition that is specialized to a given monomorphic type. */
-  public MemArea specializedMemArea(MemArea d, Scheme inst) {
+  MemArea specializedMemArea(MemArea d, Scheme inst) {
     debug.Log.println("Requesting specialization of " + d + " :: " + inst);
     // Get the list of previous specializations:
     Defns specs = specialized.get(d);

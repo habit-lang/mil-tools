@@ -23,18 +23,18 @@ import core.*;
 import mil.*;
 
 /** An environment that extends the enclosing environment with a binding for a single identifier. */
-public class VarEnv extends Env {
+class VarEnv extends Env {
 
   private DefVar v;
 
   /** Default constructor. */
-  public VarEnv(Env enclosing, DefVar v) {
+  VarEnv(Env enclosing, DefVar v) {
     super(enclosing);
     this.v = v;
   }
 
   /** Lookup the definition for an identifier in this environment node. */
-  public DefVar findInThis(String id) {
+  DefVar findInThis(String id) {
     return v.answersTo(id) ? v : null;
   }
 }

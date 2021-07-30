@@ -24,7 +24,7 @@ import core.*;
 public abstract class Allocator extends Call {
 
   /** Test to determine whether a given tail expression has no externally visible side effect. */
-  public boolean hasNoEffect() {
+  boolean hasNoEffect() {
     return true;
   }
 

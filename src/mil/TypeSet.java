@@ -315,7 +315,7 @@ public class TypeSet {
    * constructors that do not already have an associated bitSize, and might therefore be candidates
    * for replacing with bitdata types.
    */
-  public DataTypes bitdataCandidates() {
+  DataTypes bitdataCandidates() {
     DataTypes cands = null;
     for (Tycon tycon : tycons) {
       DataType dt = tycon.bitdataCandidate();
@@ -327,7 +327,7 @@ public class TypeSet {
     return cands;
   }
 
-  public MergeMap mergeMap() {
+  MergeMap mergeMap() {
     // First, identify candidates for merging (nullary datatypes with at least one constructor):
     DataTypes[] cands = new DataTypes[4]; // Sort the types by number of constructors
     int numCands = 0;

@@ -44,7 +44,7 @@ public abstract class Top extends Atom {
   public abstract Defn getDefn();
 
   /** Apply a TempSubst to this Atom. */
-  public Atom apply(TempSubst s) {
+  Atom apply(TempSubst s) {
     return this.clone();
   }
 

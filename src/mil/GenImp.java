@@ -142,7 +142,7 @@ public class GenImp extends ExtImp {
   /**
    * Stores a mapping from String references to generators for external function implementations.
    */
-  public static HashMap<String, Generator> generators = new HashMap();
+  static HashMap<String, Generator> generators = new HashMap();
 
   /** Stores a pointer to the generator for this GenImp, if there is one. */
   private Generator gen;
@@ -259,83 +259,83 @@ public class GenImp extends ExtImp {
     return unaryUnit(pos).constClosure(pos, 1);
   }
 
-  public static final TGen gA = Type.gen(0);
+  static final TGen gA = Type.gen(0);
 
-  public static final TGen gB = Type.gen(1);
+  static final TGen gB = Type.gen(1);
 
-  public static final TGen gC = Type.gen(2);
+  static final TGen gC = Type.gen(2);
 
-  public static final Type word = Tycon.word.asType();
+  static final Type word = Tycon.word.asType();
 
-  public static final Type flag = Tycon.flag.asType();
+  static final Type flag = Tycon.flag.asType();
 
-  public static final Type unit = Tycon.unit.asType();
+  static final Type unit = Tycon.unit.asType();
 
-  public static final Type todo = new PrimTycon("TODO", KAtom.STAR, 0).asType();
+  static final Type todo = new PrimTycon("TODO", KAtom.STAR, 0).asType();
 
-  public static final Type bool = todo;
+  static final Type bool = todo;
 
-  public static final Type maybeIx = todo;
+  static final Type maybeIx = todo;
 
-  public static final Type fun(Type d, Type r) {
+  static final Type fun(Type d, Type r) {
     return Type.fun(d, r);
   }
 
-  public static final Type fun(Type d1, Type d2, Type r) {
+  static final Type fun(Type d1, Type d2, Type r) {
     return fun(d1, fun(d2, r));
   }
 
-  public static final Type fun(Type d1, Type d2, Type d3, Type r) {
+  static final Type fun(Type d1, Type d2, Type d3, Type r) {
     return fun(d1, fun(d2, d3, r));
   }
 
-  public static final Type fun(Type d1, Type d2, Type d3, Type d4, Type r) {
+  static final Type fun(Type d1, Type d2, Type d3, Type d4, Type r) {
     return fun(d1, fun(d2, d3, d4, r));
   }
 
-  public static Type bitA = Type.bit(gA);
+  static Type bitA = Type.bit(gA);
 
-  public static Type bitB = Type.bit(gB);
+  static Type bitB = Type.bit(gB);
 
-  public static Type bitC = Type.bit(gC);
+  static Type bitC = Type.bit(gC);
 
-  public static Type natA = Type.nat(gA);
+  static Type natA = Type.nat(gA);
 
-  public static Type bitAbitA = fun(bitA, bitA);
+  static Type bitAbitA = fun(bitA, bitA);
 
-  public static Type bitAbitB = fun(bitA, bitB);
+  static Type bitAbitB = fun(bitA, bitB);
 
-  public static Type bitAbitAbitA = fun(bitA, fun(bitA, bitA));
+  static Type bitAbitAbitA = fun(bitA, fun(bitA, bitA));
 
-  public static Type bitAbitABool = fun(bitA, bitA, bool);
+  static Type bitAbitABool = fun(bitA, bitA, bool);
 
-  public static Type gAgA = fun(gA, gA);
+  static Type gAgA = fun(gA, gA);
 
-  public static Type gAgAgA = fun(gA, gAgA);
+  static Type gAgAgA = fun(gA, gAgA);
 
-  public static Type gAgAbool = fun(gA, fun(gA, bool));
+  static Type gAgAbool = fun(gA, fun(gA, bool));
 
-  public static Type ixA = Type.ix(gA);
+  static Type ixA = Type.ix(gA);
 
-  public static Type ixB = Type.ix(gB);
+  static Type ixB = Type.ix(gB);
 
-  public static Type inxA = Type.inx(gA);
+  static Type inxA = Type.inx(gA);
 
-  public static Type bitAixAbitA = fun(bitA, ixA, bitA);
+  static Type bitAixAbitA = fun(bitA, ixA, bitA);
 
-  public static Type ixAixBixA = fun(ixA, ixB, ixA);
+  static Type ixAixBixA = fun(ixA, ixB, ixA);
 
-  public static Type arrayAB = Type.array(gA, gB);
+  static Type arrayAB = Type.array(gA, gB);
 
-  public static Type padAB = Type.pad(gA, gB);
+  static Type padAB = Type.pad(gA, gB);
 
-  public static Type refA = Type.ref(gA);
+  static Type refA = Type.ref(gA);
 
-  public static Type refB = Type.ref(gB);
+  static Type refB = Type.ref(gB);
 
-  public static Type refC = Type.ref(gC);
+  static Type refC = Type.ref(gC);
 
-  public static Type initA = Type.init(gA);
+  static Type initA = Type.init(gA);
 
   static {
 

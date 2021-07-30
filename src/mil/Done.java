@@ -34,17 +34,17 @@ public class Done extends Code {
   }
 
   /** Test for a free occurrence of a particular variable. */
-  public boolean contains(Temp w) {
+  boolean contains(Temp w) {
     return t.contains(w);
   }
 
   /** Find the dependencies of this AST fragment. */
-  public Defns dependencies(Defns ds) {
+  Defns dependencies(Defns ds) {
     return t.dependencies(ds);
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out, Temps ts) {
+  void dump(PrintWriter out, Temps ts) {
     indent(out);
     t.displayln(out, ts);
   }
@@ -54,7 +54,7 @@ public class Done extends Code {
    * structure, including the introduction of new temporaries in place of any variables introduced
    * by Binds.
    */
-  public Code apply(TempSubst s) {
+  Code apply(TempSubst s) {
     return new Done(t.apply(s));
   }
 

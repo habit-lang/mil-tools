@@ -25,7 +25,7 @@ import java.math.BigInteger;
 public abstract class Const extends Atom {
 
   /** Apply a TempSubst to this Atom. */
-  public Atom apply(TempSubst s) {
+  Atom apply(TempSubst s) {
     return this;
   }
 
@@ -65,14 +65,14 @@ public abstract class Const extends Atom {
   }
 
   /** All values of singleton types will be represented by the unit value. */
-  public static Atom[] unit = new Atom[] {Top.Unit};
+  static Atom[] unit = new Atom[] {Top.Unit};
 
   /** Construct an array of Atoms that represents the bit vector with the given value and width. */
-  public static Atom[] atoms(BigInteger v, int w) {
+  static Atom[] atoms(BigInteger v, int w) {
     return atoms(v, w, false);
   }
 
-  public static Atom[] atoms(BigInteger v, int w, boolean wantMask) {
+  static Atom[] atoms(BigInteger v, int w, boolean wantMask) {
     if (w == 0) {
       return unit;
     } else if (w == 1) {

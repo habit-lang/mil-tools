@@ -59,7 +59,7 @@ class ELam extends PosExpr {
    * Test to determine whether this expression can be used on the right hand side of a binding in a
    * recursive binding group.
    */
-  public boolean isSafeToRecurse() {
+  boolean isSafeToRecurse() {
     return vs.length > 0 || e.isSafeToRecurse();
   }
 
@@ -109,7 +109,7 @@ class ELam extends PosExpr {
     e.checkType(new TVISVars(tis, vs), et); // check body
   }
 
-  public ELam(Position pos, DefVar[] vs, Expr e, Type type) {
+  ELam(Position pos, DefVar[] vs, Expr e, Type type) {
     this(pos, vs, e);
     this.type = type;
   }

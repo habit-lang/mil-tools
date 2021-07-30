@@ -237,7 +237,7 @@ public class BitdataField extends Name {
    * Generate code for an update operator for this field, given the layout of the enclosing bitdata
    * type.
    */
-  public void generateUpdate(BitdataLayout layout) {
+  void generateUpdate(BitdataLayout layout) {
     int total = layout.getWidth(); // number of bits in output
     Block impl;
     if (total == 0) { // If total==0, then any fields must also have zero width

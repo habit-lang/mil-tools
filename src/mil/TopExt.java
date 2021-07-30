@@ -48,7 +48,7 @@ public class TopExt extends Top {
    * object equality. For all other types of Atom, we use double dispatch to compare component
    * values.
    */
-  public boolean sameAtom(Atom that) {
+  boolean sameAtom(Atom that) {
     return that.sameTopExt(external);
   }
 
@@ -63,7 +63,7 @@ public class TopExt extends Top {
   }
 
   /** Find the dependencies of this AST fragment. */
-  public Defns dependencies(Defns ds) {
+  Defns dependencies(Defns ds) {
     return external.dependencies(ds);
   }
 

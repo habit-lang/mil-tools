@@ -22,7 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
-public class TopBinding {
+class TopBinding {
 
   private TopLevel topLevel;
 
@@ -31,7 +31,7 @@ public class TopBinding {
   private Type type;
 
   /** Default constructor. */
-  public TopBinding(TopLevel topLevel, Expr e, Type type) {
+  TopBinding(TopLevel topLevel, Expr e, Type type) {
     this.topLevel = topLevel;
     this.e = e;
     this.type = type;
@@ -48,7 +48,7 @@ public class TopBinding {
   }
 
   /** Scope analysis for TopBindings that are introduced in CorePrograms. */
-  public void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {
+  void inScopeOf(Handler handler, MILEnv milenv, Env env) throws Failure {
     // Ignore results of top level inScopeOf() call
     e.inScopeOf(handler, milenv, env);
   }
@@ -64,7 +64,7 @@ public class TopBinding {
   }
 
   /** Search for a TopLevel with the given name in a list of TopBindings. */
-  public static TopLevel find(String id, TopBindings tbs) {
+  static TopLevel find(String id, TopBindings tbs) {
     for (; tbs != null; tbs = tbs.next) {
       if (id.equals(tbs.head.topLevel.getId(0))) {
         return tbs.head.topLevel;

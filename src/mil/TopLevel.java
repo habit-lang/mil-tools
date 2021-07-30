@@ -107,7 +107,7 @@ public class TopLevel extends TopDefn {
   }
 
   /** Find the list of Defns that this Defn depends on. */
-  public Defns dependencies() {
+  Defns dependencies() {
     return tail.dependencies(null);
   }
 
@@ -217,7 +217,7 @@ public class TopLevel extends TopDefn {
   }
 
   /** Apply inlining. */
-  public void inlining() {
+  void inlining() {
     tail = tail.inlineTail();
   }
 
@@ -234,7 +234,7 @@ public class TopLevel extends TopDefn {
   }
 
   /** Perform flow analysis on this definition. */
-  public void flow() {
+  void flow() {
     // The main purpose of this code is to run liveness analysis on the tail expression, which will
     // have the effect of shorting out top level atom references where possible.
     tail = tail.rewriteTail(this, null /* facts */, true);
@@ -479,8 +479,7 @@ public class TopLevel extends TopDefn {
   }
 
   /** Perform scope analysis on the definition for this top level value. */
-  public void inScopeOf(Handler handler, MILEnv milenv, String[] args, CodeExp cexp)
-      throws Failure {
+  void inScopeOf(Handler handler, MILEnv milenv, String[] args, CodeExp cexp) throws Failure {
     this.tail = cexp.toTail(handler, milenv, args);
   }
 

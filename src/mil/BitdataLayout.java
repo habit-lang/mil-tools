@@ -281,12 +281,12 @@ public class BitdataLayout extends DataName {
   private Block constructorBlock;
 
   /** Return a call to the constructor block for this layout. */
-  public BlockCall construct(Atom[] args) {
+  BlockCall construct(Atom[] args) {
     return new BlockCall(constructorBlock, args);
   }
 
   /** Generate code for a constructor for this layout. */
-  public void generateConstructor(Cfun cf) {
+  void generateConstructor(Cfun cf) {
     int total = getWidth(); // number of bits in output
     Temp[] params;
     Code code;
@@ -419,9 +419,9 @@ public class BitdataLayout extends DataName {
     }
   }
 
-  public static Block bmaskeq = masktestBlock("bmaskeq", Prim.eq);
+  static Block bmaskeq = masktestBlock("bmaskeq", Prim.eq);
 
-  public static Block bmaskneq = masktestBlock("bmaskneq", Prim.neq);
+  static Block bmaskneq = masktestBlock("bmaskneq", Prim.neq);
 
   /**
    * Make a block of the following form for implementing a single word masktest predicate with mask

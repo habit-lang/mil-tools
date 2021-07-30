@@ -51,7 +51,7 @@ class MILAST extends CoreProgram {
    * Load the abstract syntax for a list of MIL definitions from the source file for this MILAST
    * object.
    */
-  public void syntaxAnalysis(Handler handler, MILLoader loader) throws Failure {
+  void syntaxAnalysis(Handler handler, MILLoader loader) throws Failure {
     debug.Log.println("Loading " + name + " ...");
     try {
       Reader reader = new FileReader(loader.findFile(handler, name));
@@ -70,7 +70,7 @@ class MILAST extends CoreProgram {
   }
 
   /** Use scope analysis to convert a sequence of MIL definitions to corresponding MIL code. */
-  public MILEnv scopeAnalysis(Handler handler, TyconEnv tenv, MILEnv imports, MILProgram program)
+  MILEnv scopeAnalysis(Handler handler, TyconEnv tenv, MILEnv imports, MILProgram program)
       throws Failure {
     // Pass 1: Build internal environment that contains bindings for all symbols defined in this
     // MILAST:

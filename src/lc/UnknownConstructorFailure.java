@@ -24,7 +24,7 @@ import mil.*;
 
 class UnknownConstructorFailure extends Failure {
 
-  public UnknownConstructorFailure(Position pos, String id) {
+  UnknownConstructorFailure(Position pos, String id) {
     super(pos, "Unknown constructor function " + id);
   }
 }

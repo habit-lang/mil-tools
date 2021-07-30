@@ -41,12 +41,12 @@ public class ProxyNat extends Proxy {
    * object equality. For all other types of Atom, we use double dispatch to compare component
    * values.
    */
-  public boolean sameAtom(Atom that) {
+  boolean sameAtom(Atom that) {
     return that.sameProxyNat(this);
   }
 
   /** Test to determine whether this Atom refers to the given ProxyNat constant. */
-  public boolean sameProxyNat(ProxyNat c) {
+  boolean sameProxyNat(ProxyNat c) {
     return this.nat.equals(c.nat);
   }
 

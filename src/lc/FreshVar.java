@@ -29,17 +29,17 @@ class FreshVar extends DefVar {
 
   private String id;
 
-  public FreshVar() {
+  FreshVar() {
     this.id = "t" + count++;
   }
 
   /** Find an identifier associated with this variable. */
-  public String getId() {
+  String getId() {
     return id;
   }
 
   /** Determine whether this variable can be referenced by the specified identifier. */
-  public boolean answersTo(String id) {
+  boolean answersTo(String id) {
     return false;
   }
 }

@@ -76,7 +76,7 @@ class TIndBlockType extends BlockType {
     return new BlockType(dom.canonType(tenv, set), rng.canonType(tenv, set));
   }
 
-  public BlockType apply(TVarSubst s) {
+  BlockType apply(TVarSubst s) {
     return apply(tenv, s);
   }
 }

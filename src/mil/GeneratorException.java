@@ -31,7 +31,7 @@ class GeneratorException extends Exception {
     this.reason = reason;
   }
 
-  public String getReason() {
+  String getReason() {
     return reason;
   }
 }

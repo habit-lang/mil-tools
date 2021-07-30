@@ -175,11 +175,11 @@ public class Cfun extends Name {
   private TopLevel topLevel;
 
   /** Return the top-level LC constructor function corresponding to this constructor. */
-  public TopLevel getTopLevel() {
+  TopLevel getTopLevel() {
     return topLevel;
   }
 
-  public void addTopLevel() {
+  void addTopLevel() {
     topLevel = new TopLevel(pos, id, new DataAlloc(this).maker(pos, getArity()));
     topLevel.setDeclared(0, allocType.toScheme());
   }
@@ -229,14 +229,14 @@ public class Cfun extends Name {
    * Return true if this is a newtype constructor (i.e., a single argument constructor function for
    * a non-recursive type that only has one constructor).
    */
-  public boolean isNewtype() {
+  boolean isNewtype() {
     return num == 0 && dn.isNewtype();
     // The first conjunct is implied by the second, but we include it for clarity and
     // to avoid a (likely more expensive) test on dn in many cases.
   }
 
   /** Return true if this is a single constructor type. */
-  public boolean isSingleConstructor() {
+  boolean isSingleConstructor() {
     return dn.isSingleConstructor();
   }
 

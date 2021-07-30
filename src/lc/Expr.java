@@ -62,19 +62,19 @@ abstract class Expr {
     throw new Failure(getPos(), "Syntax error in variable binding");
   }
 
-  public static final String trueName = "True";
+  static final String trueName = "True";
 
-  public static final Expr trueCon = new EId(BuiltinPosition.pos, trueName);
+  static final Expr trueCon = new EId(BuiltinPosition.pos, trueName);
 
-  public static final String falseName = "False";
+  static final String falseName = "False";
 
-  public static final Expr falseCon = new EId(BuiltinPosition.pos, falseName);
+  static final Expr falseCon = new EId(BuiltinPosition.pos, falseName);
 
   /**
    * The abstract syntax for LC does not have an if-then-else construct, so we provide the following
    * helper for constructing an equivalent LC expression using ECase.
    */
-  public static Expr ifthenelse(
+  static Expr ifthenelse(
       Position pos, Expr test, Position post, Expr trueBranch, Position posf, Expr falseBranch) {
     return new ECase(
         pos,
@@ -92,7 +92,7 @@ abstract class Expr {
    */
   abstract void indent(IndentOutput out, int n);
 
-  public void indent(IndentOutput out, int n, String label) {
+  void indent(IndentOutput out, int n, String label) {
     if (type != null) {
       label += " :: " + type.skeleton();
     }
@@ -110,7 +110,7 @@ abstract class Expr {
    * Test to determine whether this expression can be used on the right hand side of a binding in a
    * recursive binding group.
    */
-  public boolean isSafeToRecurse() {
+  boolean isSafeToRecurse() {
     return false;
   }
 

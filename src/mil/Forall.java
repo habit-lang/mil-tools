@@ -112,7 +112,7 @@ public class Forall extends Scheme {
     return instantiate().canonType(set).generalize();
   }
 
-  public Type apply(TVarSubst s) {
+  Type apply(TVarSubst s) {
     debug.Internal.error("Unable to specialize type scheme");
     return null;
   }
@@ -121,7 +121,7 @@ public class Forall extends Scheme {
    * Extend a substitution by matching this (potentially polymorphic) Scheme against a monomorphic
    * instance.
    */
-  public TVarSubst specializingSubst(TVar[] generics, Type inst) {
+  TVarSubst specializingSubst(TVar[] generics, Type inst) {
     Type[] tenv = prefix.instantiate();
     if (tenv.length != generics.length || !type.match(tenv, inst, null)) {
       debug.Internal.error("specializingSubst fails on Forall");

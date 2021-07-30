@@ -22,17 +22,17 @@ import compiler.*;
 import core.*;
 import mil.*;
 
-public abstract class Env {
+abstract class Env {
 
   protected Env enclosing;
 
   /** Default constructor. */
-  public Env(Env enclosing) {
+  Env(Env enclosing) {
     this.enclosing = enclosing;
   }
 
   /** Lookup the definition for a specific identifier in an environment. */
-  public static DefVar find(String id, Env env) {
+  static DefVar find(String id, Env env) {
     for (; env != null; env = env.enclosing) {
       DefVar v = env.findInThis(id);
       if (v != null) {
@@ -43,5 +43,5 @@ public abstract class Env {
   }
 
   /** Lookup the definition for an identifier in this environment node. */
-  public abstract DefVar findInThis(String id);
+  abstract DefVar findInThis(String id);
 }

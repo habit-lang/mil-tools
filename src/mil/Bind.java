@@ -49,17 +49,17 @@ public class Bind extends Code {
   }
 
   /** Test for a free occurrence of a particular variable. */
-  public boolean contains(Temp w) {
+  boolean contains(Temp w) {
     return t.contains(w) || (!w.occursIn(vs) && c.contains(w));
   }
 
   /** Find the dependencies of this AST fragment. */
-  public Defns dependencies(Defns ds) {
+  Defns dependencies(Defns ds) {
     return t.dependencies(c.dependencies(ds));
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out, Temps ts) {
+  void dump(PrintWriter out, Temps ts) {
     Temps ts1 = Defn.renameTemps ? Temps.push(vs, ts) : ts;
     indent(out);
     Atom.displayTuple(out, vs, ts1);
@@ -73,7 +73,7 @@ public class Bind extends Code {
    * structure, including the introduction of new temporaries in place of any variables introduced
    * by Binds.
    */
-  public Code apply(TempSubst s) { // vs <- t; c
+  Code apply(TempSubst s) { // vs <- t; c
     Tail t1 = t.apply(s);
     Temp[] ws = new Temp[vs.length];
     for (int i = 0; i < vs.length; i++) {

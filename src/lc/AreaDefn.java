@@ -22,7 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
-public class AreaDefn extends TopDefn {
+class AreaDefn extends TopDefn {
 
   private AreaVar[] areaVars;
 
@@ -31,7 +31,7 @@ public class AreaDefn extends TopDefn {
   private TypeExp alignExp;
 
   /** Default constructor. */
-  public AreaDefn(Position pos, AreaVar[] areaVars, TypeExp typeExp, TypeExp alignExp) {
+  AreaDefn(Position pos, AreaVar[] areaVars, TypeExp typeExp, TypeExp alignExp) {
     super(pos);
     this.areaVars = areaVars;
     this.typeExp = typeExp;

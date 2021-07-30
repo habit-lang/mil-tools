@@ -103,7 +103,7 @@ public abstract class Area extends TopDefn {
   }
 
   /** Apply inlining. */
-  public void inlining() {
+  void inlining() {
     /* Nothing to do here */
   }
 
@@ -116,7 +116,7 @@ public abstract class Area extends TopDefn {
   }
 
   /** Perform flow analysis on this definition. */
-  public void flow() {
+  void flow() {
     /* Nothing to do here */
   }
 
@@ -159,7 +159,7 @@ public abstract class Area extends TopDefn {
     declared = scheme;
   }
 
-  public abstract void inScopeOf(Handler handler, MILEnv milenv, AtomExp init) throws Failure;
+  abstract void inScopeOf(Handler handler, MILEnv milenv, AtomExp init) throws Failure;
 
   /** Add this exported definition to the specified MIL environment. */
   void addExport(MILEnv exports) {

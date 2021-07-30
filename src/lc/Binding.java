@@ -38,7 +38,7 @@ class Binding extends DefVar {
     this.e = e;
   }
 
-  public Position getPos() {
+  Position getPos() {
     return pos;
   }
 
@@ -52,17 +52,17 @@ class Binding extends DefVar {
   protected TVar[] generics;
 
   /** Find an identifier associated with this variable. */
-  public String getId() {
+  String getId() {
     return id;
   }
 
   /** Determine whether this variable can be referenced by the specified identifier. */
-  public boolean answersTo(String id) {
+  boolean answersTo(String id) {
     return id.equals(this.id);
   }
 
   /** Return the most general type available for this variable. */
-  public Scheme getScheme() {
+  Scheme getScheme() {
     return (declared != null) ? declared : type;
   }
 
@@ -234,7 +234,7 @@ class Binding extends DefVar {
    * Extend the given list of unbound type variables, tvs, from the enclosing scope with any
    * additional unbound type variables that appear in this specific object.
    */
-  public TVars tvarsInScope(TVars tvs) {
+  TVars tvarsInScope(TVars tvs) {
     return getScheme().tvars(tvs);
   }
 
@@ -242,7 +242,7 @@ class Binding extends DefVar {
    * Set this variable's type to be a fresh type variable. Used to initialize the type field of a
    * Var.
    */
-  public Type freshType(Tyvar tyvar) {
+  Type freshType(Tyvar tyvar) {
     debug.Internal.error("should not call freshType for a Binding");
     return null;
   }

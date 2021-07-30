@@ -23,11 +23,11 @@ import core.*;
 import java.util.HashMap;
 import mil.*;
 
-public class LiftEnv {
+class LiftEnv {
 
   private HashMap<Binding, Lifting> table = new HashMap();
 
-  public void dump() {
+  void dump() {
     System.out.println("LiftEnv ----------------------------");
     for (Binding b : table.keySet()) {
       System.out.print(b.getId() + " ---> ");
@@ -54,7 +54,7 @@ public class LiftEnv {
 
   private TopBindings last = null;
 
-  public TopBindings getLifted() {
+  TopBindings getLifted() {
     return lifted;
   }
 
@@ -65,7 +65,7 @@ public class LiftEnv {
    * list to be added to this LiftEnv, which will be for the bindings that were already at the top
    * level prior to lambda lifting).
    */
-  public void addTopBindings(TopBindings tbs) {
+  void addTopBindings(TopBindings tbs) {
     if (tbs != null) {
       if (last == null) {
         lifted = tbs;

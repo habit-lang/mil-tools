@@ -44,7 +44,7 @@ public class LCDefns {
    * list of all bindings, and the second adds annotations. This is followed by a final pass over
    * the generated list of bindings to check for duplicate entries.
    */
-  public static Bindings toBindings(Handler handler, TyconEnv tenv, LCDefns defns) {
+  static Bindings toBindings(Handler handler, TyconEnv tenv, LCDefns defns) {
     Bindings bs = null;
     for (LCDefns ds = defns; ds != null; ds = ds.next) {
       bs = ds.head.addBindings(handler, bs);

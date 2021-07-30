@@ -469,7 +469,7 @@ public abstract class Type extends Scheme {
   }
 
   /** Calculate the array of types for a given array of Atom operands. */
-  public static Type[] instantiate(Atom[] args) {
+  static Type[] instantiate(Atom[] args) {
     Type[] ts = new Type[args.length];
     for (int i = 0; i < ts.length; i++) {
       ts[i] = args[i].instantiate();
@@ -478,7 +478,7 @@ public abstract class Type extends Scheme {
   }
 
   /** Calculate an array of fresh types for a given collection of Temp operands. */
-  public static Type[] freshTypes(Temp[] vs) {
+  static Type[] freshTypes(Temp[] vs) {
     Type[] ts = new Type[vs.length];
     for (int i = 0; i < ts.length; i++) {
       ts[i] = vs[i].freshType(Tyvar.star);
@@ -532,7 +532,7 @@ public abstract class Type extends Scheme {
     return this.canonType(set);
   }
 
-  public Type apply(TVarSubst s) {
+  Type apply(TVarSubst s) {
     return apply(null, s);
   }
 
@@ -542,7 +542,7 @@ public abstract class Type extends Scheme {
    * Extend a substitution by matching this (potentially polymorphic) Scheme against a monomorphic
    * instance.
    */
-  public TVarSubst specializingSubst(TVar[] generics, Type inst) {
+  TVarSubst specializingSubst(TVar[] generics, Type inst) {
     if (generics.length != 0 || !this.alphaEquiv(inst)) {
       debug.Internal.error("specializingSubst fails on Type");
     }
@@ -621,7 +621,7 @@ public abstract class Type extends Scheme {
    * vectors for pathological test cases). For values of width 1, the representation vector contains
    * a single MIL Flag value, while for values of width 0, it contains only Unit.
    */
-  public static Type[] repBits(int w) {
+  static Type[] repBits(int w) {
     return (w == 0)
         ? Tycon.unitRep
         : (w == 1)

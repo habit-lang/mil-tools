@@ -22,10 +22,10 @@ import compiler.*;
 import core.*;
 
 /** A lexical analyzer for the MIL language. */
-public class MILLexer extends LayoutLexer implements MILTokens {
+class MILLexer extends LayoutLexer implements MILTokens {
 
   /** Construct a lexical analyzer for the MIL language. */
-  public MILLexer(Handler handler, boolean optional, Source source) {
+  MILLexer(Handler handler, boolean optional, Source source) {
     super(handler, optional, source);
     reserved.put("primitive", new Integer(PRIMITIVE));
     reserved.put("return", new Integer(RETURN));

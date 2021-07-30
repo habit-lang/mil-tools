@@ -41,7 +41,7 @@ public class Enter extends Call {
   }
 
   /** Test if this Tail expression includes a free occurrence of a particular variable. */
-  public boolean contains(Temp w) {
+  boolean contains(Temp w) {
     return f == w || super.contains(w);
   }
 
@@ -49,17 +49,17 @@ public class Enter extends Call {
    * Test if this Tail expression includes an occurrence of any of the variables listed in the given
    * array.
    */
-  public boolean contains(Temp[] ws) {
+  boolean contains(Temp[] ws) {
     return f.occursIn(ws) || super.contains(ws);
   }
 
   /** Add the variables mentioned in this tail to the given list of variables. */
-  public Temps add(Temps vs) {
+  Temps add(Temps vs) {
     return f.add(super.add(vs));
   }
 
   /** Test if two Tail expressions are the same. */
-  public boolean sameTail(Tail that) {
+  boolean sameTail(Tail that) {
     return that.sameEnter(this);
   }
 
@@ -68,12 +68,12 @@ public class Enter extends Call {
   }
 
   /** Find the dependencies of this AST fragment. */
-  public Defns dependencies(Defns ds) {
+  Defns dependencies(Defns ds) {
     return f.dependencies(super.dependencies(ds));
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out, Temps ts) {
+  void dump(PrintWriter out, Temps ts) {
     out.print(f.toString(ts) + " @ ");
     Atom.displayTuple(out, args, ts);
   }
@@ -82,7 +82,7 @@ public class Enter extends Call {
    * Apply a TempSubst to this Tail, forcing construction of a new Tail, even if the substitution is
    * empty.
    */
-  public Tail apply(TempSubst s) {
+  Tail apply(TempSubst s) {
     return new Enter(f.apply(s), TempSubst.apply(args, s));
   }
 
@@ -102,7 +102,7 @@ public class Enter extends Call {
   }
 
   /** Return the type tuple describing the result that is produced by executing this Tail. */
-  public Type resultType() {
+  Type resultType() {
     return outputs;
   }
 

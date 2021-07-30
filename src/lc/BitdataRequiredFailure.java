@@ -24,7 +24,7 @@ import mil.*;
 
 class BitdataRequiredFailure extends Failure {
 
-  public BitdataRequiredFailure(Position pos, Cfun cf) {
+  BitdataRequiredFailure(Position pos, Cfun cf) {
     super(pos, cf.getId() + " is not a bitdata constructor");
   }
 }

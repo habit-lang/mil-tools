@@ -30,7 +30,7 @@ import java.io.PrintWriter;
 public class ExtImp {
 
   /** Find the list of Defns that this Defn depends on. */
-  public Defns dependencies() {
+  Defns dependencies() {
     return null;
   }
 

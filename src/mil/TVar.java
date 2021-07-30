@@ -288,7 +288,7 @@ public final class TVar extends TInd {
    * Generate a printable description for an array of type variables, such as the type variables
    * that are implicitly bound by a "big lambda" in a polymorphic definition.
    */
-  public static String show(TVar[] tvs) {
+  static String show(TVar[] tvs) {
     StringBuilder buf = new StringBuilder("[");
     if (tvs != null && tvs.length > 0) {
       buf.append(tvs[0].toString());

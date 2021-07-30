@@ -37,12 +37,12 @@ public class Return extends Call {
   }
 
   /** Test to determine whether a given tail expression has no externally visible side effect. */
-  public boolean hasNoEffect() {
+  boolean hasNoEffect() {
     return true;
   }
 
   /** Test if two Tail expressions are the same. */
-  public boolean sameTail(Tail that) {
+  boolean sameTail(Tail that) {
     return that.sameReturn(this);
   }
 
@@ -51,7 +51,7 @@ public class Return extends Call {
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out, Temps ts) {
+  void dump(PrintWriter out, Temps ts) {
     out.print("return ");
     Atom.displayTuple(out, args, ts);
   }
@@ -70,7 +70,7 @@ public class Return extends Call {
   }
 
   /** Return the type tuple describing the result that is produced by executing this Tail. */
-  public Type resultType() {
+  Type resultType() {
     return outputs;
   }
 

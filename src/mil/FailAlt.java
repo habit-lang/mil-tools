@@ -26,22 +26,22 @@ import java.io.PrintWriter;
 public class FailAlt extends Alts {
 
   /** Test for a free occurrence of a particular variable. */
-  public boolean contains(Temp w) {
+  boolean contains(Temp w) {
     return false;
   }
 
   /** Find the dependencies of this AST fragment. */
-  public Defns dependencies(Defns ds) {
+  Defns dependencies(Defns ds) {
     return ds;
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out, Temps ts) {
+  void dump(PrintWriter out, Temps ts) {
     /* do nothing */
   }
 
   /** Force the application of a TempSubst to this list of alternatives. */
-  public Alts apply(TempSubst s) {
+  Alts apply(TempSubst s) {
     return this;
   }
 

@@ -22,21 +22,21 @@ import compiler.*;
 import core.*;
 import mil.*;
 
-public class Equation extends LCDefn {
+class Equation extends LCDefn {
 
   private String id;
 
   private Expr e;
 
   /** Default constructor. */
-  public Equation(Position pos, String id, Expr e) {
+  Equation(Position pos, String id, Expr e) {
     super(pos);
     this.id = id;
     this.e = e;
   }
 
   /** Add bindings corresponding to this definition to the given list of bindings. */
-  public Bindings addBindings(Handler handler, Bindings bs) {
+  Bindings addBindings(Handler handler, Bindings bs) {
     // TODO: combine multiple equations into a single binding?
     // TODO: add new binding to end of list?
     return new Bindings(new Binding(pos, id, e), bs);

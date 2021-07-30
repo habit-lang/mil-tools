@@ -55,7 +55,7 @@ class TIndAllocType extends AllocType {
     return new AllocType(set.canonTypes(stored, tenv), result.canonType(tenv, set));
   }
 
-  public AllocType apply(TVarSubst s) {
+  AllocType apply(TVarSubst s) {
     return apply(tenv, s);
   }
 

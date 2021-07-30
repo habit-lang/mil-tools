@@ -43,7 +43,7 @@ public abstract class MILEnv {
     return tyconEnv;
   }
 
-  public abstract void print();
+  abstract void print();
 
   /**
    * Look for an element corresponding to the given identifier at any layer within this environment.
@@ -155,7 +155,7 @@ public abstract class MILEnv {
     throw new Failure(pos, "Multiple definitions for " + what + " \"" + id + "\"");
   }
 
-  public Prim mustFindPrim(Handler handler, Position pos, String id) {
+  Prim mustFindPrim(Handler handler, Position pos, String id) {
     Prim x = findPrim(id);
     if (x == null) {
       handler.report(notFound(pos, id));
@@ -163,7 +163,7 @@ public abstract class MILEnv {
     return x;
   }
 
-  public Block mustFindBlock(Handler handler, Position pos, String id) {
+  Block mustFindBlock(Handler handler, Position pos, String id) {
     Block x = findBlock(id);
     if (x == null) {
       handler.report(notFound(pos, id));
@@ -171,7 +171,7 @@ public abstract class MILEnv {
     return x;
   }
 
-  public ClosureDefn mustFindClosureDefn(Handler handler, Position pos, String id) {
+  ClosureDefn mustFindClosureDefn(Handler handler, Position pos, String id) {
     ClosureDefn x = findClosureDefn(id);
     if (x == null) {
       handler.report(notFound(pos, id));
@@ -179,7 +179,7 @@ public abstract class MILEnv {
     return x;
   }
 
-  public Top mustFindTop(Handler handler, Position pos, String id) {
+  Top mustFindTop(Handler handler, Position pos, String id) {
     Top x = findTop(id);
     if (x == null) {
       handler.report(notFound(pos, id));
@@ -187,7 +187,7 @@ public abstract class MILEnv {
     return x;
   }
 
-  public Cfun mustFindCfun(Handler handler, Position pos, String id, String subid) {
+  Cfun mustFindCfun(Handler handler, Position pos, String id, String subid) {
     Cfun cf = findCfun((subid != null) ? subid : id);
     if (cf == null) {
       handler.report(notFound(pos, id));
@@ -204,7 +204,7 @@ public abstract class MILEnv {
     return cf;
   }
 
-  public static Failure notFound(Position pos, String id) {
+  static Failure notFound(Position pos, String id) {
     return new Failure(pos, "No definition for \"" + id + "\"");
   }
 }

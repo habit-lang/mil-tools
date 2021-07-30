@@ -24,7 +24,7 @@ import mil.*;
 
 class NotInScopeFailure extends Failure {
 
-  public NotInScopeFailure(Position pos, String id) {
+  NotInScopeFailure(Position pos, String id) {
     super(pos, "\"" + id + "\" is not in scope");
   }
 }

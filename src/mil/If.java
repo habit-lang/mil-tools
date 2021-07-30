@@ -45,17 +45,17 @@ public class If extends Code {
   }
 
   /** Test for a free occurrence of a particular variable. */
-  public boolean contains(Temp w) {
+  boolean contains(Temp w) {
     return a == w || ifTrue.contains(w) || ifFalse.contains(w);
   }
 
   /** Find the dependencies of this AST fragment. */
-  public Defns dependencies(Defns ds) {
+  Defns dependencies(Defns ds) {
     return a.dependencies(ifFalse.dependencies(ifTrue.dependencies(ds)));
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out, Temps ts) {
+  void dump(PrintWriter out, Temps ts) {
     indentln(out, "if " + a.toString(ts));
     indent(out);
     out.print("  then ");
@@ -70,7 +70,7 @@ public class If extends Code {
    * structure, including the introduction of new temporaries in place of any variables introduced
    * by Binds.
    */
-  public Code apply(TempSubst s) {
+  Code apply(TempSubst s) {
     return new If(a.apply(s), ifTrue.applyBlockCall(s), ifFalse.applyBlockCall(s));
   }
 

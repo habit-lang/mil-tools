@@ -34,7 +34,7 @@ public class TopDef extends Top {
     this.i = i;
   }
 
-  public TopLevel getTopLevel() {
+  TopLevel getTopLevel() {
     return topLevel;
   }
 
@@ -55,7 +55,7 @@ public class TopDef extends Top {
    * object equality. For all other types of Atom, we use double dispatch to compare component
    * values.
    */
-  public boolean sameAtom(Atom that) {
+  boolean sameAtom(Atom that) {
     return that.sameTopDef(topLevel, i);
   }
 
@@ -70,7 +70,7 @@ public class TopDef extends Top {
   }
 
   /** Find the dependencies of this AST fragment. */
-  public Defns dependencies(Defns ds) {
+  Defns dependencies(Defns ds) {
     return topLevel.dependencies(ds);
   }
 

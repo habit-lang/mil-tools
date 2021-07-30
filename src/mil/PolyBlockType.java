@@ -91,7 +91,7 @@ class PolyBlockType extends BlockType {
     return instantiate().canonBlockType(set).generalize();
   }
 
-  public BlockType apply(TVarSubst s) {
+  BlockType apply(TVarSubst s) {
     debug.Internal.error("Unable to specialize polymorphic block type");
     return null;
   }
@@ -100,7 +100,7 @@ class PolyBlockType extends BlockType {
    * Extend a substitution by matching this (potentially polymorphic) BlockType against a
    * monomorphic instance.
    */
-  public TVarSubst specializingSubst(TVar[] generics, BlockType inst) {
+  TVarSubst specializingSubst(TVar[] generics, BlockType inst) {
     Type[] tenv = prefix.instantiate();
     if (tenv.length != generics.length || !this.match(tenv, inst, null)) {
       debug.Internal.error("specializingSubst fails on PolyBlockType");

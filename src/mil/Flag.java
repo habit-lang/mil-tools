@@ -32,15 +32,15 @@ public class Flag extends Const {
     this.val = val;
   }
 
-  public boolean getVal() {
+  boolean getVal() {
     return val;
   }
 
-  public static final Flag True = new Flag(true);
+  static final Flag True = new Flag(true);
 
-  public static final Flag False = new Flag(false);
+  static final Flag False = new Flag(false);
 
-  public static Flag fromBool(boolean b) {
+  static Flag fromBool(boolean b) {
     return b ? True : False;
   }
 
@@ -54,17 +54,17 @@ public class Flag extends Const {
    * object equality. For all other types of Atom, we use double dispatch to compare component
    * values.
    */
-  public boolean sameAtom(Atom that) {
+  boolean sameAtom(Atom that) {
     return that.sameFlag(this);
   }
 
   /** Test to determine whether this Atom refers to the given flag constant. */
-  public boolean sameFlag(Flag c) {
+  boolean sameFlag(Flag c) {
     return this.val == c.val;
   }
 
   /** Test to determine whether this Atom is a flag constant (or not). */
-  public Flag isFlag() {
+  Flag isFlag() {
     return this;
   }
 

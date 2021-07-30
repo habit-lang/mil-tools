@@ -45,49 +45,49 @@ public class Prim {
   }
 
   /** Return the name of this primitive. */
-  public String getId() {
+  String getId() {
     return id;
   }
 
   /** Return the block type for this primitive. */
-  public BlockType getBlockType() {
+  BlockType getBlockType() {
     return blockType;
   }
 
-  public static final int PURE = 0;
+  static final int PURE = 0;
 
-  public static final int OBSERVER = 1;
+  static final int OBSERVER = 1;
 
-  public static final int VOLATILE = 2;
+  static final int VOLATILE = 2;
 
-  public static final int IMPURE = 3;
+  static final int IMPURE = 3;
 
-  public static final int DOESNTRETURN = 4;
+  static final int DOESNTRETURN = 4;
 
-  public boolean isPure() {
+  boolean isPure() {
     return purity == PURE;
   }
 
-  public boolean isRepeatable() {
+  boolean isRepeatable() {
     return purity <= OBSERVER;
   }
 
-  public boolean hasNoEffect() {
+  boolean hasNoEffect() {
     return purity <= VOLATILE;
   }
 
-  public boolean doesntReturn() {
+  boolean doesntReturn() {
     return purity >= DOESNTRETURN;
   }
 
-  public static final String[] purityLabels =
+  static final String[] purityLabels =
       new String[] {"pure", "observer", "volatile", "impure", "doesntReturn"};
 
-  public String purityLabel() {
+  String purityLabel() {
     return (purity < 0 || purity >= purityLabels.length) ? null : purityLabels[purity];
   }
 
-  public static int purityFromLabel(String p) {
+  static int purityFromLabel(String p) {
     for (int i = 0; i < purityLabels.length; i++) {
       if (p.equals(purityLabels[i])) {
         return i;
@@ -197,7 +197,7 @@ public class Prim {
   protected static final BlockType relopType = new BlockType(wordWordTuple, flagTuple);
 
   /** Make a clone of this Prim with a (possibly) new type. */
-  public Prim clone(BlockType bt) {
+  Prim clone(BlockType bt) {
     return new Prim(id, purity, bt);
   }
 
@@ -213,7 +213,7 @@ public class Prim {
       super("not", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new not(bt);
     }
 
@@ -257,7 +257,7 @@ public class Prim {
       super("and", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new and(bt);
     }
 
@@ -286,7 +286,7 @@ public class Prim {
       super("or", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new or(bt);
     }
 
@@ -315,7 +315,7 @@ public class Prim {
       super("xor", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new xor(bt);
     }
 
@@ -344,7 +344,7 @@ public class Prim {
       super("bnot", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new bnot(bt);
     }
 
@@ -388,7 +388,7 @@ public class Prim {
       super("band", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new band(bt);
     }
 
@@ -417,7 +417,7 @@ public class Prim {
       super("bor", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new bor(bt);
     }
 
@@ -446,7 +446,7 @@ public class Prim {
       super("bxor", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new bxor(bt);
     }
 
@@ -483,7 +483,7 @@ public class Prim {
       super("beq", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new beq(bt);
     }
 
@@ -520,7 +520,7 @@ public class Prim {
       super("blt", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new blt(bt);
     }
 
@@ -557,7 +557,7 @@ public class Prim {
       super("ble", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new ble(bt);
     }
 
@@ -594,7 +594,7 @@ public class Prim {
       super("bgt", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new bgt(bt);
     }
 
@@ -631,7 +631,7 @@ public class Prim {
       super("bge", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new bge(bt);
     }
 
@@ -668,7 +668,7 @@ public class Prim {
       super("shl", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new shl(bt);
     }
 
@@ -697,7 +697,7 @@ public class Prim {
       super("lshr", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new lshr(bt);
     }
 
@@ -726,7 +726,7 @@ public class Prim {
       super("ashr", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new ashr(bt);
     }
 
@@ -755,7 +755,7 @@ public class Prim {
       super("neg", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new neg(bt);
     }
 
@@ -799,7 +799,7 @@ public class Prim {
       super("add", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new add(bt);
     }
 
@@ -828,7 +828,7 @@ public class Prim {
       super("sub", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new sub(bt);
     }
 
@@ -857,7 +857,7 @@ public class Prim {
       super("mul", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new mul(bt);
     }
 
@@ -886,7 +886,7 @@ public class Prim {
       super("div", IMPURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new div(bt);
     }
 
@@ -950,7 +950,7 @@ public class Prim {
       super("rem", IMPURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new rem(bt);
     }
 
@@ -1014,7 +1014,7 @@ public class Prim {
       super("nzdiv", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new nzdiv(bt);
     }
 
@@ -1069,7 +1069,7 @@ public class Prim {
       super("nzrem", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new nzrem(bt);
     }
 
@@ -1124,7 +1124,7 @@ public class Prim {
       super("primEq", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new eq(bt);
     }
 
@@ -1161,7 +1161,7 @@ public class Prim {
       super("primNeq", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new neq(bt);
     }
 
@@ -1198,7 +1198,7 @@ public class Prim {
       super("primSlt", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new slt(bt);
     }
 
@@ -1235,7 +1235,7 @@ public class Prim {
       super("primSle", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new sle(bt);
     }
 
@@ -1272,7 +1272,7 @@ public class Prim {
       super("primSgt", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new sgt(bt);
     }
 
@@ -1309,7 +1309,7 @@ public class Prim {
       super("primSge", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new sge(bt);
     }
 
@@ -1346,7 +1346,7 @@ public class Prim {
       super("primUlt", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new ult(bt);
     }
 
@@ -1383,7 +1383,7 @@ public class Prim {
       super("primUle", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new ule(bt);
     }
 
@@ -1420,7 +1420,7 @@ public class Prim {
       super("primUgt", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new ugt(bt);
     }
 
@@ -1457,7 +1457,7 @@ public class Prim {
       super("primUge", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new uge(bt);
     }
 
@@ -1494,7 +1494,7 @@ public class Prim {
       super("flagToWord", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new flagToWord(bt);
     }
 
@@ -1531,7 +1531,7 @@ public class Prim {
       super("wordToFlag", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new wordToFlag(bt);
     }
 
@@ -1557,7 +1557,7 @@ public class Prim {
   }
 
   /** Represents the polymorphic block type forall (r::tuple). [] >>= r. */
-  public static final BlockType haltType = new PolyBlockType(Type.empty, Type.gen(0), Prefix.tuple);
+  static final BlockType haltType = new PolyBlockType(Type.empty, Type.gen(0), Prefix.tuple);
 
   public static final Prim halt = new halt();
 
@@ -1571,7 +1571,7 @@ public class Prim {
       super("halt", DOESNTRETURN, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new halt(bt);
     }
 
@@ -1600,7 +1600,7 @@ public class Prim {
       super("loop", DOESNTRETURN, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new loop(bt);
     }
 
@@ -1650,7 +1650,7 @@ public class Prim {
       super("printWord", IMPURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new printWord(bt);
     }
 
@@ -1677,7 +1677,7 @@ public class Prim {
       super("noinline", IMPURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new noinline(bt);
     }
   }
@@ -1767,41 +1767,41 @@ public class Prim {
     }
   }
 
-  public static final Type bit1 = Type.bit(1);
+  static final Type bit1 = Type.bit(1);
 
-  public static final Type bit8 = Type.bit(8);
+  static final Type bit8 = Type.bit(8);
 
-  public static final Type bit16 = Type.bit(16);
+  static final Type bit16 = Type.bit(16);
 
-  public static final Type bit32 = Type.bit(32);
+  static final Type bit32 = Type.bit(32);
 
-  public static final Type bit64 = Type.bit(64);
+  static final Type bit64 = Type.bit(64);
 
-  public static final Type addrType = Tycon.addr.asType();
+  static final Type addrType = Tycon.addr.asType();
 
-  public static final Type addrTuple = Type.tuple(addrType);
+  static final Type addrTuple = Type.tuple(addrType);
 
-  public static final Type unitTuple = Type.tuple(Tycon.unit.asType());
+  static final Type unitTuple = Type.tuple(Tycon.unit.asType());
 
-  public static final BlockType load1type = new BlockType(addrTuple, Type.tuple(bit1));
+  static final BlockType load1type = new BlockType(addrTuple, Type.tuple(bit1));
 
-  public static final BlockType load8type = new BlockType(addrTuple, Type.tuple(bit8));
+  static final BlockType load8type = new BlockType(addrTuple, Type.tuple(bit8));
 
-  public static final BlockType load16type = new BlockType(addrTuple, Type.tuple(bit16));
+  static final BlockType load16type = new BlockType(addrTuple, Type.tuple(bit16));
 
-  public static final BlockType load32type = new BlockType(addrTuple, Type.tuple(bit32));
+  static final BlockType load32type = new BlockType(addrTuple, Type.tuple(bit32));
 
-  public static final BlockType load64type = new BlockType(addrTuple, Type.tuple(bit64));
+  static final BlockType load64type = new BlockType(addrTuple, Type.tuple(bit64));
 
-  public static final BlockType store1type = new BlockType(Type.tuple(addrType, bit1), unitTuple);
+  static final BlockType store1type = new BlockType(Type.tuple(addrType, bit1), unitTuple);
 
-  public static final BlockType store8type = new BlockType(Type.tuple(addrType, bit8), unitTuple);
+  static final BlockType store8type = new BlockType(Type.tuple(addrType, bit8), unitTuple);
 
-  public static final BlockType store16type = new BlockType(Type.tuple(addrType, bit16), unitTuple);
+  static final BlockType store16type = new BlockType(Type.tuple(addrType, bit16), unitTuple);
 
-  public static final BlockType store32type = new BlockType(Type.tuple(addrType, bit32), unitTuple);
+  static final BlockType store32type = new BlockType(Type.tuple(addrType, bit32), unitTuple);
 
-  public static final BlockType store64type = new BlockType(Type.tuple(addrType, bit64), unitTuple);
+  static final BlockType store64type = new BlockType(Type.tuple(addrType, bit64), unitTuple);
 
   public static final Prim load1 = new load1();
 
@@ -1815,7 +1815,7 @@ public class Prim {
       super("load1", IMPURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new load1(bt);
     }
 
@@ -1848,7 +1848,7 @@ public class Prim {
       super("load8", IMPURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new load8(bt);
     }
 
@@ -1881,7 +1881,7 @@ public class Prim {
       super("load16", IMPURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new load16(bt);
     }
 
@@ -1914,7 +1914,7 @@ public class Prim {
       super("load32", IMPURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new load32(bt);
     }
 
@@ -1947,7 +1947,7 @@ public class Prim {
       super("load64", IMPURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new load64(bt);
     }
 
@@ -2019,7 +2019,7 @@ public class Prim {
       super("store1", IMPURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new store1(bt);
     }
 
@@ -2046,7 +2046,7 @@ public class Prim {
       super("store8", IMPURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new store8(bt);
     }
 
@@ -2073,7 +2073,7 @@ public class Prim {
       super("store16", IMPURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new store16(bt);
     }
 
@@ -2100,7 +2100,7 @@ public class Prim {
       super("store32", IMPURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new store32(bt);
     }
 
@@ -2127,7 +2127,7 @@ public class Prim {
       super("store64", IMPURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new store64(bt);
     }
 
@@ -2178,9 +2178,9 @@ public class Prim {
     }
   }
 
-  public static final Type init0Type = Type.init(Type.gen(0));
+  static final Type init0Type = Type.init(Type.gen(0));
 
-  public static final BlockType initSeqType =
+  static final BlockType initSeqType =
       new PolyBlockType(Type.tuple(init0Type, init0Type), Type.tuple(init0Type), Prefix.area);
 
   public static final Prim initSeq = new initSeq();
@@ -2195,7 +2195,7 @@ public class Prim {
       super("primInitSeq", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new initSeq(bt);
     }
 
@@ -2226,9 +2226,9 @@ public class Prim {
     }
   }
 
-  public static final Type ref0Type = Type.ref(Type.gen(0));
+  static final Type ref0Type = Type.ref(Type.gen(0));
 
-  public static final BlockType initSelfType =
+  static final BlockType initSelfType =
       new PolyBlockType(
           Type.tuple(Type.milfun(Type.tuple(ref0Type), Type.tuple(init0Type))),
           Type.tuple(init0Type),
@@ -2246,7 +2246,7 @@ public class Prim {
       super("primInitSelf", PURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new initSelf(bt);
     }
 
@@ -2278,7 +2278,7 @@ public class Prim {
     }
   }
 
-  public static final BlockType reInitType =
+  static final BlockType reInitType =
       new PolyBlockType(Type.tuple(ref0Type, init0Type), Type.empty, Prefix.area);
 
   public static final Prim reInit = new reInit();
@@ -2293,7 +2293,7 @@ public class Prim {
       super("primReInit", IMPURE, bt);
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new reInit(bt);
     }
 
@@ -2327,17 +2327,17 @@ public class Prim {
    * initialization of a structure; instead, they should be used in combination when compiling a
    * structure with one initializer for every field.
    */
-  public static class initStructField extends Prim {
+  static class initStructField extends Prim {
 
     private int offset;
 
     /** Default constructor. */
-    public initStructField(String id, int purity, BlockType blockType, int offset) {
+    initStructField(String id, int purity, BlockType blockType, int offset) {
       super(id, purity, blockType);
       this.offset = offset;
     }
 
-    public Prim clone(BlockType bt) {
+    Prim clone(BlockType bt) {
       return new initStructField(id, purity, bt, offset);
     }
 

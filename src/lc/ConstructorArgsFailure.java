@@ -24,7 +24,7 @@ import mil.*;
 
 class ConstructorArgsFailure extends Failure {
 
-  public ConstructorArgsFailure(Position pos, Cfun cf) {
+  ConstructorArgsFailure(Position pos, Cfun cf) {
     super(pos, "Constructor " + cf.getId() + " requires " + cf.getArity() + " arguments");
   }
 }

@@ -32,7 +32,7 @@ public class DataAlloc extends Allocator {
   }
 
   /** Test if two Tail expressions are the same. */
-  public boolean sameTail(Tail that) {
+  boolean sameTail(Tail that) {
     return that.sameDataAlloc(this);
   }
 
@@ -41,7 +41,7 @@ public class DataAlloc extends Allocator {
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out, Temps ts) {
+  void dump(PrintWriter out, Temps ts) {
     dump(out, cf.toString(), "(", args, ")", ts);
   }
 
@@ -61,7 +61,7 @@ public class DataAlloc extends Allocator {
   }
 
   /** Return the type tuple describing the result that is produced by executing this Tail. */
-  public Type resultType() {
+  Type resultType() {
     return outputs;
   }
 

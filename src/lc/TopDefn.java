@@ -23,12 +23,12 @@ import core.*;
 import mil.*;
 
 /** A base class for definitions that are only valid at the top level in an LC program. */
-public abstract class TopDefn {
+abstract class TopDefn {
 
   protected Position pos;
 
   /** Default constructor. */
-  public TopDefn(Position pos) {
+  TopDefn(Position pos) {
     this.pos = pos;
   }
 

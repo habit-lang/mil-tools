@@ -96,13 +96,13 @@ public abstract class Scheme {
   /** Calculate a new version of this type scheme with canonical components. */
   abstract Scheme canonScheme(TypeSet set);
 
-  public abstract Type apply(TVarSubst s);
+  abstract Type apply(TVarSubst s);
 
   /**
    * Extend a substitution by matching this (potentially polymorphic) Scheme against a monomorphic
    * instance.
    */
-  public abstract TVarSubst specializingSubst(TVar[] generics, Type inst);
+  abstract TVarSubst specializingSubst(TVar[] generics, Type inst);
 
   /** Return the representation vector for values of this type. */
   abstract Type[] repCalc(Type[] tenv);

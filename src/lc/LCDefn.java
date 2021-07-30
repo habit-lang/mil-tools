@@ -26,17 +26,17 @@ import mil.*;
  * A base class for definitions that can be used at the top-level and locally (i.e., within a let)
  * in LC programs.
  */
-public abstract class LCDefn {
+abstract class LCDefn {
 
   protected Position pos;
 
   /** Default constructor. */
-  public LCDefn(Position pos) {
+  LCDefn(Position pos) {
     this.pos = pos;
   }
 
   /** Add bindings corresponding to this definition to the given list of bindings. */
-  public Bindings addBindings(Handler handler, Bindings bs) {
+  Bindings addBindings(Handler handler, Bindings bs) {
     return bs;
   }
 
@@ -44,7 +44,7 @@ public abstract class LCDefn {
    * Annotate bindings in the given list using information (such as a type signature or fixity) that
    * is provided by this definition.
    */
-  public void annotateBindings(Handler handler, TyconEnv tenv, Bindings bs) {
+  void annotateBindings(Handler handler, TyconEnv tenv, Bindings bs) {
     /* do nothing */
   }
 

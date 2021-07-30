@@ -25,18 +25,18 @@ import mil.*;
 /**
  * An environment that extends the enclosing environment with bindings for an array of identifiers.
  */
-public class VarsEnv extends Env {
+class VarsEnv extends Env {
 
   private DefVar[] vs;
 
   /** Default constructor. */
-  public VarsEnv(Env enclosing, DefVar[] vs) {
+  VarsEnv(Env enclosing, DefVar[] vs) {
     super(enclosing);
     this.vs = vs;
   }
 
   /** Lookup the definition for an identifier in this environment node. */
-  public DefVar findInThis(String id) {
+  DefVar findInThis(String id) {
     for (int i = 0; i < vs.length; i++) {
       if (vs[i].answersTo(id)) {
         return vs[i];

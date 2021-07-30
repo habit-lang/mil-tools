@@ -33,12 +33,12 @@ public abstract class Call extends Tail {
    * the time of construction, but we also have flexibility to fix the arguments at some later point
    * instead.
    */
-  public Call withArgs(Atom[] args) {
+  Call withArgs(Atom[] args) {
     this.args = args;
     return this;
   }
 
-  public int getArity() {
+  int getArity() {
     return args.length;
   }
 
@@ -63,7 +63,7 @@ public abstract class Call extends Tail {
   }
 
   /** Test if this Tail expression includes a free occurrence of a particular variable. */
-  public boolean contains(Temp w) {
+  boolean contains(Temp w) {
     return args != null && w.occursIn(args);
   }
 
@@ -71,12 +71,12 @@ public abstract class Call extends Tail {
    * Test if this Tail expression includes an occurrence of any of the variables listed in the given
    * array.
    */
-  public boolean contains(Temp[] ws) {
+  boolean contains(Temp[] ws) {
     return Atom.occursIn(args, ws);
   }
 
   /** Add the variables mentioned in this tail to the given list of variables. */
-  public Temps add(Temps vs) {
+  Temps add(Temps vs) {
     return Temps.add(args, vs);
   }
 
@@ -84,14 +84,14 @@ public abstract class Call extends Tail {
    * Test if the arguments for two Calls are the same. Either both argument lists are null, or else
    * both have the same list of Atoms.
    */
-  public boolean sameArgs(Call that) {
+  boolean sameArgs(Call that) {
     return (this.args == null)
         ? (that.args == null)
         : (that.args != null && Atom.sameAtoms(this.args, that.args));
   }
 
   /** Find the dependencies of this AST fragment. */
-  public Defns dependencies(Defns ds) {
+  Defns dependencies(Defns ds) {
     return Atom.dependencies(args, ds);
   }
 
@@ -101,8 +101,7 @@ public abstract class Call extends Tail {
    * block, primitive, and data constructor calls; braces for closure constructors; and brackets for
    * monadic thunk constructors).
    */
-  public static void dump(
-      PrintWriter out, String name, String open, Atom[] args, String close, Temps ts) {
+  static void dump(PrintWriter out, String name, String open, Atom[] args, String close, Temps ts) {
     out.print(name);
     if (args != null) {
       out.print(open);
@@ -115,14 +114,14 @@ public abstract class Call extends Tail {
    * Apply a TempSubst to this Tail, forcing construction of a new Tail, even if the substitution is
    * empty.
    */
-  public Tail apply(TempSubst s) {
+  Tail apply(TempSubst s) {
     return callDup(TempSubst.apply(args, s));
   }
 
   /** Construct a new Call value that is based on the receiver, without copying the arguments. */
   abstract Call callDup(Atom[] args);
 
-  public Call returnUnit(Position pos, int n) {
+  Call returnUnit(Position pos, int n) {
     // Define a block:  b[x1,...,x_n] = [] <- call(x1,...,xn); return Unit
     Temp[] params = Temp.makeTemps(n);
     Code c =
@@ -130,7 +129,7 @@ public abstract class Call extends Tail {
     return new BlockCall(new Block(pos, params, c));
   }
 
-  public Call thunk(Position pos, int n) {
+  Call thunk(Position pos, int n) {
     // Define a closure: k{x1,...,xn} [] = call(x1,...,xn)
     Temp[] stored = Temp.makeTemps(n);
     ClosureDefn k = new ClosureDefn(pos, stored, Temp.noTemps, this.withArgs(stored));
@@ -142,7 +141,7 @@ public abstract class Call extends Tail {
     return new BlockCall(new Block(pos, stored, c));
   }
 
-  public Call maker(Position pos, int n) {
+  Call maker(Position pos, int n) {
     Call call = this;
     for (; n > 0; n--) {
       // Define a closure:  k{x1,...x_n-1} [xn] = call(x1,...,xn)
@@ -524,7 +523,7 @@ public abstract class Call extends Tail {
    * (with the assumption that this call requires (m+n) arguments), returning a new Call for the
    * ClosureDefn (without a specified list of arguments) as the result.
    */
-  public Call makeClosure(Position pos, int m, int n) {
+  Call makeClosure(Position pos, int m, int n) {
     Temp[] stored = Temp.makeTemps(m);
     Temp[] args = Temp.makeTemps(n);
     return new ClosAlloc(

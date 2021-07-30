@@ -34,7 +34,7 @@ abstract class DefVar extends Var {
   protected Type type;
 
   /** Return the most general type available for this variable. */
-  public Scheme getScheme() {
+  Scheme getScheme() {
     return type;
   }
 
@@ -86,7 +86,7 @@ abstract class DefVar extends Var {
    * Set this variable's type to be a fresh type variable. Used to initialize the type field of a
    * Var.
    */
-  public Type freshType(Tyvar tyvar) {
+  Type freshType(Tyvar tyvar) {
     return type = new TVar(tyvar);
   }
 

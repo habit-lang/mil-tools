@@ -26,16 +26,16 @@ import java.io.PrintWriter;
 public abstract class Alts {
 
   /** Test for a free occurrence of a particular variable. */
-  public abstract boolean contains(Temp w);
+  abstract boolean contains(Temp w);
 
   /** Find the dependencies of this AST fragment. */
-  public abstract Defns dependencies(Defns ds);
+  abstract Defns dependencies(Defns ds);
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public abstract void dump(PrintWriter out, Temps ts);
+  abstract void dump(PrintWriter out, Temps ts);
 
   /** Force the application of a TempSubst to this list of alternatives. */
-  public abstract Alts apply(TempSubst s);
+  abstract Alts apply(TempSubst s);
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   abstract TVars tvars(TVars tvs);

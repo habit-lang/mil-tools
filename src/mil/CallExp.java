@@ -40,7 +40,7 @@ abstract class CallExp extends TailExp {
    * Perform scope analysis on this TailExp, checking that all of the referenced identifiers are in
    * scope and returning a corresponding mil Tail.
    */
-  public Tail inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
+  Tail inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
     return calleeInScopeOf(handler, milenv).withArgs(AtomExp.inScopeOf(handler, milenv, tenv, as));
   }
 

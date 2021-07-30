@@ -22,17 +22,17 @@ import compiler.*;
 import core.*;
 import mil.*;
 
-public class LCParser extends CoreParser implements LCTokens {
+class LCParser extends CoreParser implements LCTokens {
 
   private LCLoader loader;
 
   /** Default constructor. */
-  public LCParser(Handler handler, LCLexer lexer, LCLoader loader) {
+  LCParser(Handler handler, LCLexer lexer, LCLoader loader) {
     super(handler, lexer);
     this.loader = loader;
   }
 
-  public void parse(LCProgram prog) {
+  void parse(LCProgram prog) {
     lexer.enterSection();
     for (; ; ) {
       if (!lexer.match(SEMI)) {

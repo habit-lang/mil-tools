@@ -24,7 +24,7 @@ import mil.*;
 
 class InvalidRecursiveDefinition extends Failure {
 
-  public InvalidRecursiveDefinition(Position pos, String id) {
+  InvalidRecursiveDefinition(Position pos, String id) {
     super(pos, "Recursive definition of " + id + " is not valid");
   }
 }

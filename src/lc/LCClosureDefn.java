@@ -22,11 +22,11 @@ import compiler.*;
 import core.*;
 import mil.*;
 
-public class LCClosureDefn extends ClosureDefn {
+class LCClosureDefn extends ClosureDefn {
 
   private Type result;
 
-  public LCClosureDefn(Position pos, Type result, Temp[] args, Tail tail) {
+  LCClosureDefn(Position pos, Type result, Temp[] args, Tail tail) {
     super(pos, (Temp[]) null, args, tail);
     this.result = result;
   }

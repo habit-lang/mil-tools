@@ -21,17 +21,17 @@ package mil;
 import compiler.*;
 import core.*;
 
-public class MILParser extends CoreParser implements MILTokens {
+class MILParser extends CoreParser implements MILTokens {
 
   private MILLoader loader;
 
   /** Default constructor. */
-  public MILParser(Handler handler, MILLexer lexer, MILLoader loader) {
+  MILParser(Handler handler, MILLexer lexer, MILLoader loader) {
     super(handler, lexer);
     this.loader = loader;
   }
 
-  public void parse(MILAST ast) throws Failure {
+  void parse(MILAST ast) throws Failure {
     lexer.enterSection();
     for (; ; ) {
       if (lexer.getToken() == SEMI) {

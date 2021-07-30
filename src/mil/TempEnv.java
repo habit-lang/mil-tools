@@ -44,7 +44,7 @@ class TempEnv {
    * Find the Temp value corresponding to the specified identifier in the given environment,
    * returning null if there is no appropriate binding.
    */
-  public static Temp find(String id, TempEnv tenv) {
+  static Temp find(String id, TempEnv tenv) {
     for (; tenv != null; tenv = tenv.enclosing) {
       String[] ids = tenv.ids;
       for (int i = 0; i < ids.length; i++) {

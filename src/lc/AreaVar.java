@@ -22,12 +22,12 @@ import compiler.*;
 import core.*;
 import mil.*;
 
-public class AreaVar extends Name {
+class AreaVar extends Name {
 
   private Expr init;
 
   /** Default constructor. */
-  public AreaVar(Position pos, String id, Expr init) {
+  AreaVar(Position pos, String id, Expr init) {
     super(pos, id);
     this.init = init;
   }

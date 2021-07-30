@@ -45,11 +45,11 @@ public abstract class Atom {
    * Generate a printable description of the given list of atoms as a comma separated list of the
    * individual atoms.
    */
-  public static String toString(Atom[] as) {
+  static String toString(Atom[] as) {
     return toString(as, null);
   }
 
-  public static String toString(Atom[] as, Temps ts) {
+  static String toString(Atom[] as, Temps ts) {
     if (as == null || as.length == 0) { // An empty list?
       return "";
     } else if (as.length == 1) { // A single atom?
@@ -71,30 +71,30 @@ public abstract class Atom {
    * object equality. For all other types of Atom, we use double dispatch to compare component
    * values.
    */
-  public abstract boolean sameAtom(Atom that);
+  abstract boolean sameAtom(Atom that);
 
   /** Test to determine whether this Atom refers to the given Word value. */
-  public boolean sameWord(Word c) {
+  boolean sameWord(Word c) {
     return false;
   }
 
   /** Test to determine whether this Atom refers to the specified bit vector constant. */
-  public boolean sameBits(Bits c) {
+  boolean sameBits(Bits c) {
     return false;
   }
 
   /** Test to determine whether this Atom refers to the given flag constant. */
-  public boolean sameFlag(Flag c) {
+  boolean sameFlag(Flag c) {
     return false;
   }
 
   /** Test to determine whether this Atom refers to the given ProxyNat constant. */
-  public boolean sameProxyNat(ProxyNat c) {
+  boolean sameProxyNat(ProxyNat c) {
     return false;
   }
 
   /** Test to determine whether this Atom refers to the given ProxyLab constant. */
-  public boolean sameProxyLab(ProxyLab c) {
+  boolean sameProxyLab(ProxyLab c) {
     return false;
   }
 
@@ -126,22 +126,22 @@ public abstract class Atom {
   }
 
   /** Test to determine whether this Atom is an integer constant (or not). */
-  public Word isWord() {
+  Word isWord() {
     return null;
   }
 
   /** Test to determine whether this Atom is a flag constant (or not). */
-  public Flag isFlag() {
+  Flag isFlag() {
     return null;
   }
 
   /** Test for an occurrence of this variable in the given array of atoms. */
-  public boolean occursIn(Atom[] as) {
+  boolean occursIn(Atom[] as) {
     return false;
   }
 
   /** Test to see if any of the items in bs one array appear in a give array of atoms. */
-  public static boolean occursIn(Atom[] bs, Atom[] as) {
+  static boolean occursIn(Atom[] bs, Atom[] as) {
     for (int i = 0; i < bs.length; i++) {
       if (bs[i].occursIn(as)) {
         return true;
@@ -180,17 +180,17 @@ public abstract class Atom {
    * are treated as argument variables because wildcards are ignored and all other atoms can be
    * accessed as constants.
    */
-  public Temps add(Temps vs) {
+  Temps add(Temps vs) {
     return vs;
   }
 
   /** Find the dependencies of this AST fragment. */
-  public Defns dependencies(Defns ds) {
+  Defns dependencies(Defns ds) {
     return ds;
   }
 
   /** Find the list of Defns that this array of Atoms depends on. */
-  public static Defns dependencies(Atom[] args, Defns ds) {
+  static Defns dependencies(Atom[] args, Defns ds) {
     if (args != null) {
       for (int i = 0; i < args.length; i++) {
         ds = args[i].dependencies(ds);
@@ -200,7 +200,7 @@ public abstract class Atom {
   }
 
   /** Print an array of atoms, separated by commas. */
-  public static void dump(PrintWriter out, Atom[] args, Temps ts) {
+  static void dump(PrintWriter out, Atom[] args, Temps ts) {
     int n = 0; // count number of items displayed so far
     for (int i = 0; i < args.length; i++) {
       if (n++ > 0) {
@@ -214,7 +214,7 @@ public abstract class Atom {
    * Print an array of atoms, separated by commas and enclosed in parentheses if the number of atoms
    * is not 1.
    */
-  public static void displayTuple(PrintWriter out, Atom[] args, Temps ts) {
+  static void displayTuple(PrintWriter out, Atom[] args, Temps ts) {
     if (args != null && args.length == 1) {
       out.print(args[0].toString(ts));
     } else {
@@ -228,12 +228,12 @@ public abstract class Atom {
    * Extend the given substitution with a mapping from this Temp to the specified Atom. If this is
    * an Atom but not a Temp, then just return the input substitution without modifications.
    */
-  public TempSubst mapsTo(Atom a, TempSubst s) {
+  TempSubst mapsTo(Atom a, TempSubst s) {
     return s;
   }
 
   /** Apply a TempSubst to this Atom. */
-  public abstract Atom apply(TempSubst s);
+  abstract Atom apply(TempSubst s);
 
   /** Return a type for an instantiated version of this item when used as Atom (input operand). */
   public abstract Type instantiate();

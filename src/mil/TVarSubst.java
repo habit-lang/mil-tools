@@ -21,20 +21,20 @@ package mil;
 import compiler.*;
 import core.*;
 
-public class TVarSubst {
+class TVarSubst {
 
   private TVar[] tvs;
 
   private Type[] type;
 
   /** Default constructor. */
-  public TVarSubst(TVar[] tvs, Type[] type) {
+  TVarSubst(TVar[] tvs, Type[] type) {
     this.tvs = tvs;
     this.type = type;
   }
 
   /** Find the type corresponding to a given (unbound) type variable in this substitution. */
-  public Type find(TVar tv) {
+  Type find(TVar tv) {
     for (int i = 0; i < tvs.length; i++) {
       if (tvs[i] == tv) {
         return type[i];

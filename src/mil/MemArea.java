@@ -46,7 +46,7 @@ public class MemArea extends Area {
   }
 
   /** Find the list of Defns that this Defn depends on. */
-  public Defns dependencies() {
+  Defns dependencies() {
     return (init == null) ? null : init.dependencies(null);
   }
 
@@ -171,7 +171,7 @@ public class MemArea extends Area {
     }
   }
 
-  public void inScopeOf(Handler handler, MILEnv milenv, AtomExp init) throws Failure {
+  void inScopeOf(Handler handler, MILEnv milenv, AtomExp init) throws Failure {
     this.init = init.inScopeOf(handler, milenv, null);
   }
 

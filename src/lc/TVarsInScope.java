@@ -41,7 +41,7 @@ abstract class TVarsInScope {
   }
 
   /** Return the enclosing TVarsInScope object. */
-  public TVarsInScope getEnclosing() {
+  TVarsInScope getEnclosing() {
     return enclosing;
   }
 
@@ -49,7 +49,7 @@ abstract class TVarsInScope {
    * Calculate the list of unbound type variables in the scope that is described by the given
    * TVarsInScope value.
    */
-  public static TVars tvarsInScope(TVarsInScope tis) {
+  static TVars tvarsInScope(TVarsInScope tis) {
     if (tis == null) {
       return null;
     } else {
@@ -67,5 +67,5 @@ abstract class TVarsInScope {
    * Extend the given list of unbound type variables, tvs, from the enclosing scope with any
    * additional unbound type variables that appear in this specific object.
    */
-  public abstract TVars tvarsInScope(TVars tvs);
+  abstract TVars tvarsInScope(TVars tvs);
 }

@@ -44,7 +44,7 @@ public class StringArea extends Area {
   }
 
   /** Find the list of Defns that this Defn depends on. */
-  public Defns dependencies() {
+  Defns dependencies() {
     return null;
   }
 
@@ -149,7 +149,7 @@ public class StringArea extends Area {
     declared = expected = expected.canonType(set); // TODO: likely unnecessary; always Word
   }
 
-  public void inScopeOf(Handler handler, MILEnv milenv, AtomExp init) throws Failure {
+  void inScopeOf(Handler handler, MILEnv milenv, AtomExp init) throws Failure {
     /* nothing to do */
   }
 

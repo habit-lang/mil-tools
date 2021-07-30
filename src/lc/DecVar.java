@@ -36,12 +36,12 @@ class DecVar extends Var {
   }
 
   /** Find an identifier associated with this variable. */
-  public String getId() {
+  String getId() {
     return top.getId();
   }
 
   /** Determine whether this variable can be referenced by the specified identifier. */
-  public boolean answersTo(String id) {
+  boolean answersTo(String id) {
     return id.equals(top.getId());
   }
 

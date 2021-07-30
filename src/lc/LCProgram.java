@@ -35,7 +35,7 @@ public class LCProgram extends CoreProgram {
   }
 
   /** Return the name for this program. */
-  public String getName() {
+  String getName() {
     return name;
   }
 
@@ -63,7 +63,7 @@ public class LCProgram extends CoreProgram {
    * Read the source file for this program and store the corresponding abstract syntax in this
    * object.
    */
-  public void syntaxAnalysis(Handler handler, LCLoader loader) throws Failure {
+  void syntaxAnalysis(Handler handler, LCLoader loader) throws Failure {
     debug.Log.println("Loading " + name + " ...");
     try {
       Reader reader = new FileReader(loader.findFile(handler, name));
@@ -100,7 +100,7 @@ public class LCProgram extends CoreProgram {
    * Run scope analysis on this program to ensure that every identifier name that is used has a
    * corresponding definition somewhere in the program.
    */
-  public void scopeAnalysis(Handler handler, MILEnv milenv) throws Failure {
+  void scopeAnalysis(Handler handler, MILEnv milenv) throws Failure {
     // Extract the bindings from the definitions in this program:
     bindings = LCDefns.toBindings(handler, milenv.getTyconEnv(), defns);
     defns = null; // not needed beyond this point
@@ -136,7 +136,7 @@ public class LCProgram extends CoreProgram {
     BindingSCC.checkSafeRecursion(handler, sccs);
   }
 
-  public void typeAnalysis(Handler handler) throws Failure {
+  void typeAnalysis(Handler handler) throws Failure {
     BindingSCCs.inferTypes(handler, null, sccs);
     for (TopDefns tds = topDefns; tds != null; tds = tds.next) {
       tds.head.inferTypes(handler);

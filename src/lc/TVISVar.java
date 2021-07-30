@@ -40,7 +40,7 @@ class TVISVar extends TVarsInScope {
    * Extend the given list of unbound type variables, tvs, from the enclosing scope with any
    * additional unbound type variables that appear in this specific object.
    */
-  public TVars tvarsInScope(TVars tvs) {
+  TVars tvarsInScope(TVars tvs) {
     return v.getScheme().tvars(tvs);
   }
 }

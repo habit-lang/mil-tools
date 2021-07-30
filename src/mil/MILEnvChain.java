@@ -31,7 +31,7 @@ public class MILEnvChain extends MILEnvHash {
     this.prior = prior;
   }
 
-  public void print() {
+  void print() {
     System.out.println("Chain: ----------");
     printThis();
     if (prior != null) {

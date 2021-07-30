@@ -97,7 +97,7 @@ class PolyAllocType extends AllocType {
     return instantiate().canonAllocType(set).generalize();
   }
 
-  public AllocType apply(TVarSubst s) {
+  AllocType apply(TVarSubst s) {
     debug.Internal.error("Unable to specialize polymorphic allocator type");
     return null;
   }
@@ -106,7 +106,7 @@ class PolyAllocType extends AllocType {
    * Extend a substitution by matching this (potentially polymorphic) AllocType against a
    * monomorphic instance.
    */
-  public TVarSubst specializingSubst(TVar[] generics, AllocType inst) {
+  TVarSubst specializingSubst(TVar[] generics, AllocType inst) {
     Type[] tenv = prefix.instantiate();
     if (tenv.length != generics.length || !this.match(tenv, inst, null)) {
       debug.Internal.error("specializingSubst fails on PolyAllocType");

@@ -28,13 +28,13 @@ import mil.*;
  */
 abstract class Var {
 
-  public static DefVar[] noVars = new DefVar[0];
+  static DefVar[] noVars = new DefVar[0];
 
   /** Find an identifier associated with this variable. */
-  public abstract String getId();
+  abstract String getId();
 
   /** Determine whether this variable can be referenced by the specified identifier. */
-  public abstract boolean answersTo(String id);
+  abstract boolean answersTo(String id);
 
   /** Return a printable description of this variable. */
   public abstract String toString();

@@ -42,7 +42,7 @@ public class BlockCall extends Call {
   }
 
   /** Test if two Tail expressions are the same. */
-  public boolean sameTail(Tail that) {
+  boolean sameTail(Tail that) {
     return that.sameBlockCall(this);
   }
 
@@ -51,12 +51,12 @@ public class BlockCall extends Call {
   }
 
   /** Find the dependencies of this AST fragment. */
-  public Defns dependencies(Defns ds) {
+  Defns dependencies(Defns ds) {
     return b.dependencies(super.dependencies(ds));
   }
 
   /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  public void dump(PrintWriter out, Temps ts) {
+  void dump(PrintWriter out, Temps ts) {
     dump(out, b.toString(), "[", args, "]", ts);
   }
 
@@ -70,7 +70,7 @@ public class BlockCall extends Call {
    * preservation of a BlockCall argument is required. In particular, we don't use withArgs here
    * because that loses type information, producing a Body from a BlockCall input.
    */
-  public BlockCall applyBlockCall(TempSubst s) {
+  BlockCall applyBlockCall(TempSubst s) {
     return new BlockCall(b, TempSubst.apply(args, s));
   }
 
@@ -82,7 +82,7 @@ public class BlockCall extends Call {
   }
 
   /** Return the type tuple describing the result that is produced by executing this Tail. */
-  public Type resultType() {
+  Type resultType() {
     return type.rngType();
   }
 

@@ -197,7 +197,7 @@ public class DefnSCC {
   }
 
   /** Apply inlining. */
-  public void inlining() {
+  void inlining() {
     for (Defns ds = getBindings(); ds != null; ds = ds.next) {
       ds.head.inlining();
     }

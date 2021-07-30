@@ -52,7 +52,7 @@ public class MILProgram {
   private DefnSCCs sccs;
 
   /** Compute the list of definitions for the reachable portion of the input graph. */
-  public Defns reachable() {
+  Defns reachable() {
     Defn.newDFS(); // Begin a new depth-first search
     Defns defns = null; // Compute a list of reachable Defns
     for (Defns ds = entries; ds != null; ds = ds.next) {
@@ -204,7 +204,7 @@ public class MILProgram {
    * inliner to enter an infinite loop. With those preliminaries out of the way, we then invoke the
    * main inliner!
    */
-  public void inlining() {
+  void inlining() {
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       DefnSCC scc = dsccs.head;
       scc.returnAnalysis(); // Identify blocks that are guaranteed not to return
@@ -220,7 +220,7 @@ public class MILProgram {
    * Run a liftAllocators pass over this program, assuming a previous call to shake() to compute
    * SCCs.
    */
-  public void liftAllocators() {
+  void liftAllocators() {
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
         ds.head.liftAllocators();
@@ -265,7 +265,7 @@ public class MILProgram {
   }
 
   /** Run a flow pass over this program. */
-  public void flow() {
+  void flow() {
     invariantAnalysis();
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
