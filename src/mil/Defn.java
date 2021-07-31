@@ -142,6 +142,10 @@ public abstract class Defn {
 
   protected int header;
 
+  boolean isHeader() {
+    return header > 0;
+  }
+
   /**
    * Visit this Defn as part of a depth first search, and build a list of Defn nodes that can be
    * used to compute strongly-connected components.
@@ -218,6 +222,12 @@ public abstract class Defn {
   }
 
   public static boolean renameTemps = true;
+
+  void annotateHeader(PrintWriter out) {
+    if (isHeader()) {
+      //    out.print("* ");
+    }
+  }
 
   /** Display a printable representation of this definition on the specified PrintWriter. */
   abstract void dump(PrintWriter out, boolean isEntrypoint);

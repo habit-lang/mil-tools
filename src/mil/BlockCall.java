@@ -312,8 +312,9 @@ public class BlockCall extends Call {
     if (calls != null) {
       BlockCall bc1 = bc.deriveWithKnownCons(d, calls);
       if (bc1 != null) {
+        MILProgram.report(
+            "deriving specialized block " + bc1.b + " for BlockCall to block " + bc.b);
         bc = bc1;
-        MILProgram.report("deriving specialized block " + bc.b + " for BlockCall to block " + b);
       }
     }
 

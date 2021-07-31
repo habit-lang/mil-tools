@@ -117,6 +117,7 @@ public class TopLevel extends TopDefn {
       lhs[i].dump(out, isEntrypoint);
     }
     out.print(toString());
+    annotateHeader(out);
     out.print(" <-");
     out.println();
     Code.indent(out);

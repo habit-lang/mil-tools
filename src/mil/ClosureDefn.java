@@ -91,6 +91,7 @@ public class ClosureDefn extends Defn {
     Temps ts = renameTemps ? Temps.push(args, Temps.push(params, null)) : null;
     Call.dump(out, id, "{", params, "} ", ts);
     Atom.displayTuple(out, args, ts);
+    annotateHeader(out);
     out.print(" = ");
     tail.displayln(out, ts);
   }
