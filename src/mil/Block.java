@@ -86,7 +86,6 @@ public class Block extends Defn {
   }
 
   /** Display a printable representation of this definition on the specified PrintWriter. */
-  /** Display a printable representation of this definition on the specified PrintWriter. */
   void dump(PrintWriter out, boolean isEntrypoint) {
     if (declared != null) {
       if (isEntrypoint) {
@@ -97,6 +96,7 @@ public class Block extends Defn {
 
     Temps ts = renameTemps ? Temps.push(params, null) : null;
     Call.dump(out, id, "[", params, "]", ts);
+    annotateHeader(out);
     out.println(" =");
     if (code == null) {
       Code.indent(out);

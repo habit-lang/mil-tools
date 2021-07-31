@@ -80,7 +80,6 @@ public class ClosureDefn extends Defn {
   }
 
   /** Display a printable representation of this definition on the specified PrintWriter. */
-  /** Display a printable representation of this definition on the specified PrintWriter. */
   void dump(PrintWriter out, boolean isEntrypoint) {
     if (declared != null) {
       if (isEntrypoint) {

@@ -38,11 +38,6 @@ public class ConidTypeExp extends PosTypeExp {
    * be defined, but (if canAdd is true) we will treat undefined type variables as implicitly bound,
    * universally quantified type variables.
    */
-  /**
-   * Scope analysis on type expressions in a context where we expect all of the type constructor to
-   * be defined, but (if canAdd is true) we will treat undefined type variables as implicitly bound,
-   * universally quantified type variables.
-   */
   public void scopeType(boolean canAdd, TyvarEnv params, TyconEnv env, int arity) throws Failure {
     if ((tycon = TyconEnv.findTycon(id, env)) == null) {
       throw new NotInScopeTyconFailure(pos, id);
