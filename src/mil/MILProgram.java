@@ -274,6 +274,12 @@ public class MILProgram {
     }
   }
 
+  /**
+   * Allow more aggressive specialization of block and closure definitions when arguments are known
+   * word values.
+   */
+  public static boolean wordspec = false;
+
   void invariantAnalysis() {
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       dsccs.head.invariantAnalysis();

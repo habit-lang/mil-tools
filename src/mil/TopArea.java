@@ -83,7 +83,7 @@ public class TopArea extends Top {
   }
 
   Atom isKnown(boolean allowWord) {
-    return area.isKnown() ? this : null;
+    return null;
   }
 
   Atom specializeAtom(MILSpec spec, TVarSubst s, SpecEnv env) {

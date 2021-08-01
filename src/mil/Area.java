@@ -120,10 +120,6 @@ public abstract class Area extends TopDefn {
     /* Nothing to do here */
   }
 
-  boolean isKnown() {
-    return false;
-  }
-
   /**
    * Compute a summary for this definition (if it is a block, top-level, or closure) and then look
    * for a previously encountered item with the same code in the given table. Return true if a

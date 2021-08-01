@@ -295,7 +295,7 @@ public class BlockCall extends Call {
   }
 
   Tail rewriteTail(Defn d, Facts facts, boolean allowWord) {
-    return this.rewriteBlockCall(d, facts, allowWord);
+    return this.rewriteBlockCall(d, facts, allowWord || !b.isRecursive());
   }
 
   BlockCall rewriteBlockCall(Defn d, Facts facts, boolean allowWord) {

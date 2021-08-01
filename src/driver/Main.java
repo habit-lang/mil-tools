@@ -47,7 +47,8 @@ class Main {
     System.err.println("                        b = bitdata generation");
     System.err.println(
         "                        r = representation transformation (requires earlier s)");
-    System.err.println("         -Oname         enable optimization, name in {unroll, ...}");
+    System.err.println(
+        "         -Oname         enable optimization, name in {unroll,wordspec,...}");
     System.err.println("         -m[filename]   mil code");
     System.err.println("         -t[filename]   type definitions");
     System.err.println("         -g[filename]   GraphViz file for mil structure");
@@ -297,6 +298,8 @@ class Main {
   private static void optimizeOption(String str) throws Failure {
     if (str.equals("unroll")) {
       Block.unroll = true;
+    } else if (str.equals("wordspec")) {
+      MILProgram.wordspec = true;
     } else {
       throw new Failure("Unrecognized optimization option \"" + str + "\"");
     }
