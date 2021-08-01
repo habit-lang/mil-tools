@@ -92,6 +92,10 @@ public class MemArea extends Area {
     declared = inferred;
   }
 
+  boolean isKnown() {
+    return true;
+  }
+
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
     areaType = areaType.canonType(set);

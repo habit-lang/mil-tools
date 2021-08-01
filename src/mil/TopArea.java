@@ -82,6 +82,10 @@ public class TopArea extends Top {
     builder.gload(area);
   }
 
+  Atom isKnown(boolean allowWord) {
+    return area.isKnown() ? this : null;
+  }
+
   Atom specializeAtom(MILSpec spec, TVarSubst s, SpecEnv env) {
     // (Substitution is not expected to have an effect on monomorphic area type)
     return area.specializeArea(spec, type.apply(s));
