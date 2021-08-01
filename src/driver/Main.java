@@ -395,7 +395,9 @@ class Main {
     boolean optimized = false; // Keep track of whether the optimizer has been run
     boolean cfunRewrite = false; // Keep track of whether the cfun rewrite has been run
 
-    if (passes == null) {
+    if (passes != null) {
+      message("Using passes \"" + passes + "\":");
+    } else {
       // If no passes are specified, try to set some sensible defaults to satisfy
       // requirements implied by other command line arguments.  This does not prevent
       // errors that can occur with user-specified pass strings (e.g., use of 'r' without
