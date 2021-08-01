@@ -47,6 +47,7 @@ class Main {
     System.err.println("                        b = bitdata generation");
     System.err.println(
         "                        r = representation transformation (requires earlier s)");
+    System.err.println("         -Oname         enable optimization, name in {unroll, ...}");
     System.err.println("         -m[filename]   mil code");
     System.err.println("         -t[filename]   type definitions");
     System.err.println("         -g[filename]   GraphViz file for mil structure");
@@ -284,9 +285,20 @@ class Main {
         case 'x':
           execOutput.setName(str, i);
           return;
+        case 'O':
+          optimizeOption(str.substring(i + 1));
+          return;
         default:
           throw new Failure("Unrecognized option character '" + str.charAt(i) + "'");
       }
+    }
+  }
+
+  private static void optimizeOption(String str) throws Failure {
+    if (str.equals("unroll")) {
+      Block.unroll = true;
+    } else {
+      throw new Failure("Unrecognized optimization option \"" + str + "\"");
     }
   }
 

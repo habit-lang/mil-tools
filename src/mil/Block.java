@@ -450,8 +450,15 @@ public class Block extends Defn {
 
   public static final int INLINE_LINES_LIMIT = 6;
 
+  public static boolean unroll = false;
+
+  /** Should unrolling of this block be permitted in prefix or suffix inlining? */
+  boolean canUnroll() {
+    return unroll || !isHeader();
+  }
+
   boolean canPrefixInline(Block src) {
-    if (this.getScc() != src.getScc()) { // Restrict to different SCCs
+    if (canUnroll() && this.getScc() != src.getScc()) { // Restrict to different SCCs
       int n = code.prefixInlineLength();
       return n > 0 && (occurs == 1 || n <= INLINE_LINES_LIMIT);
     }
@@ -496,6 +503,9 @@ public class Block extends Defn {
    * program, or else the length of the code sequence is at most INLINE_LINES_LIMIT lines long.
    */
   boolean canSuffixInline(Block src) {
+    if (!canUnroll()) {
+      return false;
+    }
     DefnSCC srcscc = src.getScc();
     DefnSCC bscc = this.getScc();
     if (srcscc == null
