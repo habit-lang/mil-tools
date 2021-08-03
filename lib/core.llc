@@ -43,6 +43,15 @@ Pointer/Reference equality:
 > ptrEq p q             = ptrToWord p == ptrToWord q
 > ptrNeq p q            = ptrToWord p /= ptrToWord q
 
+Booleans:
+
+> external bnot {primBitdataNot Bool} :: Bool -> Bool
+> external band {primBitdataAnd Bool},
+>          bor  {primBitdataOr  Bool},
+>          bxor {primBitdataXor Bool},
+>          beq  {primBitdataEq  Bool},
+>          bneq {primBitdataNe  Bool} :: Bool -> Bool -> Bool
+
 Pairs:
 
 > export fst :: Pair a b -> a
