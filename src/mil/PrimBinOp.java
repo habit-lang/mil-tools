@@ -22,7 +22,7 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
-/** A base class for primitive binary integer operators. */
+/** A base class for primitive binary Word operators. */
 public abstract class PrimBinOp extends PrimSing {
 
   /** Default constructor. */

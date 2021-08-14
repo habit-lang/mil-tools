@@ -22,7 +22,7 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
-/** A base class for primitive relational operators on integers. */
+/** A base class for primitive relational operators on Words. */
 public abstract class PrimRelOp extends PrimSing {
 
   /** Default constructor. */

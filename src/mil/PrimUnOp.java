@@ -22,7 +22,7 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
-/** A base class for primitive unary integer operators. */
+/** A base class for primitive unary Word operators. */
 public abstract class PrimUnOp extends PrimSing {
 
   /** Default constructor. */

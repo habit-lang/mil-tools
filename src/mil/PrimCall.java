@@ -362,110 +362,6 @@ public class PrimCall extends Call {
       return null;
     }
 
-    if (p.samePrim(Prim.slt)) {
-      Atom x = args[0];
-      Atom y = args[1];
-      Word a = x.isWord();
-      if (a != null) {
-        Word b = y.isWord();
-        if (b != null) {
-          return Prim.slt.fold(a.getVal(), b.getVal());
-        }
-      }
-      return null;
-    }
-
-    if (p.samePrim(Prim.sgt)) {
-      Atom x = args[0];
-      Atom y = args[1];
-      Word a = x.isWord();
-      if (a != null) {
-        Word b = y.isWord();
-        if (b != null) {
-          return Prim.sgt.fold(a.getVal(), b.getVal());
-        }
-      }
-      return null;
-    }
-
-    if (p.samePrim(Prim.sle)) {
-      Atom x = args[0];
-      Atom y = args[1];
-      Word a = x.isWord();
-      if (a != null) {
-        Word b = y.isWord();
-        if (b != null) {
-          return Prim.sle.fold(a.getVal(), b.getVal());
-        }
-      }
-      return null;
-    }
-
-    if (p.samePrim(Prim.sge)) {
-      Atom x = args[0];
-      Atom y = args[1];
-      Word a = x.isWord();
-      if (a != null) {
-        Word b = y.isWord();
-        if (b != null) {
-          return Prim.sge.fold(a.getVal(), b.getVal());
-        }
-      }
-      return null;
-    }
-
-    if (p.samePrim(Prim.ult)) {
-      Atom x = args[0];
-      Atom y = args[1];
-      Word a = x.isWord();
-      if (a != null) {
-        Word b = y.isWord();
-        if (b != null) {
-          return Prim.ult.fold(a.getVal(), b.getVal());
-        }
-      }
-      return null;
-    }
-
-    if (p.samePrim(Prim.ugt)) {
-      Atom x = args[0];
-      Atom y = args[1];
-      Word a = x.isWord();
-      if (a != null) {
-        Word b = y.isWord();
-        if (b != null) {
-          return Prim.ugt.fold(a.getVal(), b.getVal());
-        }
-      }
-      return null;
-    }
-
-    if (p.samePrim(Prim.ule)) {
-      Atom x = args[0];
-      Atom y = args[1];
-      Word a = x.isWord();
-      if (a != null) {
-        Word b = y.isWord();
-        if (b != null) {
-          return Prim.ule.fold(a.getVal(), b.getVal());
-        }
-      }
-      return null;
-    }
-
-    if (p.samePrim(Prim.uge)) {
-      Atom x = args[0];
-      Atom y = args[1];
-      Word a = x.isWord();
-      if (a != null) {
-        Word b = y.isWord();
-        if (b != null) {
-          return Prim.uge.fold(a.getVal(), b.getVal());
-        }
-      }
-      return null;
-    }
-
     if (p.samePrim(Prim.beq)) {
       Atom x = args[0];
       Atom y = args[1];
@@ -565,6 +461,206 @@ public class PrimCall extends Call {
         Flag b = y.isFlag();
         if (b != null) {
           return Prim.bor.fold(a.getVal(), b.getVal());
+        }
+      }
+      return null;
+    }
+
+    if (p.samePrim(Prim.slt)) {
+      Atom x = args[0];
+      Atom y = args[1];
+      Word a = x.isWord();
+      Word b = y.isWord();
+      boolean less = Prim.slt.op(0L, 1L); // is this a less than operation? (< or <=)
+      boolean nonstrict = Prim.slt.op(0L, 0L); // is this a nonstrict comparison? (<= or >=)
+      if (a != null) {
+        if (b != null) {
+          return Prim.slt.fold(a.getVal(), b.getVal());
+        } else if (a.getVal() == Prim.slt.bound(nonstrict != less)) {
+          MILProgram.report(
+              "rewrite: " + Prim.slt.getId() + "((" + a.getVal() + ", y)) ==> " + nonstrict);
+          return new Done(new Return(Flag.fromBool(nonstrict)));
+        }
+      } else if (b != null) {
+        if (b.getVal() == Prim.slt.bound(nonstrict == less)) {
+          MILProgram.report(
+              "rewrite: " + Prim.slt.getId() + "((x, " + b.getVal() + ")) ==> " + nonstrict);
+          return new Done(new Return(Flag.fromBool(nonstrict)));
+        }
+      }
+      return null;
+    }
+
+    if (p.samePrim(Prim.sgt)) {
+      Atom x = args[0];
+      Atom y = args[1];
+      Word a = x.isWord();
+      Word b = y.isWord();
+      boolean less = Prim.sgt.op(0L, 1L); // is this a less than operation? (< or <=)
+      boolean nonstrict = Prim.sgt.op(0L, 0L); // is this a nonstrict comparison? (<= or >=)
+      if (a != null) {
+        if (b != null) {
+          return Prim.sgt.fold(a.getVal(), b.getVal());
+        } else if (a.getVal() == Prim.sgt.bound(nonstrict != less)) {
+          MILProgram.report(
+              "rewrite: " + Prim.sgt.getId() + "((" + a.getVal() + ", y)) ==> " + nonstrict);
+          return new Done(new Return(Flag.fromBool(nonstrict)));
+        }
+      } else if (b != null) {
+        if (b.getVal() == Prim.sgt.bound(nonstrict == less)) {
+          MILProgram.report(
+              "rewrite: " + Prim.sgt.getId() + "((x, " + b.getVal() + ")) ==> " + nonstrict);
+          return new Done(new Return(Flag.fromBool(nonstrict)));
+        }
+      }
+      return null;
+    }
+
+    if (p.samePrim(Prim.sle)) {
+      Atom x = args[0];
+      Atom y = args[1];
+      Word a = x.isWord();
+      Word b = y.isWord();
+      boolean less = Prim.sle.op(0L, 1L); // is this a less than operation? (< or <=)
+      boolean nonstrict = Prim.sle.op(0L, 0L); // is this a nonstrict comparison? (<= or >=)
+      if (a != null) {
+        if (b != null) {
+          return Prim.sle.fold(a.getVal(), b.getVal());
+        } else if (a.getVal() == Prim.sle.bound(nonstrict != less)) {
+          MILProgram.report(
+              "rewrite: " + Prim.sle.getId() + "((" + a.getVal() + ", y)) ==> " + nonstrict);
+          return new Done(new Return(Flag.fromBool(nonstrict)));
+        }
+      } else if (b != null) {
+        if (b.getVal() == Prim.sle.bound(nonstrict == less)) {
+          MILProgram.report(
+              "rewrite: " + Prim.sle.getId() + "((x, " + b.getVal() + ")) ==> " + nonstrict);
+          return new Done(new Return(Flag.fromBool(nonstrict)));
+        }
+      }
+      return null;
+    }
+
+    if (p.samePrim(Prim.sge)) {
+      Atom x = args[0];
+      Atom y = args[1];
+      Word a = x.isWord();
+      Word b = y.isWord();
+      boolean less = Prim.sge.op(0L, 1L); // is this a less than operation? (< or <=)
+      boolean nonstrict = Prim.sge.op(0L, 0L); // is this a nonstrict comparison? (<= or >=)
+      if (a != null) {
+        if (b != null) {
+          return Prim.sge.fold(a.getVal(), b.getVal());
+        } else if (a.getVal() == Prim.sge.bound(nonstrict != less)) {
+          MILProgram.report(
+              "rewrite: " + Prim.sge.getId() + "((" + a.getVal() + ", y)) ==> " + nonstrict);
+          return new Done(new Return(Flag.fromBool(nonstrict)));
+        }
+      } else if (b != null) {
+        if (b.getVal() == Prim.sge.bound(nonstrict == less)) {
+          MILProgram.report(
+              "rewrite: " + Prim.sge.getId() + "((x, " + b.getVal() + ")) ==> " + nonstrict);
+          return new Done(new Return(Flag.fromBool(nonstrict)));
+        }
+      }
+      return null;
+    }
+
+    if (p.samePrim(Prim.ult)) {
+      Atom x = args[0];
+      Atom y = args[1];
+      Word a = x.isWord();
+      Word b = y.isWord();
+      boolean less = Prim.ult.op(0L, 1L); // is this a less than operation? (< or <=)
+      boolean nonstrict = Prim.ult.op(0L, 0L); // is this a nonstrict comparison? (<= or >=)
+      if (a != null) {
+        if (b != null) {
+          return Prim.ult.fold(a.getVal(), b.getVal());
+        } else if (a.getVal() == Prim.ult.bound(nonstrict != less)) {
+          MILProgram.report(
+              "rewrite: " + Prim.ult.getId() + "((" + a.getVal() + ", y)) ==> " + nonstrict);
+          return new Done(new Return(Flag.fromBool(nonstrict)));
+        }
+      } else if (b != null) {
+        if (b.getVal() == Prim.ult.bound(nonstrict == less)) {
+          MILProgram.report(
+              "rewrite: " + Prim.ult.getId() + "((x, " + b.getVal() + ")) ==> " + nonstrict);
+          return new Done(new Return(Flag.fromBool(nonstrict)));
+        }
+      }
+      return null;
+    }
+
+    if (p.samePrim(Prim.ugt)) {
+      Atom x = args[0];
+      Atom y = args[1];
+      Word a = x.isWord();
+      Word b = y.isWord();
+      boolean less = Prim.ugt.op(0L, 1L); // is this a less than operation? (< or <=)
+      boolean nonstrict = Prim.ugt.op(0L, 0L); // is this a nonstrict comparison? (<= or >=)
+      if (a != null) {
+        if (b != null) {
+          return Prim.ugt.fold(a.getVal(), b.getVal());
+        } else if (a.getVal() == Prim.ugt.bound(nonstrict != less)) {
+          MILProgram.report(
+              "rewrite: " + Prim.ugt.getId() + "((" + a.getVal() + ", y)) ==> " + nonstrict);
+          return new Done(new Return(Flag.fromBool(nonstrict)));
+        }
+      } else if (b != null) {
+        if (b.getVal() == Prim.ugt.bound(nonstrict == less)) {
+          MILProgram.report(
+              "rewrite: " + Prim.ugt.getId() + "((x, " + b.getVal() + ")) ==> " + nonstrict);
+          return new Done(new Return(Flag.fromBool(nonstrict)));
+        }
+      }
+      return null;
+    }
+
+    if (p.samePrim(Prim.ule)) {
+      Atom x = args[0];
+      Atom y = args[1];
+      Word a = x.isWord();
+      Word b = y.isWord();
+      boolean less = Prim.ule.op(0L, 1L); // is this a less than operation? (< or <=)
+      boolean nonstrict = Prim.ule.op(0L, 0L); // is this a nonstrict comparison? (<= or >=)
+      if (a != null) {
+        if (b != null) {
+          return Prim.ule.fold(a.getVal(), b.getVal());
+        } else if (a.getVal() == Prim.ule.bound(nonstrict != less)) {
+          MILProgram.report(
+              "rewrite: " + Prim.ule.getId() + "((" + a.getVal() + ", y)) ==> " + nonstrict);
+          return new Done(new Return(Flag.fromBool(nonstrict)));
+        }
+      } else if (b != null) {
+        if (b.getVal() == Prim.ule.bound(nonstrict == less)) {
+          MILProgram.report(
+              "rewrite: " + Prim.ule.getId() + "((x, " + b.getVal() + ")) ==> " + nonstrict);
+          return new Done(new Return(Flag.fromBool(nonstrict)));
+        }
+      }
+      return null;
+    }
+
+    if (p.samePrim(Prim.uge)) {
+      Atom x = args[0];
+      Atom y = args[1];
+      Word a = x.isWord();
+      Word b = y.isWord();
+      boolean less = Prim.uge.op(0L, 1L); // is this a less than operation? (< or <=)
+      boolean nonstrict = Prim.uge.op(0L, 0L); // is this a nonstrict comparison? (<= or >=)
+      if (a != null) {
+        if (b != null) {
+          return Prim.uge.fold(a.getVal(), b.getVal());
+        } else if (a.getVal() == Prim.uge.bound(nonstrict != less)) {
+          MILProgram.report(
+              "rewrite: " + Prim.uge.getId() + "((" + a.getVal() + ", y)) ==> " + nonstrict);
+          return new Done(new Return(Flag.fromBool(nonstrict)));
+        }
+      } else if (b != null) {
+        if (b.getVal() == Prim.uge.bound(nonstrict == less)) {
+          MILProgram.report(
+              "rewrite: " + Prim.uge.getId() + "((x, " + b.getVal() + ")) ==> " + nonstrict);
+          return new Done(new Return(Flag.fromBool(nonstrict)));
         }
       }
       return null;

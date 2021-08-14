@@ -21,7 +21,7 @@ package mil;
 import compiler.*;
 import core.*;
 
-/** A base class for primitive binary flag operators. */
+/** A base class for primitive binary Flag operators. */
 public abstract class PrimBinFOp extends PrimSing {
 
   /** Default constructor. */

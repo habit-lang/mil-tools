@@ -1186,9 +1186,9 @@ public class Prim {
     }
   }
 
-  public static final PrimRelOp slt = new slt();
+  public static final PrimSCmpOp slt = new slt();
 
-  public static final class slt extends PrimRelOp {
+  public static final class slt extends PrimSCmpOp {
 
     private slt() {
       this(relopType);
@@ -1223,9 +1223,9 @@ public class Prim {
     }
   }
 
-  public static final PrimRelOp sle = new sle();
+  public static final PrimSCmpOp sle = new sle();
 
-  public static final class sle extends PrimRelOp {
+  public static final class sle extends PrimSCmpOp {
 
     private sle() {
       this(relopType);
@@ -1260,9 +1260,9 @@ public class Prim {
     }
   }
 
-  public static final PrimRelOp sgt = new sgt();
+  public static final PrimSCmpOp sgt = new sgt();
 
-  public static final class sgt extends PrimRelOp {
+  public static final class sgt extends PrimSCmpOp {
 
     private sgt() {
       this(relopType);
@@ -1297,9 +1297,9 @@ public class Prim {
     }
   }
 
-  public static final PrimRelOp sge = new sge();
+  public static final PrimSCmpOp sge = new sge();
 
-  public static final class sge extends PrimRelOp {
+  public static final class sge extends PrimSCmpOp {
 
     private sge() {
       this(relopType);
@@ -1334,9 +1334,9 @@ public class Prim {
     }
   }
 
-  public static final PrimRelOp ult = new ult();
+  public static final PrimUCmpOp ult = new ult();
 
-  public static final class ult extends PrimRelOp {
+  public static final class ult extends PrimUCmpOp {
 
     private ult() {
       this(relopType);
@@ -1371,9 +1371,9 @@ public class Prim {
     }
   }
 
-  public static final PrimRelOp ule = new ule();
+  public static final PrimUCmpOp ule = new ule();
 
-  public static final class ule extends PrimRelOp {
+  public static final class ule extends PrimUCmpOp {
 
     private ule() {
       this(relopType);
@@ -1408,9 +1408,9 @@ public class Prim {
     }
   }
 
-  public static final PrimRelOp ugt = new ugt();
+  public static final PrimUCmpOp ugt = new ugt();
 
-  public static final class ugt extends PrimRelOp {
+  public static final class ugt extends PrimUCmpOp {
 
     private ugt() {
       this(relopType);
@@ -1445,9 +1445,9 @@ public class Prim {
     }
   }
 
-  public static final PrimRelOp uge = new uge();
+  public static final PrimUCmpOp uge = new uge();
 
-  public static final class uge extends PrimRelOp {
+  public static final class uge extends PrimUCmpOp {
 
     private uge() {
       this(relopType);

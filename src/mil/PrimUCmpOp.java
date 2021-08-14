@@ -20,24 +20,17 @@ package mil;
 
 import compiler.*;
 import core.*;
-import java.io.PrintWriter;
 
-/** A base class for primitives that convert a Word to a Flag. */
-public abstract class PrimWtoF extends PrimSing {
+/** A base class for unsigned comparison operators on Words. */
+public abstract class PrimUCmpOp extends PrimCmpOp {
 
   /** Default constructor. */
-  public PrimWtoF(String id, int purity, BlockType blockType) {
+  public PrimUCmpOp(String id, int purity, BlockType blockType) {
     super(id, purity, blockType);
   }
 
-  abstract boolean op(long n);
-
-  void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
-    stack[fp] = new BoolValue(op(stack[fp].getInt()));
-  }
-
-  Code fold(long n) {
-    MILProgram.report("constant folding for " + getId());
-    return PrimCall.done(op(n));
+  /** Return the upper (or lower) bound for this comparison type. */
+  public long bound(boolean upper) {
+    return Word.fromLong(upper ? (~0L) : 0L);
   }
 }
