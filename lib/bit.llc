@@ -22,6 +22,10 @@ A (currently underdeveloped) library for working with Bit vectors.
 >          bitGe      {primBitGe n},
 >          bitGt      {primBitGt n}            :: Bit n -> Bit n -> Bool
 
+> export min, max :: Bit n -> Bit n -> Bit n
+> x `min` y        = if y `bitLt` x then y else x
+> x `max` y        = if x `bitLt` y then y else x
+
 > external bitl   {primBitFromLiteral   v n} :: ProxyNat v -> Bit n
 > external nzbitl {primNZBitFromLiteral v n} :: ProxyNat v -> NZBit n
 
