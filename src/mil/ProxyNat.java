@@ -33,7 +33,7 @@ public class ProxyNat extends Proxy {
 
   /** Generate a printable description of this atom. */
   public String toString() {
-    return "!" + nat;
+    return "#" + nat;
   }
 
   /**

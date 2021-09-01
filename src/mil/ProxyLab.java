@@ -32,7 +32,7 @@ public class ProxyLab extends Proxy {
 
   /** Generate a printable description of this atom. */
   public String toString() {
-    return "!" + lab.toString();
+    return "#" + lab.toString();
   }
 
   /**

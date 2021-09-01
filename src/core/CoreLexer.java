@@ -48,7 +48,7 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
     reserved.put("struct", new Integer(STRUCT));
     reserved.put("bitdata", new Integer(BITDATA));
     reserved.put("aligned", new Integer(ALIGNED));
-    reserved.put("!", new Integer(PROXY));
+    reserved.put("#", new Integer(PROXY));
     reserved.put("case", new Integer(CASE));
     reserved.put("of", new Integer(OF));
     reserved.put("if", new Integer(IF));
@@ -133,7 +133,7 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
       case ALIGNED:
         return "\"aligned\" keyword";
       case PROXY:
-        return "\"!\" proxy symbol";
+        return "\"#\" proxy symbol";
       case CASE:
         return "\"case\" keyword";
       case OF:
