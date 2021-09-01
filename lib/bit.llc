@@ -30,9 +30,9 @@ A (currently underdeveloped) library for working with Bit vectors.
 > external nzbitl {primNZBitFromLiteral v n} :: ProxyNat v -> NZBit n
 
 > export bit0, bit1, bit2 :: Bit n
-> bit0 = bitl!0
-> bit1 = bitl!1
-> bit2 = bitl!2
+> bit0 = bitl#0
+> bit1 = bitl#1
+> bit2 = bitl#2
 
 > export bitDec  :: Bit n -> Bit n
 > bitDec n        = bitSub n bit1
