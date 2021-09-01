@@ -27,12 +27,12 @@ class MILLexer extends LayoutLexer implements MILTokens {
   /** Construct a lexical analyzer for the MIL language. */
   MILLexer(Handler handler, boolean optional, Source source) {
     super(handler, optional, source);
-    reserved.put("primitive", new Integer(PRIMITIVE));
-    reserved.put("return", new Integer(RETURN));
-    reserved.put("assert", new Integer(ASSERT));
-    reserved.put("@", new Integer(APPLY));
-    reserved.put(">>=", new Integer(TBIND));
-    reserved.put(Tycon.milArrowId, new Integer(MILTO));
+    reserved.put("primitive", Integer.valueOf(PRIMITIVE));
+    reserved.put("return", Integer.valueOf(RETURN));
+    reserved.put("assert", Integer.valueOf(ASSERT));
+    reserved.put("@", Integer.valueOf(APPLY));
+    reserved.put(">>=", Integer.valueOf(TBIND));
+    reserved.put(Tycon.milArrowId, Integer.valueOf(MILTO));
     nextToken(); // force reading of first token
   }
 

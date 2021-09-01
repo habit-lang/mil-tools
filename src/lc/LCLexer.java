@@ -27,11 +27,11 @@ class LCLexer extends LayoutLexer implements LCTokens {
 
   LCLexer(Handler handler, boolean optional, Source source) {
     super(handler, optional, source);
-    reserved.put("do", new Integer(DO));
-    reserved.put("\\", new Integer(LAMBDA));
-    reserved.put("&&", new Integer(AMPAMP));
-    reserved.put("||", new Integer(BARBAR));
-    reserved.put("where", new Integer(WHERE));
+    reserved.put("do", Integer.valueOf(DO));
+    reserved.put("\\", Integer.valueOf(LAMBDA));
+    reserved.put("&&", Integer.valueOf(AMPAMP));
+    reserved.put("||", Integer.valueOf(BARBAR));
+    reserved.put("where", Integer.valueOf(WHERE));
     nextToken(); // Start the token stream
   }
 

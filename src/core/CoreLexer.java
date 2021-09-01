@@ -31,31 +31,31 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
   public CoreLexer(Handler handler, Source source) {
     super(handler, source);
     reserved = new HashMap<String, Integer>();
-    reserved.put("=", new Integer(EQ));
-    reserved.put("::", new Integer(COCO));
-    reserved.put("|", new Integer(BAR));
-    reserved.put(".", new Integer(DOT));
-    reserved.put("_", new Integer(UNDER));
-    reserved.put("<-", new Integer(FROM));
-    reserved.put("->", new Integer(TO));
-    reserved.put("require", new Integer(REQUIRE));
-    reserved.put("export", new Integer(EXPORT));
-    reserved.put("entrypoint", new Integer(ENTRYPOINT));
-    reserved.put("external", new Integer(EXTERNAL));
-    reserved.put("data", new Integer(DATA));
-    reserved.put("type", new Integer(TYPE));
-    reserved.put("area", new Integer(AREA));
-    reserved.put("struct", new Integer(STRUCT));
-    reserved.put("bitdata", new Integer(BITDATA));
-    reserved.put("aligned", new Integer(ALIGNED));
-    reserved.put("#", new Integer(PROXY));
-    reserved.put("case", new Integer(CASE));
-    reserved.put("of", new Integer(OF));
-    reserved.put("if", new Integer(IF));
-    reserved.put("then", new Integer(THEN));
-    reserved.put("else", new Integer(ELSE));
-    reserved.put("let", new Integer(LET));
-    reserved.put("in", new Integer(IN));
+    reserved.put("=", Integer.valueOf(EQ));
+    reserved.put("::", Integer.valueOf(COCO));
+    reserved.put("|", Integer.valueOf(BAR));
+    reserved.put(".", Integer.valueOf(DOT));
+    reserved.put("_", Integer.valueOf(UNDER));
+    reserved.put("<-", Integer.valueOf(FROM));
+    reserved.put("->", Integer.valueOf(TO));
+    reserved.put("require", Integer.valueOf(REQUIRE));
+    reserved.put("export", Integer.valueOf(EXPORT));
+    reserved.put("entrypoint", Integer.valueOf(ENTRYPOINT));
+    reserved.put("external", Integer.valueOf(EXTERNAL));
+    reserved.put("data", Integer.valueOf(DATA));
+    reserved.put("type", Integer.valueOf(TYPE));
+    reserved.put("area", Integer.valueOf(AREA));
+    reserved.put("struct", Integer.valueOf(STRUCT));
+    reserved.put("bitdata", Integer.valueOf(BITDATA));
+    reserved.put("aligned", Integer.valueOf(ALIGNED));
+    reserved.put("#", Integer.valueOf(PROXY));
+    reserved.put("case", Integer.valueOf(CASE));
+    reserved.put("of", Integer.valueOf(OF));
+    reserved.put("if", Integer.valueOf(IF));
+    reserved.put("then", Integer.valueOf(THEN));
+    reserved.put("else", Integer.valueOf(ELSE));
+    reserved.put("let", Integer.valueOf(LET));
+    reserved.put("in", Integer.valueOf(IN));
   }
 
   /** Return a printable representation of the current token. */
