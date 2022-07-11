@@ -18,3 +18,5 @@ NonZero Values, Division, and Remainder:
 > nz10 = nz10u Unit
 > nz16 = nz16u Unit
 
+> external nzbitForget  {primNZBitForget n} :: NZBit n -> Bit n
+
