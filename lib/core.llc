@@ -178,3 +178,11 @@ will always be a valid index for the array, so we can be sure
 that an expression of this form will never result in an out of
 bounds array access.
 
+Padding:
+
+Padding is handled like an array, except that there is no way
+to access or modify the padded area, and hence no initialization
+is required:
+
+> external initPad  {primInitPad n a} :: Init (Pad n a)
+
