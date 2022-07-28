@@ -146,6 +146,10 @@ public abstract class CoreDefn {
     /* do nothing */
   }
 
+  BitdataDefn checkPats() throws Failure {
+    return null;
+  }
+
   /** Calculate types for each of the values that are introduced by this definition. */
   public abstract void calcCfuns(Handler handler);
 

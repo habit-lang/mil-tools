@@ -78,6 +78,10 @@ public class BitdataDefn extends TyconDefn {
     bt.fixKinds();
   }
 
+  void undeterminedBitPat() throws Failure {
+    throw new UndeterminedBitPatternFailure(pos, bt.asType());
+  }
+
   /** Initialize size information for this definition, if appropriate. */
   void initSizes(Handler handler) {
     try {
@@ -101,6 +105,8 @@ public class BitdataDefn extends TyconDefn {
     return eqns;
   }
 
+  private int width;
+
   void checkSizes() throws Failure {
     // Check that we have computed a valid BitSize for this type
     // TODO: combine with very similar code in Type.bitWidth()?
@@ -111,16 +117,22 @@ public class BitdataDefn extends TyconDefn {
     } else if (nat.signum() < 0 || nat.compareTo(Type.BIG_MAX_BIT_WIDTH) > 0) {
       throw new InvalidWidthFailure(pos, bt, nat);
     }
-    int w = nat.intValue();
+    width = nat.intValue();
     bt.setBitSize(size); // save simplified size value
     debug.Log.println("BitSize(" + bt + ") = " + nat);
+  }
 
+  BitdataDefn checkPats() throws Failure {
     // Calculate region lists for each of the constructors and a bit pattern for the full type:
     if (constrs.length == 0) {
-      bt.setPat(obdd.Pat.all(w).restrict());
+      bt.setPat(obdd.Pat.all(width).restrict());
     } else {
-      obdd.Pat pat = obdd.Pat.empty(w);
+      obdd.Pat pat = obdd.Pat.empty(width);
       for (int i = 0; i < constrs.length; i++) {
+        obdd.Pat cpat = constrs[i].calcLayout(bt);
+        if (cpat == null) {
+          return this; // not yet able to determine bit pattern
+        }
         pat = constrs[i].calcLayout(bt).or(pat);
       }
       bt.setPat(pat);
@@ -140,9 +152,10 @@ public class BitdataDefn extends TyconDefn {
       // TODO: we could make a special case for single constructor types, none of which
       // require checking for confusion or a search for a mask-test predicate
       for (int i = 0; i < constrs.length; i++) {
-        BitdataConDefn.calcMaskTest(constrs, i, w);
+        BitdataConDefn.calcMaskTest(constrs, i, width);
       }
     }
+    return null;
   }
 
   /** Calculate types for each of the values that are introduced by this definition. */

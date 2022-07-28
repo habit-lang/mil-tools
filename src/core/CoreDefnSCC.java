@@ -100,8 +100,26 @@ public class CoreDefnSCC {
     // Calculate size information by collecting and solving corresponding linear equations
     try {
       LinearEqns.solve(eqns);
+      int count = 0;
       for (CoreDefns ds = getBindings(); ds != null; ds = ds.next) {
         ds.head.checkSizes();
+        count++;
+      }
+      BitdataDefn def = null; // Tracks most recent bitdata definition with unknown pattern
+      while (count > 0) {
+        int unresolvedCount = 0;
+        for (CoreDefns ds = getBindings(); ds != null; ds = ds.next) {
+          if ((def = ds.head.checkPats()) != null) {
+            unresolvedCount++;
+          }
+        }
+        if (unresolvedCount == 0) { // All patterns were found
+          break;
+        } else if (unresolvedCount < count) { // Some progress was made
+          count = unresolvedCount;
+        } else {
+          def.undeterminedBitPat();
+        }
       }
     } catch (Failure f) {
       handler.report(f);

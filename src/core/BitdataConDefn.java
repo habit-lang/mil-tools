@@ -70,6 +70,9 @@ class BitdataConDefn extends Name {
     obdd.Pat pat = obdd.Pat.all(0);
     for (int i = regexps.length; --i >= 0; ) {
       pat = regexps[i].calcPat(pat);
+      if (pat == null) { // Return null if bit pattern cannot be found (yet)
+        return null;
+      }
     }
 
     // Calculate the tagbits for this constructor:

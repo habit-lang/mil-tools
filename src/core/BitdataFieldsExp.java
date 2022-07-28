@@ -65,13 +65,14 @@ class BitdataFieldsExp extends BitdataRegionExp {
 
   /**
    * Calculate a bit pattern for this region, and all of the regions to its right, given a bit
-   * pattern for the latter. Also calculates the offset for each region within the overall layout.
+   * pattern for the latter. Also calculates the offset for each region within the overall layout. A
+   * null result indicates that we were not (yet) able to determine a bit pattern for this region.
    */
   obdd.Pat calcPat(obdd.Pat pat) throws Failure {
     offset = pat.getWidth();
     obdd.Pat fpat = type.bitPat(null);
     if (fpat == null) {
-      throw new UndeterminedBitPatternFailure(texp.position(), type);
+      return null;
     }
     width = fpat.getWidth();
     for (int i = fields.length; --i >= 0; ) {
