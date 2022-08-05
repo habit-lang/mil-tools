@@ -155,16 +155,16 @@ of each array element is a function of its index:
 > external initArray  {primInitArray n a} :: (Ix n -> Init a) -> Init (Array n a)
 
 A simpler form of initializer can be used in situations where all
-array elements should be initialized to the same value:
+array elements should be initialized in the same way:
 
-> export initArrayAll :: a -> Init (Array n (Stored a))
-> initArrayAll v       = initArray (\ix -> initStored v)
+> export initAll :: Init a -> Init (Array n a)
+> initAll initOne = initArray (\ix -> initOne)
 
-For example, the following function builds an initializer that
-sets every value in an array of pointers to `Null`:
+As a further special case, we can use the following function to set all
+of the stored values in a given array to a suitable initial value:
 
-> export nullArray :: Init (Array n (Stored (Ptr a)))
-> nullArray         = initArrayAll Null
+> export initAllStored :: a -> Init (Array n (Stored a))
+> initAllStored v       = initAll (initStored v)
 
 Array indexing is represented by the `@` operator:
 
