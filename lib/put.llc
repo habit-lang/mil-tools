@@ -91,7 +91,7 @@ parameter specifies the padding character that will be used
 the specified minimum width:
 
 > export hputDigitsFmt
->   :: NZBit WordSize -- number base
+>   :: NZBit WordBits    -- number base
 >      -> Ix MaxWidth    -- maximum number of digits to display
 >      -> Ix MaxWidth    -- minimum field width
 >      -> Word           -- character to use as padding
@@ -116,7 +116,7 @@ example, the `putUnsigned`, `putSigned`, `putBin`,
 of a more general `putDigits` function that, in turn, is
 defined by a call to the `putDigitsFmt` function:
 
-> hputDigits     :: NZBit WordSize -> Putchar -> Putnum
+> hputDigits     :: NZBit WordBits -> Putchar -> Putnum
 > hputDigits base = hputDigitsFmt base maxBound ix0 ' '
 
 We can always determine the least significant digit in the
@@ -133,19 +133,19 @@ complete, we can empty the buffer, treating it as a stack
 and "pop"ing one character at a time to display them in the
 right order:
 
-> type MaxWidth = WordSize
+> type MaxWidth = WordBits
 > area itoaBuf <- initArray (\ix -> initStored bit0) :: Ref (Array MaxWidth (Stored Byte))
 
-Note that our buffer can contain at most `WordSize`
+Note that our buffer can contain at most `WordBits`
 characters, which matches the worst case (i.e., maximum
 length) for displaying a `Word` value in binary notation.
 Technically speaking, with a base value of `1`, a call to
 `hputDigitsFmt` might be expected to produce an output
-string with more than `WordSize` digits.  This behavior,
+string with more than `WordBits` digits.  This behavior,
 exlusively for unary display of potentially large numbers,
 is not likely to be useful in practice, and our
 implementation will simply truncate the output in such cases
-to include at most `WordSize` (least significant) digits.
+to include at most `WordBits` (least significant) digits.
 Indeed, the following `hputDigitsFmt` function allows us to
 specify a smaller maximum width by passing in a suitable
 value for `max`.  The basic algorithm here has three steps:
