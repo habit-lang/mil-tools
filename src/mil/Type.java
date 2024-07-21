@@ -892,7 +892,7 @@ public abstract class Type extends Scheme {
     Type bits = bitSize(tenv); // Otherwise check bit representation of this type
     if (bits != null) {
       BigInteger m = bits.simplifyNatType(null).getNat();
-      if (m != null) {
+      if (m != null && m.compareTo(Type.BIG_MAX_BIT_WIDTH) <= 0 && m.signum() >= 0) {
         return m.intValue();
       }
     }
