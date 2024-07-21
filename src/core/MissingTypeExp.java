@@ -29,7 +29,7 @@ public class MissingTypeExp extends PosTypeExp {
   }
 
   /**
-   * Scope analysis on type expressions in a context where we expect all of the type constructor to
+   * Scope analysis on type expressions in a context where we expect all of the type constructors to
    * be defined, but (if canAdd is true) we will treat undefined type variables as implicitly bound,
    * universally quantified type variables.
    */
