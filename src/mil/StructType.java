@@ -90,10 +90,10 @@ public class StructType extends Tycon {
     final String beg = "  [ ";
     final String bar = "  | ";
     if (fields.length == 0) {
-      out.println(beg);
+      out.print(beg);
       if (width > 0) {
         dumpPadding(out, width);
-        out.println(" ");
+        out.print(" ");
       }
       out.println("]");
     } else {

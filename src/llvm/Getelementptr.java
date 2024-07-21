@@ -58,7 +58,7 @@ public class Getelementptr extends Expr {
   /** Append the name for this value to the specified buffer. */
   public void appendName(StringBuilder buf) {
     buf.append("getelementptr inbounds (");
-    ptr.getType().ptsTo().append(buf);
+    ty.append(buf);
     buf.append(", ");
     ptr.append(buf);
     for (int i = 0; i < offsets.length; i++) {
@@ -71,7 +71,7 @@ public class Getelementptr extends Expr {
   /** Generate a string for executing this expression as a right hand side. */
   void appendEval(StringBuilder buf) {
     buf.append("getelementptr inbounds ");
-    ptr.getType().ptsTo().append(buf);
+    ty.append(buf);
     buf.append(", ");
     ptr.append(buf);
     for (int i = 0; i < offsets.length; i++) {

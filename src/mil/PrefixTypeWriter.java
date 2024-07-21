@@ -49,8 +49,7 @@ public abstract class PrefixTypeWriter extends TypeWriter {
   private static String dropDigitSuffix(String str) {
     int n = str.length() - 1;
     if (n > 0 && Character.isDigit(str.charAt(n))) {
-      while (--n > 0 && Character.isDigit(str.charAt(n)))
-        ;
+      while (--n > 0 && Character.isDigit(str.charAt(n))) ;
       return str.substring(0, n + 1);
     }
     return str;
