@@ -250,7 +250,8 @@ public class CoreParser extends Phase implements CoreTokens {
 
   /**
    * Try to parse a typeOpExp, which may include a function arrow and an associated range type.
-   * Return null if no valid type found.
+   * Return null if no valid type found. Also handles constant arithmetic type expressions, but
+   * without any precedence parsing, so parentheses must be used.
    */
   private TypeExp maybeTypeOpExp() {
     TypeExp t = maybeTypeApExp();
@@ -259,6 +260,13 @@ public class CoreParser extends Phase implements CoreTokens {
       if (arr != null) {
         TypeExp rng = notMissing(maybeTypeOpExp()); // Find the range
         return new ApTypeExp(new ApTypeExp(arr, t), rng); // Return function type
+      } else if (lexer.getToken() == VARSYM) {
+        NatArithOp op = NatArithOp.isOp(lexer.getLexeme());
+        if (op != null) {
+          Position pos = lexer.getPos();
+          lexer.nextToken(/* operator */ );
+          return new NatArithTypeExp(pos, op, t, notMissing(maybeTypeApExp()));
+        }
       }
     }
     return t;
