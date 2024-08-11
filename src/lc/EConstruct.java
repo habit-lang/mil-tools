@@ -194,29 +194,33 @@ class EConstruct extends PosExpr {
       Type tyinitS = Type.init(st.asType());
       return EField.compInit(env, abort, st, tyinitS, inits, 0, inits.length - 1, kty, kt);
     } else { // bitdata construction
-      // sketch of generated code:
-      //     comp[fexp1] $ \a1 ->
-      //     ...
-      //     comp[fexpN] $ \aN ->
-      //     l <- LCF(a1,...,aN)    -- build layout (modulo invmap permutation)
-      //     kt(C(l))               -- embed in bitdata type
-      Temp l = new Temp(layout.asType());
-      Code code = new Bind(l, layout.getCfuns()[0].withArgs(as), kt.with(cf.withArgs(l)));
-      for (int i = fields.length; --i >= 0; ) {
-        final int j = invmap[i];
-        final Code c = code;
-        code =
-            fields[i].compAtom(
-                env,
-                kty,
-                new AtomCont() {
-                  Code with(final Atom a) {
-                    as[j] = a; // save variable
-                    return c;
-                  }
-                });
+      if (layout.getArity() == 0) {
+        return kt.with(cf.withArgs());
+      } else {
+        // sketch of generated code:
+        //     comp[fexp1] $ \a1 ->
+        //     ...
+        //     comp[fexpN] $ \aN ->
+        //     l <- LCF(a1,...,aN)    -- build layout (modulo invmap permutation)
+        //     kt(C(l))               -- embed in bitdata type
+        Temp l = new Temp(layout.asType());
+        Code code = new Bind(l, layout.getCfuns()[0].withArgs(as), kt.with(cf.withArgs(l)));
+        for (int i = fields.length; --i >= 0; ) {
+          final int j = invmap[i];
+          final Code c = code;
+          code =
+              fields[i].compAtom(
+                  env,
+                  kty,
+                  new AtomCont() {
+                    Code with(final Atom a) {
+                      as[j] = a; // save variable
+                      return c;
+                    }
+                  });
+        }
+        return code;
       }
-      return code;
     }
   }
 
