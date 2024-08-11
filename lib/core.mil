@@ -27,9 +27,10 @@ ashr <- {x,y} ashr((x,y))
 
 -- Pointers/References:
 
-export refToWord, ptrToWord
-external refToWord = ptrToWordImp :: Ref a -> Word
-external ptrToWord = ptrToWordImp :: Ptr a -> Word
+export refToWord, ptrToWord, physToWord
+external refToWord  = ptrToWordImp :: Ref a -> Word
+external ptrToWord  = ptrToWordImp :: Ptr a -> Word
+external physToWord = ptrToWordImp :: Phys a -> Word
 
 ptrToWordImp :: Word -> Word
 ptrToWordImp <- {w} return w
