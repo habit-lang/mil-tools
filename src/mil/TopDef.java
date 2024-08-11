@@ -79,6 +79,10 @@ public class TopDef extends Top {
     return type = topLevel.instantiate(i);
   }
 
+  public Scheme getDeclared() {
+    return topLevel.getDeclared();
+  }
+
   /** Generate code to copy the data for this atom into the specified frame slot. */
   void copyTo(int dst, MachineBuilder builder) {
     builder.gcopy(topLevel, i, dst);

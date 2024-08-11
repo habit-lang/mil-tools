@@ -48,6 +48,19 @@ public abstract class Top extends Atom {
     return this.clone();
   }
 
+  void checkImp(Handler handler, Position pos) {
+    Scheme declared = getDeclared();
+    if (declared == null) {
+      handler.report(new Failure(pos, "Implementation for external does not have a declared type"));
+    } else if (declared.isMonomorphic() == null) {
+      handler.report(
+          new Failure(pos, "Implementation for external does not have a monomorphic type"));
+    }
+    instantiate();
+  }
+
+  public abstract Scheme getDeclared();
+
   boolean isStatic() {
     return true;
   }

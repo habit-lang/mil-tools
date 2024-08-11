@@ -72,6 +72,10 @@ public class TopExt extends Top {
     return type = external.instantiate();
   }
 
+  public Scheme getDeclared() {
+    return external.getDeclared();
+  }
+
   /** Generate code to copy the data for this atom into the specified frame slot. */
   void copyTo(int dst, MachineBuilder builder) {
     builder.gcopy(external, dst);

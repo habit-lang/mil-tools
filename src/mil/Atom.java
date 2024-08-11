@@ -238,6 +238,10 @@ public abstract class Atom {
   /** Return a type for an instantiated version of this item when used as Atom (input operand). */
   public abstract Type instantiate();
 
+  void checkImp(Handler handler, Position pos) {
+    /* nothing to do */
+  }
+
   /** Generate code to copy the data for this atom into the specified frame slot. */
   abstract void copyTo(int dst, MachineBuilder builder);
 

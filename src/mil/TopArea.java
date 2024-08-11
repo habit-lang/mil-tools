@@ -72,6 +72,10 @@ public class TopArea extends Top {
     return type = area.instantiate();
   }
 
+  public Scheme getDeclared() {
+    return area.getDeclared();
+  }
+
   /** Generate code to copy the data for this atom into the specified frame slot. */
   void copyTo(int dst, MachineBuilder builder) {
     builder.gcopy(area, dst);

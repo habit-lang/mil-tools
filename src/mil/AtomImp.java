@@ -44,8 +44,8 @@ public class AtomImp extends ExtImp {
     out.print(" = " + a);
   }
 
-  void checkImp(Handler handler) {
-    a.instantiate();
+  void checkImp(Handler handler, Position pos) {
+    a.checkImp(handler, pos);
   }
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */

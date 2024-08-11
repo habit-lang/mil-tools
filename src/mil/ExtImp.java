@@ -38,7 +38,7 @@ public class ExtImp {
     /* nothing to do */
   }
 
-  void checkImp(Handler handler) {
+  void checkImp(Handler handler, Position pos) {
     /* nothing to do */
   }
 

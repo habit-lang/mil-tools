@@ -117,7 +117,7 @@ public class External extends TopDefn {
    * if the given handler is not null.
    */
   void checkBody(Handler handler) throws Failure {
-    imp.checkImp(handler);
+    imp.checkImp(handler, pos);
   }
 
   /** Type check the body of this definition, throwing an exception if there is an error. */
