@@ -319,6 +319,8 @@ public class GenImp extends ExtImp {
 
   static Type ixB = Type.ix(gB);
 
+  static Type ixC = Type.ix(gC);
+
   static Type inxA = Type.inx(gA);
 
   static Type bitAixAbitA = fun(bitA, ixA, bitA);
@@ -703,7 +705,7 @@ public class GenImp extends ExtImp {
           }
         });
 
-    // primRelaxIx n m :: Ix n -> Ix m
+    // primRelaxIx n m :: Ix n -> Ix m    TODO: should be replaced by primIxInLo below ...
     generators.put(
         "primRelaxIx",
         new Generator(Prefix.nat_nat, fun(ixA, ixB)) {
@@ -727,6 +729,344 @@ public class GenImp extends ExtImp {
               return new Return(Word.Zero).constClosure(pos, Tycon.unitRep);
             } else /* n=1,m=2 */ { // :: Unit -> Flag
               return new Return(Flag.False).constClosure(pos, Tycon.unitRep);
+            }
+          }
+        });
+
+    // primIxInLo m s :: Ix m -> Ix (m + n), where s = m + n
+    // primIxInLo i    = i
+    generators.put(
+        "primIxInLo",
+        new Generator(Prefix.nat_nat, fun(ixA, ixB)) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            long m = ts[0].validIndex().longValue(); // Left hand index summand
+            long s = ts[1].validIndex().longValue(); // Sum index
+            if (m > s) {
+              throw new GeneratorException("First index must not be larger than the second");
+            } else if (m > 2
+                || m == s) { // \i -> i (could be for Unit (m==1), Flag (m==2), or Word (m>2))
+              return new Return().makeUnaryFuncClosure(pos, 1);
+            } else if (m == 2) { // \i -> flagToWord i
+              return new PrimCall(Prim.flagToWord).makeUnaryFuncClosure(pos, 1);
+            } else if (s == 2) { // \i -> False :: Unit -> Flag  (s==1)
+              return new Return(Flag.False).constClosure(pos, Tycon.unitRep);
+            } else { // \i -> 0 :: Unit -> Word (m==1, s>2)
+              return new Return(Word.Zero).constClosure(pos, Tycon.unitRep);
+            }
+          }
+        });
+
+    // primIxInHi m s :: Ix m -> Ix (n + m), where s = n + m
+    // primIxInHi i    = i + n  (i.e., i + (s-m))
+    generators.put(
+        "primIxInHi",
+        new Generator(Prefix.nat_nat, fun(ixA, ixB)) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            long m = ts[0].validIndex().longValue(); // Right hand index summand
+            long s = ts[1].validIndex().longValue(); // Sum index
+            if (m > s) {
+              throw new GeneratorException("First index must not be larger than the second");
+            }
+            if (m <= 2 && m == s) { // \i -> i (could be for Unit (m==1) or Flag (m==2))
+              return new Return().makeUnaryFuncClosure(pos, 1);
+            } else if (m == 1) {
+              if (s == 2) { // \i -> True :: Unit -> Flag
+                return new Return(Flag.True).constClosure(pos, Tycon.unitRep);
+              } else { // \i -> (s - m) :: Unit -> Word
+                return new Return(new Word(s - m)).constClosure(pos, Tycon.unitRep);
+              }
+            } else { // \i -> i + (s-m)   (m>2 or (m==2 and s>2))
+              Temp[] vs = Temp.makeTemps(1);
+              Temp i = (m == 2) ? new Temp() : vs[0];
+              Code code = new Done(Prim.add.withArgs(i, new Word(s - m)));
+              if (m == 2) { // Special case for Ix 2 / Flag
+                code = new Bind(i, Prim.flagToWord.withArgs(vs[0]), code);
+              }
+              return new BlockCall(new Block(pos, vs, code)).makeUnaryFuncClosure(pos, 1);
+            }
+          }
+        });
+
+    // primIxGenIsLo a m s :: a -> (Ix m -> a) -> Ix s -> a, where s >= m
+    // primIxGenIsLo n j i  = if i < m then j i else n
+    generators.put(
+        "primIxGenIsLo",
+        new Generator(Prefix.star_nat_nat, fun(gA, fun(ixB, gA), ixC, gA)) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int nl = ts[0].repLen(); // Find number of words to represent values of type a
+            long m = ts[1].validIndex().longValue(); // Left hand summand index, will be > 0
+            long s = ts[2].validIndex().longValue(); // Sum index, will be > 0, must be >=m
+            if (m > s) {
+              throw new GeneratorException("First index must not be larger than the second");
+            }
+            Temp[] ns = Temp.makeTemps(nl); // Parameters for n
+            Temp[] ji = Temp.makeTemps(2); // Parameters for j and i
+            Code code;
+            if (s == 1) { // \n j i -> j Unit :: a -> (Unit -> a) -> Unit -> a
+              Temp u = new Temp();
+              code =
+                  new Bind(
+                      u,
+                      Cfun.Unit.withArgs(), // u <- Unit()
+                      new Done(new Enter(ji[0], u))); // j @ u
+
+            } else if (m == 2 && s == 2) { // \n j i -> j i    :: a -> (Flag -> a) -> Flag -> a
+              code = new Done(new Enter(ji[0], ji[1]));
+
+            } else {
+              // \n j i -> if bnot i then j Unit           else n :: a -> (Unit -> a) -> Flag -> a
+              // (m=1, s=2)
+              // \n j i -> if i<m    then j Unit           else n :: a -> (Unit -> a) -> Word -> a
+              // (m=1, s>2)
+              // \n j i -> if i<m    then j (wordToFlag i) else n :: a -> (Flag -> a) -> Word -> a
+              // (m=2, s>2)
+              // \n j i -> if i<m    then j i              else n :: a -> (Word -> a) -> Word -> a
+              // (m>2, s>2)
+              BlockCall no = new BlockCall(returnBlock(pos, nl), ns);
+
+              BlockCall yes;
+              if (m == 1) {
+                Temp[] vs = Temp.makeTemps(1);
+                Temp u = new Temp();
+                yes =
+                    new BlockCall(
+                        new Block(
+                            pos,
+                            vs, // yes[j]
+                            new Bind(
+                                u,
+                                Cfun.Unit.withArgs(), //   = u <- Unit()
+                                new Done(new Enter(vs[0], u)))), //     j @ u
+                        new Atom[] {ji[0]});
+              } else if (m == 2) {
+                Temp[] vs = Temp.makeTemps(2);
+                Temp t = new Temp();
+                yes =
+                    new BlockCall(
+                        new Block(
+                            pos,
+                            vs, // yes[j,i]
+                            new Bind(
+                                t,
+                                Prim.wordToFlag.withArgs(vs[1]), //   = t <- wordToFlag((i))
+                                new Done(new Enter(vs[0], t)))), //     j @ t
+                        new Atom[] {ji[0], ji[1]});
+              } else {
+                yes = new BlockCall(enterBlock(pos), new Atom[] {ji[0], ji[1]});
+              }
+
+              Tail test = (s == 2) ? Prim.bnot.withArgs(ji[1]) : Prim.ult.withArgs(ji[1], m);
+              Temp v = new Temp();
+              code = new Bind(v, test, new If(v, yes, no));
+            }
+            return new BlockCall(new Block(pos, Temp.append(ns, ji), code))
+                .makeTernaryFuncClosure(pos, nl, 1, 1);
+          }
+        });
+
+    // primIxGenIsHi a m s :: a -> (Ix m -> a) -> Ix s -> a, where s >= m
+    // primIxGenIsHi n j i  = if i >= (s-m) then j (i - (s-m)) else n
+    generators.put(
+        "primIxGenIsHi",
+        new Generator(Prefix.star_nat_nat, fun(gA, fun(ixB, gA), ixC, gA)) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            int nl = ts[0].repLen(); // Find number of words to represent values of type a
+            long m = ts[1].validIndex().longValue(); // Left hand summand index, will be > 0
+            long s = ts[2].validIndex().longValue(); // Sum index, will be > 0, must be >=m
+            if (m > s) {
+              throw new GeneratorException("First index must not be larger than the second");
+            }
+            Temp[] ns = Temp.makeTemps(nl); // Parameters for n
+            Temp[] ji = Temp.makeTemps(2); // Parameters for j and i
+            Code code;
+
+            if (s == 1) { // \n j i -> j Unit :: a -> (Unit -> a) -> Unit -> a
+              Temp u = new Temp();
+              code =
+                  new Bind(
+                      u,
+                      Cfun.Unit.withArgs(), // u <- Unit()
+                      new Done(new Enter(ji[0], u))); // j @ u
+
+            } else if (m == 2 && s == 2) { // \n j i -> j i    :: a -> (Flag -> a) -> Flag -> a
+              code = new Done(new Enter(ji[0], ji[1]));
+
+            } else {
+              // \n j i -> if i        then j Unit                   else n :: a -> (Unit -> a) ->
+              // Flag -> a (m=1, s=2)
+              // \n j i -> if i>=(s-m) then j Unit                   else n :: a -> (Unit -> a) ->
+              // Word -> a (m=1, s>2)
+              // \n j i -> if i>=(s-m) then j (wordToFlag (i-(s-m))) else n :: a -> (Flag -> a) ->
+              // Word -> a (m=2, s>2)
+              // \n j i -> if i>=(s-m) then j (i-(s-m))              else n :: a -> (Word -> a) ->
+              // Word -> a (m>2, s>2)
+              BlockCall no = new BlockCall(returnBlock(pos, nl), ns);
+
+              BlockCall yes;
+              if (m == 1) {
+                Temp[] vs = Temp.makeTemps(1);
+                Temp u = new Temp();
+                yes =
+                    new BlockCall(
+                        new Block(
+                            pos,
+                            vs, // yes[j]
+                            new Bind(
+                                u,
+                                Cfun.Unit.withArgs(), //   = u <- Unit()
+                                new Done(new Enter(vs[0], u)))), //     j @ u
+                        new Atom[] {ji[0]});
+              } else if (m == 2) {
+                Temp[] vs = Temp.makeTemps(2);
+                Temp t = new Temp();
+                Temp u = new Temp();
+                yes =
+                    new BlockCall(
+                        new Block(
+                            pos,
+                            vs, // yes[j,i]
+                            new Bind(
+                                u,
+                                Prim.sub.withArgs(vs[1], s - m), //   = u <- sub((i, s-m))
+                                new Bind(
+                                    t,
+                                    Prim.wordToFlag.withArgs(u), //     t <- wordToFlag((u))
+                                    new Done(new Enter(vs[0], t))))), //     j @ t
+                        new Atom[] {ji[0], ji[1]});
+              } else {
+                Temp[] vs = Temp.makeTemps(2);
+                Temp t = new Temp();
+                yes =
+                    new BlockCall(
+                        new Block(
+                            pos,
+                            vs, // yes[j,i]
+                            new Bind(
+                                t,
+                                Prim.sub.withArgs(vs[1], s - m), //   = t <- sub((i, s-m))
+                                new Done(new Enter(vs[0], t)))), //     j @ t
+                        new Atom[] {ji[0], ji[1]});
+              }
+
+              if (s == 2) {
+                code = new If(ji[1], yes, no);
+              } else {
+                Temp v = new Temp();
+                code = new Bind(v, Prim.uge.withArgs(ji[1], s - m), new If(v, yes, no));
+              }
+            }
+            return new BlockCall(new Block(pos, Temp.append(ns, ji), code))
+                .makeTernaryFuncClosure(pos, nl, 1, 1);
+          }
+        });
+
+    // primIxPair m n p :: Ix m -> Ix n -> Ix p, where p = m * n
+    // primIxPair i j    = (i*n) + j
+    generators.put(
+        "primIxPair",
+        new Generator(Prefix.nat_nat_nat, fun(ixA, ixB, ixC)) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            long m = ts[0].validIndex().longValue(); // Left hand index factor
+            long n = ts[1].validIndex().longValue(); // Right hand index factor
+            long p = ts[2].validIndex().longValue(); // Product index factor
+            if (m * n != p) {
+              throw new GeneratorException(
+                  "Result index must be the product of the argument index types");
+            }
+            Temp[] ij = Temp.makeTemps(2);
+            Code code;
+            if (m == 1) {
+              code =
+                  new Done(
+                      (n == 1)
+                          ? new DataAlloc(Cfun.Unit).withArgs() // \i j -> Unit (m==n==1)
+                          : new Return(ij[1])); // \i j -> j    (m=1, n>1)
+            } else if (n == 1) {
+              code = new Done(new Return(ij[0])); // \i j -> i    (m>1, n=1)
+            } else {
+              Temp i = (m == 2) ? new Temp() : ij[0];
+              Temp j = (n == 2) ? new Temp() : ij[1];
+              Temp t = new Temp();
+              code =
+                  new Bind(
+                      t,
+                      Prim.mul.withArgs(i, new Word(n)), // \i j -> i*n + j
+                      new Done(Prim.add.withArgs(t, j)));
+              if (n == 2) { // Convert j from Flag to Word (n==2)
+                code = new Bind(j, Prim.flagToWord.withArgs(ij[1]), code);
+              }
+              if (m == 2) { // Convert i from Flag to Word (m==2)
+                code = new Bind(i, Prim.flagToWord.withArgs(ij[0]), code);
+              }
+            }
+            return new BlockCall(new Block(pos, ij, code)).makeBinaryFuncClosure(pos, 1, 1);
+          }
+        });
+
+    // primIxFst p m :: Ix (m * n) -> Ix m, where p = m * n
+    // primIxFst i    = i `div` n
+    // primIxFst (primIxPair i j) = (i*n+j) `div` n = i (because j<n)
+    generators.put(
+        "primIxFst",
+        new Generator(Prefix.nat_nat, fun(ixA, ixB)) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            long p = ts[0].validIndex().longValue(); // Product index
+            long m = ts[1].validIndex().longValue(); // Left hand index factor
+            long n = p / m; // Right hand index factor
+            if (m * n != p) {
+              throw new GeneratorException("First index must be a multiple of the second");
+            } else if (m
+                == 1) { // (\i -> Unit)  -- TODO: distinguish between types for i (Unit, Flag,
+                        // Word)?
+              return unaryUnit(pos);
+            } else if (n
+                == 1) { // (\i -> i)     -- TODO: distinguish between types for i (Flag, Word)?
+              return new Return().makeUnaryFuncClosure(pos, 1);
+            } else {
+              Temp[] vs = Temp.makeTemps(1);
+              Tail t = Prim.div.withArgs(vs[0], new Word(n));
+              Code code;
+              if (m == 2) {
+                Temp v = new Temp();
+                code = new Bind(v, t, new Done(Prim.wordToFlag.withArgs(v)));
+              } else {
+                code = new Done(t);
+              }
+              return new BlockCall(new Block(pos, vs, code)).makeUnaryFuncClosure(pos, 1);
+            }
+          }
+        });
+
+    // primIxSnd p n :: Ix (m * n) -> Ix n, where p = m * n
+    // primIxSnd i    = i `mod` n
+    // primIxSnd (primIxPair i j) = (i*n+j) `mod` n = j (because j<n)
+    generators.put(
+        "primIxSnd",
+        new Generator(Prefix.nat_nat, fun(ixA, ixB)) {
+          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
+            long p = ts[0].validIndex().longValue(); // Product index
+            long n = ts[1].validIndex().longValue(); // Right hand index factor
+            long m = p / n; // Left hand index factor
+            if (m * n != p) {
+              throw new GeneratorException("First index must be a multiple of the second");
+            } else if (n
+                == 1) { // (\i -> Unit)  -- TODO: distinguish between types for i (Unit, Flag,
+                        // Word)?
+              return unaryUnit(pos);
+            } else if (m
+                == 1) { // (\i -> i)     -- TODO: distinguish between types for i (Flag, Word)?
+              return new Return().makeUnaryFuncClosure(pos, 1);
+            } else {
+              Temp[] vs = Temp.makeTemps(1);
+              Tail t = Prim.rem.withArgs(vs[0], new Word(n));
+              Code code;
+              if (n == 2) {
+                Temp v = new Temp();
+                code = new Bind(v, t, new Done(Prim.wordToFlag.withArgs(v)));
+              } else {
+                code = new Done(t);
+              }
+              return new BlockCall(new Block(pos, vs, code)).makeUnaryFuncClosure(pos, 1);
             }
           }
         });
