@@ -132,3 +132,22 @@ Relaxing index values:
 
 > external relaxIx {primRelaxIx m n} :: Ix m -> Ix n
 
+Index type operations:
+
+> external intoIx    {primIxInLo m s}      :: Ix m -> Ix s                   -- m <= s
+> external bumpIx    {primIxInHi m s}      :: Ix m -> Ix s                   -- m <= s
+
+> external ixGenIsLo {primIxGenIsLo a m s} :: a -> (Ix m -> a) -> Ix s -> a  -- m <= s
+> external ixGenIsHi {primIxGenIsHi a m s} :: a -> (Ix m -> a) -> Ix s -> a  -- m <= s
+
+> export fromIx :: Ix s -> Maybe (Ix m)  -- m <= s
+> fromIx         = ixGenIsLo Nothing Just
+
+> export dropIx :: Ix s -> Maybe (Ix m)  -- m <= s
+> dropIx         = ixGenIsHi Nothing Just
+
+> external ixPair    {primIxPair m n p} :: Ix m -> Ix n -> Ix p  -- p = m * n
+> external ixFst     {primIxFst  p m}   :: Ix p -> Ix m          -- p = m * n
+> external ixSnd     {primIxSnd  p n}   :: Ix p -> Ix n          -- p = m * n
+
+
