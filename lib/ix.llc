@@ -128,26 +128,22 @@ with at least 8 bits:
 
 > external ixToBit    {primIxToBit m n}  :: Ix m -> Bit n
 
-Relaxing index values:
-
-> external relaxIx {primRelaxIx m n} :: Ix m -> Ix n
-
 Index type operations:
 
-> external intoIx    {primIxInLo m s}      :: Ix m -> Ix s                   -- m <= s
-> external bumpIx    {primIxInHi m s}      :: Ix m -> Ix s                   -- m <= s
+> external intoIx    {primIntoIx m s}      :: Ix m -> Ix s                   -- m <= s
+> external bumpIx    {primBumpIx m s}      :: Ix m -> Ix s                   -- m <= s
 
-> external ixGenIsLo {primIxGenIsLo a m s} :: a -> (Ix m -> a) -> Ix s -> a  -- m <= s
-> external ixGenIsHi {primIxGenIsHi a m s} :: a -> (Ix m -> a) -> Ix s -> a  -- m <= s
+> external genFromIx {primGenFromIx a m s} :: a -> (Ix m -> a) -> Ix s -> a  -- m <= s
+> external genDropIx {primGenDropIx a m s} :: a -> (Ix m -> a) -> Ix s -> a  -- m <= s
 
 > export fromIx :: Ix s -> Maybe (Ix m)  -- m <= s
-> fromIx         = ixGenIsLo Nothing Just
+> fromIx         = genFromIx Nothing Just
 
 > export dropIx :: Ix s -> Maybe (Ix m)  -- m <= s
-> dropIx         = ixGenIsHi Nothing Just
+> dropIx         = genDropIx Nothing Just
 
-> external ixPair    {primIxPair m n p} :: Ix m -> Ix n -> Ix p  -- p = m * n
-> external ixFst     {primIxFst  p m}   :: Ix p -> Ix m          -- p = m * n
-> external ixSnd     {primIxSnd  p n}   :: Ix p -> Ix n          -- p = m * n
+> external pairIx {primPairIx m n p} :: Ix m -> Ix n -> Ix p  -- p = m * n
+> external fstIx  {primFstIx  p m}   :: Ix p -> Ix m          -- p = m * n
+> external sndIx  {primSndIx  p n}   :: Ix p -> Ix n          -- p = m * n
 
 

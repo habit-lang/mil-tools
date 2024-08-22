@@ -705,38 +705,10 @@ public class GenImp extends ExtImp {
           }
         });
 
-    // primRelaxIx n m :: Ix n -> Ix m    TODO: should be replaced by primIxInLo below ...
+    // primIntoIx m s :: Ix m -> Ix (m + n), where s = m + n
+    // primIntoIx i    = i
     generators.put(
-        "primRelaxIx",
-        new Generator(Prefix.nat_nat, fun(ixA, ixB)) {
-          Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
-            long n = ts[0].validIndex().longValue(); // Smaller index modulus
-            long m = ts[1].validIndex().longValue(); // Larger index modulus
-            if (n > m) {
-              throw new GeneratorException("First argument must not be larger than the second");
-            } else if (n == m || n > 2) {
-              // TODO: the type checker will infer a *polymorphic* type for the identity function
-              // used here, which could
-              // trip up the LLVM code generator if it is expecting a monomorphic type (although
-              // that may not happen
-              // often in practice because this definition is likely to be inlined by the
-              // optimizer).  (We could break
-              // out separate cases here for Word -> Word, Flag-> Flag, and Unit->Unit ...)
-              return new Return().makeUnaryFuncClosure(pos, 1);
-            } else if (n == 2) { // :: Flag -> Word
-              return new PrimCall(Prim.flagToWord).makeUnaryFuncClosure(pos, 1);
-            } else if (m > 2) { // :: Unit -> Word
-              return new Return(Word.Zero).constClosure(pos, Tycon.unitRep);
-            } else /* n=1,m=2 */ { // :: Unit -> Flag
-              return new Return(Flag.False).constClosure(pos, Tycon.unitRep);
-            }
-          }
-        });
-
-    // primIxInLo m s :: Ix m -> Ix (m + n), where s = m + n
-    // primIxInLo i    = i
-    generators.put(
-        "primIxInLo",
+        "primIntoIx",
         new Generator(Prefix.nat_nat, fun(ixA, ixB)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             long m = ts[0].validIndex().longValue(); // Left hand index summand
@@ -756,10 +728,10 @@ public class GenImp extends ExtImp {
           }
         });
 
-    // primIxInHi m s :: Ix m -> Ix (n + m), where s = n + m
-    // primIxInHi i    = i + n  (i.e., i + (s-m))
+    // primBumpIx m s :: Ix m -> Ix (n + m), where s = n + m
+    // primBumpIx i    = i + n  (i.e., i + (s-m))
     generators.put(
-        "primIxInHi",
+        "primBumpIx",
         new Generator(Prefix.nat_nat, fun(ixA, ixB)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             long m = ts[0].validIndex().longValue(); // Right hand index summand
@@ -787,10 +759,10 @@ public class GenImp extends ExtImp {
           }
         });
 
-    // primIxGenIsLo a m s :: a -> (Ix m -> a) -> Ix s -> a, where s >= m
-    // primIxGenIsLo n j i  = if i < m then j i else n
+    // primGenFromIx a m s :: a -> (Ix m -> a) -> Ix s -> a, where s >= m
+    // primGenFromIx n j i  = if i < m then j i else n
     generators.put(
-        "primIxGenIsLo",
+        "primGenFromIx",
         new Generator(Prefix.star_nat_nat, fun(gA, fun(ixB, gA), ixC, gA)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
@@ -864,10 +836,10 @@ public class GenImp extends ExtImp {
           }
         });
 
-    // primIxGenIsHi a m s :: a -> (Ix m -> a) -> Ix s -> a, where s >= m
-    // primIxGenIsHi n j i  = if i >= (s-m) then j (i - (s-m)) else n
+    // primGenDropIx a m s :: a -> (Ix m -> a) -> Ix s -> a, where s >= m
+    // primGenDropIx n j i  = if i >= (s-m) then j (i - (s-m)) else n
     generators.put(
-        "primIxGenIsHi",
+        "primGenDropIx",
         new Generator(Prefix.star_nat_nat, fun(gA, fun(ixB, gA), ixC, gA)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             int nl = ts[0].repLen(); // Find number of words to represent values of type a
@@ -960,10 +932,10 @@ public class GenImp extends ExtImp {
           }
         });
 
-    // primIxPair m n p :: Ix m -> Ix n -> Ix p, where p = m * n
-    // primIxPair i j    = (i*n) + j
+    // primPairIx m n p :: Ix m -> Ix n -> Ix p, where p = m * n
+    // primPairIx i j    = (i*n) + j
     generators.put(
-        "primIxPair",
+        "primPairIx",
         new Generator(Prefix.nat_nat_nat, fun(ixA, ixB, ixC)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             long m = ts[0].validIndex().longValue(); // Left hand index factor
@@ -1003,11 +975,11 @@ public class GenImp extends ExtImp {
           }
         });
 
-    // primIxFst p m :: Ix (m * n) -> Ix m, where p = m * n
-    // primIxFst i    = i `div` n
-    // primIxFst (primIxPair i j) = (i*n+j) `div` n = i (because j<n)
+    // primFstIx p m :: Ix (m * n) -> Ix m, where p = m * n
+    // primFstIx i    = i `div` n
+    // primFstIx (primPairIx i j) = (i*n+j) `div` n = i (because j<n)
     generators.put(
-        "primIxFst",
+        "primFstIx",
         new Generator(Prefix.nat_nat, fun(ixA, ixB)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             long p = ts[0].validIndex().longValue(); // Product index
@@ -1037,11 +1009,11 @@ public class GenImp extends ExtImp {
           }
         });
 
-    // primIxSnd p n :: Ix (m * n) -> Ix n, where p = m * n
-    // primIxSnd i    = i `mod` n
-    // primIxSnd (primIxPair i j) = (i*n+j) `mod` n = j (because j<n)
+    // primSndIx p n :: Ix (m * n) -> Ix n, where p = m * n
+    // primSndIx i    = i `mod` n
+    // primSndIx (primPairIx i j) = (i*n+j) `mod` n = j (because j<n)
     generators.put(
-        "primIxSnd",
+        "primSndIx",
         new Generator(Prefix.nat_nat, fun(ixA, ixB)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             long p = ts[0].validIndex().longValue(); // Product index
