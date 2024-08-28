@@ -728,10 +728,10 @@ public class GenImp extends ExtImp {
           }
         });
 
-    // primBumpIx m s :: Ix m -> Ix (n + m), where s = n + m
-    // primBumpIx i    = i + n  (i.e., i + (s-m))
+    // primLiftIx m s :: Ix m -> Ix (n + m), where s = n + m
+    // primLiftIx i    = i + n  (i.e., i + (s-m))
     generators.put(
-        "primBumpIx",
+        "primLiftIx",
         new Generator(Prefix.nat_nat, fun(ixA, ixB)) {
           Tail generate(Position pos, Type[] ts, RepTypeSet set) throws GeneratorException {
             long m = ts[0].validIndex().longValue(); // Right hand index summand

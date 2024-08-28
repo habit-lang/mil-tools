@@ -131,7 +131,7 @@ with at least 8 bits:
 Index type operations:
 
 > external intoIx    {primIntoIx m s}      :: Ix m -> Ix s                   -- m <= s
-> external bumpIx    {primBumpIx m s}      :: Ix m -> Ix s                   -- m <= s
+> external liftIx    {primLiftIx m s}      :: Ix m -> Ix s                   -- m <= s
 
 > external genFromIx {primGenFromIx a m s} :: a -> (Ix m -> a) -> Ix s -> a  -- m <= s
 > external genDropIx {primGenDropIx a m s} :: a -> (Ix m -> a) -> Ix s -> a  -- m <= s
