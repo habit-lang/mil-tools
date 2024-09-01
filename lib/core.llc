@@ -40,6 +40,10 @@ Pointer/Reference equality:
 
 Booleans:
 
+> external boolToBit {primBitdataToBit Bool 1} :: Bool -> Bit 1
+> export boolToWord :: Bool -> Word
+> boolToWord b       = bitsToWord (boolToBit b)
+
 > external bnot {primBitdataNot Bool} :: Bool -> Bool
 > external band {primBitdataAnd Bool},
 >          bor  {primBitdataOr  Bool},
