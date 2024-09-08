@@ -22,29 +22,17 @@ import compiler.*;
 import java.math.BigInteger;
 import mil.*;
 
-/** Represents arithmetic operations on natural numbers. */
-public abstract class NatArithOp {
+class NatDivOp extends NatArithOp {
 
-  public abstract String toString();
+  public String toString() {
+    return "/";
+  }
 
-  public abstract BigInteger op(BigInteger m, BigInteger n) throws ArithmeticException;
-
-  private static NatArithOp[] ops = {
-    new NatPlusOp(),
-    new NatMinusOp(),
-    new NatMultOp(),
-    new NatDivOp(),
-    new NatPowOp(),
-    new NatLshlOp(),
-    new NatShrOp()
-  };
-
-  public static NatArithOp isOp(String s) {
-    for (int i = 0; i < ops.length; i++) {
-      if (s.equals(ops[i].toString())) {
-        return ops[i];
-      }
+  public BigInteger op(BigInteger m, BigInteger n) throws ArithmeticException {
+    BigInteger[] qr = m.divideAndRemainder(n);
+    if (qr[1].signum() != 0) {
+      throw new ArithmeticException("Result of division leaves a remainder");
     }
-    return null;
+    return qr[0];
   }
 }

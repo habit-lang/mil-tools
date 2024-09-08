@@ -22,10 +22,7 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
-/**
- * Represents basic atoms in a MIL program, each of which is either a variable or an integer
- * literal.
- */
+/** Represents basic atoms in a MIL program, each of which is either a variable or a constant. */
 public abstract class Atom {
 
   public static final Atom[] noAtoms = new Atom[0];
