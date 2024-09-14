@@ -6,25 +6,11 @@ A (currently underdeveloped) library for working with Bit vectors.
 > external bitSet     {primBitSetBit n},
 >          bitClear   {primBitClearBit n},
 >          bitFlip    {primBitFlipBit n}       :: Bit n -> Ix n -> Bit n
-
 > external bitTest    {primBitTestBit n}       :: Bit n -> Ix n -> Bool
 
-> external bitNot     {primBitNot n}           :: Bit n -> Bit n
-> external bitOr      {primBitOr n},
->          bitAnd     {primBitAnd n},
->          bitAdd     {primBitPlus n},
->          bitSub     {primBitMinus n}         :: Bit n -> Bit n -> Bit n
-
-> external bitEq      {primBitEq n},
->          bitNe      {primBitNe n},
->          bitLe      {primBitLe n},
->          bitLt      {primBitLt n},
->          bitGe      {primBitGe n},
->          bitGt      {primBitGt n}            :: Bit n -> Bit n -> Bool
-
 > export min, max :: Bit n -> Bit n -> Bit n
-> x `min` y        = if y `bitLt` x then y else x
-> x `max` y        = if x `bitLt` y then y else x
+> x `min` y        = if y < x then y else x
+> x `max` y        = if x < y then y else x
 
 > external bitl   {primBitFromLiteral   v n} :: ProxyNat v -> Bit n
 > external nzbitl {primNZBitFromLiteral v n} :: ProxyNat v -> NZBit n
@@ -35,7 +21,7 @@ A (currently underdeveloped) library for working with Bit vectors.
 > bit2 = bitl#2
 
 > export bitDec  :: Bit n -> Bit n
-> bitDec n        = bitSub n bit1
+> bitDec n        = n - bit1
 
 > external bitsHi {primBitsHi n m} :: Bit n -> Bit m   -- requires n>=m
 > external bitsLo {primBitsLo n m} :: Bit n -> Bit m   -- requires n>=m
