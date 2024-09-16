@@ -5,8 +5,10 @@ export primRet :: a -> Proc a
 primRet   <- {x} c <- ret1{x}; Proc(c)
 ret1{x} [] = return x
 
--- Pairs:
-data Pair a b = Pair a b
+-- Pairs and other tuples:
+data Pair   a b     = Pair a b
+data Tuple3 a b c   = Tuple3 a b c
+data Tuple4 a b c d = Tuple4 a b c d
 
 -- Maybe:
 data Maybe a = Nothing | Just a
