@@ -108,6 +108,19 @@ public class BitdataType extends DataName {
   }
 
   /**
+   * Generate a diagram for this type constructor using tikz syntax. TODO: Find a more appropriate
+   * place for this code ...
+   */
+  void dumpTypeDiagram(PrintWriter out) {
+    int bitSize = getPat().getWidth();
+    out.println("\\section{Bitdata Type " + BitdataField.latexID(id) + "}");
+    for (int i = 0; i < layouts.length; i++) {
+      layouts[i].layoutDiagram(out, bitSize);
+    }
+    out.println();
+  }
+
+  /**
    * Make a canonical version of a type definition wrt the given set, replacing component types with
    * canonical versions as necessary. We only need implementations of this method for StructType and
    * (subclasses of) DataName.

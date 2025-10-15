@@ -172,6 +172,17 @@ public class BitdataLayout extends DataName {
     out.println();
   }
 
+  void layoutDiagram(PrintWriter out, int bitSize) {
+    out.println("\\begin{bitdatapicture}");
+    BitdataField.layoutDiagram(out, id, bitSize);
+    int offset = bitSize;
+    for (int i = 0; i < fields.length; i++) {
+      offset = fields[i].fieldDiagram(out, tagbits, offset, bitSize);
+    }
+    BitdataField.tagbitsDiagram(out, offset, 0, tagbits, bitSize); // Draw any trailing tag bits
+    out.println("\\end{bitdatapicture}");
+  }
+
   /**
    * Make a canonical version of a type definition wrt the given set, replacing component types with
    * canonical versions as necessary. We only need implementations of this method for StructType and

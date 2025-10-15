@@ -71,6 +71,84 @@ public class BitdataField extends Name {
     return offset;
   }
 
+  private static final int perBit = 3;
+
+  public static void layoutDiagram(PrintWriter out, String id, int bitSize) {
+    int maxx = perBit * bitSize;
+    String label = "{\\Verb\"" + latexID(id) + "\"\\typewidth{" + bitSize + "}\\strut}";
+    out.println((bitSize > 10) ? "  \\typelabel" : "  \\shorttypelabel");
+    out.println("    {\\node[anchor=west] at (0,8)  " + label + ";}");
+    out.println("    {\\node[anchor=east] at (-2,3) " + label + ";}");
+    out.println("  \\draw[fill=bitdatacolor](0,0) rectangle (" + maxx + ",6);");
+    if (bitSize == 1) {
+      out.println("  \\draw(" + perBit + ", 0) -- +(0,1.5);");
+    } else if (bitSize > 1) {
+      out.println("  % ticks for each bit");
+      out.println(
+          "  \\foreach\\x in {" + perBit + ", " + (2 * perBit) + ",...," + (maxx - perBit) + "}");
+      out.println("     \\draw(\\x,0) -- +(0,1.5);");
+    }
+  }
+
+  public int fieldDiagram(PrintWriter out, BigInteger tagbits, int lastOffset, int bitSize) {
+    int end = offset + width; // bit position where this field ends
+    tagbitsDiagram(out, lastOffset, end, tagbits, bitSize);
+    int left = perBit * (bitSize - end);
+    int right = perBit * (bitSize - offset);
+    double mid = 0.5 * (double) (left + right);
+    String label = "{\\Verb\"" + latexID(id) + "\"\\fieldwidth{" + width + "}\\strut}";
+    out.println((width > 3) ? "  \\fieldlabel" : "  \\shortfieldlabel");
+    out.println("    {\\draw (" + left + ",-3) -- +(0,2);");
+    out.println("     \\draw (" + right + ",-3) -- +(0,2);");
+    out.println("     \\draw[<->](" + left + ",-2)--(" + right + ",-2);");
+    out.println("     \\node at (" + mid + ",-5) " + label + ";}");
+    out.println("    {\\node at (" + mid + ",3) " + label + ";}");
+    out.println(
+        "    {\\draw("
+            + mid
+            + ",6) -- ++(0,2) -- ++ (0,-2) node[anchor=south west, rotate=45] "
+            + label
+            + ";}");
+    // out.println("    {\\draw (" + left  + ",6) -- +(4,4);");
+    // out.println("     \\draw (" + right + ",6) -- +(4,4);");
+    // out.println("     \\node[anchor=west, rotate=45, yshift=1mm] at (" + mid + ",7) {\\Verb\"" +
+    // name + "\"};}");
+    fieldSeparatorDiagram(out, offset, bitSize);
+    return offset;
+  }
+
+  public static void tagbitsDiagram(
+      PrintWriter out, int hi, int lo, BigInteger tagbits, int bitSize) {
+    if (lo < hi) {
+      fieldSeparatorDiagram(out, lo, bitSize);
+      for (; lo < hi; lo++) {
+        String bit = tagbits.testBit(lo) ? "1" : "0";
+        double pos = perBit * ((double) (bitSize - lo) - 0.5);
+        out.println("  \\node at (" + pos + ",3) {\\Verb\"" + bit + "\"\\strut};");
+      }
+    }
+  }
+
+  /** Draw a vertical separator before the bit at the given offset. */
+  private static void fieldSeparatorDiagram(PrintWriter out, int offset, int bitSize) {
+    if (offset > 0) {
+      out.println("  \\draw(" + (perBit * (bitSize - offset)) + ",0) -- +(0,6);");
+    }
+  }
+
+  public static String latexID(String id) {
+    StringBuilder buf = new StringBuilder();
+    for (int i = 0; i < id.length(); i++) {
+      char c = id.charAt(i);
+      if (c == '_') {
+        buf.append("\\_");
+      } else {
+        buf.append(c);
+      }
+    }
+    return buf.toString();
+  }
+
   /** Make a new version of this bitdata field with a type that is canonical wrt the given set. */
   BitdataField makeCanonBitdataField(TypeSet set) {
     BitdataField field = new BitdataField(pos, id, type.canonType(set), offset, width);

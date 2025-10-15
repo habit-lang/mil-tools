@@ -250,6 +250,14 @@ public abstract class Tycon extends Name {
   abstract void dumpTypeDefinition(PrintWriter out);
 
   /**
+   * Generate a diagram for this type constructor using tikz syntax. TODO: Find a more appropriate
+   * place for this code ...
+   */
+  void dumpTypeDiagram(PrintWriter out) {
+    /* do nothing */
+  }
+
+  /**
    * Find the canonical version of this type in the given set, using the specified environment to
    * interpret TGens, and assuming that we have already pushed a certain number of args for this
    * type on the stack.

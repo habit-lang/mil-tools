@@ -275,8 +275,7 @@ public class TypeSet {
     return tyconMap.get(tycon);
   }
 
-  /** Write definitions for all the types defined in this TypeSet to a PrintWriter. */
-  public void dumpTypeDefinitions(PrintWriter out) {
+  private TreeSet<Tycon> sortedTycons() {
     TreeSet<Tycon> sorted =
         new TreeSet<Tycon>(
             new Comparator<Tycon>() {
@@ -294,9 +293,59 @@ public class TypeSet {
               }
             });
     sorted.addAll(tycons);
-    for (Tycon tycon : sorted) {
+    return sorted;
+  }
+
+  /** Write definitions for all the types defined in this TypeSet to a PrintWriter. */
+  public void dumpTypeDefinitions(PrintWriter out) {
+    for (Tycon tycon : sortedTycons()) {
       tycon.dumpTypeDefinition(out);
     }
+  }
+
+  public void dumpTypeDiagrams(PrintWriter out) {
+    out.println("\\documentclass{article}");
+    out.println("\\usepackage{fullpage}");
+    out.println("\\usepackage{tikz}");
+    out.println("\\usepackage{fancyvrb,newverbs}");
+    out.println();
+    out.println("% General formatting for bitdata diagrams:");
+    out.println("\\definecolor{bitdatacolor}{HTML}{E0F0E0}");
+    out.println("\\newenvironment{bitdatapicture}%");
+    out.println(
+        "  {\\begin{center}\\begin{tikzpicture}[scale=0.1,>=stealth,rectangle,minimum size=0.5cm]}%");
+    out.println("  {\\end{tikzpicture}\\end{center}}");
+    out.println();
+    out.println("% Select where type labels appear:");
+    out.println("\\def\\typelabelAbove#1#2{#1}");
+    out.println("\\def\\typelabelBeside#1#2{#2}");
+    out.println("\\def\\typelabelNone#1#2{}");
+    out.println("\\let\\typelabel\\typelabelAbove % default position of type labels");
+    out.println(
+        "\\let\\shorttypelabel\\typelabelBeside % default position of label for short types");
+    out.println();
+    out.println("% Select where field labels appear:");
+    out.println("\\def\\fieldlabelUnder#1#2#3{#1}");
+    out.println("\\def\\fieldlabelInside#1#2#3{#2}");
+    out.println("\\def\\fieldlabelOver#1#2#3{#3}");
+    out.println("\\def\\fieldlabelNone#1#2#3{}");
+    out.println("\\let\\fieldlabel\\fieldlabelUnder % default position of field labels");
+    out.println(
+        "\\let\\shortfieldlabel\\fieldlabelOver % default position of label for short fields");
+    out.println();
+    out.println("% Formatting of width annotations:");
+    out.println("\\def\\widthSlash#1{\\Verb\"/#1\"}");
+    out.println("\\def\\widthParen#1{\\Verb\"\\,(#1)\"}");
+    out.println(
+        "\\def\\typewidth#1{\\ifnum#1>6\\relax{\\widthParen{#1}}\\fi}% #1=typewidth, modify to show fieldwidths");
+    out.println(
+        "\\def\\fieldwidth#1{\\ifnum#1>4\\relax{\\widthSlash{#1}}\\fi}% #1=fieldwidth, modify to show fieldwidths");
+    out.println();
+    out.println("\\begin{document}");
+    for (Tycon tycon : sortedTycons()) {
+      tycon.dumpTypeDiagram(out);
+    }
+    out.println("\\end{document}");
   }
 
   /** Cache a mapping of primitives to their canonical versions in this TypeSet. */

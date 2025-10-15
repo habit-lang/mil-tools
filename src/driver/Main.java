@@ -51,6 +51,7 @@ class Main {
         "         -Oname         enable optimization, name in {unroll,wordspec,...}");
     System.err.println("         -m[filename]   mil code");
     System.err.println("         -t[filename]   type definitions");
+    System.err.println("         -z[filename]   tikz type diagrams");
     System.err.println("         -g[filename]   GraphViz file for mil structure");
     System.err.println("         -c[filename]   type set");
     System.err.println("         -s[filename]   specialization type set (requires s)");
@@ -139,6 +140,8 @@ class Main {
   private FilenameOption milOutput = new FilenameOption("MIL output file");
 
   private FilenameOption typeDefnsOutput = new FilenameOption("Type definitions");
+
+  private FilenameOption typeDiagramsOutput = new FilenameOption("Type diagrams");
 
   private FilenameOption graphvizOutput = new FilenameOption("MIL code GraphViz output");
 
@@ -252,6 +255,9 @@ class Main {
           return;
         case 't':
           typeDefnsOutput.setName(str, i);
+          return;
+        case 'z':
+          typeDiagramsOutput.setName(str, i);
           return;
         case 'g':
           graphvizOutput.setName(str, i);
@@ -529,7 +535,10 @@ class Main {
           }
         });
 
-    if (typeSetOutput.isSet() || typeDefnsOutput.isSet() || milOutput.isSet()) {
+    if (typeSetOutput.isSet()
+        || typeDefnsOutput.isSet()
+        || milOutput.isSet()
+        || typeDiagramsOutput.isSet()) {
       final TypeSet set = new TypeSet();
       mil.collect(set);
       typeSetOutput.run(
@@ -542,6 +551,12 @@ class Main {
           new Action() {
             void run(PrintWriter out) {
               set.dumpTypeDefinitions(out);
+            }
+          });
+      typeDiagramsOutput.run(
+          new Action() {
+            void run(PrintWriter out) {
+              set.dumpTypeDiagrams(out);
             }
           });
       milOutput.run(
