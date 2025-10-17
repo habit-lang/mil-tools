@@ -30,9 +30,12 @@ public class LinearEqn {
 
   private Position pos;
 
+  private String label;
+
   /** Default constructor. */
-  public LinearEqn(Position pos) {
+  public LinearEqn(Position pos, String label) {
     this.pos = pos;
+    this.label = label;
   }
 
   private Terms lhs = null;
@@ -122,7 +125,7 @@ public class LinearEqn {
    * is written to maintain the invariant that every entry in the list of terms has a non-zero
    * coefficient, and that no variable/type is listed more than once.
    */
-  public void addTerm(BigInteger m, Type t, Object hint) {
+  public void addTerm(BigInteger m, Type t, String hint) {
     if (m.signum() != 0) {
       t = t.simplifyNatType(null); // If this term is already instantiated
       BigInteger n = t.getNat();
@@ -150,24 +153,27 @@ public class LinearEqn {
   }
 
   /** Add a term for t with coefficient of one. */
-  public void addTerm(Type t, Object hint) {
+  public void addTerm(Type t, String hint) {
     addTerm(BigInteger.ONE, t, hint);
   }
 
   /** Add a term for t with coefficient of one on the right hand side of this equation. */
-  public void addRhsTerm(Type t, Object hint) {
+  public void addRhsTerm(Type t, String hint) {
     addTerm(BigInteger.ONE.negate(), t, hint);
   }
 
   /** Add a term for t with a coefficient specified by a long value rather than a BigInteger. */
-  public void addTerm(long m, Type t, Object hint) {
+  public void addTerm(long m, Type t, String hint) {
     addTerm(BigInteger.valueOf(m), t, hint);
   }
 
   /**
    * Determine whether this equation has been solved, eliminating any terms that have been bound to
    * specific numeric values, and then solving the equation if only one or no terms remains. If two
-   * or more terms remain, however, then the equation is unsolved and we return false.
+   * or more terms remain, however, then the equation is unsolved and we return false. Note that, if
+   * this equation is solved by assigning a value to a variable, then we may break the invariant for
+   * other equations involving the same variable. This can be addressed by a subsequent solved()
+   * call on those equations.
    */
   boolean solved() throws Failure {
     // Run through the left hand side terms, updating the equation for any terms that have been
@@ -194,7 +200,7 @@ public class LinearEqn {
     // Look for equations with one or less terms on the left hand side:
     if (lhs == null) { // If lhs is empty, then the right hand side should be zero.
       if (rhs.signum() != 0) {
-        throw new WidthsDifferFailure(pos, rhs);
+        throw new WidthsDifferFailure(pos, rhs, label);
       }
       return true;
     } else if (lhs.next == null) { // If lhs has exactly one variable, find its value:

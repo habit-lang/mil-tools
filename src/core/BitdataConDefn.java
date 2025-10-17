@@ -51,9 +51,10 @@ class BitdataConDefn extends Name {
     }
   }
 
-  LinearEqn initEqn(Type size, Object hint) throws Failure {
-    LinearEqn eqn = new LinearEqn(pos); // Create an empty equation
-    eqn.addRhsTerm(size, hint); // Add the size on the right hand side
+  LinearEqn initEqn(Type size) throws Failure {
+    String label = "Width of " + id; // Label for equation
+    LinearEqn eqn = new LinearEqn(pos, label); // Create an empty equation
+    eqn.addRhsTerm(size, label); // Add the size on the right hand side
     for (int i = 0; i < regexps.length; i++) { // Add terms for the other regions
       regexps[i].addTermTo(eqn);
     }

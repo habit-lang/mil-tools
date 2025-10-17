@@ -34,12 +34,12 @@ class Terms {
 
   Type t;
 
-  Object hint;
+  String hint;
 
   Terms next;
 
   /** Default constructor. */
-  Terms(BigInteger coeff, Type t, Object hint, Terms next) {
+  Terms(BigInteger coeff, Type t, String hint, Terms next) {
     this.coeff = coeff;
     this.t = t;
     this.hint = hint;
@@ -51,14 +51,8 @@ class Terms {
     BigInteger c = coeff.abs();
     if (c.compareTo(BigInteger.ONE) > 0) {
       buf.append(c.toString());
-      buf.append(" ");
+      buf.append(" * ");
     }
-    if (hint == null) {
-      buf.append(t.toString());
-    } else {
-      buf.append("Size(");
-      buf.append(hint.toString());
-      buf.append(")");
-    }
+    buf.append((hint == null) ? t.toString() : hint);
   }
 }

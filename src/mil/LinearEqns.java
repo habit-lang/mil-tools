@@ -48,6 +48,9 @@ public class LinearEqns {
       LinearEqn eqn = eqns.head;
       if (eqn.solved()) { // If we can solve this equation immediately, then skip it
         eqns = eqns.next;
+        for (LinearEqns es = eqns; es != null; es = es.next) {
+          es.head.solved(); // Ensure invariant on es.head still holds following solve of eqn
+        }
       } else { // Otherwise, defer this equation after eliminating its first variable
         LinearEqns es = eqns.next; // from all of the remaining equations
         eqns.next = deferred;

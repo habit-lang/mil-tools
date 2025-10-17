@@ -57,7 +57,7 @@ class BitdataTagbitsExp extends BitdataRegionExp {
   void addTermTo(LinearEqn eqn) throws Failure {
     size = (width >= 0) ? new TNat(width) : new TVar(Tyvar.nat);
     type = Type.bit(size);
-    eqn.addTerm(size, nat);
+    eqn.addTerm(size, "Width of " + nat);
   }
 
   /**

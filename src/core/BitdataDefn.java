@@ -97,7 +97,7 @@ public class BitdataDefn extends TyconDefn {
   public LinearEqns initEqns(Handler handler, LinearEqns eqns) {
     try {
       for (int i = 0; i < constrs.length; i++) {
-        eqns = new LinearEqns(constrs[i].initEqn(bt.bitSize(), bt), eqns);
+        eqns = new LinearEqns(constrs[i].initEqn(bt.bitSize()), eqns);
       }
     } catch (Failure f) {
       handler.report(f);

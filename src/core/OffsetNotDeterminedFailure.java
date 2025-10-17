@@ -16,18 +16,14 @@
     You should have received a copy of the GNU General Public License
     along with mil-tools.  If not, see <https://www.gnu.org/licenses/>.
 */
-package mil;
+package core;
 
 import compiler.*;
-import core.*;
+import mil.*;
 
-class WidthsDifferFailure extends Failure {
+class OffsetNotDeterminedFailure extends Failure {
 
-  public WidthsDifferFailure(Position pos, java.math.BigInteger diff, String label) {
-    super(
-        pos,
-        ((diff.signum() < 0)
-            ? (label + " is " + diff.negate() + " more than expected")
-            : (label + " is " + diff + " less than expected")));
+  public OffsetNotDeterminedFailure(Position pos, Type type) {
+    super(pos, "Unable to determine offset for a field of type " + type);
   }
 }

@@ -105,20 +105,21 @@ public class StructDefn extends TyconDefn {
    */
   public LinearEqns initEqns(Handler handler, LinearEqns eqns) {
     try {
-      eqns = new LinearEqns(this.initEqn(st.byteSize(), st), eqns);
+      Type end = st.byteSize(); // size is offset after the last region
+      String label = "Size of " + st.getId();
+      LinearEqn eqn = new LinearEqn(pos, label);
+      for (int i = regexps.length; --i >= 0; ) { // Add an equation for each region
+        eqns = new LinearEqns(regexps[i].structRegionEqn(pos, end, label), eqns);
+        end = regexps[i].getStart();
+        label = "Offset of " + regexps[i].makeLabel();
+      }
+      // Add equation that requires final value of end to be zero
+      eqn.addTerm(end, label);
+      return new LinearEqns(eqn, eqns);
     } catch (Failure f) {
       handler.report(f);
     }
     return eqns;
-  }
-
-  LinearEqn initEqn(Type size, Object hint) throws Failure {
-    LinearEqn eqn = new LinearEqn(pos); // Create an empty equation
-    eqn.addRhsTerm(size, hint); // Add the size on the right hand side
-    for (int i = 0; i < regexps.length; i++) { // Add terms for the other regions
-      regexps[i].addTermTo(eqn);
-    }
-    return eqn;
   }
 
   void checkSizes() throws Failure {
@@ -131,10 +132,9 @@ public class StructDefn extends TyconDefn {
     st.setByteSize(size); // save simplified size value
     debug.Log.println("ByteSize(" + st + ") = " + nat);
 
-    // Validate the types and calculate offsets for each region:
-    int offset = 0;
+    // Validate the width and offset of each region:
     for (int i = 0; i < regexps.length; i++) {
-      offset = regexps[i].calcOffset(offset);
+      regexps[i].validate();
     }
 
     // Calculate the number of fields for this structure:
@@ -161,7 +161,7 @@ public class StructDefn extends TyconDefn {
         throw new Failure(
             f.getPos(), "Unable to determine alignment for field " + f.getId() + " :: " + t);
       }
-      offset = f.getOffset(); // Check that field alignment divides field offset
+      int offset = f.getOffset(); // Check that field alignment divides field offset
       if ((((long) offset) % align) != 0) {
         throw new Failure(
             f.getPos(),

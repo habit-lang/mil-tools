@@ -48,34 +48,52 @@ class StructRegionExp {
     texp.checkKind(handler, KAtom.AREA);
   }
 
+  protected Type start;
+
+  Type getStart() {
+    return start;
+  }
+
+  String makeLabel() {
+    return (fields == null)
+        ? "padding"
+        : (fields.length == 1) ? fields[0].getId() : "region for " + fields[0].getId();
+  }
+
+  LinearEqn structRegionEqn(Position pos, Type end, String endlabel) throws Failure {
+    start = new TVar(Tyvar.nat); // We don't know the start of this region yet
+    type = texp.toType(null); // But we should know the type ...
+    size = type.byteSize(null); // .. and can look up it's width (which could be a variable)
+    if (size == null) {
+      throw new NoByteLevelRepresentationFailure(texp.position(), type);
+    }
+    // Build equation:  coeff * size = end - start
+    int coeff = (fields == null) ? 1 : fields.length;
+    String name = makeLabel();
+    String label = "Size of " + name;
+    LinearEqn eqn = new LinearEqn(pos, label);
+    eqn.addTerm(start, "Offset of " + name);
+    eqn.addTerm(coeff, size.simplifyNatType(null), label);
+    eqn.addRhsTerm(end, endlabel);
+    return eqn;
+  }
+
   protected Type type;
 
   protected Type size;
 
   protected int offset;
 
-  /**
-   * Validate the type and size of this region expression and add a term to the specified linear
-   * equation to characterize the overall size (possibly including multiple fields)
-   */
-  void addTermTo(LinearEqn eqn) throws Failure {
-    type = texp.toType(null);
-    size = type.byteSize(null);
-    if (size == null) {
-      throw new NoByteLevelRepresentationFailure(texp.position(), type);
-    }
-    int coeff = (fields == null) ? 1 : fields.length;
-    eqn.addTerm(coeff, size.simplifyNatType(null), type);
-  }
-
-  int calcOffset(int offset) throws Failure {
-    this.offset = offset;
-    BigInteger nat = size.getNat();
+  void validate() throws Failure {
+    BigInteger nat = size.simplifyNatType(null).getNat();
     if (nat == null) {
       throw new FieldSizeNotDeterminedFailure(texp.position(), type);
     }
     width = nat.intValue();
-    return offset + (fields == null ? width : (width * fields.length));
+    if ((nat = start.simplifyNatType(null).getNat()) == null) {
+      throw new OffsetNotDeterminedFailure(texp.position(), type);
+    }
+    offset = nat.intValue();
   }
 
   int collectFields(StructField[] fs, int next) {

@@ -58,7 +58,7 @@ class BitdataFieldsExp extends BitdataRegionExp {
     if (size == null) {
       throw new NoBitLevelRepresentationFailure(texp.position(), type);
     }
-    eqn.addTerm(fields.length, size.simplifyNatType(null), type);
+    eqn.addTerm(fields.length, size.simplifyNatType(null), "Width of " + fields[0].getId());
   }
 
   private int width;
