@@ -334,6 +334,14 @@ public class Pat {
   }
 
   public static void main(String[] args) {
+    Pat p = Pat.greaterEq(6, 9).and(Pat.less(8, 29));
+    //    PrintWriter out = new PrintWriter(System.out);
+    //    p.dump(out);
+    //    out.flush();
+    p.toDot("range.dot");
+  }
+
+  public static void oldmain(String[] args) {
     Pat r = Pat.intmod(3, 1).or(Pat.intmod(3, 2)).or(Pat.intmod(3, 4));
     r.toDot("r.dot");
     Pat req = r.masktest(false);
