@@ -526,7 +526,7 @@ public class CoreParser extends Phase implements CoreTokens {
                       return new TopImpId(pos, id, impPos, impId);
                     }
 
-                    // TODO: add BITLIT and STRLIT?  Do they make sense post rep transformation?
+                  // TODO: add BITLIT and STRLIT?  Do they make sense post rep transformation?
                   case NATLIT:
                     {
                       Atom a = null;

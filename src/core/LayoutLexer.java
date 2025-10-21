@@ -198,13 +198,13 @@ public class LayoutLexer extends CoreLexer implements CoreTokens {
       int startCol = getPos().getColumn();
       if (startCol == indents[nesting]) {
         switch (token) {
-            // Allows insertion of semicolons to be disabled for
-            // specific tokens.
+          // Allows insertion of semicolons to be disabled for
+          // specific tokens.
           default:
             delayedToken = token;
             token = SEMI;
-            // Add tokens that do suppress an inserted SEMI here
-            // using the DelayTokens macro.
+          // Add tokens that do suppress an inserted SEMI here
+          // using the DelayTokens macro.
           case THEN:
           case ELSE:
           case OF:

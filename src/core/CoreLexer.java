@@ -684,7 +684,7 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
   private boolean isOpsym(char c) {
     if (c < 128) {
       switch (c) {
-          // 35 is the ASCII code for '#'
+        // 35 is the ASCII code for '#'
         case '!':
         case 35:
         case '$':

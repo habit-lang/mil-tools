@@ -87,7 +87,7 @@ class LCParser extends CoreParser implements LCTokens {
           return true;
         }
 
-        // TODO: consolidate EXPORT and ENTRYPOINT with similar code in milasm
+      // TODO: consolidate EXPORT and ENTRYPOINT with similar code in milasm
       case EXPORT:
         {
           Position pos = lexer.getPos();
@@ -455,7 +455,8 @@ class LCParser extends CoreParser implements LCTokens {
    * the number of alternatives that have already been seen.
    */
   private EAlt[] parseAlts(int i, boolean isMonadic) throws Failure {
-    while (lexer.match(SEMI)) /* skip semicolons/empty alternatives */ ;
+    while (lexer.match(SEMI))
+      /* skip semicolons/empty alternatives */ ;
     EAlt alt = parseAlt(isMonadic);
     EAlt[] alts = lexer.match(SEMI) ? parseAlts(i + 1, isMonadic) : new EAlt[i + 1];
     alts[i] = alt;

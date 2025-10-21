@@ -83,7 +83,7 @@ class MILParser extends CoreParser implements MILTokens {
           return true;
         }
 
-        // TODO: consolidate EXPORT and ENTRYPOINT with similar code in lc ...
+      // TODO: consolidate EXPORT and ENTRYPOINT with similar code in lc ...
       case EXPORT:
         {
           lexer.nextToken(/* EXPORT */ );

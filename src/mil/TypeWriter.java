@@ -90,7 +90,7 @@ public abstract class TypeWriter {
 
   /**
    * Generate a printable representation of a big integer following the conventions used for lexical
-   * analysis.
+   * analysis. TODO: isn't this function needed beyond TypeWriter objects?
    */
   private static String bigToString(BigInteger val) {
     if (val.signum() == 0) {

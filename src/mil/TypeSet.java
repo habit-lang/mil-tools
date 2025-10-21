@@ -313,7 +313,8 @@ public class TypeSet {
     out.println("\\definecolor{bitdatacolor}{HTML}{E0F0E0}");
     out.println("\\newenvironment{bitdatapicture}%");
     out.println(
-        "  {\\begin{center}\\begin{tikzpicture}[scale=0.1,>=stealth,rectangle,minimum size=0.5cm]}%");
+        "  {\\begin{center}\\begin{tikzpicture}[scale=0.1,>=stealth,rectangle,minimum"
+            + " size=0.5cm]}%");
     out.println("  {\\end{tikzpicture}\\end{center}}");
     out.println();
     out.println("% Select where type labels appear:");
@@ -337,9 +338,11 @@ public class TypeSet {
     out.println("\\def\\widthSlash#1{\\Verb\"/#1\"}");
     out.println("\\def\\widthParen#1{\\Verb\"\\,(#1)\"}");
     out.println(
-        "\\def\\typewidth#1{\\ifnum#1>6\\relax{\\widthSlash{#1}}\\fi}% #1=typewidth, modify to show fieldwidths");
+        "\\def\\typewidth#1{\\ifnum#1>6\\r"
+            + "elax{\\widthSlash{#1}}\\fi}% #1=typewidth, modify to show fieldwidths");
     out.println(
-        "\\def\\fieldwidth#1{\\ifnum#1>4\\relax{\\widthSlash{#1}}\\fi}% #1=fieldwidth, modify to show fieldwidths");
+        "\\def\\fieldwidth#1{\\ifnum#1>4\\r"
+            + "elax{\\widthSlash{#1}}\\fi}% #1=fieldwidth, modify to show fieldwidths");
     out.println();
     out.println("\\begin{document}");
     for (Tycon tycon : sortedTycons()) {
