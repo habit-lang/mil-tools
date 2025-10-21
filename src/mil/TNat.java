@@ -64,7 +64,7 @@ public class TNat extends TLit {
    * of arguments.
    */
   void write(TypeWriter tw, int prec, int args) {
-    tw.write(num.toString()); // TODO: output using bigToString/suffixes?
+    tw.writeNat(num);
   }
 
   /** Test to determine whether this type is equal to a specified type literal. */

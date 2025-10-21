@@ -385,30 +385,6 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
   }
 
   /**
-   * Generate a printable representation of a big integer following the conventions used for lexical
-   * analysis. TODO: should this code be elsewhere?
-   */
-  public static String bigToString(BigInteger val) {
-    BigInteger v = val.shiftRight(40);
-    if (v.shiftLeft(40).equals(val)) {
-      return v + "T";
-    }
-    v = val.shiftRight(30);
-    if (v.shiftLeft(30).equals(val)) {
-      return v + "G";
-    }
-    v = val.shiftRight(20);
-    if (v.shiftLeft(20).equals(val)) {
-      return v + "M";
-    }
-    v = val.shiftRight(10);
-    if (v.shiftLeft(10).equals(val)) {
-      return v + "K";
-    }
-    return val.toString();
-  }
-
-  /**
    * Recognize a sequence of one or more digits of a particular radix, setting nat to the
    * corresponding numeric value.
    */

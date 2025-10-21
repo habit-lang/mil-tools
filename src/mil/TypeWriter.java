@@ -20,6 +20,7 @@ package mil;
 
 import compiler.*;
 import core.*;
+import java.math.BigInteger;
 
 public abstract class TypeWriter {
 
@@ -80,5 +81,37 @@ public abstract class TypeWriter {
   /** Write a close parenthesis, if required. */
   void close(boolean b) {
     if (b) write(")");
+  }
+
+  /** Write a natural number. */
+  void writeNat(BigInteger val) {
+    write(bigToString(val));
+  }
+
+  /**
+   * Generate a printable representation of a big integer following the conventions used for lexical
+   * analysis.
+   */
+  private static String bigToString(BigInteger val) {
+    if (val.signum() == 0) {
+      return "0";
+    }
+    BigInteger v = val.shiftRight(40);
+    if (v.shiftLeft(40).equals(val)) {
+      return v + "T";
+    }
+    v = val.shiftRight(30);
+    if (v.shiftLeft(30).equals(val)) {
+      return v + "G";
+    }
+    v = val.shiftRight(20);
+    if (v.shiftLeft(20).equals(val)) {
+      return v + "M";
+    }
+    v = val.shiftRight(10);
+    if (v.shiftLeft(10).equals(val)) {
+      return v + "K";
+    }
+    return val.toString();
   }
 }
