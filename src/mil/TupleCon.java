@@ -70,10 +70,10 @@ public class TupleCon extends Tycon {
     if (args == arity) {
       tw.write("[");
       if (args > 0) {
-        tw.pop().write(tw, TypeWriter.NEVER, 0);
+        tw.pop().write(tw, Fixity.NEVER, 0);
         for (int i = 1; i < args; i++) {
           tw.write(", ");
-          tw.pop().write(tw, TypeWriter.NEVER, 0);
+          tw.pop().write(tw, Fixity.NEVER, 0);
         }
       }
       tw.write("]");

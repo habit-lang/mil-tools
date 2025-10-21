@@ -51,7 +51,7 @@ public abstract class Scheme {
 
   /** Construct a printable representation of a type scheme. */
   public String toString() {
-    return toString(TypeWriter.NEVER);
+    return toString(Fixity.NEVER);
   }
 
   public abstract String toString(int prec, StringTypeWriter tw);

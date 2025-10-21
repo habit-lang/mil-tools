@@ -96,7 +96,7 @@ public class External extends TopDefn {
     out.print("external " + id);
     StringTypeWriter tw = new StringTypeWriter(declared.getPrefix());
     imp.dump(out, tw);
-    out.println(" :: " + declared.toString(TypeWriter.NEVER, tw));
+    out.println(" :: " + declared.toString(Fixity.NEVER, tw));
   }
 
   /** Return a type for an instantiated version of this item when used as Atom (input operand). */

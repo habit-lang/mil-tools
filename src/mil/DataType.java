@@ -60,6 +60,12 @@ public class DataType extends DataName {
     TyconEnv.builtin.add(this);
   }
 
+  /** A constructor for defining types that have a BuiltinPosition and fixity. */
+  public DataType(String id, Kind kind, int arity, Fixity fixity) {
+    this(id, kind, arity);
+    this.fixity = fixity;
+  }
+
   /**
    * Print a definition for this type constructor using source level syntax. TODO: Find a more
    * appropriate place for this code ...
@@ -91,6 +97,7 @@ public class DataType extends DataName {
     DataType newDt =
         new DataType(pos, id, kind, arity); // Make new type, copying attributes of original
     newDt.isRecursive = this.isRecursive;
+    newDt.fixity = this.fixity;
     set.mapTycon(this, newDt); // Add mapping from old to new
     debug.Log.println("new version of DataType " + id + " is " + newDt);
     newDt.cfuns = new Cfun[cfuns.length]; // Add canonical versions of constructors
@@ -186,6 +193,7 @@ public class DataType extends DataName {
     }
     DataType newDt = new DataType(pos, id + count++, KAtom.STAR, 0);
     newDt.isRecursive = this.isRecursive;
+    newDt.fixity = this.fixity;
     spec.addTycon(newDt);
     spec.putTypeSpecs(this, new TypeSpecs(inst, newDt, typespecs));
     debug.Log.println(newDt + " is a specialized DataType for " + inst);

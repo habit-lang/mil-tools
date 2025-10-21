@@ -56,9 +56,7 @@ public class TLab extends TLit {
    * of arguments.
    */
   void write(TypeWriter tw, int prec, int args) {
-    tw.write("\"");
-    tw.write(str); // TODO: handle escape codes
-    tw.write("\"");
+    tw.write("\"", str, "\""); // TODO: handle escape codes
   }
 
   /** Test to determine whether this type is equal to a specified type literal. */

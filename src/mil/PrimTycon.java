@@ -57,6 +57,12 @@ public class PrimTycon extends Tycon {
     TyconEnv.builtin.add(this);
   }
 
+  /** A constructor for defining types that have a BuiltinPosition and fixity. */
+  public PrimTycon(String id, Kind kind, int arity, Fixity fixity) {
+    this(id, kind, arity);
+    this.fixity = fixity;
+  }
+
   /**
    * Print a definition for this type constructor using source level syntax. TODO: Find a more
    * appropriate place for this code ...

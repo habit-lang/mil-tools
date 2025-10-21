@@ -97,7 +97,7 @@ public abstract class Type extends Scheme {
 
   /** Write a printable version of this type to the specified @TypeWriter@. */
   void write(TypeWriter tw) {
-    write(tw, TypeWriter.NEVER, 0);
+    write(tw, Fixity.NEVER, 0);
   }
 
   /**
@@ -112,13 +112,13 @@ public abstract class Type extends Scheme {
    * (including those for the head, thus args>use is required).
    */
   void applic(TypeWriter tw, int prec, int args, int use) {
-    tw.open(prec >= TypeWriter.ALWAYS);
-    write(tw, TypeWriter.ALWAYS, use);
+    tw.open(prec >= Fixity.ALWAYS);
+    write(tw, Fixity.ALWAYS, use);
     for (int i = use; i < args; i++) {
       tw.write(" ");
-      tw.pop().write(tw, TypeWriter.ALWAYS, 0);
+      tw.pop().write(tw, Fixity.ALWAYS, 0);
     }
-    tw.close(prec >= TypeWriter.ALWAYS);
+    tw.close(prec >= Fixity.ALWAYS);
   }
 
   public String toString(int prec, StringTypeWriter tw) {

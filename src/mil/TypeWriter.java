@@ -24,22 +24,18 @@ import java.math.BigInteger;
 
 public abstract class TypeWriter {
 
-  /** Precedence value to indicate that parens are not required. */
-  public static final int NEVER = Integer.MIN_VALUE;
-
-  /** Precedence value to indicate that parens are required. */
-  public static final int ALWAYS = Integer.MAX_VALUE;
-
-  /**
-   * A precedence value for function arrows (any value between NEVER and ALWAYS would do for now.
-   */
-  public static final int FUNPREC = 5;
-
   /**
    * Output a string as part of this type; the intention is that we can override this method to
    * implement a TypeWriter that will print on the screen, or to a string buffer, etc. as necessary.
    */
   abstract void write(String str);
+
+  /** Convenience method to write three strings one after the other. */
+  public void write(String l, String m, String r) {
+    write(l);
+    write(m);
+    write(r);
+  }
 
   /** Output a representation of a generic variable. */
   void writeTGen(int n) {

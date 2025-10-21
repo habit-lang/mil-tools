@@ -53,7 +53,7 @@ public class MemArea extends Area {
   /** Display a printable representation of this definition on the specified PrintWriter. */
   void dump(PrintWriter out, boolean isEntrypoint) {
     super.dump(out, isEntrypoint);
-    out.print(id + " <- area " + areaType.toString(TypeWriter.ALWAYS));
+    out.print(id + " <- area " + areaType.toString(Fixity.ALWAYS));
     if (init != null) {
       out.print(" " + init);
     }

@@ -235,7 +235,7 @@ public class AllocType {
     if (result.match(tenv, head, null)) {
       for (int i = 0; i < stored.length; i++) {
         out.print(" ");
-        out.print(stored[i].skeleton(tenv).toString(TypeWriter.ALWAYS));
+        out.print(stored[i].skeleton(tenv).toString(Fixity.ALWAYS));
       }
     } else {
       debug.Internal.error("result type does not match " + head);

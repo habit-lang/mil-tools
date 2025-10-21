@@ -46,7 +46,7 @@ public class GenImp extends ExtImp {
     out.print(" {" + ref);
     for (int i = 0; i < ts.length; i++) {
       out.print(" ");
-      out.print(ts[i].toString(TypeWriter.ALWAYS, tw));
+      out.print(ts[i].toString(Fixity.ALWAYS, tw));
       tw.reset();
     }
     out.print("}");

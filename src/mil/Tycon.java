@@ -91,32 +91,56 @@ public abstract class Tycon extends Name {
     return false;
   }
 
+  protected Fixity fixity = Fixity.unspecified;
+
+  /** Get the fixity associated with this name, if any. */
+  public Fixity getFixity() {
+    return fixity;
+  }
+
   /**
    * Write this type to the specified writer, in a context with the specified precedence and number
    * of arguments.
    */
   void write(TypeWriter tw, int prec, int args) {
-    if (Character.isLetter(id.charAt(0))) { // Use prefix syntax?
-      if (args == 0) {
-        tw.write(id);
+    //                      has fixity null fixity   has fixity null fixity
+    //          +-------+  +----------+----------+  +----------+----------+
+    // begins   |   n   |  |  (x `n`) |   n x    |  | x `n` y  |  n x y   |
+    // w/letter |       |  |          |          |  |          |          |
+    //          +-------+  +----------+----------+  +----------+----------+
+    // begins   |  (n)  |  |  (x n)   |   (x n)  |  | x n y    |  x n y   |
+    // w/other  |       |  |          |          |  |          |          |
+    //          +-------+  +----------+----------+  +----------+----------+
+    //           nullary             unary                   binary
+    //
+    boolean alphaName = Character.isLetter(id.charAt(0));
+    if (args == 0) {
+      if (alphaName) {
+        tw.write(id); // Id
       } else {
-        applic(tw, prec, args, 0);
+        tw.write("(", id, ")"); // (->)
       }
-    } else if (args == 0) { // Infix operator, no arguments
-      tw.write("(");
-      tw.write(id);
-      tw.write(")");
-    } else if (args == 1) { // Infix, single argument
+    } else if (alphaName && fixity == Fixity.unspecified) { // Id t ... t
       applic(tw, prec, args, 0);
-    } else if (args == 2) { // Infix, two arguments
-      tw.open(prec > TypeWriter.FUNPREC);
-      tw.pop().write(tw, TypeWriter.FUNPREC + 1, 0);
-      tw.write(" ");
-      tw.write(id);
-      tw.write(" ");
-      tw.pop().write(tw, TypeWriter.FUNPREC, 0); // right assoc
-      tw.close(prec > TypeWriter.FUNPREC);
-    } else { // Infix, args>2
+    } else if (args == 1) {
+      tw.write("(");
+      tw.pop().write(tw, fixity.leftPrec(), 0);
+      if (alphaName) {
+        tw.write(" `", id, "`)"); // (t `Id`)
+      } else {
+        tw.write(" ", id, ")"); // (t ->)
+      }
+    } else if (args == 2) {
+      tw.open(prec > fixity.getPrec());
+      tw.pop().write(tw, fixity.leftPrec(), 0);
+      if (alphaName) {
+        tw.write(" `", id, "` "); // t `Id` t
+      } else {
+        tw.write(" ", id, " "); // t -> t
+      }
+      tw.pop().write(tw, fixity.rightPrec(), 0);
+      tw.close(prec > fixity.getPrec());
+    } else { // (t -> t) t ... t
       applic(tw, prec, args, 2);
     }
   }
@@ -127,13 +151,13 @@ public abstract class Tycon extends Name {
    * (including those for the head, thus args>use is required).
    */
   void applic(TypeWriter tw, int prec, int args, int use) {
-    tw.open(prec >= TypeWriter.ALWAYS);
-    write(tw, TypeWriter.ALWAYS, use);
+    tw.open(prec >= Fixity.ALWAYS);
+    write(tw, Fixity.ALWAYS, use);
     for (int i = use; i < args; i++) {
       tw.write(" ");
-      tw.pop().write(tw, TypeWriter.ALWAYS, 0);
+      tw.pop().write(tw, Fixity.ALWAYS, 0);
     }
-    tw.close(prec >= TypeWriter.ALWAYS);
+    tw.close(prec >= Fixity.ALWAYS);
   }
 
   public int findLevel() throws Failure {
@@ -157,10 +181,13 @@ public abstract class Tycon extends Name {
 
   public static final String milArrowId = "->>";
 
-  public static final Tycon milArrow =
-      new PrimTycon(milArrowId, new KFun(KAtom.TUPLE, new KFun(KAtom.TUPLE, KAtom.STAR)), 2);
+  private static final Fixity arrowFixity = new Fixity(Fixity.RIGHT, 5);
 
-  public static final DataType arrow = new DataType("->", Kind.simple(2), 2);
+  public static final Tycon milArrow =
+      new PrimTycon(
+          milArrowId, new KFun(KAtom.TUPLE, new KFun(KAtom.TUPLE, KAtom.STAR)), 2, arrowFixity);
+
+  public static final DataType arrow = new DataType("->", Kind.simple(2), 2, arrowFixity);
 
   /**
    * Find the arity of this tuple type (i.e., the number of components) or return (-1) if it is not
