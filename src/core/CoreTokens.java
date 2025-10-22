@@ -79,31 +79,37 @@ public interface CoreTokens {
 
   int EXTERNAL = 34;
 
-  int DATA = 35;
+  int INFIX = 35;
 
-  int TYPE = 36;
+  int INFIXL = 36;
 
-  int AREA = 37;
+  int INFIXR = 37;
 
-  int STRUCT = 38;
+  int DATA = 38;
 
-  int BITDATA = 39;
+  int TYPE = 39;
 
-  int ALIGNED = 40;
+  int AREA = 40;
 
-  int PROXY = 41;
+  int STRUCT = 41;
 
-  int CASE = 42;
+  int BITDATA = 42;
 
-  int OF = 43;
+  int ALIGNED = 43;
 
-  int IF = 44;
+  int PROXY = 44;
 
-  int THEN = 45;
+  int CASE = 45;
 
-  int ELSE = 46;
+  int OF = 46;
 
-  int LET = 47;
+  int IF = 47;
 
-  int IN = 48;
+  int THEN = 48;
+
+  int ELSE = 49;
+
+  int LET = 50;
+
+  int IN = 51;
 }

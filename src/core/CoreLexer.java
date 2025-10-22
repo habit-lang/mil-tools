@@ -42,6 +42,9 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
     reserved.put("export", Integer.valueOf(EXPORT));
     reserved.put("entrypoint", Integer.valueOf(ENTRYPOINT));
     reserved.put("external", Integer.valueOf(EXTERNAL));
+    reserved.put("infix", Integer.valueOf(INFIX));
+    reserved.put("infixl", Integer.valueOf(INFIXL));
+    reserved.put("infixr", Integer.valueOf(INFIXR));
     reserved.put("data", Integer.valueOf(DATA));
     reserved.put("type", Integer.valueOf(TYPE));
     reserved.put("area", Integer.valueOf(AREA));
@@ -120,6 +123,12 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
         return "\"entrypoint\" keyword";
       case EXTERNAL:
         return "\"external\" keyword";
+      case INFIX:
+        return "\"infix\" keyword";
+      case INFIXL:
+        return "\"infixl\" keyword";
+      case INFIXR:
+        return "\"infixr\" keyword";
       case DATA:
         return "\"data\" keyword";
       case TYPE:

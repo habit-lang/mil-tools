@@ -19,6 +19,7 @@
 package core;
 
 import compiler.*;
+import java.math.BigInteger;
 import mil.*;
 
 public class CoreParser extends Phase implements CoreTokens {
@@ -427,42 +428,65 @@ public class CoreParser extends Phase implements CoreTokens {
   public CoreDefn maybeCoreDefn() throws Failure {
     switch (lexer.getToken()) {
       case DATA:
-        {
-          CoreDefn d = dataDefn();
-          lexer.itemEnd("data type definition");
-          return d;
-        }
-
+        return coreDefnItem(dataDefn(), "data type definition");
       case BITDATA:
-        {
-          CoreDefn d = bitdataDefn();
-          lexer.itemEnd("bitdata definition");
-          return d;
-        }
-
+        return coreDefnItem(bitdataDefn(), "bitdata definition");
       case STRUCT:
-        {
-          CoreDefn d = structDefn();
-          lexer.itemEnd("struct definition");
-          return d;
-        }
-
+        return coreDefnItem(structDefn(), "struct definition");
       case TYPE:
-        {
-          CoreDefn d = typeDefn();
-          lexer.itemEnd("type definition");
-          return d;
-        }
-
+        return coreDefnItem(typeDefn(), "type definition");
       case EXTERNAL:
-        {
-          CoreDefn d = externalDecl();
-          lexer.itemEnd("external declaration");
-          return d;
-        }
-
+        return coreDefnItem(externalDecl(), "external declaration");
+      case INFIX:
+        return coreDefnItem(fixityDecl(Fixity.NONASS), "infix declaration");
+      case INFIXL:
+        return coreDefnItem(fixityDecl(Fixity.LEFT), "infixl declaration");
+      case INFIXR:
+        return coreDefnItem(fixityDecl(Fixity.RIGHT), "infixr declaration");
       default:
         return null;
+    }
+  }
+
+  /**
+   * Worker function that captures recurring pattern for maybeCoreDefn(), with the first argument in
+   * each call expected to be to a function that returns a particular type of definition, signalled
+   * by a leading keyword that indicates the definition type.
+   */
+  private CoreDefn coreDefnItem(CoreDefn d, String itemName) {
+    lexer.itemEnd(itemName);
+    return d;
+  }
+
+  private CoreDefn fixityDecl(int assoc) throws Failure {
+    Position pos = lexer.getPos();
+    int prec = Fixity.LOW_PREC;
+    boolean typeFixity = false;
+    if (lexer.nextToken(/* INFIX/INFIXL/INFIXR */ ) == TYPE) {
+      typeFixity = true;
+      lexer.nextToken(/* type */ );
+    }
+    if (lexer.getToken() == NATLIT) {
+      BigInteger userPrecNat = lexer.getNat();
+      int userPrec = userPrecNat.intValue();
+      if (BigInteger.valueOf(userPrec).equals(userPrecNat)
+          && userPrec >= Fixity.LOW_PREC
+          && userPrec <= Fixity.HIGH_PREC) {
+        prec = userPrec;
+      } else {
+        report(new Failure(lexer.getPos(), "precedence value is out of range"));
+      }
+      lexer.nextToken(/* precedence */ );
+    }
+    Fixity fixity = new Fixity(assoc, prec);
+    if (typeFixity) {
+      String[] ids = parseIds1();
+      lexer.itemEnd("type fixity declaration");
+      return new TypeFixityDecl(pos, fixity, ids);
+    } else {
+      String[] ids = parseIds1();
+      lexer.itemEnd("fixity declaration");
+      return new FixityDecl(pos, fixity, ids);
     }
   }
 
