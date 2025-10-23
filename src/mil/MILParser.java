@@ -653,7 +653,7 @@ class MILParser extends CoreParser implements MILTokens {
     Position pos = lexer.getPos();
     require(SOPEN);
     TypeExp[] ts = parseBracketedTypes(SCLOSE);
-    return new TupleTypeExp(pos, ts);
+    return new TupleTypeExp(pos, KAtom.TUPLE, ts);
   }
 
   protected TypeExp maybeTypeAtomExp() {
@@ -661,7 +661,7 @@ class MILParser extends CoreParser implements MILTokens {
       Position pos = lexer.getPos();
       lexer.nextToken(/* SOPEN */ );
       TypeExp[] ts = parseBracketedTypes(SCLOSE);
-      return new TupleTypeExp(pos, ts);
+      return new TupleTypeExp(pos, KAtom.TUPLE, ts);
     }
     return super.maybeTypeAtomExp();
   }

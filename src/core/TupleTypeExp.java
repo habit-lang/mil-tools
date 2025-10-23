@@ -23,11 +23,14 @@ import mil.*;
 
 public class TupleTypeExp extends PosTypeExp {
 
-  TypeExp[] texps;
+  private Kind tupleKind;
+
+  private TypeExp[] texps;
 
   /** Default constructor. */
-  public TupleTypeExp(Position pos, TypeExp[] texps) {
+  public TupleTypeExp(Position pos, Kind tupleKind, TypeExp[] texps) {
     super(pos);
+    this.tupleKind = tupleKind;
     this.texps = texps;
   }
 
@@ -42,20 +45,31 @@ public class TupleTypeExp extends PosTypeExp {
    * universally quantified type variables.
    */
   public void scopeType(boolean canAdd, TyvarEnv params, TyconEnv env, int arity) throws Failure {
+    if (tupleKind == KAtom.STAR) {
+      String id = "Tuple" + texps.length;
+      if ((tycon = TyconEnv.findTycon(id, env)) == null) {
+        throw new NotInScopeTyconFailure(pos, id);
+      }
+    } else /* tupleKind==KAtom.TUPLE */ {
+      tycon = TupleCon.tuple(texps.length);
+    }
     for (int i = 0; i < texps.length; i++) {
       texps[i].scopeType(canAdd, params, env, 0);
     }
   }
 
+  /** Saves the Tycon that will be used to build a tuple type. */
+  private Tycon tycon;
+
   public Kind inferKind() throws KindMismatchFailure {
     for (int i = 0; i < texps.length; i++) {
       texps[i].checkKind(KAtom.STAR);
     }
-    return KAtom.TUPLE;
+    return tupleKind;
   }
 
   public Type toType(Prefix prefix) throws Failure {
-    Type t = TupleCon.tuple(texps.length).asType();
+    Type t = tycon.asType();
     for (int i = 0; i < texps.length; i++) {
       t = new TAp(t, texps[i].toType(prefix));
     }

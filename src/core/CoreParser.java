@@ -342,12 +342,18 @@ public class CoreParser extends Phase implements CoreTokens {
         }
 
       case POPEN:
-        { // TODO: this doesn't allow special syntax for unit or tuples; allow?
+        {
           Position pos = lexer.getPos();
-          lexer.nextToken(/* ( */ );
+          if (lexer.nextToken(/* ( */ ) == PCLOSE) { // Look for a unit type?
+            lexer.nextToken(/* ) */ );
+            return new TyconTypeExp(pos, Tycon.unit);
+          }
           TypeExp t = maybeTypeArrow(); // Look for an arrow
           if (t == null) {
             t = typeExp(); // or else some other type expression
+            if (lexer.getToken() == COMMA) { // .. that could be part of a tuple
+              t = new TupleTypeExp(pos, KAtom.STAR, parseTypes(t, 1));
+            }
           }
           require(PCLOSE);
           return t;
@@ -387,7 +393,7 @@ public class CoreParser extends Phase implements CoreTokens {
    */
   protected TypeExp maybeTypeArrow() {
     if (lexer.getToken() == TO) {
-      TypeExp t = new TyconTypeExp(lexer.getPos(), DataType.arrow);
+      TypeExp t = new TyconTypeExp(lexer.getPos(), Tycon.arrow);
       lexer.nextToken(/* -> */ );
       return t;
     }
