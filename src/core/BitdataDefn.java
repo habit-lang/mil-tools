@@ -54,15 +54,16 @@ public class BitdataDefn extends TyconDefn {
    * Determine the list of type definitions (a sublist of defns) that this particular definition
    * depends on.
    */
-  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) {
+  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) throws Failure {
     CoreDefns depends = null;
     if (sizeExp != null) {
-      depends = sizeExp.scopeTycons(handler, null, env, defns, depends);
+      sizeExp = sizeExp.tidyInfix(env);
+      depends = sizeExp.scopeTyconsType(handler, null, env, defns, depends);
     }
     for (int i = 0; i < constrs.length; i++) {
       depends = constrs[i].scopeTycons(handler, null, env, defns, depends);
     }
-    calls(depends);
+    this.calls(depends);
   }
 
   public void kindInfer(Handler handler) {

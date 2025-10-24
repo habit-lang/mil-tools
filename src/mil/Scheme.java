@@ -51,7 +51,13 @@ public abstract class Scheme {
 
   /** Construct a printable representation of a type scheme. */
   public String toString() {
-    return toString(Fixity.NEVER);
+    Prefix prefix = getPrefix();
+    Type type = getType();
+    StringTypeWriter tw = new StringTypeWriter(prefix);
+    tw.chooseNames();
+    tw.writeQuantifiers();
+    type.write(tw);
+    return tw.toString();
   }
 
   public abstract String toString(int prec, StringTypeWriter tw);

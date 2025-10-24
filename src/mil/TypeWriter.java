@@ -38,7 +38,7 @@ public abstract class TypeWriter {
   }
 
   /** Output a representation of a generic variable. */
-  void writeTGen(int n) {
+  void writeTGen(int n, int prec, int args) {
     write("_" + n);
   }
 

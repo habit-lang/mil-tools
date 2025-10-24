@@ -27,12 +27,33 @@ public abstract class TypeExp {
   /** Find a position for this type expression. */
   public abstract Position position();
 
+  public abstract TypeExp tidyInfix(TyconEnv env) throws Failure;
+
+  /**
+   * Determine a suitable fixity for this type expression. If the expression already has an
+   * associated type constructor For type constructors, then we use the fixity associated with that
+   * (if there is one). If the expression is an application, then we look for a fixity in the
+   * function part. But if no suitable fixity can be found, then we just use Fixity.unspecified.
+   */
+  public Fixity getFixity() {
+    return Fixity.unspecified;
+  }
+
   /**
    * Scope analysis on type expressions in a context where we expect all of the type constructors to
    * be defined, but (if canAdd is true) we will treat undefined type variables as implicitly bound,
    * universally quantified type variables.
    */
-  public abstract void scopeType(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
+  public TypeExp scopeType(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
+      throws Failure {
+    return this.tidyInfix(env).scopeTypeRewrite(canAdd, params, env, arity);
+  }
+
+  /**
+   * Worker function for scopeType that is intended to be called after order of any infix operators
+   * have been determined and has the option to rewrite the type expression if needed.
+   */
+  public abstract TypeExp scopeTypeRewrite(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
       throws Failure;
 
   public abstract Kind inferKind() throws KindMismatchFailure;
@@ -49,11 +70,11 @@ public abstract class TypeExp {
   }
 
   public Scheme toScheme(TyconEnv env) throws Failure {
-    TyvarEnv params = new TyvarEnv(); // An environment to collect implicitly quantified variables.
-    scopeType(true, params, env, 0); // Run scope analysis on the type expression
-    checkKind(KAtom.STAR); // Run kind inference
+    TyvarEnv params = new TyvarEnv(); // Collect implicitly quantified variables
+    TypeExp t = this.scopeType(true, params, env, 0); // Run scope analysis on the type expression
+    t.checkKind(KAtom.STAR); // Run kind inference
     Prefix prefix = params.toPrefix(); // Calculate a prefix for the type scheme
-    return prefix.forall(toType(prefix));
+    return prefix.forall(t.toType(prefix));
   }
 
   /**
@@ -71,22 +92,8 @@ public abstract class TypeExp {
    * Scope analysis on type expressions in a context where we want to determine which (if any)
    * CoreDefn values a particular type expression depends on.
    */
-  public abstract CoreDefns scopeTycons(
-      TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) throws Failure;
-
-  /**
-   * Variant of scope analysis on type expressions where any exceptions are caught and passed to a
-   * handler.
-   */
-  public CoreDefns scopeTycons(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
-    try {
-      depends = this.scopeTycons(params, env, defns, depends);
-    } catch (Failure f) {
-      handler.report(f);
-    }
-    return depends;
-  }
+  public abstract CoreDefns scopeTyconsType(
+      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends);
 
   void checkKind(Handler handler, Kind kind) {
     try {

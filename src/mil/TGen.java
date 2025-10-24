@@ -65,7 +65,7 @@ public class TGen extends Type {
    */
   void write(TypeWriter tw, int prec, int args) {
     if (args == 0) {
-      tw.writeTGen(n);
+      tw.writeTGen(n, prec, args);
     } else {
       applic(tw, prec, args, 0);
     }

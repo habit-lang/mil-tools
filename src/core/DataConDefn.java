@@ -36,9 +36,11 @@ class DataConDefn extends Name {
    * elements from defns that it references.
    */
   CoreDefns scopeTycons(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
+      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends)
+      throws Failure {
     for (int i = 0; i < args.length; i++) {
-      depends = args[i].scopeTycons(handler, params, env, defns, depends);
+      args[i] = args[i].tidyInfix(env);
+      depends = args[i].scopeTyconsType(handler, params, env, defns, depends);
     }
     return depends;
   }

@@ -30,7 +30,8 @@ abstract class BitdataRegionExp {
    * elements from defns that it references.
    */
   abstract CoreDefns scopeTycons(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends);
+      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends)
+      throws Failure;
 
   public abstract void kindInfer(Handler handler);
 

@@ -50,7 +50,7 @@ public class TypeFixityDecl extends CoreDefn {
    * Determine the list of type definitions (a sublist of defns) that this particular definition
    * depends on.
    */
-  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) {
+  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) throws Failure {
     // TODO: Need to handle these declarations here!
   }
 

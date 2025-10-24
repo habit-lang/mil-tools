@@ -19,21 +19,31 @@
 package core;
 
 import compiler.*;
-import java.math.BigInteger;
 import mil.*;
 
-public class NatTypeExp extends PosTypeExp {
+class InfixTypeExp extends TypeExp {
 
-  private BigInteger num;
+  private TypeOps typeOps;
+
+  private TypeExp t;
 
   /** Default constructor. */
-  public NatTypeExp(Position pos, BigInteger num) {
-    super(pos);
-    this.num = num;
+  InfixTypeExp(TypeOps typeOps, TypeExp t) {
+    this.typeOps = typeOps;
+    this.t = t;
+  }
+
+  /** Find a position for this type expression. */
+  public Position position() {
+    return typeOps.position();
   }
 
   public TypeExp tidyInfix(TyconEnv env) throws Failure {
-    return this;
+    typeOps.tidyInfix(env);
+    if (t != null) {
+      t = t.tidyInfix(env);
+    }
+    return typeOps.tidyInfix(t); // Removes the InfixTypeExp object
   }
 
   /**
@@ -42,16 +52,14 @@ public class NatTypeExp extends PosTypeExp {
    */
   public TypeExp scopeTypeRewrite(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
       throws Failure {
-    // Nothing to do here.
-    return this;
+    debug.Internal.error("scopeType on InfixTypeExp");
+    return this; // not reached
   }
 
   public Kind inferKind() throws KindMismatchFailure {
-    return KAtom.NAT;
-  }
-
-  public Type toType(Prefix prefix) throws Failure {
-    return new TNat(num);
+    // shouldn't occur; eliminated during scope analysis
+    // TODO: report fatal error instead ...
+    return null;
   }
 
   /**
@@ -60,6 +68,7 @@ public class NatTypeExp extends PosTypeExp {
    */
   public CoreDefns scopeTyconsType(
       Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
+    // Nothing to do here; should not be called.
     return depends;
   }
 }

@@ -63,12 +63,12 @@ public class DataDefn extends TyconDefn {
    * Determine the list of type definitions (a sublist of defns) that this particular definition
    * depends on.
    */
-  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) {
+  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) throws Failure {
     CoreDefns depends = null;
     for (int i = 0; i < constrs.length; i++) {
       depends = constrs[i].scopeTycons(handler, params, env, defns, depends);
     }
-    calls(depends);
+    this.calls(depends);
   }
 
   public void setRecursive() {

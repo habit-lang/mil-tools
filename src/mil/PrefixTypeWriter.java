@@ -25,14 +25,15 @@ public abstract class PrefixTypeWriter extends TypeWriter {
 
   private Prefix prefix;
 
-  /** Default constructor. */
-  /**
-   * Initialize this PrefixTypeWriter by choosing distinct names for each of the generic type
-   * variables.
-   */
   public PrefixTypeWriter(Prefix prefix) {
     this.prefix = prefix;
+  }
 
+  /** The array of names that we will use for generic variables. */
+  private String[] ids;
+
+  /** Choose distinct names for each of the generic type variables. */
+  public void chooseNames() {
     ids = new String[prefix.numGenerics()];
     for (int i = 0; i < ids.length; i++) {
       // try to generate sensible names for generic variables based on hints provided by their
@@ -41,9 +42,6 @@ public abstract class PrefixTypeWriter extends TypeWriter {
       ids[i] = chooseName(dropDigitSuffix(prefix.getGen(i).getId()));
     }
   }
-
-  /** The array of names that we will use for generic variables. */
-  private String[] ids;
 
   /** Remove any trailing numeric digits from the end of this name. */
   private static String dropDigitSuffix(String str) {
@@ -103,11 +101,11 @@ public abstract class PrefixTypeWriter extends TypeWriter {
    * Output a name for the nth generic variable using the identifiers that have been chosen in ids
    * where possible.
    */
-  void writeTGen(int n) {
+  public void writeTGen(int n, int prec, int args) {
     if (ids != null && n >= 0 && n < ids.length) {
       write(ids[n]);
     } else {
-      super.writeTGen(n);
+      super.writeTGen(n, prec, args);
     }
   }
 
@@ -118,7 +116,7 @@ public abstract class PrefixTypeWriter extends TypeWriter {
       write("forall");
       for (int i = 0; i < n; i++) {
         write(" (");
-        writeTGen(i);
+        writeTGen(i, Fixity.NEVER, 0);
         write(" :: ");
         write(prefix.getGen(i).getKind().toString());
         write(")");

@@ -34,13 +34,19 @@ public class SelTypeExp extends PosTypeExp {
     this.lab = lab;
   }
 
+  public TypeExp tidyInfix(TyconEnv env) throws Failure {
+    t = t.tidyInfix(env);
+    return this;
+  }
+
   /**
-   * Scope analysis on type expressions in a context where we expect all of the type constructors to
-   * be defined, but (if canAdd is true) we will treat undefined type variables as implicitly bound,
-   * universally quantified type variables.
+   * Worker function for scopeType that is intended to be called after order of any infix operators
+   * have been determined and has the option to rewrite the type expression if needed.
    */
-  public void scopeType(boolean canAdd, TyvarEnv params, TyconEnv env, int arity) throws Failure {
-    t.scopeType(canAdd, params, env, arity);
+  public TypeExp scopeTypeRewrite(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
+      throws Failure {
+    t = t.scopeTypeRewrite(canAdd, params, env, arity);
+    return this;
   }
 
   public Kind inferKind() throws KindMismatchFailure {
@@ -66,8 +72,8 @@ public class SelTypeExp extends PosTypeExp {
    * Scope analysis on type expressions in a context where we want to determine which (if any)
    * CoreDefn values a particular type expression depends on.
    */
-  public CoreDefns scopeTycons(TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends)
-      throws Failure {
-    return t.scopeTycons(params, env, defns, depends);
+  public CoreDefns scopeTyconsType(
+      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
+    return t.scopeTyconsType(handler, params, env, defns, depends);
   }
 }

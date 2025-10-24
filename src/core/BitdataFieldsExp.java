@@ -40,8 +40,10 @@ class BitdataFieldsExp extends BitdataRegionExp {
    * elements from defns that it references.
    */
   CoreDefns scopeTycons(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
-    return texp.scopeTycons(handler, params, env, defns, depends);
+      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends)
+      throws Failure {
+    texp = texp.tidyInfix(env);
+    return texp.scopeTyconsType(handler, params, env, defns, depends);
   }
 
   public void kindInfer(Handler handler) {

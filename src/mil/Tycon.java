@@ -631,6 +631,15 @@ public abstract class Tycon extends Name {
             : 0;
   }
 
+  public TypeExp scopeTycon(Position pos, int arity) throws Failure {
+    // The following test is technically unnecessary given the subsequent use
+    // of kind inference but may result in friendlier error diagnostics.
+    if (arity > getArity()) {
+      throw new TooManyTyconArgsFailure(pos, this, arity);
+    }
+    return new TyconTypeExp(pos, this);
+  }
+
   /** Return the argument of this type (assuming that this is a type application). */
   public Type argOf(Type[] tenv) {
     debug.Internal.error("argOf applied to a non-TAp");

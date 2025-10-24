@@ -50,9 +50,10 @@ public class SynonymDefn extends TyconDefn {
    * Determine the list of type definitions (a sublist of defns) that this particular definition
    * depends on.
    */
-  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) {
+  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) throws Failure {
     try {
-      calls(rhs.scopeTycons(null, env, defns, null));
+      rhs = rhs.tidyInfix(env);
+      this.calls(rhs.scopeTyconsType(handler, null, env, defns, null));
     } catch (Failure f) {
       handler.report(f);
     }

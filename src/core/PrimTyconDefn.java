@@ -58,7 +58,7 @@ public class PrimTyconDefn extends TyconDefn {
    * Determine the list of type definitions (a sublist of defns) that this particular definition
    * depends on.
    */
-  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) {
+  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) throws Failure {
     /* Nothing to do in this case */
   }
 

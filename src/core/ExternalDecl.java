@@ -50,7 +50,7 @@ public class ExternalDecl extends CoreDefn {
    * Determine the list of type definitions (a sublist of defns) that this particular definition
    * depends on.
    */
-  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) {
+  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) throws Failure {
     /* Nothing to do in this case */
   }
 
@@ -71,7 +71,7 @@ public class ExternalDecl extends CoreDefn {
     try {
       TyvarEnv params = new TyvarEnv(); // Environment for implicitly quantified tyvars
       TyconEnv env = milenv.getTyconEnv(); // Environment for tycons
-      texp.scopeType(true, params, env, 0); // Validate type component of declaration
+      texp = texp.scopeType(true, params, env, 0); // Validate type component of declaration
       texp.checkKind(KAtom.STAR);
       for (int i = 0; i < extids.length; i++) { // Validate any generator arguments
         extids[i].scopeExtImpId(params, env);

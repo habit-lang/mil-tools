@@ -31,14 +31,18 @@ public class VaridTypeExp extends PosTypeExp {
     this.id = id;
   }
 
+  public TypeExp tidyInfix(TyconEnv env) throws Failure {
+    return this;
+  }
+
   private Tyvar tyvar = null;
 
   /**
-   * Scope analysis on type expressions in a context where we expect all of the type constructors to
-   * be defined, but (if canAdd is true) we will treat undefined type variables as implicitly bound,
-   * universally quantified type variables.
+   * Worker function for scopeType that is intended to be called after order of any infix operators
+   * have been determined and has the option to rewrite the type expression if needed.
    */
-  public void scopeType(boolean canAdd, TyvarEnv params, TyconEnv env, int arity) throws Failure {
+  public TypeExp scopeTypeRewrite(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
+      throws Failure {
     if (params == null || (tyvar = params.find(id)) == null) {
       if (canAdd) {
         params.add(tyvar = new Tyvar(pos, id, new KVar()));
@@ -46,6 +50,7 @@ public class VaridTypeExp extends PosTypeExp {
         throw new NotInScopeTyvarFailure(pos, id);
       }
     }
+    return this;
   }
 
   public Kind inferKind() throws KindMismatchFailure {
@@ -77,10 +82,10 @@ public class VaridTypeExp extends PosTypeExp {
    * Scope analysis on type expressions in a context where we want to determine which (if any)
    * CoreDefn values a particular type expression depends on.
    */
-  public CoreDefns scopeTycons(TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends)
-      throws Failure {
+  public CoreDefns scopeTyconsType(
+      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
     if (params == null || (tyvar = params.find(id)) == null) {
-      throw new NotInScopeTyvarFailure(pos, id);
+      handler.report(new NotInScopeTyvarFailure(pos, id));
     }
     return depends;
   }

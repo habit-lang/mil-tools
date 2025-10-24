@@ -327,10 +327,10 @@ public class AllocType {
   static AllocType validate(TyconEnv env, TypeExp[] storedexp, TypeExp texp) throws Failure {
     TyvarEnv params = new TyvarEnv();
     for (int i = 0; i < storedexp.length; i++) {
-      storedexp[i].scopeType(true, params, env, 0);
+      storedexp[i] = storedexp[i].scopeType(true, params, env, 0);
       storedexp[i].checkKind(KAtom.STAR);
     }
-    texp.scopeType(true, params, env, 0);
+    texp = texp.scopeType(true, params, env, 0);
     texp.checkKind(KAtom.STAR);
 
     Prefix prefix = params.toPrefix();

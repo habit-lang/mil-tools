@@ -126,19 +126,6 @@ public abstract class Type extends Scheme {
     return tw.toString();
   }
 
-  public static String toString(Type[] ts) {
-    StringBuilder buf = new StringBuilder();
-    buf.append("[");
-    for (int i = 0; i < ts.length; i++) {
-      if (i > 0) {
-        buf.append(", ");
-      }
-      buf.append(ts[i].toString());
-    }
-    buf.append("]");
-    return buf.toString();
-  }
-
   public int findLevel() throws Failure {
     return 0;
   }
@@ -1071,7 +1058,7 @@ public abstract class Type extends Scheme {
     } else if (alignExp == null) {
       return minAlignment;
     } else {
-      alignExp.scopeType(false, null, milenv.getTyconEnv(), 0);
+      alignExp = alignExp.scopeType(false, null, milenv.getTyconEnv(), 0);
       alignExp.checkKind(KAtom.NAT);
       long alignment = alignExp.calcAlignment();
       alignExp.checkAlignment(alignment, minAlignment);

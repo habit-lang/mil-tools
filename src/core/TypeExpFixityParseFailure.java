@@ -16,14 +16,19 @@
     You should have received a copy of the GNU General Public License
     along with mil-tools.  If not, see <https://www.gnu.org/licenses/>.
 */
-package mil;
+package core;
 
 import compiler.*;
-import core.*;
+import mil.*;
 
-public class DebugTypeWriter extends TypeWriter {
+class TypeExpFixityParseFailure extends Failure {
 
-  public void write(String s) {
-    debug.Log.print(s);
+  /**
+   * An object of this class is generated when we find a type expression using a string of infix
+   * operators that cannot be parsed without an ambiguity.
+   */
+  public TypeExpFixityParseFailure(TypeExp lop, TypeExp rop) {
+    // TODO: do something useful with the lop and rop parameters.
+    super(lop.position(), "Ambiguous use of infix operators in type expression");
   }
 }

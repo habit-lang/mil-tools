@@ -42,7 +42,8 @@ class BitdataTagbitsExp extends BitdataRegionExp {
    * elements from defns that it references.
    */
   CoreDefns scopeTycons(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
+      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends)
+      throws Failure {
     return depends;
   }
 

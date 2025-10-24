@@ -47,7 +47,7 @@ class AreaDefn extends TopDefn {
   void validateTopDefn(Handler handler, MILEnv milenv) throws Failure {
     try {
       // Validate the area type:
-      typeExp.scopeType(false, null, milenv.getTyconEnv(), 0);
+      typeExp = typeExp.scopeType(false, null, milenv.getTyconEnv(), 0);
       typeExp.checkKind(KAtom.STAR);
       Type refType = typeExp.toType(null); // The type of area reference, as declared
       Type areaType = new TVar(Tyvar.area);

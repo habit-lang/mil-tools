@@ -274,6 +274,67 @@ public class CoreParser extends Phase implements CoreTokens {
   }
 
   /**
+   * Try to parse a sequence of type applications separated by operators, returning null if no valid
+   * type is found. TypeExpInfix and TypeOps objects are used to record the sequence of type and
+   * operator symbols in the order they appear in the source code so that fixity information can be
+   * used in subsequent stages to determine the correct order of operations. Note that we only
+   * construct a TypeExpInfix object if there are are at least two operators (i.e., if fixity
+   * information is required to interpret this type expression fully).
+   */
+  private TypeExp maybeTypeOpExpNew() {
+    TypeExp t = null;
+    TypeExp t1 = null;
+    TypeExp op1 = null;
+    TypeOps typeOps = null;
+
+    for (; ; ) {
+      if ((t = maybeTypeApExp()) == null) { // missing type
+        break;
+      } else if (lexer.getToken() == COCO) {
+        Position pos = lexer.getPos();
+        lexer.nextToken(/* COCO */ );
+        t = new KindAnnTypeExp(pos, t, kindExp());
+        break;
+      } else {
+        TypeExp op = maybeTypeOp();
+        if (op == null) {
+          break;
+        } else if (t1 != null) {
+          typeOps = new TypeOps(typeOps, t1, op1);
+        }
+        t1 = t;
+        op1 = op;
+      }
+    }
+    // Cover various cases to build the resulting type expression, using TypeExpInfix
+    // only in cases where there were at least two type operators.
+    return (typeOps != null)
+        ? new InfixTypeExp(new TypeOps(typeOps, t1, op1), t)
+        : (op1 == null)
+            ? t
+            : (t == null) ? new ApTypeExp(op1, t1) : new ApTypeExp(new ApTypeExp(op1, t1), t);
+  }
+
+  /** Try to parse a type operator, returning null if no valid operator is found. */
+  private TypeExp maybeTypeOp() {
+    TypeExp t = null;
+    switch (lexer.getToken()) {
+      case VARSYM:
+      case CONSYM:
+        t = new ConidTypeExp(lexer.getPos(), lexer.getLexeme());
+        lexer.nextToken(/* VARSYM | CONSYM */ );
+        return t;
+
+      case BACKTICK:
+        lexer.nextToken(/* ` */ );
+        t = notMissing(maybeTypeApExp());
+        require(BACKTICK, "missing backquote symbol");
+        return t;
+    }
+    return maybeTypeArrow();
+  }
+
+  /**
    * Try to parse a type application consisting of a sequence of one or more type atoms, but
    * returning null if no type atom can be found.
    */

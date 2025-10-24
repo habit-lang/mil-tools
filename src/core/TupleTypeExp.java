@@ -39,12 +39,19 @@ public class TupleTypeExp extends PosTypeExp {
     return texps.length;
   }
 
+  public TypeExp tidyInfix(TyconEnv env) throws Failure {
+    for (int i = 0; i < texps.length; i++) {
+      texps[i] = texps[i].tidyInfix(env);
+    }
+    return this;
+  }
+
   /**
-   * Scope analysis on type expressions in a context where we expect all of the type constructors to
-   * be defined, but (if canAdd is true) we will treat undefined type variables as implicitly bound,
-   * universally quantified type variables.
+   * Worker function for scopeType that is intended to be called after order of any infix operators
+   * have been determined and has the option to rewrite the type expression if needed.
    */
-  public void scopeType(boolean canAdd, TyvarEnv params, TyconEnv env, int arity) throws Failure {
+  public TypeExp scopeTypeRewrite(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
+      throws Failure {
     if (tupleKind == KAtom.STAR) {
       String id = "Tuple" + texps.length;
       if ((tycon = TyconEnv.findTycon(id, env)) == null) {
@@ -54,8 +61,9 @@ public class TupleTypeExp extends PosTypeExp {
       tycon = TupleCon.tuple(texps.length);
     }
     for (int i = 0; i < texps.length; i++) {
-      texps[i].scopeType(canAdd, params, env, 0);
+      texps[i] = texps[i].scopeTypeRewrite(canAdd, params, env, 0);
     }
+    return this;
   }
 
   /** Saves the Tycon that will be used to build a tuple type. */
@@ -80,10 +88,10 @@ public class TupleTypeExp extends PosTypeExp {
    * Scope analysis on type expressions in a context where we want to determine which (if any)
    * CoreDefn values a particular type expression depends on.
    */
-  public CoreDefns scopeTycons(TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends)
-      throws Failure {
+  public CoreDefns scopeTyconsType(
+      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
     for (int i = 0; i < texps.length; i++) {
-      depends = texps[i].scopeTycons(params, env, defns, depends);
+      depends = texps[i].scopeTyconsType(handler, params, env, defns, depends);
     }
     return depends;
   }

@@ -38,7 +38,8 @@ class BitdataConDefn extends Name {
    * elements from defns that it references.
    */
   CoreDefns scopeTycons(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
+      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends)
+      throws Failure {
     for (int i = 0; i < regexps.length; i++) {
       depends = regexps[i].scopeTycons(handler, params, env, defns, depends);
     }

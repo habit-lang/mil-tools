@@ -37,7 +37,7 @@ class GenImpId extends ExtImpId {
   /** Check that all of the type arguments used in this external id, if any, are well-scoped. */
   void scopeExtImpId(TyvarEnv params, TyconEnv env) throws Failure {
     for (int i = 0; i < spec.length; i++) {
-      spec[i].scopeType(false, params, env, 0); // Scope analysis
+      spec[i] = spec[i].scopeType(false, params, env, 0); // Scope analysis
       spec[i].inferKind(); // Check for a valid kind
     }
   }

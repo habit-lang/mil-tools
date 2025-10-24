@@ -38,14 +38,31 @@ public class ApTypeExp extends TypeExp {
     return l.position();
   }
 
+  public TypeExp tidyInfix(TyconEnv env) throws Failure {
+    l = l.tidyInfix(env);
+    r = r.tidyInfix(env);
+    return this;
+  }
+
   /**
-   * Scope analysis on type expressions in a context where we expect all of the type constructors to
-   * be defined, but (if canAdd is true) we will treat undefined type variables as implicitly bound,
-   * universally quantified type variables.
+   * Determine a suitable fixity for this type expression. If the expression already has an
+   * associated type constructor For type constructors, then we use the fixity associated with that
+   * (if there is one). If the expression is an application, then we look for a fixity in the
+   * function part. But if no suitable fixity can be found, then we just use Fixity.unspecified.
    */
-  public void scopeType(boolean canAdd, TyvarEnv params, TyconEnv env, int arity) throws Failure {
-    l.scopeType(canAdd, params, env, arity + 1);
-    r.scopeType(canAdd, params, env, 0);
+  public Fixity getFixity() {
+    return l.getFixity();
+  }
+
+  /**
+   * Worker function for scopeType that is intended to be called after order of any infix operators
+   * have been determined and has the option to rewrite the type expression if needed.
+   */
+  public TypeExp scopeTypeRewrite(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
+      throws Failure {
+    l = l.scopeTypeRewrite(canAdd, params, env, arity + 1);
+    r = r.scopeTypeRewrite(canAdd, params, env, 0);
+    return this;
   }
 
   public Kind inferKind() throws KindMismatchFailure {
@@ -62,8 +79,9 @@ public class ApTypeExp extends TypeExp {
    * Scope analysis on type expressions in a context where we want to determine which (if any)
    * CoreDefn values a particular type expression depends on.
    */
-  public CoreDefns scopeTycons(TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends)
-      throws Failure {
-    return r.scopeTycons(params, env, defns, l.scopeTycons(params, env, defns, depends));
+  public CoreDefns scopeTyconsType(
+      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
+    return r.scopeTyconsType(
+        handler, params, env, defns, l.scopeTyconsType(handler, params, env, defns, depends));
   }
 }

@@ -46,7 +46,7 @@ class AreaDefnExp extends DefnExp {
    * Worker function for addTo(handler, milenv) that throws an exception if an error is detected.
    */
   void addTo(MILEnv milenv) throws Failure {
-    typeExp.scopeType(false, null, milenv.getTyconEnv(), 0);
+    typeExp = typeExp.scopeType(false, null, milenv.getTyconEnv(), 0);
     typeExp.checkKind(KAtom.AREA);
     Type areaType = typeExp.toType(null).skeleton();
     Type size = areaType.calcAreaSize(pos);

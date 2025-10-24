@@ -16,10 +16,10 @@
     You should have received a copy of the GNU General Public License
     along with mil-tools.  If not, see <https://www.gnu.org/licenses/>.
 */
-package core;
+package mil;
 
 import compiler.*;
-import mil.*;
+import core.*;
 
 class TooManyTyconArgsFailure extends Failure {
 

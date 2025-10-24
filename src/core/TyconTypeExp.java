@@ -31,18 +31,27 @@ public class TyconTypeExp extends PosTypeExp {
     this.tycon = tycon;
   }
 
+  public TypeExp tidyInfix(TyconEnv env) throws Failure {
+    return this;
+  }
+
   /**
-   * Scope analysis on type expressions in a context where we expect all of the type constructors to
-   * be defined, but (if canAdd is true) we will treat undefined type variables as implicitly bound,
-   * universally quantified type variables.
+   * Determine a suitable fixity for this type expression. If the expression already has an
+   * associated type constructor For type constructors, then we use the fixity associated with that
+   * (if there is one). If the expression is an application, then we look for a fixity in the
+   * function part. But if no suitable fixity can be found, then we just use Fixity.unspecified.
    */
-  public void scopeType(boolean canAdd, TyvarEnv params, TyconEnv env, int arity) throws Failure {
-    // The following test should be unnecessary given the subsequent use of kind inference but may
-    // result
-    // in friendlier error diagnostics.
-    if (arity > tycon.getArity()) {
-      throw new TooManyTyconArgsFailure(pos, tycon, arity);
-    }
+  public Fixity getFixity() {
+    return tycon == null ? Fixity.unspecified : tycon.getFixity();
+  }
+
+  /**
+   * Worker function for scopeType that is intended to be called after order of any infix operators
+   * have been determined and has the option to rewrite the type expression if needed.
+   */
+  public TypeExp scopeTypeRewrite(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
+      throws Failure {
+    return tycon.scopeTycon(pos, arity);
   }
 
   public Kind inferKind() throws KindMismatchFailure {
@@ -60,8 +69,8 @@ public class TyconTypeExp extends PosTypeExp {
    * Scope analysis on type expressions in a context where we want to determine which (if any)
    * CoreDefn values a particular type expression depends on.
    */
-  public CoreDefns scopeTycons(TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends)
-      throws Failure {
+  public CoreDefns scopeTyconsType(
+      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
     return depends;
   }
 }

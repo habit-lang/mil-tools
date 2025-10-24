@@ -24,9 +24,9 @@ import core.*;
 /** A simple class for writing type and scheme values into a String. */
 public class StringTypeWriter extends PrefixTypeWriter {
 
-  /** Default constructor. */
   public StringTypeWriter(Prefix prefix) {
     super(prefix);
+    chooseNames();
   }
 
   StringBuilder buf = new StringBuilder();
