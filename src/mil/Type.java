@@ -169,7 +169,7 @@ public abstract class Type extends Scheme {
   abstract TVars tvars(Type[] thisenv, TVars tvs);
 
   public TVar[] generics(TVars fixed) {
-    return TVar.generics(tvars(fixed), fixed);
+    return TVar.generics(this.tvars(fixed), fixed);
   }
 
   public Type skeleton() {

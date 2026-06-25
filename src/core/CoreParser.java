@@ -19,7 +19,6 @@
 package core;
 
 import compiler.*;
-import java.math.BigInteger;
 import mil.*;
 
 public class CoreParser extends Phase implements CoreTokens {
@@ -534,14 +533,15 @@ public class CoreParser extends Phase implements CoreTokens {
       lexer.nextToken(/* type */ );
     }
     if (lexer.getToken() == NATLIT) {
-      BigInteger userPrecNat = lexer.getNat();
-      int userPrec = userPrecNat.intValue();
-      if (BigInteger.valueOf(userPrec).equals(userPrecNat)
-          && userPrec >= Fixity.LOW_PREC
-          && userPrec <= Fixity.HIGH_PREC) {
-        prec = userPrec;
-      } else {
-        report(new Failure(lexer.getPos(), "precedence value is out of range"));
+      try {
+        int userPrec = lexer.getInt();
+        if (userPrec >= Fixity.LOW_PREC && userPrec <= Fixity.HIGH_PREC) {
+          prec = userPrec;
+        } else {
+          report(new Failure(lexer.getPos(), "precedence value is out of range"));
+        }
+      } catch (Failure f) {
+        report(f);
       }
       lexer.nextToken(/* precedence */ );
     }

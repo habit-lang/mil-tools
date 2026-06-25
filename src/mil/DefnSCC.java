@@ -86,6 +86,7 @@ public class DefnSCC {
 
   /** Display a printable representation of this object on the specified PrintWriter. */
   public void dump(PrintWriter out) {
+    // out.print("----------------------------------------- ");
     out.println("-----------------------------------------");
     out.print("-- ");
     out.println(isRecursive() ? "recursive" : "not recursive");
