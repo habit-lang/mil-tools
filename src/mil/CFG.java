@@ -138,6 +138,9 @@ abstract class CFG extends Node {
   /** Generate an LLVM function definition for this CFG node. */
   llvm.FuncDefn toLLVMFuncDefn(LLVMMap lm, TempSubst s) {
     VarMap vm = getVarMap();
+    for (Labels ls = labels; ls != null; ls = ls.next) {
+      ls.head.markPhiValues(vm);
+    }
     llvm.Local[] formals = formals(lm, vm);
     int n = Labels.length(labels);
     String[] ss = new String[1 + n];

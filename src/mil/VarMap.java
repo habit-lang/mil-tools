@@ -36,7 +36,17 @@ abstract class VarMap {
    * temporaries used here have already been translated, if necessary, by the parameter elimination
    * substitution that identifies distinct Block parameters that use the same temporary.
    */
-  private HashMap<Temp, llvm.Local> tempMap = new HashMap();
+  private HashMap<Temp, llvm.Local> tempMap = new HashMap<Temp, llvm.Local>();
+
+  private HashMap<Temp, Boolean> phiValues = new HashMap<Temp, Boolean>();
+
+  void markPhiValue(Temp t) {
+    phiValues.put(t, Boolean.TRUE);
+  }
+
+  boolean isPhiValue(Temp t) {
+    return phiValues.containsKey(t);
+  }
 
   /**
    * Find the LLVM Local corresponding to the given Temp in this CFG, creating a new entry in the

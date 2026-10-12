@@ -213,7 +213,32 @@ public class Return extends Call {
    */
   llvm.Code toLLVMBind(
       LLVMMap lm, VarMap vm, TempSubst s, Temp[] vs, boolean isTail, Code c, Label[] succs) {
-    return c.toLLVMCode(lm, vm, TempSubst.extend(vs, args, s), succs);
+    int aliases = 0;
+    for (Temp v : vs) {
+      if (!vm.isPhiValue(v)) {
+        aliases++;
+      }
+    }
+    Temp[] aliasTemps = new Temp[aliases];
+    Atom[] aliasArgs = new Atom[aliases];
+    int j = 0;
+    for (int i = 0; i < vs.length; i++) {
+      if (!vm.isPhiValue(vs[i])) {
+        aliasTemps[j] = vs[i];
+        aliasArgs[j++] = args[i];
+      }
+    }
+
+    llvm.Code code = c.toLLVMCode(lm, vm, TempSubst.extend(aliasTemps, aliasArgs, s), succs);
+    for (int i = vs.length; --i >= 0; ) {
+      if (vm.isPhiValue(vs[i]) && vs[i].nonUnit()) {
+        llvm.Value value = args[i].toLLVMAtom(lm, vm, s);
+        code =
+            new llvm.Op(
+                vm.lookup(lm, vs[i]), new llvm.Select(llvm.Bool.TRUE, value, value), code);
+      }
+    }
+    return code;
   }
 
   /** Generate LLVM code to execute this Tail in tail call position (i.e., as part of a Done). */

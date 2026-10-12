@@ -57,6 +57,19 @@ class CodeLabel extends Label {
     return (preds.next == null) ? b.mapParams(preds.args, s) : s;
   }
 
+  @Override
+  void markPhiValues(VarMap vm) {
+    if (preds.next != null) {
+      for (PredNodes ps = preds; ps != null; ps = ps.next) {
+        for (Atom arg : ps.args) {
+          if (arg instanceof Temp) {
+            vm.markPhiValue((Temp) arg);
+          }
+        }
+      }
+    }
+  }
+
   /** Generate code for this Label within an enclosing LLVM function definition. */
   llvm.Code toLLVMLabel(LLVMMap lm, VarMap vm, TempSubst s) {
     llvm.Code code = b.toLLVMBlock(lm, vm, s, succs);

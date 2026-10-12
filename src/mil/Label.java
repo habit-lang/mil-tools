@@ -76,6 +76,8 @@ abstract class Label extends Node {
     return s;
   }
 
+  void markPhiValues(VarMap vm) {}
+
   /** Generate code for this Label within an enclosing LLVM function definition. */
   abstract llvm.Code toLLVMLabel(LLVMMap lm, VarMap vm, TempSubst s);
 }

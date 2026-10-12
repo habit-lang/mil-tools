@@ -106,7 +106,7 @@ external writeRefPriority   {primWriteRefStored Priority} :: Ref (Stored Priorit
 
 external initArray {primInitArray NumPrio (Stored Priority)}
   :: (Ix NumPrio -> Init (Stored Priority)) -> Init (Array NumPrio (Stored Priority))
-external at {@ NumPrio (Stored Priority)}
+external at {primAt NumPrio (Stored Priority)}
   :: Ref (Array NumPrio (Stored Priority)) -> Ix NumPrio -> Ref (Stored Priority)
 
 external ix0       {primIxFromLiteral 0 NumPrio}  :: Unit -> Ix NumPrio
