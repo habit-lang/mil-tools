@@ -40,7 +40,7 @@ Apache Ant installed) uses the following command sequence:
 
     # Ensure a clean starting point:
     ant clean
-    
+
     # Build mil-tools:
     ant
 
