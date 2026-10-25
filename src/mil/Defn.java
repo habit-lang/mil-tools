@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,8 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/** Represents a definition in a MIL program. */
+/** Return the list of definitions that this definition calls/depends on. */
 public abstract class Defn {
 
   protected Position pos;
@@ -31,30 +33,33 @@ public abstract class Defn {
     this.pos = pos;
   }
 
+  /** Return the position where this definition was introduced. */
   public Position getPos() {
     return pos;
   }
 
   public abstract String toString();
 
-  /**
-   * Track whether this definition is considered an entrypoint to the program; it may be necessary
-   * to consider this information during program optimization (e.g., the definition of an entrypoint
-   * should not be modified in a way that changes its external interface, such as by deleting unused
-   * parameters), or during code generation (where entrypoints may need to be marked in a different
-   * way from parts of the code that are intended only for internal use).
-   */
+  /** Track whether this definition is considered an entrypoint to the program. */
   protected boolean isEntrypoint = false;
 
-  /** Return the flag to indicate whether this definition is considered to be an entrypoint. */
+  /** Is this definition considered to be an entrypoint? */
   public boolean isEntrypoint() {
     return isEntrypoint;
   }
 
-  /** Set the flag to indicate whether this definition is considered to be an entrypoint. */
+  /** Set the flag to mark this definition as an entrypoint. */
   public void setIsEntrypoint(boolean b) {
     isEntrypoint = b;
   }
+
+  /** Find the dependencies of this AST fragment. */
+  Defns dependencies(Defns ds) {
+    return Defns.isIn(this, ds) ? ds : new Defns(this, ds);
+  }
+
+  /** Find the list of Defns that this Defn depends on. */
+  abstract Defns dependencies();
 
   /** Records the successors/callees of this node. */
   private Defns callees = null;
@@ -101,8 +106,8 @@ public abstract class Defn {
    */
   void reverseVisit(DefnSCC scc) {
     if (this.scc == null) {
-      // If we arrive at a binding that hasn't been allocated to any SCC,
-      // then we should put it in this SCC.
+      // If we arrive at a binding that hasn't been allocated to any
+      // SCC, then we should put it in this SCC.
       this.scc = scc;
       scc.add(this);
       for (Defns callers = this.callers; callers != null; callers = callers.next) {
@@ -127,21 +132,31 @@ public abstract class Defn {
   private int visitNum = 0;
 
   /**
-   * Begin a new depth-first search. Warning: in theory, this could overflow if we do a large number
-   * of depth-first searchs in a single run.
+   * Begin a new depth-first search by incrementing dfsNum. Warning: in theory, this could overflow
+   * if we do a large number of depth-first searches in a single run.
    */
-  static void newDFS() { // Begin a new depth-first search
+  static void newDFS() {
     dfsNum++;
   }
 
+  /** Counts how many times this definition was visited. */
   protected int occurs;
 
+  /** Return how many times this definition was visited. */
   int getOccurs() {
     return occurs;
   }
 
+  /**
+   * Counts how many times this node was visited while its own definition was still being visited.
+   */
   protected int header;
 
+  /**
+   * Return whether this node was visited while its own definition was being visited. TODO: I don't
+   * think this accomplishes the intended purpose because the result will just reflect whether the
+   * definition is recursive or not.
+   */
   boolean isHeader() {
     return header > 0;
   }
@@ -153,22 +168,21 @@ public abstract class Defn {
   Defns visitDepends(Defns defns) {
     if (visitNum == dfsNum) { // Repeat visit to this Defn (from outside)?
       occurs++;
-    } else if (-visitNum == dfsNum) { // Repeat visit from within its own definition
+    } else if (-visitNum == dfsNum) { // Repeat visit from within own definition
       occurs++;
       header++;
     } else { // First time at this Defn
       // Mark this Defn as visited, and initialize fields
-      visitNum = -dfsNum; // Negative number indicates that we are visiting this definition
-      occurs = 1;
-      scc = null;
-      callers = null;
-      callees = null;
-      header = 0;
+      visitNum = -dfsNum; // Negative indicates visiting this Defn
+      occurs = 1; // One occurrence (so far)
+      header = 0; // No references (yet) from within Defn
+      scc = null; // SCC has not been assigned
+      callers = null; // Clear the callers ...
+      callees = null; // ... and callees lists
 
-      // Find immediate dependencies
-      Defns deps = dependencies();
+      Defns deps = dependencies(); // Find dependencies of this Defn
 
-      // Visit all the immediate dependencies
+      // Visit all of the dependencies
       for (; deps != null; deps = deps.next) {
         defns = deps.head.visitDepends(defns);
         if (!Defns.isIn(deps.head, callees)) {
@@ -176,38 +190,44 @@ public abstract class Defn {
         }
       }
 
-      // Add the information about this node's callers/callees
+      // Update the callers list for each of the callees to include this node
       this.calls(callees);
-      // And add it to the list of all definitions.
+      // And add this Defn to the list of all definitions.
       defns = new Defns(this, defns);
       visitNum = dfsNum; // Set positive to indicate node visited
     }
     return defns;
   }
 
-  /** Find the list of Defns that this Defn depends on. */
-  abstract Defns dependencies();
-
-  /** Find the dependencies of this AST fragment. */
-  Defns dependencies(Defns ds) {
-    return Defns.isIn(this, ds) ? ds : new Defns(this, ds);
+  Defns getCallers() {
+    return callers;
   }
 
+  /** Specifies the dot attributes for the shape of a definition node. */
   String dotShape() {
     return (header > 0) ? "shape=rectangle " : "";
   }
 
+  /** Specifies the dot attributes for a node representing a particular type of definition. */
   String dotAttrs() {
     return "style=filled fillcolor=white";
   }
 
+  /**
+   * Indicates whether this type of definition should be included in the dot version of the call
+   * graph. For now, we include nodes for all definitions, except for External definitions.
+   */
   boolean dotInclude() {
     return true;
   }
 
-  Defns getCallers() {
-    return callers;
-  }
+  public static boolean renameTemps = true;
+
+  /** Display a printable representation of this definition on the specified PrintWriter. */
+  abstract void dump(PrintWriter out);
+
+  /** Display a header for this definition. */
+  abstract void dumpHeader(PrintWriter out, boolean isEntrypoint);
 
   /** Display a printable representation of this object on the standard output. */
   public void dump() {
@@ -215,22 +235,6 @@ public abstract class Defn {
     dump(out);
     out.flush();
   }
-
-  /** Display a printable representation of this object on the specified PrintWriter. */
-  public void dump(PrintWriter out) {
-    dump(out, isEntrypoint);
-  }
-
-  public static boolean renameTemps = true;
-
-  void annotateHeader(PrintWriter out) {
-    if (isHeader()) {
-      //    out.print("* ");
-    }
-  }
-
-  /** Display a printable representation of this definition on the specified PrintWriter. */
-  abstract void dump(PrintWriter out, boolean isEntrypoint);
 
   void limitRecursion() throws Failure {
     /* do nothing */
@@ -250,7 +254,7 @@ public abstract class Defn {
 
   /**
    * Calculate a generalized type for this binding, adding universal quantifiers for any unbound
-   * type variable in the inferred type. (There are no "fixed" type variables here because all mil
+   * type variable in the inferred type. (There are no "fixed" type variables here because all MIL
    * definitions are at the top level.)
    */
   abstract void generalizeType(Handler handler) throws Failure;
@@ -271,6 +275,11 @@ public abstract class Defn {
 
   /** Second pass code generation: produce code for block and closure definitions. */
   abstract void generateFunctions(MachineBuilder builder);
+
+  /** Clear derived blocks and closure definitions. */
+  void clearDerived() {
+    /* nothing to do */
+  }
 
   boolean localLoopSCC(DefnSCC scc) {
     return false;
@@ -308,11 +317,10 @@ public abstract class Defn {
             code = new Assert(params[i], cf, code);
           } else {
             TopLevel tl = alloc.getTopLevel();
-            // We are only matching on the outermost constructor in each allocator, so we should
-            // only use the
-            // top-level version if there are no arguments.  This still works nicely for examples
-            // like True,
-            // False, Nil, Nothing, etc...
+            // We are only matching on the outermost constructor in
+            // each allocator, so we should only use the top-level
+            // version if there are no arguments.  This still works
+            // nicely for examples like True, False, Nil, Nothing, etc...
             Tail t =
                 (tl != null && tss[i].length == 0)
                     ? new Return(new TopDef(tl, 0))
@@ -355,6 +363,7 @@ public abstract class Defn {
   /** Apply inlining. */
   abstract void inlining();
 
+  /** Lift the allocators in this definition. */
   void liftAllocators() {
     /* Nothing to do */
   }
@@ -391,7 +400,8 @@ public abstract class Defn {
     for (int i = 0; i < len; i++) {
       Tail t = args[i].lookupFact(facts);
       if (t != null) {
-        Allocator alloc = t.isAllocator(); // We're only going to keep info about Allocators
+        // We're only going to keep info about Allocators
+        Allocator alloc = t.isAllocator();
         if (alloc != null && (isInvariant(i) || !alloc.isRecursive())) {
           if (calls == null) {
             calls = new Call[len];
@@ -400,7 +410,8 @@ public abstract class Defn {
           continue;
         }
       }
-      Atom a = args[i].isKnown(allowWord); // Otherwise look for a known argument ...
+      // Otherwise look for a known argument ...
+      Atom a = args[i].isKnown(allowWord);
       if (a != null) {
         if (calls == null) {
           calls = new Call[len];
@@ -419,27 +430,9 @@ public abstract class Defn {
     /* nothing to do */
   }
 
-  void dumpSources(PrintWriter out) {
-    /* nothing to do */
-  }
-
-  static void dumpSources(PrintWriter out, String lab, String open, String close, Src[] sources) {
-    if (sources != null) {
-      out.print(lab);
-      out.print(open);
-      for (int i = 0; i < sources.length; i++) {
-        if (i > 0) {
-          out.print(", ");
-        }
-        out.print(sources[i].toString());
-      }
-      out.println(close);
-    }
-  }
-
   /**
-   * Traverse the abstract syntax tree to calculate initial values for the sources of the parameters
-   * of each Block and Closure definition.
+   * Traverse the abstract syntax tree to calculate initial values for the the sources of the
+   * parameters of each Block and Closure definition.
    */
   abstract void calcSources();
 
@@ -487,7 +480,11 @@ public abstract class Defn {
   /** Apply constructor function simplifications to this program. */
   abstract void cfunSimplify();
 
+  /** Worker function for MILSpec.dump(): Print a signature line for this definition. */
   abstract void printlnSig(PrintWriter out);
+
+  /** Update all declared types with canonical versions. */
+  abstract void canonDeclared(MILSpec spec);
 
   /** Test to determine if this is an appropriate definition to match the given type. */
   Block isBlockOfType(BlockType inst) {
@@ -514,6 +511,12 @@ public abstract class Defn {
     return null;
   }
 
+  /**
+   * Make a new identifier by combining an original id with a numeric suffix that might help to
+   * distinguish one version of a named definition from another in debugging output. (But with no
+   * guarantee that names will be distinct; names are for display only and do not determine
+   * equality.)
+   */
   protected static String mkid(String id, int num) {
     return (num == 0) ? id : (id + num);
   }
@@ -525,11 +528,13 @@ public abstract class Defn {
    */
   abstract Defn specializeEntry(MILSpec spec) throws Failure;
 
-  /** Update all declared types with canonical versions. */
-  abstract void canonDeclared(MILSpec spec);
-
+  /** Rewrite a program to use the bitdata representations provided by BitdataMap. */
   abstract void bitdataRewrite(BitdataMap m);
 
+  /**
+   * Rewrite this definition to update references to constructor functions consistent with the
+   * datatype equalities in the given MergeMap.
+   */
   abstract void mergeRewrite(MergeMap mmap);
 
   void topLevelRepTransform(Handler handler, RepTypeSet set) {

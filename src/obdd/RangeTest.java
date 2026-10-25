@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -16,26 +16,15 @@
     You should have received a copy of the GNU General Public License
     along with mil-tools.  If not, see <https://www.gnu.org/licenses/>.
 */
-package core;
+package obdd;
 
-import compiler.*;
-import mil.*;
 
-public class ProgramTest {
+class RangeTest {
 
   public static void main(String[] args) {
-    debug.Log.on();
-    Handler handler = new SimpleHandler();
-    try {
-      Source source = new StdinSource(handler);
-      CoreProgram program = new SyntaxAnalysis(handler).analyze(source);
-      TyconEnv env = new StaticAnalysis(handler).analyze(program);
-      System.out.println("done!");
-    } catch (Failure f) {
-      handler.report(f);
-    } catch (Exception e) {
-      handler.report(new Failure("Exception: " + e));
-      // e.printStackTrace();
-    }
+    Pat p = Pat.range(8, 0L, 36L);
+    p.toDot("range");
+    System.out.println("Smallest outside is: " + p.smallestOutside());
+    System.out.println("Done!");
   }
 }

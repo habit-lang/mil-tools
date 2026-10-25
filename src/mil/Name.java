@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -34,12 +34,14 @@ public abstract class Name {
     this.id = id;
   }
 
-  public String getId() {
-    return id;
-  }
-
+  /** Return the position for this Name. */
   public Position getPos() {
     return pos;
+  }
+
+  /** Return the String identifier for this Name. */
+  public String getId() {
+    return id;
   }
 
   /** Display the identifier for this name as its string representation. */
@@ -47,7 +49,7 @@ public abstract class Name {
     return id;
   }
 
-  /** Ask this name if it expects to be referred to by the specified string. */
+  /** Ask this name if it can be referred to by the specified string. */
   public boolean answersTo(String id) {
     return id.equals(this.id);
   }

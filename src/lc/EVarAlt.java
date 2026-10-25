@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** Represents a variable alternative, v -> e. */
 class EVarAlt extends EAlt {
 
   private DefVar v;
@@ -57,8 +58,8 @@ class EVarAlt extends EAlt {
    * value that is matched can be unified with the specified domtype.
    */
   Type inferAltType(TVarsInScope tis, Type domtype) throws Failure { // alternative, v -> e
-    v.freshType(Tyvar.star)
-        .unify(pos, domtype); // TODO: there should be a more direct way to set v's type
+    // TODO: there should be a more direct way to set v's type
+    v.freshType(Tyvar.star).unify(pos, domtype);
     return e.inferType(new TVISVar(tis, v));
   }
 
@@ -68,8 +69,8 @@ class EVarAlt extends EAlt {
    */
   void checkAltType(TVarsInScope tis, Type domtype, Type resulttype)
       throws Failure { // alternative, v -> e
-    v.freshType(Tyvar.star)
-        .unify(pos, domtype); // TODO: there should be a more direct way to set v's type
+    // TODO: there should be a more direct way to set v's type
+    v.freshType(Tyvar.star).unify(pos, domtype);
     e.checkType(new TVISVar(tis, v), resulttype);
   }
 

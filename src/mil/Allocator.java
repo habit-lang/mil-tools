@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,42 +21,51 @@ package mil;
 import compiler.*;
 import core.*;
 
+/** Represents a Call that allocates data in the heap. */
 public abstract class Allocator extends Call {
 
-  /** Test to determine whether a given tail expression has no externally visible side effect. */
+  /**
+   * Determine if a given tail expression has no externally visible side effects. This is true for
+   * returns, allocators, and selections, and for calls to primitives that are not impure.
+   */
   boolean hasNoEffect() {
     return true;
   }
 
+  /** Test whether this Tail is an Allocator. */
   public Allocator isAllocator() {
     return this;
   }
 
-  Tail liftStaticAllocator() {
+  /** Lift a static allocator in this Tail to a top-level definition. */
+  Tail liftStaticAllocator(Position pos) {
     for (int i = 0; i < args.length; i++) {
       if (!args[i].isStatic()) {
+        // Rewrite does not apply if even one argument is not static
         return this;
       }
     }
-    TopLevel topLevel = new TopLevel(/*pos*/ null, new TopLhs(), this); // TODO: fix position.
+    TopLevel topLevel = new TopLevel(pos, new TopLhs(), this);
     MILProgram.report("lifting static allocator to top-level " + topLevel);
     return new Return(new TopDef(topLevel, 0));
   }
 
   /**
-   * Test to determine whether a given tail expression may be repeatable (i.e., whether the results
-   * of a previous use of the same tail can be reused instead of repeating the tail). TODO: is there
-   * a better name for this?
+   * Test whether a given tail expression may be repeatable (i.e., whether the results of a previous
+   * use of the same tail can be reused instead of repeating the tail). TODO: is there a better name
+   * for this?
    */
   public boolean isRepeatable() {
+    // This is an example of Tail that is repeatable.
     return true;
   }
 
   /**
-   * Test to determine whether a given tail expression is pure (no externally visible side effects
-   * and no dependence on other effects).
+   * Test whether a given tail expression is pure (no externally visible side effects and no
+   * dependence on other effects).
    */
   public boolean isPure() {
+    // This is an example of a Tail that is pure.
     return true;
   }
 
@@ -89,7 +98,8 @@ public abstract class Allocator extends Call {
     } else {
       llvm.Value v = nuargs[0].calcStaticValue();
       if (v == null) {
-        return null; // if any component is unknown, then so is the full allocator
+        // if any component is unknown, then so is the full allocator
+        return null;
       }
       comps = new llvm.Value[1 + n]; // again, allow for tag at index 0
       comps[1] = v;
@@ -112,18 +122,13 @@ public abstract class Allocator extends Call {
    * Create a reference to a statically allocated data structure with the given layout and object
    * types and array of component (statically known) values.
    */
-  llvm.Value staticAlloc(
-      llvm.Program prog, llvm.Value[] vals, llvm.Type layoutType, llvm.Type genPtrType) {
-    // Create a private constant containing all the fields for this object:
-    String layoutName = prog.freshName("layout");
-    prog.add(new llvm.Constant(llvm.Mods.PRIVATE, layoutName, new llvm.Struct(layoutType, vals)));
-    llvm.Global layoutGlobal = new llvm.Global(layoutType.ptr(), layoutName);
-
-    // Create an alias that casts the specific constructor to the general type for this object:
+  llvm.Value staticAlloc(llvm.Program prog, llvm.Value[] vals, llvm.Type layoutType) {
+    // Create a constant containing all the fields for this object:
     String valueName = prog.freshName("val");
-    prog.add(
-        new llvm.Alias(llvm.Mods.INTERNAL, valueName, new llvm.Bitcast(layoutGlobal, genPtrType)));
-    return new llvm.Global(genPtrType, valueName);
+    prog.add(new llvm.Constant(llvm.Mods.INTERNAL, valueName, new llvm.Struct(layoutType, vals)));
+
+    /** Return a llvm global with a general pointer type for this value */
+    return new llvm.Global(llvm.Type.ptr, valueName);
   }
 
   /**
@@ -138,48 +143,48 @@ public abstract class Allocator extends Call {
       llvm.Local obj,
       llvm.Value tag,
       llvm.Code c) {
-    // NOTE: The following steps build up the desired code in reverse order of execution
+    // NOTE: The following steps build up the desired code in reverse order
+    // of execution
     Atom[] nuargs = Atom.nonUnits(args);
 
     // - Save the fields in the object allocated at the address in obj:
     int n = nuargs.length;
     if (n > 0) {
       while (--n >= 0) {
-        c = storeField(vm, s, obj, n + 1, nuargs[n].toLLVMAtom(lm, vm, s), c);
+        c = storeField(vm, s, objt, obj, n + 1, nuargs[n].toLLVMAtom(lm, vm, s), c);
       }
       c = new llvm.CodeComment("initialize other fields", c);
     }
 
     // - Save the object tag:
-    c = new llvm.CodeComment("set the tag", storeField(vm, s, obj, 0, tag, c));
+    c = new llvm.CodeComment("set the tag", storeField(vm, s, objt, obj, 0, tag, c));
 
     // - Allocate space for a new object:
-    llvm.Local past = vm.reg(objt); // pointer to first address past a c object starting at 0
-    llvm.Local size = vm.reg(llvm.Type.word()); // integer holding the size of a c object
-    llvm.Local raw = vm.reg(lm.allocRetType); // raw pointer to allocated object
-    llvm.Rhs call = new llvm.Call(lm.allocRetType, lm.allocFuncGlobal(), new llvm.Value[] {size});
+    // pointer to first address past a c object starting at 0
+    llvm.Local past = vm.reg(llvm.Type.ptr);
+    // integer holding the size of a c object
+    llvm.Local size = vm.reg(llvm.Type.word());
+    llvm.Rhs call = new llvm.Call(llvm.Type.ptr, lm.allocFuncGlobal(), new llvm.Value[] {size});
 
     return new llvm.CodeComment(
         "calculate the number of bytes that we need to allocate",
         new llvm.Op(
             past,
-            new llvm.Getelementptr(objt, new llvm.Null(objt), new llvm.Word(1)),
+            new llvm.Getelementptr(objt, new llvm.Null(), new llvm.Word(1)),
             new llvm.Op(
                 size,
                 new llvm.PtrToInt(past, size.getType()),
                 new llvm.CodeComment(
-                    "allocate memory for the object",
-                    new llvm.Op(raw, call, new llvm.Op(obj, new llvm.Bitcast(raw, objt), c))))));
+                    "allocate memory for the object", new llvm.Op(obj, call, c)))));
   }
 
   /** Generate code to execute lhs[n] = v; c */
   static llvm.Code storeField(
-      VarMap vm, TempSubst s, llvm.Value lhs, int n, llvm.Value v, llvm.Code c) {
-    llvm.Type at = v.getType().ptr();
-    llvm.Local addr = vm.reg(at);
+      VarMap vm, TempSubst s, llvm.Type objt, llvm.Value lhs, int n, llvm.Value v, llvm.Code c) {
+    llvm.Local addr = vm.reg(llvm.Type.ptr);
     return new llvm.Op(
         addr,
-        new llvm.Getelementptr(at, lhs, llvm.Word.ZERO, new llvm.Index(n)),
+        new llvm.Getelementptr(objt, lhs, llvm.Word.ZERO, new llvm.Index(n)),
         new llvm.Store(v, addr, c));
   }
 }

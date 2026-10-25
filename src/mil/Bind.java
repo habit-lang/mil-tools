@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -48,17 +48,12 @@ public class Bind extends Code {
     this(new Temp[] {v}, t, c);
   }
 
-  /** Test for a free occurrence of a particular variable. */
-  boolean contains(Temp w) {
-    return t.contains(w) || (!w.occursIn(vs) && c.contains(w));
-  }
-
   /** Find the dependencies of this AST fragment. */
   Defns dependencies(Defns ds) {
     return t.dependencies(c.dependencies(ds));
   }
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
   void dump(PrintWriter out, Temps ts) {
     Temps ts1 = Defn.renameTemps ? Temps.push(vs, ts) : ts;
     indent(out);
@@ -87,6 +82,10 @@ public class Bind extends Code {
     return c.tvars(t.tvars(tvs));
   }
 
+  /**
+   * Infer a type for this code sequence. TODO: use more fine-grained position information instead
+   * of passing around the position of the enclosing Defn.
+   */
   Type inferType(Position pos) throws Failure { // vs <- t; c
     t.inferType(pos).unify(pos, Type.tuple(Type.freshTypes(vs)));
     return c.inferType(pos);
@@ -100,6 +99,11 @@ public class Bind extends Code {
     t.generateCallCode(builder, o);
     builder.extend(vs, o);
     c.generateCode(builder, o + vs.length);
+  }
+
+  /** Test for a free occurrence of a particular variable. */
+  boolean contains(Temp w) {
+    return t.contains(w) || (!w.occursIn(vs) && c.contains(w));
   }
 
   /**
@@ -147,20 +151,22 @@ public class Bind extends Code {
    * that are enabled.
    */
   Code cleanup(Block src) {
-    if (Temp.allMarkedUnused(vs)
-        && t.hasNoEffect()) { // Rewrite (_ <- t; c) ==> c, if t has no visible effect
+    if (Temp.allMarkedUnused(vs) && t.hasNoEffect()) {
+      // Rewrite (_ <- t; c) ==> c, if t has no visible effect
       MILProgram.report("inlining eliminated a wildcard binding in " + src);
       return c.cleanup(src);
-    } else if (c.isReturn(vs)) { // Rewrite (vs <- t; return vs) ==> t
+    } else if (c.isReturn(vs)) {
+      // Rewrite (vs <- t; return vs) ==> t
       MILProgram.report("applied right monad law in " + src);
       return new Done(t);
-    } else if (t.blackholes()) { // Rewrite (vs <- loop(()); c) ==> loop(())
+    } else if (t.blackholes()) {
+      // Rewrite (vs <- loop(()); c) ==> loop(())
       MILProgram.report("rewrite (vs <- loop(()); c) ==> loop(())");
       return new Done(Prim.loop.withArgs());
-    } else if (t.doesntReturn()
-        && !c.blackholes()) { // Rewrite (vs <- t; c) ==> vs <- t; loop(()), if t doesn't return
-      // The test for c.blackholes() prevents us from making repeated attempts to apply this
-      // transformation.
+    } else if (t.doesntReturn() && !c.blackholes()) {
+      // Rewrite (vs <- t; c) ==> vs <- t; loop(()), if t doesn't return
+      // The test for c.blackholes() prevents us from making repeated
+      // attempts to apply this transformation.
       MILProgram.report("removed code after a tail that does not return in " + src);
       return new Bind(vs, t, new Done(Prim.loop.withArgs()));
     } else {
@@ -169,9 +175,9 @@ public class Bind extends Code {
     }
   }
 
-  boolean detectLoops(
-      Block src, Blocks visited) { // look for src[x] = (vs <- b[x]; ...), possibly with some
-    // initial prefix of pure bindings xs1 <- pt1; ...; xsn <- ptn
+  boolean detectLoops(Block src, Blocks visited) {
+    // look for src[x] = (vs <- b[x]; ...), possibly with some initial
+    // prefix of pure bindings xs1 <- pt1; ...; xsn <- ptn
     return t.detectLoops(src, visited) || (t.hasNoEffect() && c.detectLoops(src, visited));
   }
 
@@ -209,6 +215,10 @@ public class Bind extends Code {
     return this;
   }
 
+  /**
+   * Prepend a copy of this code sequence, whose final result will be captured in the temporaries
+   * us, onto the code sequence d.
+   */
   Code prefixInline(TempSubst s, Temp[] us, Code d) {
     Temp[] ws = Temp.makeTemps(vs.length);
     return new Bind(ws, t.apply(s), c.prefixInline(TempSubst.extend(vs, ws, s), us, d));
@@ -237,55 +247,59 @@ public class Bind extends Code {
     return c.guarded(src);
   }
 
-  void liftAllocators() {
-    t = t.liftStaticAllocator();
+  /** Lift allocators in this code sequence. */
+  void liftAllocators(Position pos) {
+    t = t.liftStaticAllocator(pos);
     if (t.isAllocator() != null) {
-      // This bind uses an allocator, so we can only look for lifting opportunities in the rest of
-      // the code.
-      c.liftAllocators();
+      // This bind uses an allocator, so we can only look for
+      // lifting opportunities in the rest of the code.
+      c.liftAllocators(pos);
     } else {
-      // This bind does not have an allocator, but it could be used as a non-allocator parent for
-      // the following
-      // code ... which might turn this node into an allocator, prompting the need to repeat the
-      // call to
-      // this.liftAllocators().
-      if (c.liftAllocators(this)) {
-        this.liftAllocators();
+      // This bind does not have an allocator, but it could be used
+      // as a non-allocator parent for the following code ... which
+      // might turn this node into an allocator, prompting the need
+      // to repeat the call to this.liftAllocators(pos).
+      if (c.liftAllocators(pos, this)) {
+        this.liftAllocators(pos);
       }
     }
   }
 
-  boolean liftAllocators(Bind parent) {
-    t = t.liftStaticAllocator();
+  /** Lift allocators in this code sequence in the context of the given parent. */
+  boolean liftAllocators(Position pos, Bind parent) {
+    t = t.liftStaticAllocator(pos);
     if (t.isAllocator() != null) {
-      // This bind uses an allocator, so it can be swapped with the parent Bind, if that is safe.
+      // This bind uses an allocator, so it can be swapped with the
+      // parent Bind, if that is safe.
       if (!Atom.occursIn(this.vs, parent.vs)
           && !Atom.occursIn(parent.vs, this.vs)
           && !this.t.contains(parent.vs)
           && !parent.t.contains(this.vs)) {
-        Temp[] tempvs = parent.vs;
+        Temp[] tempvs = parent.vs; // swap vars
         parent.vs = this.vs;
-        this.vs = tempvs; // swap vars
-        Tail tempt = parent.t;
+        this.vs = tempvs;
+        Tail tempt = parent.t; // swap tails
         parent.t = this.t;
-        this.t = tempt; // swap tails
-        // For the purposes of the following message, we assume that allocators return exactly one
-        // result.  With that assumption, we could also have simplified the preceding safety check
-        // ...
+        this.t = tempt;
+        // For the purposes of the following message, we assume
+        // that allocators return exactly one result.  With that
+        // assumption, we could also have simplified the preceding
+        // safety check ...
         MILProgram.report("lifted allocator for " + parent.vs[0]);
-        c.liftAllocators(this); // Now this node is a non-allocator parent of c.
-
+        // Now this node is a non-allocator parent of c.
+        c.liftAllocators(pos, this);
         return true;
       }
 
       // We can't change this Bind, but can still scan the rest of the code:
-      c.liftAllocators();
+      c.liftAllocators(pos);
       return false;
     } else {
-      // This bind does not have an allocator, but it could be used as a non-allocator parent for
-      // the following code ... if that changes this node, then we might have a second opportunity
+      // This bind does not have an allocator, but it could be used as
+      // a non-allocator parent for the following code ... if that
+      // changes this node, then we might have a second opportunity
       // to rewrite this node, hence the tail call:
-      return c.liftAllocators(this) && this.liftAllocators(parent);
+      return c.liftAllocators(pos, this) && this.liftAllocators(pos, parent);
     }
   }
 
@@ -300,8 +314,8 @@ public class Bind extends Code {
   /** Optimize a Code block using a simple flow analysis. */
   public Code flow(Defn d, Facts facts, TempSubst s) {
     t = t.apply(s); // Update tail to reflect substitution
-    s = TempSubst.extend(vs, vs, s); // Remove bindings for vs from the substitution
-    // (TODO: this could be done more efficiently!)
+    s = TempSubst.extend(vs, vs, s); // Remove bindings for vs from subst
+    // (TODO: do more efficiently!)
     //  s = TempSubst.remove(vs, s);    // Update substitution
 
     // Common subexpression elimination:
@@ -320,14 +334,15 @@ public class Bind extends Code {
       return c.flow(d, facts, TempSubst.extend(vs, as, s));
     }
 
-    // Look for opportunities to rewrite this tail, perhaps using previous results
+    // Look for opportunities to rewrite this tail, perhaps using
+    // previous results
     Code nc = t.rewrite(d, facts); // Look for ways to rewrite the tail
     if (nc != null) {
       return nc.andThen(vs, c).flow(d, facts, s);
     }
 
     // Propagate analysis to the following code, updating facts as necessary.
-    for (int i = 0; i < vs.length; i++) { // Kill any facts for the bound variables
+    for (int i = 0; i < vs.length; i++) { // Kill any facts for bound variables
       facts = vs[i].kills(facts);
     }
     if (!t.hasNoEffect()) {
@@ -335,7 +350,7 @@ public class Bind extends Code {
       // (e.g., observers) that may now be clobbered
       facts = Facts.killNonPure(facts);
     }
-    if (vs.length == 1) { // Try to add a fact for a single LHS variable
+    if (vs.length == 1) { // Try to add a fact for single LHS var
       facts = vs[0].addFact(t, facts);
     }
     c = c.flow(d, facts, s);
@@ -365,7 +380,7 @@ public class Bind extends Code {
           }
         }
         MILProgram.report("liveness replaced " + vs[i] + " with a wildcard");
-        nvs[i] = vs[i].markUsed();
+        nvs[i] = vs[i].markUnused();
       }
     }
     if (nvs != null) {
@@ -391,7 +406,8 @@ public class Bind extends Code {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return t.summary() * 17 + c.summary() * 11 + 511;
@@ -406,9 +422,9 @@ public class Bind extends Code {
   boolean alphaBind(Temps thisvars, Bind that, Temps thatvars) {
     // Do the cheap test first, even if the order is counterintuitive:
     if (this.vs.length == that.vs.length && this.t.alphaTail(thisvars, that.t, thatvars)) {
-      // TODO: in a binding  v, v <- b[...]; c, where the same variable name is bound twice on the
-      // left of the <-,
-      // which one should be in scope in c? That decision will impact the correctness of the
+      // TODO: in a binding  v, v <- b[...]; c, where the same variable
+      // name is bound twice on the left of the <-, which one should be
+      // in scope in c? That decision will impact the correctness of the
       // following code ...
       for (int i = 0; i < this.vs.length; i++) {
         thisvars = this.vs[i].add(thisvars);
@@ -445,10 +461,15 @@ public class Bind extends Code {
         svs, t.specializeTail(spec, s, env), c.specializeCode(spec, s, new SpecEnv(vs, svs, env)));
   }
 
+  /** Rewrite this code sequence to use the bitdata representations provided by BitdataMap. */
   Code bitdataRewrite(BitdataMap m) {
     return new Bind(vs, t.bitdataRewrite(m), c.bitdataRewrite(m));
   }
 
+  /**
+   * Generate a new version of this code sequence to update references to constructor functions
+   * consistent with the datatype equalities in the given MergeMap.
+   */
   Code mergeRewrite(MergeMap mmap) {
     return new Bind(vs, t.mergeRewrite(mmap), c.mergeRewrite(mmap));
   }

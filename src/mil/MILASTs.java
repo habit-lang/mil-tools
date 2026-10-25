@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,7 +22,8 @@ import compiler.*;
 import core.*;
 
 /**
- * A null-terminated linked list of items that can be accessed using (public) head and next fields.
+ * A null-terminated linked list of MILAST objects that can be accessed using (public) head and next
+ * fields.
  */
 public class MILASTs {
 
@@ -65,7 +66,7 @@ public class MILASTs {
   }
 
   /**
-   * Calculate the strongly connected components of a list of Xs that have been augmented with
+   * Calculate the strongly connected components of a list of MILASTs that have been augmented with
    * dependency information.
    */
   public static MILASTSCCs scc(MILASTs xs) {

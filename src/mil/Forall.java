@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -39,31 +39,30 @@ public class Forall extends Scheme {
     return null;
   }
 
-  /** Test to determine whether two type schemes are alpha equivalent. */
+  /** Test whether two type schemes are alpha equivalent. */
   public boolean alphaEquiv(Scheme right) {
     return prefix.isEmpty()
         ? right.alphaType(this.type, null)
         : right.alphaForall(this, new TGenCorresp());
   }
 
-  /**
-   * Test to determine whether this type scheme is alpha equivalent to the given Forall type scheme.
-   */
+  /** Test whether this type scheme is alpha equivalent to the given Forall type scheme. */
   boolean alphaForall(Forall left, TGenCorresp corresp) {
     return this.type.alphaType(left.type, corresp);
   }
 
   /**
-   * Test to determine whether this type is alpha equivalent to another type, by checking to see if
-   * the two type skeletons are equal, possibly with some correspondence between the TGen objects in
-   * the two types. We use the names left and right to keep track of which types were on the left
-   * and the right in the original alphaEquiv() call so that we can build the TGenCorresp in a
-   * consistent manner.
+   * Test whether this type is alpha equivalent to another type, by checking to see if the two type
+   * skeletons are equal, possibly with some correspondence between the TGen objects in the two
+   * types. We use the names left and right to keep track of which types were on the left and the
+   * right in the original alphaEquiv() call so that we can build the TGenCorresp in a consistent
+   * manner.
    */
   boolean alphaType(Type left, TGenCorresp corresp) {
     return this.type.alphaType(left, corresp);
   }
 
+  /** Output a printable representation of this type scheme on the specified TypeWriter. */
   public String toString(int prec, StringTypeWriter tw) {
     tw.writeQuantifiers();
     return type.toString(prec, tw);
@@ -93,11 +92,6 @@ public class Forall extends Scheme {
     return type.tvars(tvs);
   }
 
-  public Scheme generalize(TVar[] generics) {
-    debug.Internal.error("Attempt to generalize a Forall");
-    return this; // should not be called
-  }
-
   /**
    * Find the canonical version of a type with respect to the given TypeSet; this should only be
    * used with monomorphic types that do not contain any TGen values.
@@ -112,14 +106,15 @@ public class Forall extends Scheme {
     return instantiate().canonType(set).generalize();
   }
 
+  /** Apply the given substitution to this type skeleton. */
   Type apply(TVarSubst s) {
     debug.Internal.error("Unable to specialize type scheme");
     return null;
   }
 
   /**
-   * Extend a substitution by matching this (potentially polymorphic) Scheme against a monomorphic
-   * instance.
+   * Construct a substitution by matching this (potentially polymorphic) Scheme against a
+   * monomorphic instance.
    */
   TVarSubst specializingSubst(TVar[] generics, Type inst) {
     Type[] tenv = prefix.instantiate();

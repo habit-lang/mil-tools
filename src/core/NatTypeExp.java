@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -32,34 +32,31 @@ public class NatTypeExp extends PosTypeExp {
     this.num = num;
   }
 
+  /**
+   * Remove occurrences of InfixTypeExp nodes from this type expression using fixity information.
+   * For all other node types, we update individual fields in place (in case they included
+   * InfixTypeExp nodes) and return the original node (this).
+   */
   public TypeExp tidyInfix(TyconEnv env) throws Failure {
-    return this;
+    return this; // No infix operators in this type expression!
   }
 
   /**
-   * Worker function for scopeType that is intended to be called after order of any infix operators
-   * have been determined and has the option to rewrite the type expression if needed.
+   * Worker function that performs the main scope analysis on type expressions. An additional arity
+   * parameter is used here so that we can track and validate the number of arguments that are
+   * passed to type constructors.
    */
-  public TypeExp scopeTypeRewrite(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
+  public TypeExp scopeType(TyvarEnv params, TyconDeps tdeps, TyconEnv env, int arity)
       throws Failure {
     // Nothing to do here.
     return this;
   }
 
-  public Kind inferKind() throws KindMismatchFailure {
+  public Kind inferKind() throws Failure {
     return KAtom.NAT;
   }
 
   public Type toType(Prefix prefix) throws Failure {
     return new TNat(num);
-  }
-
-  /**
-   * Scope analysis on type expressions in a context where we want to determine which (if any)
-   * CoreDefn values a particular type expression depends on.
-   */
-  public CoreDefns scopeTyconsType(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
-    return depends;
   }
 }

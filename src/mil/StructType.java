@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -71,6 +71,7 @@ public class StructType extends Tycon {
     return this;
   }
 
+  /** Output information about this type for debugging purposes. */
   public void debugDump() {
     debug.Log.println(
         "Struct " + id + ": size " + byteSize + ", with " + fields.length + " field(s):");
@@ -82,6 +83,8 @@ public class StructType extends Tycon {
 
   /** Print a definition for this structure type using (an approximation to) source level syntax. */
   void dumpTypeDefinition(PrintWriter out) {
+    // unlikely to be used in practice, but technically possible
+    this.dumpFixity(out);
     out.print("struct ");
     out.print(id);
     out.print(" / ");
@@ -138,14 +141,16 @@ public class StructType extends Tycon {
 
   /** Return the canonical version of a Tycon wrt to the given set. */
   Tycon canonTycon(TypeSet set) {
+    // Use previously computed canonical version if available
     Tycon ntycon = set.mapsTyconTo(this);
-    if (ntycon != null) { // Use previously computed canonical version if available
+    if (ntycon != null) {
       return ntycon;
-    } else if (set.containsTycon(
-        this)) { // Tycon is already in the target?  (TODO: is this still necessary?)
+    } else if (set.containsTycon(this)) {
+      // Tycon is already in the target?  (TODO: is this still necessary?)
       return this;
     }
-    return makeCanonTycon(set); // But otherwise, make a new canonical version
+    // But otherwise, make a new canonical version
+    return makeCanonTycon(set);
   }
 
   /**
@@ -154,14 +159,17 @@ public class StructType extends Tycon {
    * (subclasses of) DataName.
    */
   Tycon makeCanonTycon(TypeSet set) {
-    if (fields.length == 0) { // Do not make copies of structures with no fields
-      set.addTycon(this); // (but still register them as being in use)
+    // Do not make copies of structures with no fields
+    if (fields.length == 0) {
+      // (but still register them as being in use)
+      set.addTycon(this);
       return this;
     } else {
       debug.Log.println("making new version of structure type " + id);
       StructType newSt = new StructType(pos, id);
-      set.mapTycon(
-          this, newSt); // Add mapping before attempting to find canonical versions of fields.
+
+      // Add mapping before attempting to find canonical versions of fields.
+      set.mapTycon(this, newSt);
       debug.Log.println("new version of StructType " + id + " is " + newSt);
       newSt.byteSize = byteSize;
       newSt.alignment = alignment;

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -30,12 +30,14 @@ public class KAtom extends Kind {
   private KAtom(String label) {
     this.label = label;
 
-    if (table == null) {
-      // We run in to subtle bugs if we attempt to initialize table as part
-      // of the static declarations above, so we defer to runtime instead:
-      table = new HashMap<String, Kind>();
+    if (atomicKindNames == null) {
+      // We run in to subtle bugs if we attempt to initialize atomicKindNames
+      // as part of the static declarations above, so we defer to runtime
+      // instead.  There are not expected to be many entries, so this code
+      // will not be executed many times during a given run.
+      atomicKindNames = new HashMap<String, Kind>();
     }
-    table.put(label, this);
+    atomicKindNames.put(label, this);
   }
 
   public static final Kind STAR = new KAtom("*");
@@ -48,14 +50,19 @@ public class KAtom extends Kind {
 
   public static final Kind TUPLE = new KAtom("tuple");
 
-  static HashMap<String, Kind> table;
+  /**
+   * A mapping from names of atomic kinds (as used in program source code) to corresponding kind
+   * objects.
+   */
+  static HashMap<String, Kind> atomicKindNames;
 
   static {
-    table.put("type", STAR);
+    atomicKindNames.put("type", STAR);
   }
 
+  /** Return the kind, if any associated with the given label. */
   public static Kind byName(String label) {
-    return table.get(label);
+    return atomicKindNames.get(label);
   }
 
   /**
@@ -72,7 +79,7 @@ public class KAtom extends Kind {
   }
 
   /** Copy a kind, replacing any unbound kind variables with star. */
-  Kind fixKind() {
+  Kind defaultKind() {
     return this;
   }
 

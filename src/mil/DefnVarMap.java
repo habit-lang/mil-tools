@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -61,18 +61,20 @@ class DefnVarMap extends VarMap {
    * initialized at the start of the LLVM function.
    */
   llvm.Value lookupGlobal(LLVMMap lm, Top t) {
+    // Use a static value if possible
     llvm.Value sv = t.staticValue();
-    if (sv != null) { // Use a static value if possible
+    if (sv != null) {
       return sv;
     }
+    // Or test to see if this item was already loaded
     for (GlobalLoadList gs = globalLoads; gs != null; gs = gs.next) {
-      if (t.sameAtom(gs.t)) { // Or test to see if this item was already loaded
+      if (t.sameAtom(gs.t)) {
         return gs.v;
       }
     }
-    llvm.Type gt =
-        lm.toLLVM(t.getType()); // Otherwise, we need to load value at the start of the function
-    llvm.Global g = new llvm.Global(gt.ptr(), t.getId());
+    // Otherwise, we need to load value at the start of the function
+    llvm.Type gt = lm.toLLVM(t.getType());
+    llvm.Global g = new llvm.Global(llvm.Type.ptr, t.getId());
     llvm.Local v = reg(gt);
     globalLoads = new GlobalLoadList(t, v, g, globalLoads);
     return v;
@@ -80,7 +82,8 @@ class DefnVarMap extends VarMap {
 
   llvm.Code loadGlobals(llvm.Code code) {
     for (; globalLoads != null; globalLoads = globalLoads.next) {
-      code = new llvm.Op(globalLoads.v, new llvm.Load(globalLoads.g), code);
+      code =
+          new llvm.Op(globalLoads.v, new llvm.Load(globalLoads.v.getType(), globalLoads.g), code);
     }
     return code;
   }

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -34,7 +34,8 @@ public class Local extends Location {
   public Local(Type ty, int num) {
     super(ty);
     this.num = num;
-    str = "%r" + num;
+
+    str = "%r" + num; // "%r" prefix for "register"
   }
 
   /** Caches a string representation for this left hand side in LLVM code. */

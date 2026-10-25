@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -39,8 +39,10 @@ public class LCProgram extends CoreProgram {
     return name;
   }
 
+  /** Points to the first item in the list (null if the list is empty). */
   private TopDefns topDefns = null;
 
+  /** Points to the last item in the list (null if the list is empty). */
   private TopDefns topDefnsLast = null;
 
   /** Add an element to the end of the list in this class. */
@@ -49,8 +51,10 @@ public class LCProgram extends CoreProgram {
     topDefnsLast = (topDefnsLast == null) ? (topDefns = ns) : (topDefnsLast.next = ns);
   }
 
+  /** Points to the first item in the list (null if the list is empty). */
   private LCDefns defns = null;
 
+  /** Points to the last item in the list (null if the list is empty). */
   private LCDefns defnsLast = null;
 
   /** Add an element to the end of the list in this class. */
@@ -108,20 +112,22 @@ public class LCProgram extends CoreProgram {
     // Build an environment with entries for a list of top-level bindings:
     Env env = new BindingsEnv(null, bindings);
 
-    // Add environment entries for symbols introduced in top-level definitions:
+    // Add environment entries for symbols introduced in top-level
+    // definitions:
     for (TopDefns tds = topDefns; tds != null; tds = tds.next) {
       tds.head.validateTopDefn(handler, milenv);
     }
 
     // Visit each binding in the list of top-level bindings:
     for (Bindings bs = bindings; bs != null; bs = bs.next) {
-      // We can ignore the list of "free variables" that are returned by the following call, which
-      // should only contain references to other top-level values defined in earlier binding groups.
+      // We can ignore the list of "free variables" that are returned by
+      // the following call, which should only contain references to other
+      // top-level values defined in earlier binding groups.
       bs.head.inScopeOf(handler, milenv, bindings, env);
     }
 
-    // Scope analysis on expressions in top-level definitions and check that exports and entrypoints
-    // are in scope:
+    // Scope analysis on expressions in top-level definitions and check
+    // that exports and entrypoints are in scope:
     for (TopDefns tds = topDefns; tds != null; tds = tds.next) {
       tds.head.scopeTopDefn(handler, milenv, env);
     }
@@ -171,7 +177,8 @@ public class LCProgram extends CoreProgram {
     }
     lenv.addTopBindings(coreBindings);
 
-    // Add the items for this list of Bindings as the last such list in the LiftEnv:
+    // Add the items for this list of Bindings as the last such
+    // list in the LiftEnv:
     lenv.addTopBindings(topBindings);
 
     return lenv.getLifted();
@@ -233,8 +240,8 @@ public class LCProgram extends CoreProgram {
    */
   void reverseVisit(LCProgramSCC scc) {
     if (this.scc == null) {
-      // If we arrive at a binding that hasn't been allocated to any SCC,
-      // then we should put it in this SCC.
+      // If we arrive at a binding that hasn't been allocated to any
+      // SCC, then we should put it in this SCC.
       this.scc = scc;
       scc.add(this);
       for (LCPrograms callers = this.callers; callers != null; callers = callers.next) {
@@ -256,7 +263,8 @@ public class LCProgram extends CoreProgram {
 
   /** Run static analysis on this LC program. */
   MILEnv staticAnalysis(Handler handler, MILEnv milenv) throws Failure {
-    // Validate type definitions, recording the results in a corresponding type environment:
+    // Validate type definitions, recording the results in a corresponding
+    // type environment:
     TyconEnv tenv = this.typeEnv(handler, milenv.getTyconEnv());
 
     // Build a new MILEnv for this program:
@@ -281,7 +289,8 @@ public class LCProgram extends CoreProgram {
    * but that can wait until all files have been loaded.
    */
   void compile(Handler handler, MILProgram mil, MILEnv milenv) {
-    TopBindings tbs = lambdaLift(); // Lift out definitions of recursive functions
+    // Lift out definitions of recursive functions
+    TopBindings tbs = lambdaLift();
     addExports(mil, milenv); // Process exports and entrypoints
     super.scopeExtImps(handler, milenv);
     for (; tbs != null; tbs = tbs.next) { // Generate MIL code from LC

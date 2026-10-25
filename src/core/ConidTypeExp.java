@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -31,18 +31,20 @@ public class ConidTypeExp extends PosTypeExp {
     this.id = id;
   }
 
+  /**
+   * Remove occurrences of InfixTypeExp nodes from this type expression using fixity information.
+   * For all other node types, we update individual fields in place (in case they included
+   * InfixTypeExp nodes) and return the original node (this).
+   */
   public TypeExp tidyInfix(TyconEnv env) throws Failure {
     tycon = TyconEnv.findTycon(id, env);
-    // We do not have enough information here to determine whether this
-    // name appears as part of a predicate or as part of a type, so we
-    // defer subsequent checking of the name until scope analysis.
     return this;
   }
 
   /**
    * During the tidyInfix process, we will use the environment to lookup the tycon for each
-   * ConidTypeExp so that we can obtain fixity information later if needed. (Of course, we will need
-   * this information later anyway for scope analysis.)
+   * ConidTypeExp and cache it in this field so that we can obtain fixity information for it if
+   * needed. (Of course, we will need this information later anyway for scope analysis.)
    */
   private Tycon tycon = null;
 
@@ -57,18 +59,21 @@ public class ConidTypeExp extends PosTypeExp {
   }
 
   /**
-   * Worker function for scopeType that is intended to be called after order of any infix operators
-   * have been determined and has the option to rewrite the type expression if needed.
+   * Worker function that performs the main scope analysis on type expressions. An additional arity
+   * parameter is used here so that we can track and validate the number of arguments that are
+   * passed to type constructors.
    */
-  public TypeExp scopeTypeRewrite(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
+  public TypeExp scopeType(TyvarEnv params, TyconDeps tdeps, TyconEnv env, int arity)
       throws Failure {
-    if (tycon == null) {
+    if (tycon == null) { // following up on lookup performed during tidyInfix()
       throw new NotInScopeTyconFailure(pos, id);
+    } else if (tdeps != null) {
+      tdeps.add(id);
     }
     return tycon.scopeTycon(pos, arity);
   }
 
-  public Kind inferKind() throws KindMismatchFailure {
+  public Kind inferKind() throws Failure {
     // check for null to allow for earlier failure in scope analysis
     return (tycon == null) ? new KVar() : tycon.getKind();
   }
@@ -80,20 +85,13 @@ public class ConidTypeExp extends PosTypeExp {
   }
 
   /**
-   * Scope analysis on type expressions in a context where we want to determine which (if any)
-   * CoreDefn values a particular type expression depends on.
+   * Analyze the left hand side of a data definition. It must be possible to determine the name and
+   * arity of a datatype without relying on fixity information. Uses of multiple infix operators
+   * without parentheses to show exact grouping will result in the construction of an InfixTypeExp
+   * object during parsing, which will trigger a syntax error here. (In practice, using multiple
+   * infix operators in the header of a data definition would not be syntactically valid anyway.)
    */
-  public CoreDefns scopeTyconsType(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
-    // One of the locally defined types?
-    CoreDefn defn = CoreDefns.find(id, defns);
-    if (defn != null && (tycon = defn.getTycon()) != null) {
-      return defn.uniqueCons(depends);
-    }
-    // Defined in the enclosing type environment?
-    if ((tycon = TyconEnv.findTycon(id, env)) == null) {
-      handler.report(new NotInScopeTyconFailure(pos, id));
-    }
-    return depends;
+  String analyzeDataDefnHead(TyvarEnv params) throws Failure {
+    return id;
   }
 }

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -30,7 +30,7 @@ public class MachineBuilder {
     return machine;
   }
 
-  private HashMap<Defn, Fixup> fixups = new HashMap();
+  private HashMap<Defn, Fixup> fixups = (new HashMap<Defn, Fixup>());
 
   abstract static class Fixup {
 
@@ -79,6 +79,7 @@ public class MachineBuilder {
      * given definition.
      */
     void patchAddr(int iaddr, Defn d, int off, MachineBuilder builder) {
+      // Add a fixup entry if the address is unknown
       builder.defer(iaddr, d, off, this);
     }
   }
@@ -106,6 +107,7 @@ public class MachineBuilder {
      * given definition.
      */
     void patchAddr(int iaddr, Defn d, int off, MachineBuilder builder) {
+      // Use correct address if it is already known
       builder.patch(iaddr, addr + off);
     }
   }
@@ -265,7 +267,7 @@ public class MachineBuilder {
   }
 
   /** Mapping from temporaries to locations in the current frame. */
-  private HashMap<Temp, Integer> tempMap = new HashMap();
+  private HashMap<Temp, Integer> tempMap = (new HashMap<Temp, Integer>());
 
   /** Reset this builder for a new frame. */
   public void resetFrame() {

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -45,6 +45,10 @@ public abstract class TConst extends Type {
     return false;
   }
 
+  /**
+   * Apply the given substitution to this type skeleton, using the specified type environment to
+   * interpret TGens.
+   */
   Type apply(Type[] thisenv, TVarSubst s) {
     return this;
   }

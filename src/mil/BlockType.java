@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -64,10 +64,15 @@ public class BlockType {
     return this;
   }
 
+  /** Unify the domain of this BlockType with the given type. */
   void domUnifiesWith(Position pos, Type type) throws Failure {
     dom.unify(pos, null, type, null);
   }
 
+  /**
+   * Calculate the type of the results that will be produced when a Block with this type is applied
+   * to inputs with the given type.
+   */
   Type apply(Position pos, Type[] inputs) throws Failure {
     domUnifiesWith(pos, Type.tuple(inputs));
     return rngType();
@@ -93,11 +98,15 @@ public class BlockType {
     return rng.tupleArity(null, 0);
   }
 
-  /** Find the list of unbound type variables in this (monomorphic) BlockType. */
+  /** Find the list of all unbound type variables in this (monomorphic) BlockType. */
   TVars tvars() {
     return tvars(null);
   }
 
+  /**
+   * Find the list of all unbound TVars in this BlockType, adding to the given list (but not
+   * duplicating any entries it contains).
+   */
   TVars tvars(TVars tvs) {
     return rng.tvars(null, dom.tvars(null, tvs));
   }
@@ -128,18 +137,18 @@ public class BlockType {
   }
 
   /**
-   * Test to determine whether two block types are alpha equivalent. We assume that this method will
-   * only be used with BlockType and PolyBlockType objects (i.e., not TIndBlockType) because these
-   * are the only forms of BlockTypes that can be obtained as the result of generalization or an
-   * explicitly declared type.
+   * Test whether two block types are alpha equivalent. We assume that this method will only be used
+   * with BlockType and PolyBlockType objects (i.e., not TIndBlockType) because these are the only
+   * forms of BlockTypes that can be obtained as the result of generalization or an explicitly
+   * declared type.
    */
   public boolean alphaEquiv(BlockType bt) {
     return bt.alphaBlockType(this, null);
   }
 
   /**
-   * Test to determine whether this BlockType is alpha equivalent to the BlockType passed in as an
-   * argument given the (optional) correspondence between TGens.
+   * Test whether this BlockType is alpha equivalent to the BlockType passed in as an argument given
+   * the (optional) correspondence between TGens.
    */
   boolean alphaBlockType(BlockType left, TGenCorresp corresp) {
     return this.dom.alphaType(left.dom, corresp) && this.rng.alphaType(left.rng, corresp);
@@ -164,8 +173,8 @@ public class BlockType {
    * changes in the number or order of quantified type variables.
    */
   BlockType removeArgs(int numUsedArgs, boolean[] usedArgs) {
-    // TODO: could likely use a different version of generalize() and avoid constructing
-    // intermediate bt.
+    // TODO: could likely use a different version of generalize() and
+    // avoid constructing intermediate bt.
     BlockType bt = freshInstantiate();
     bt.dom =
         (usedArgs == null) ? Type.empty : bt.dom.removeArgs(numUsedArgs, usedArgs, usedArgs.length);
@@ -185,16 +194,21 @@ public class BlockType {
     return new BlockType(dom.canonType(set), rng.canonType(set));
   }
 
+  /** Apply the given substitution to this BlockType. */
   BlockType apply(TVarSubst s) {
     return apply(null, s);
   }
 
+  /**
+   * Apply the given substitution to this BlockType, using the specified type environment to
+   * interpret TGens.
+   */
   BlockType apply(Type[] tenv, TVarSubst s) {
     return new BlockType(dom.apply(tenv, s), rng.apply(tenv, s));
   }
 
   /**
-   * Extend a substitution by matching this (potentially polymorphic) BlockType against a
+   * Construct a substitution by matching this (potentially polymorphic) BlockType against a
    * monomorphic instance.
    */
   TVarSubst specializingSubst(TVar[] generics, BlockType inst) {
@@ -207,8 +221,8 @@ public class BlockType {
   /** Construct a BlockType from a pair of type expressions that describe its domain and range. */
   static BlockType validate(TyconEnv env, TypeExp dom, TypeExp rng) throws Failure {
     TyvarEnv params = new TyvarEnv(); // Validate domain and range types
-    dom = dom.scopeType(true, params, env, 0);
-    rng = rng.scopeType(true, params, env, 0);
+    dom = dom.scopeType(params, env);
+    rng = rng.scopeType(params, env);
     dom.checkKind(KAtom.TUPLE); // Check domain and range kinds
     rng.checkKind(KAtom.TUPLE);
     Prefix prefix = params.toPrefix(); // Build BlockType
@@ -222,7 +236,8 @@ public class BlockType {
 
   llvm.FunctionType toLLVM(LLVMMap lm) {
     llvm.Type rt = lm.toLLVM(rng);
-    // TODO: eliminate duplicated calls to canonType in line below and in tupleToArray ...
+    // TODO: eliminate duplicated calls to canonType in line below and
+    // in tupleToArray ...
     llvm.Type[] tys = dom.canonType(lm).tupleToArray(lm, 0, 0);
     return new llvm.FunctionType(rt, tys);
   }

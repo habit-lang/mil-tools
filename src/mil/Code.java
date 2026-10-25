@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -25,21 +25,8 @@ import java.io.PrintWriter;
 /** Base class for representing MIL code sequences. */
 public abstract class Code {
 
-  /** Test for a free occurrence of a particular variable. */
-  abstract boolean contains(Temp w);
-
   /** Find the dependencies of this AST fragment. */
   abstract Defns dependencies(Defns ds);
-
-  /** Display a printable representation of this object on the standard output. */
-  public void dump() {
-    PrintWriter out = new PrintWriter(System.out);
-    dump(out, null);
-    out.flush();
-  }
-
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  abstract void dump(PrintWriter out, Temps ts);
 
   /** Print an indent at the beginning of a line. */
   static final void indent(PrintWriter out) {
@@ -52,6 +39,16 @@ public abstract class Code {
     out.println(s);
   }
 
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
+  abstract void dump(PrintWriter out, Temps ts);
+
+  /** Display a printable representation of this object on the standard output. */
+  public void dump() {
+    PrintWriter out = new PrintWriter(System.out);
+    dump(out, null);
+    out.flush();
+  }
+
   /**
    * Apply a TempSubst to this Code sequence, forcing construction of a fresh copy of the input code
    * structure, including the introduction of new temporaries in place of any variables introduced
@@ -59,17 +56,13 @@ public abstract class Code {
    */
   abstract Code apply(TempSubst s);
 
-  /**
-   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
-   * loop).
-   */
-  boolean blackholes() {
-    return false;
-  }
-
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   abstract TVars tvars(TVars tvs);
 
+  /**
+   * Infer a type for this code sequence. TODO: use more fine-grained position information instead
+   * of passing around the position of the enclosing Defn.
+   */
   abstract Type inferType(Position pos) throws Failure;
 
   /**
@@ -77,6 +70,9 @@ public abstract class Code {
    * location in the current frame.
    */
   abstract void generateCode(MachineBuilder builder, int o);
+
+  /** Test for a free occurrence of a particular variable. */
+  abstract boolean contains(Temp w);
 
   /**
    * Generate a new version of this code sequence to add a trailing enter operation that applies the
@@ -131,16 +127,17 @@ public abstract class Code {
     // Build a block:  b[...] = c
     Code c = copy(); // make a copy of this code
     Temps vs = c.liveness(); // find the free variables
-    Temp[] formals = Temps.toArray(vs); // create corresponding formal parameters
-    Block b = new Block(BuiltinPosition.pos, formals, c); // TODO: different position?
+    Temp[] formals = Temps.toArray(vs); // create corresponding formals
+    Block b = new Block(BuiltinPosition.pos, formals, c);
+    // TODO: is there a better position to use for b?
 
     // Build a closure definition: k{...} us = b[...]
     Tail t = new BlockCall(b, formals);
     Temp[] stored = Temps.toArray(Temps.remove(us, vs));
-    ClosureDefn k =
-        new ClosureDefn(/*pos*/ null, stored, us, t); // define a new closure // TODO: fix position
+    ClosureDefn k = new ClosureDefn(/*pos*/ null, stored, us, t);
+    // TODO: again, is there a better position to use here?
 
-    return new ClosAlloc(k).withArgs(stored);
+    return new ClosAlloc(k, stored);
   }
 
   boolean noCallsWithinSCC(DefnSCC scc) {
@@ -169,6 +166,14 @@ public abstract class Code {
     return false;
   }
 
+  /**
+   * Return true if this code enters a non-productive black hole (i.e., if it immediately calls halt
+   * or loop).
+   */
+  boolean blackholes() {
+    return false;
+  }
+
   boolean detectLoops(Block src, Blocks visited) {
     return false;
   }
@@ -194,6 +199,10 @@ public abstract class Code {
    */
   abstract Code inlining(Block src, int limit);
 
+  /**
+   * Prepend a copy of this code sequence, whose final result will be captured in the temporaries
+   * us, onto the code sequence d.
+   */
   Code prefixInline(TempSubst s, Temp[] us, Code d) {
     debug.Internal.error("This code cannot be inlined");
     return this;
@@ -226,7 +235,7 @@ public abstract class Code {
     return def;
   }
 
-  /** Test to determine whether this Code is a Done. */
+  /** Test whether this Code is a Done. */
   public Tail isDone() {
     return null;
   }
@@ -235,11 +244,13 @@ public abstract class Code {
     return null;
   }
 
-  void liftAllocators() {
+  /** Lift allocators in this code sequence. */
+  void liftAllocators(Position pos) {
     /* Nothing to do in this case */
   }
 
-  boolean liftAllocators(Bind parent) {
+  /** Lift allocators in this code sequence in the context of the given parent. */
+  boolean liftAllocators(Position pos, Bind parent) {
     return false;
   }
 
@@ -253,10 +264,11 @@ public abstract class Code {
   public abstract Code flow(Defn d, Facts facts, TempSubst s);
 
   /**
-   * A simple test for MIL code fragments that return a known Flag, returning either the constant or
-   * null.
+   * A simple test for MIL code fragments that return a known Flag; this is a helper for the method
+   * without an argument that adds a counter that is decreased for every BlockCall encountered to
+   * avoid triggering an unbounded loop in pathological corner cases.
    */
-  Flag returnsFlag() {
+  Flag returnsFlag(int n) {
     return null;
   }
 
@@ -269,18 +281,18 @@ public abstract class Code {
   abstract Temps liveness();
 
   /**
-   * Test to determine whether this Code/Tail value corresponds to a closure allocator, returning
-   * either a ClosAlloc value, or else a null result.
+   * Test if this Code/Tail value corresponds to a closure allocator, returning either a ClosAlloc
+   * value, or else a null result.
    */
   ClosAlloc lookForClosAlloc() {
     return null;
   }
 
   /**
-   * Test to see if this code is a Case that can be shorted out. Even if we find a Case, we still
-   * need to check for a relevant item in the set of Facts (after applying a substitution that
-   * captures the result of entering the block that starts with the Case). Again, if it turns out
-   * that the optimization cannot be used, then we return null.
+   * Test whether this code is a Case that can be shorted out. Even if we find a Case, we still need
+   * to check for a relevant item in the set of Facts (after applying a substitution that captures
+   * the result of entering the block that starts with the Case). Again, if it turns out that the
+   * optimization cannot be used, then we return null.
    */
   BlockCall shortCase(Temp[] params, Atom[] args, Facts facts) {
     return null;
@@ -298,7 +310,8 @@ public abstract class Code {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   abstract int summary();
 
@@ -341,8 +354,13 @@ public abstract class Code {
   /** Generate a specialized version of this code sequence. */
   abstract Code specializeCode(MILSpec spec, TVarSubst s, SpecEnv env);
 
+  /** Rewrite this code sequence to use the bitdata representations provided by BitdataMap. */
   abstract Code bitdataRewrite(BitdataMap m);
 
+  /**
+   * Generate a new version of this code sequence to update references to constructor functions
+   * consistent with the datatype equalities in the given MergeMap.
+   */
   abstract Code mergeRewrite(MergeMap mmap);
 
   abstract Code repTransform(RepTypeSet set, RepEnv env);

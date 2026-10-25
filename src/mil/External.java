@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,12 +22,16 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/** Represents an external variable declaration: external id :: scheme. */
 public class External extends TopDefn {
 
+  /** The name of the externally defined item. */
   private String id;
 
+  /** The type of the externally defined item. */
   private Scheme declared;
 
+  /** The external implementation strategy. */
   private ExtImp imp;
 
   /** Default constructor. */
@@ -40,24 +44,19 @@ public class External extends TopDefn {
 
   private static int count = 0;
 
+  /** Construct an External using an auto-generated name. */
   public External(Position pos, Scheme declared, ExtImp imp) {
     this(pos, "e" + count++, declared, imp);
   }
 
+  /** Construct an External for a simple definition id :: declared. */
   public External(Position pos, String id, Scheme declared) {
     this(pos, id, declared, new ExtImp());
   }
 
+  /** Return the implementation strategy for this External. */
   public void setImp(ExtImp imp) {
     this.imp = imp;
-  }
-
-  /**
-   * Return references to all components of this top level definition in an array of
-   * atoms/arguments.
-   */
-  Atom[] tops() {
-    return new TopExt[] {new TopExt(this)};
   }
 
   /** Get the declared type, or null if no type has been set. */
@@ -84,12 +83,21 @@ public class External extends TopDefn {
     return imp.dependencies();
   }
 
+  /**
+   * Indicates whether this type of definition should be included in the dot version of the call
+   * graph. For now, we include nodes for all definitions, except for External definitions.
+   */
   boolean dotInclude() {
     return false;
   }
 
   /** Display a printable representation of this definition on the specified PrintWriter. */
-  void dump(PrintWriter out, boolean isEntrypoint) {
+  void dump(PrintWriter out) {
+    dumpHeader(out, isEntrypoint);
+  }
+
+  /** Display a header for this definition. */
+  void dumpHeader(PrintWriter out, boolean isEntrypoint) {
     if (isEntrypoint) {
       out.print("export ");
     }
@@ -99,7 +107,9 @@ public class External extends TopDefn {
     out.println(" :: " + declared.toString(Fixity.NEVER, tw));
   }
 
-  /** Return a type for an instantiated version of this item when used as Atom (input operand). */
+  /**
+   * Return a type for an instantiated version of this item when used as an Atom (input operand).
+   */
   public Type instantiate() {
     return declared.instantiate();
   }
@@ -127,7 +137,7 @@ public class External extends TopDefn {
 
   /**
    * Calculate a generalized type for this binding, adding universal quantifiers for any unbound
-   * type variable in the inferred type. (There are no "fixed" type variables here because all mil
+   * type variable in the inferred type. (There are no "fixed" type variables here because all MIL
    * definitions are at the top level.)
    */
   void generalizeType(Handler handler) throws Failure {
@@ -162,6 +172,14 @@ public class External extends TopDefn {
   }
 
   /**
+   * Return references to all components of this top level definition in an array of
+   * atoms/arguments.
+   */
+  Atom[] tops() {
+    return new TopExt[] {new TopExt(this)};
+  }
+
+  /**
    * Compute a summary for this definition (if it is a block, top-level, or closure) and then look
    * for a previously encountered item with the same code in the given table. Return true if a
    * duplicate was found.
@@ -187,8 +205,15 @@ public class External extends TopDefn {
     /* Nothing to do here */
   }
 
+  /** Worker function for MILSpec.dump(): Print a signature line for this definition. */
   void printlnSig(PrintWriter out) {
     out.println("external " + id + " :: " + declared);
+  }
+
+  /** Update all declared types with canonical versions. */
+  void canonDeclared(MILSpec spec) {
+    declared = declared.canonScheme(spec);
+    imp.canonDeclared(spec);
   }
 
   /** Test to determine if this is an appropriate definition to match the given type. */
@@ -196,8 +221,24 @@ public class External extends TopDefn {
     return declared.alphaEquiv(inst) ? this : null;
   }
 
+  /** Construct a stub to be filled in during specialization. */
   External(External e, int num) {
     this(e.pos, mkid(e.id, num), e.declared, e.imp);
+  }
+
+  /**
+   * Generate a specialized version of an entry point. This requires a monomorphic definition (to
+   * ensure that the required specialization is uniquely determined, and to allow the specialized
+   * version to share the same name as the original).
+   */
+  Defn specializeEntry(MILSpec spec) throws Failure {
+    Type t = declared.isMonomorphic();
+    if (t != null) {
+      External e = spec.specializedExternal(this, t);
+      e.id = this.id; // use the same name as in the original program
+      return e;
+    }
+    throw new PolymorphicEntrypointFailure("external", this);
   }
 
   /** Handle specialization of Externals. */
@@ -218,31 +259,15 @@ public class External extends TopDefn {
     imp = imp.specialize(spec, tenv);
   }
 
-  /**
-   * Generate a specialized version of an entry point. This requires a monomorphic definition (to
-   * ensure that the required specialization is uniquely determined, and to allow the specialized
-   * version to share the same name as the original).
-   */
-  Defn specializeEntry(MILSpec spec) throws Failure {
-    Type t = declared.isMonomorphic();
-    if (t != null) {
-      External e = spec.specializedExternal(this, t);
-      e.id = this.id; // use the same name as in the original program
-      return e;
-    }
-    throw new PolymorphicEntrypointFailure("external", this);
-  }
-
-  /** Update all declared types with canonical versions. */
-  void canonDeclared(MILSpec spec) {
-    declared = declared.canonScheme(spec);
-    imp.canonDeclared(spec);
-  }
-
+  /** Rewrite a program to use the bitdata representations provided by BitdataMap. */
   void bitdataRewrite(BitdataMap m) {
     /* Nothing to do here */
   }
 
+  /**
+   * Rewrite this definition to update references to constructor functions consistent with the
+   * datatype equalities in the given MergeMap.
+   */
   void mergeRewrite(MergeMap mmap) {
     /* Nothing to do here */
   }
@@ -293,7 +318,8 @@ public class External extends TopDefn {
       TopLhs lhs = new TopLhs(this.id);
       lhs.setDeclared(declared);
       impl = new TopLevel(pos, new TopLhs[] {lhs}, t);
-      if (isEntrypoint && id.equals(this.id)) { // test delayed until impl has been initialized
+      // test delayed until impl has been initialized
+      if (isEntrypoint && id.equals(this.id)) {
         throw new Failure(
             pos,
             "External "
@@ -325,7 +351,8 @@ public class External extends TopDefn {
 
   /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {
-    /* Processing of External definitions was completed during the first pass. */
+    /* Processing of External definitions was completed during the first
+     * pass. */
   }
 
   /** Add this exported definition to the specified MIL environment. */
@@ -362,14 +389,21 @@ public class External extends TopDefn {
    * statically known).
    */
   llvm.Code addRevInitCode(LLVMMap lm, InitVarMap ivm, llvm.Code edoc) {
-    // Generate code to load values of externals in case they are needed later in initialization
-    // TODO: Will LLVM optimize away these loads if they are not actually needed?
-    // Can we avoid generating them in the first place?
-    Type t = declared.isMonomorphic(); // - find the MIL type of this external
-    llvm.Type gt = lm.toLLVM(t); // - find the corresponding LLVM type
-    llvm.Global g = new llvm.Global(gt.ptr(), id); // - find the global for this external
-    llvm.Local l = ivm.reg(gt); // - find a local to hold its value
-    ivm.mapGlobal(new TopExt(this), l); // - record the load in the var map
-    return new llvm.Op(l, new llvm.Load(g), edoc); // - emit code to load the value
+    // Generate code to load values of externals in case they are needed
+    // later in initialization
+    // TODO: Will LLVM optimize away these loads if they are not actually
+    // needed? Can we avoid generating them in the first place?
+    // Find the MIL type of this external:
+    Type t = declared.isMonomorphic();
+    // Find the corresponding LLVM type:
+    llvm.Type gt = lm.toLLVM(t);
+    // Find the global for this external:
+    llvm.Global g = new llvm.Global(llvm.Type.ptr, id);
+    // Find a local to hold its value:
+    llvm.Local l = ivm.reg(gt);
+    // Record the load in the var map:
+    ivm.mapGlobal(new TopExt(this), l);
+    // Emit code to load the value
+    return new llvm.Op(l, new llvm.Load(gt, g), edoc);
   }
 }

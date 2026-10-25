@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -24,13 +24,13 @@ import core.*;
 public abstract class PrimSing extends Prim {
 
   /** Default constructor. */
-  public PrimSing(String id, int purity, BlockType blockType) {
-    super(id, purity, blockType);
+  public PrimSing(String id, BlockType blockType, int purity) {
+    super(id, blockType, purity);
   }
 
   /**
-   * Test whether this primitive is the same as a given primitive. For PrimSing, this requires a
-   * class equality; for other primitives, we can use a pointer equality test.
+   * Test whether this primitive is the same as another primitive. For PrimSing this requires class
+   * equality; for other primitives, we use pointer equality.
    */
   public boolean samePrim(Prim p) {
     return this.getClass() == p.getClass();

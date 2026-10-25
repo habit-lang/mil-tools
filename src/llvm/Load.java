@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,18 +22,22 @@ package llvm;
 /** Load a value from memory. */
 public class Load extends Rhs {
 
+  /** The type of value that will be returned. */
+  private Type ty;
+
   /** A location from which a value will be loaded. */
   private Value v;
 
   /** Default constructor. */
-  public Load(Value v) {
+  public Load(Type ty, Value v) {
+    this.ty = ty;
     this.v = v;
   }
 
   /** Append a printable string for this instruction to the specified buffer. */
   public void append(StringBuilder buf) {
     buf.append("load ");
-    v.getType().ptsTo().append(buf);
+    ty.append(buf);
     buf.append(", ");
     v.append(buf);
   }

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -24,65 +24,13 @@ import java.io.PrintWriter;
 
 public abstract class Tail {
 
-  /** Test to determine whether a given tail expression has no externally visible side effect. */
-  boolean hasNoEffect() {
-    return false;
-  }
-
-  /** Test if this Tail expression includes a free occurrence of a particular variable. */
-  abstract boolean contains(Temp w);
-
-  /**
-   * Test if this Tail expression includes an occurrence of any of the variables listed in the given
-   * array.
-   */
-  abstract boolean contains(Temp[] ws);
-
-  /** Add the variables mentioned in this tail to the given list of variables. */
-  abstract Temps add(Temps vs);
-
-  /** Test if two Tail expressions are the same. */
-  abstract boolean sameTail(Tail that);
-
-  boolean sameSel(Sel that) {
-    return false;
-  }
-
-  boolean sameReturn(Return that) {
-    return false;
-  }
-
-  boolean sameEnter(Enter that) {
-    return false;
-  }
-
-  boolean sameBlockCall(BlockCall that) {
-    return false;
-  }
-
-  boolean samePrimCall(PrimCall that) {
-    return false;
-  }
-
-  boolean sameDataAlloc(DataAlloc that) {
-    return false;
-  }
-
-  boolean sameClosAlloc(ClosAlloc that) {
-    return false;
-  }
-
   /** Find the dependencies of this AST fragment. */
   abstract Defns dependencies(Defns ds);
 
-  /** Display a printable representation of this object on the standard output. */
-  public void dump() {
-    PrintWriter out = new PrintWriter(System.out);
-    dump(out, null);
-    out.flush();
-  }
+  /** Add the temporaries used in this node to the given list of Temps. */
+  abstract Temps add(Temps vs);
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
   abstract void dump(PrintWriter out, Temps ts);
 
   /** Display a Tail value and then move to the next line. */
@@ -91,19 +39,56 @@ public abstract class Tail {
     out.println();
   }
 
+  /** Display a printable representation of this object on the standard output. */
+  public void dump() {
+    PrintWriter out = new PrintWriter(System.out);
+    dump(out, null);
+    out.flush();
+  }
+
+  /** Test if two Tail expressions are the same. */
+  abstract boolean sameTail(Tail that);
+
+  /** Test whether this Tail is the same as the given Sel. */
+  boolean sameSel(Sel that) {
+    return false;
+  }
+
+  /** Test whether this Tail is the same as the given Return. */
+  boolean sameReturn(Return that) {
+    return false;
+  }
+
+  /** Test whether this Tail is the same as the given Enter. */
+  boolean sameEnter(Enter that) {
+    return false;
+  }
+
+  /** Test whether this Tail is the same as the given BlockCall. */
+  boolean sameBlockCall(BlockCall that) {
+    return false;
+  }
+
+  /** Test whether this Tail is the same as the given PrimCall. */
+  boolean samePrimCall(PrimCall that) {
+    return false;
+  }
+
+  /** Test whether this Tail is the same as the given DataAlloc. */
+  boolean sameDataAlloc(DataAlloc that) {
+    return false;
+  }
+
+  /** Test whether this Tail is the same as the given ClosAlloc. */
+  boolean sameClosAlloc(ClosAlloc that) {
+    return false;
+  }
+
   /**
    * Apply a TempSubst to this Tail, forcing construction of a new Tail, even if the substitution is
    * empty.
    */
   abstract Tail apply(TempSubst s);
-
-  /**
-   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
-   * loop).
-   */
-  boolean blackholes() {
-    return false;
-  }
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   abstract TVars tvars(TVars tvs);
@@ -111,6 +96,7 @@ public abstract class Tail {
   /** Return the type tuple describing the result that is produced by executing this Tail. */
   abstract Type resultType();
 
+  /** Infer a type for this Tail expression. */
   abstract Type inferType(Position pos) throws Failure;
 
   /**
@@ -128,7 +114,16 @@ public abstract class Tail {
    */
   abstract void generateTailCode(MachineBuilder builder, int o);
 
-  /** Test to determine if this Tail is a BlockCall. */
+  /** Test if this Tail expression includes a free occurrence of a particular variable. */
+  abstract boolean contains(Temp w);
+
+  /**
+   * Test if this Tail expression includes an occurrence of any of the variables listed in the given
+   * array.
+   */
+  abstract boolean contains(Temp[] ws);
+
+  /** Test whether this Tail is an BlockCall. */
   public BlockCall isBlockCall() {
     return null;
   }
@@ -163,6 +158,22 @@ public abstract class Tail {
    * argument list.
    */
   boolean isReturn(Temp[] vs) {
+    return false;
+  }
+
+  /**
+   * Determine if a given tail expression has no externally visible side effects. This is true for
+   * returns, allocators, and selections, and for calls to primitives that are not impure.
+   */
+  boolean hasNoEffect() {
+    return false;
+  }
+
+  /**
+   * Return true if this code enters a non-productive black hole (i.e., if it immediately calls halt
+   * or loop).
+   */
+  boolean blackholes() {
     return false;
   }
 
@@ -220,11 +231,13 @@ public abstract class Tail {
     return null;
   }
 
+  /** Test whether this Tail is an Allocator. */
   public Allocator isAllocator() {
     return null;
   }
 
-  Tail liftStaticAllocator() {
+  /** Lift a static allocator in this Tail to a top-level definition. */
+  Tail liftStaticAllocator(Position pos) {
     return this;
   }
 
@@ -237,19 +250,21 @@ public abstract class Tail {
   abstract Temps usedVars(Temps vs);
 
   /**
-   * Test to determine whether a given tail expression may be repeatable (i.e., whether the results
-   * of a previous use of the same tail can be reused instead of repeating the tail). TODO: is there
-   * a better name for this?
+   * Test whether a given tail expression may be repeatable (i.e., whether the results of a previous
+   * use of the same tail can be reused instead of repeating the tail). TODO: is there a better name
+   * for this?
    */
   public boolean isRepeatable() {
+    // In general, Tails are not repeatable.
     return false;
   }
 
   /**
-   * Test to determine whether a given tail expression is pure (no externally visible side effects
-   * and no dependence on other effects).
+   * Test whether a given tail expression is pure (no externally visible side effects and no
+   * dependence on other effects).
    */
   public boolean isPure() {
+    // In general, Tails are not pure.
     return false;
   }
 
@@ -262,6 +277,15 @@ public abstract class Tail {
    * null.
    */
   Flag returnsFlag() {
+    return returnsFlag(3); // A small bound should be sufficient
+  }
+
+  /**
+   * A simple test for MIL code fragments that return a known Flag; this is a helper for the method
+   * without an argument that adds a counter that is decreased for every BlockCall encountered to
+   * avoid triggering an unbounded loop in pathological corner cases.
+   */
+  Flag returnsFlag(int n) {
     return null;
   }
 
@@ -274,6 +298,7 @@ public abstract class Tail {
   }
 
   public Code rewrite(Defn d, Facts facts) {
+    // default behavior when no other case applies
     return null;
   }
 
@@ -289,8 +314,8 @@ public abstract class Tail {
   }
 
   /**
-   * Test to determine whether this Code/Tail value corresponds to a closure allocator, returning
-   * either a ClosAlloc value, or else a null result.
+   * Test if this Code/Tail value corresponds to a closure allocator, returning either a ClosAlloc
+   * value, or else a null result.
    */
   ClosAlloc lookForClosAlloc() {
     return null;
@@ -309,8 +334,8 @@ public abstract class Tail {
   }
 
   /**
-   * Test to determine whether this Tail value corresponds to a data allocator, returning either a
-   * DataAlloc value, or else a null result.
+   * Test whether this Tail value corresponds to a data allocator, returning either a DataAlloc
+   * value, or else a null result.
    */
   DataAlloc lookForDataAlloc() {
     return null;
@@ -343,7 +368,8 @@ public abstract class Tail {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   abstract int summary();
 
@@ -412,10 +438,15 @@ public abstract class Tail {
   /** Generate a specialized version of this Tail. */
   abstract Tail specializeTail(MILSpec spec, TVarSubst s, SpecEnv env);
 
+  /** Rewrite this tail to use the bitdata representations provided by BitdataMap. */
   Tail bitdataRewrite(BitdataMap m) {
     return this;
   }
 
+  /**
+   * Generate a new version of this Tail to update references to constructor functions consistent
+   * with the datatype equalities in the given MergeMap.
+   */
   Tail mergeRewrite(MergeMap mmap) {
     return this;
   }
@@ -462,7 +493,8 @@ public abstract class Tail {
    * be non-null, but will have null values in places where static values are not known.
    */
   llvm.Value[] calcStaticValue(LLVMMap lm, llvm.Program prog) {
-    // handles Enter, BlockCall, PrimCall, Sel (optimizer should remove static Sels), ...
+    // handles Enter, BlockCall, PrimCall, Sel (optimizer should remove
+    // static Sels), ...
     return null;
   }
 
@@ -501,44 +533,43 @@ public abstract class Tail {
   llvm.Code toLLVMBindTail(
       LLVMMap lm, VarMap vm, TempSubst s, Temp[] vs, boolean isTail, llvm.Code code) {
     Temp[] nuvs = Temp.nonUnits(vs);
-    if (nuvs.length == 0) { // Tail does not return any results
-      return toLLVMBindVoid(
-          lm, vm, s, isTail, code); // ... so just execute the tail, and then continue
+    if (nuvs.length == 0) {
+      // Tail does not return any results
+      // ... so just execute the tail, and then continue
+      return toLLVMBindVoid(lm, vm, s, isTail, code);
     } else {
       llvm.Local lhs;
-      if (nuvs.length == 1) { // Just one result?
-        lhs = vm.lookup(lm, nuvs[0]); // ... save result directly
-      } else { // Multiple results?
-        lhs = vm.reg(lm.toLLVM(resultType())); // ... a register to hold the structure
-        for (int n = nuvs.length;
-            --n >= 0; ) { // ... and a sequence of extractvalues to access components
+      if (nuvs.length == 1) {
+        // Just one result?
+        // ... save result directly
+        lhs = vm.lookup(lm, nuvs[0]);
+      } else {
+        // Multiple results?
+        // ... then find a register for the structure
+        lhs = vm.reg(lm.toLLVM(resultType()));
+        // ... and use a sequence of extractvalues to access components
+        for (int n = nuvs.length; --n >= 0; ) {
           code = new llvm.Op(vm.lookup(lm, nuvs[n]), new llvm.ExtractValue(lhs, n), code);
         }
       }
-      return toLLVMBindCont(
-          lm, vm, s, false, lhs, code); // ... execute tail, capture result, and continue
+      // ... execute tail, capture result, and continue
+      return toLLVMBindCont(lm, vm, s, false, lhs, code);
     }
   }
 
   /** Generate LLVM code to execute this Tail in tail call position (i.e., as part of a Done). */
   llvm.Code toLLVMDone(LLVMMap lm, VarMap vm, TempSubst s, Label[] succs) {
-    llvm.Type ty = lm.toLLVM(resultType()); // Find the type of the values that will be returned
-    if (ty == llvm.Type.vd) { // Tail does not return any results
-      return this.toLLVMBindVoid(
-          lm,
-          vm,
-          s,
-          true, // ... so execute the tail
-          new llvm.RetVoid()); // ... and return without a result
+    // Find the type of the values that will be returned:
+    llvm.Type ty = lm.toLLVM(resultType());
+    if (ty == llvm.Type.vd) {
+      // Tail does not return any results, so execute the tail and
+      // return without a result:
+      return this.toLLVMBindVoid(lm, vm, s, true, new llvm.RetVoid());
     } else {
+      // Otherwise execute tail, capture result in lhs and then return
+      // that result:
       llvm.Local lhs = vm.reg(ty);
-      return this.toLLVMBindCont(
-          lm,
-          vm,
-          s,
-          true,
-          lhs, // ... execute tail, capture result in lhs
-          new llvm.Ret(lhs)); // ... and then return that result
+      return this.toLLVMBindCont(lm, vm, s, true, lhs, new llvm.Ret(lhs));
     }
   }
 

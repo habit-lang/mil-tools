@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -26,16 +26,18 @@ import java.io.PrintWriter;
 public abstract class PrimWtoF extends PrimSing {
 
   /** Default constructor. */
-  public PrimWtoF(String id, int purity, BlockType blockType) {
-    super(id, purity, blockType);
+  public PrimWtoF(String id, BlockType blockType, int purity) {
+    super(id, blockType, purity);
   }
 
-  abstract boolean op(long n);
+  /** Primitive semantics: operators from Word to Flag. */
+  public abstract boolean op(long n);
 
   void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
     stack[fp] = new BoolValue(op(stack[fp].getInt()));
   }
 
+  /** Perform constant folding for a long-valued unary primitive. */
   Code fold(long n) {
     MILProgram.report("constant folding for " + getId());
     return PrimCall.done(op(n));

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -56,13 +56,13 @@ public class LayoutLexer extends CoreLexer implements CoreTokens {
    * absence of a delayedToken, or to avoid returning the code for a real token when an implicit END
    * is required.
    */
-  private static final int NOTOKEN = 52;
+  private static final int NOTOKEN = 53;
 
   /**
    * SOFTEND is a dummy token code that is used to indicate that an implicit '}' has been inserted
    * at the end of a layout section.
    */
-  private static final int SOFTEND = 53;
+  private static final int SOFTEND = 54;
 
   public String describeToken(int token, String lexeme) {
     switch (token) {
@@ -118,8 +118,8 @@ public class LayoutLexer extends CoreLexer implements CoreTokens {
   /**
    * Enter a section of input text that is (potentially) subject to layout. In essence, a call to
    * enterSection() is equivalent to: <code>
-   *    nextToken(); // skip '{' at beginning of layout block
-   *  </code> except that the '{' token here may not actually appear in the input text; instead, the
+   *   nextToken(); // skip '{' at beginning of layout block
+   * </code> except that the '{' token here may not actually appear in the input text; instead, the
    * lexer inserts an implicit '{', if it is needed.
    */
   public void enterSection() {
@@ -137,20 +137,22 @@ public class LayoutLexer extends CoreLexer implements CoreTokens {
    * should) only be called from within a section.
    */
   public void itemEnd(String where) {
-    // If we're at a previously inserted end section or at a SEMI, then we're done.
+    // If we're at a previously inserted end section or at a SEMI, then
+    // we're done.
     if (token == SOFTEND || token == SEMI) {
       return;
     }
 
-    // If we're in a soft section, we should insert a soft end to avoid a syntax error.
+    // If we're in a soft section, we should insert a soft end to avoid a
+    // syntax error.
     if (indents[nesting] != HARD) {
       delayedToken = token;
       token = SOFTEND;
       return;
     }
 
-    // Otherwise we must be in a hard section, and not at a SEMI.  So if we don't find
-    // a '}' here, then we're going to need to skip some tokens.
+    // Otherwise we must be in a hard section, and not at a SEMI.  So, if
+    // we don't find a '}' here, then we're going to need to skip some tokens.
     if (token != BCLOSE) {
       super.itemEnd(where);
     }
@@ -163,8 +165,8 @@ public class LayoutLexer extends CoreLexer implements CoreTokens {
    * that this function will only be invoked after a matching call to enterSection().
    */
   public void leaveSection() {
-    // From the assumption that there was a previous enterSection() call, we can assume that
-    // nesting>=0.
+    // From the assumption that there was a previous enterSection() call,
+    // we can assume that nesting>=0.
     if (indents[nesting--] == HARD) {
       if (token == endToken) {
         nextToken();

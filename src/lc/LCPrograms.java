@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -23,7 +23,8 @@ import core.*;
 import mil.*;
 
 /**
- * A null-terminated linked list of items that can be accessed using (public) head and next fields.
+ * A null-terminated linked list of LCProgram objects that can be accessed using (public) head and
+ * next fields.
  */
 public class LCPrograms {
 
@@ -66,8 +67,8 @@ public class LCPrograms {
   }
 
   /**
-   * Calculate the strongly connected components of a list of Xs that have been augmented with
-   * dependency information.
+   * Calculate the strongly connected components of a list of LCPrograms that have been augmented
+   * with dependency information.
    */
   public static LCProgramSCCs scc(LCPrograms xs) {
     // Run the two depth-first searches of the main algorithm.

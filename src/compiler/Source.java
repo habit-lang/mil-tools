@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -47,11 +47,11 @@ public abstract class Source extends Phase {
    * available, then a null is returned. This mechanism is useful with sources that cache either the
    * text of each line that has been read, or perhaps just the offsets of each line within a given
    * file. A console input source may use a queue like structure to provide history for the most
-   * recently entered line. A source that uses an array of Strings as its input, or perhaps accesses
-   * the text from a text editor's buffer in an IDE, might be able to offer up lines through this
-   * method that have not yet been read using readLine(). On the other hand, some sources might
-   * choose to return null for every call to getLine(), which is the default behavior specified
-   * below, or to flush any caches of line data after the source has been closed.
+   * recently entered lines. A source that uses an array of Strings as its input, or perhaps
+   * accesses the text from a text editor's buffer in an IDE, might be able to offer up lines
+   * through this method that have not yet been read using readLine(). On the other hand, some
+   * sources might choose to return null for every call to getLine(), which is the default behavior
+   * specified below, or to flush any caches of line data after the source has been closed.
    */
   public String getLine(int lineNo) {
     return null;

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -36,7 +36,7 @@ class DataAllocExp extends CallExp {
    * defined elsewhere in the program. The resulting Call object can then be extended with the
    * appropriate list of arguments in the implementation of inScopeOf() for CallExp objects.
    */
-  Call calleeInScopeOf(Handler handler, MILEnv milenv) {
-    return new DataAlloc(milenv.mustFindCfun(handler, pos, id, subid));
+  Call calleeInScopeOf(Handler handler, MILEnv milenv) throws Failure {
+    return new DataAlloc(milenv.mustFindCfun(pos, id, subid));
   }
 }

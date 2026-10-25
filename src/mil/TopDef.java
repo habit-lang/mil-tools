@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,6 +21,10 @@ package mil;
 import compiler.*;
 import core.*;
 
+/**
+ * Represents the ith component of a top-level variable definition, [..., ti, ...] <- e. Most
+ * frequently, we have i=0 for t <- e.
+ */
 public class TopDef extends Top {
 
   private TopLevel topLevel;
@@ -42,12 +46,19 @@ public class TopDef extends Top {
     this(null, topLevel, i);
   }
 
-  public Top clone() {
-    return new TopDef(type, topLevel, i);
+  /** Return the definition associated with this Top object. */
+  public Defn getDefn() {
+    return topLevel;
   }
 
+  /** Return the identifer referenced by this Top. */
   public String getId() {
     return topLevel.getId(i);
+  }
+
+  /** Create a clone of this Top object. */
+  public Top clone() {
+    return new TopDef(type, topLevel, i);
   }
 
   /**
@@ -56,31 +67,17 @@ public class TopDef extends Top {
    * values.
    */
   boolean sameAtom(Atom that) {
-    return that.sameTopDef(topLevel, i);
+    return that.sameTopDef(this);
   }
 
-  /** Test to determine whether this Atom refers to the ith TopLhs in the given TopLevel. */
-  boolean sameTopDef(TopLevel topLevel, int i) {
-    return this.topLevel == topLevel && this.i == i;
+  /** Test whether this Atom is the same as the given TopDef. */
+  boolean sameTopDef(TopDef that) {
+    return this.topLevel == that.topLevel && this.i == that.i;
   }
 
-  /** Return the definition associated with this Top object. */
-  public Defn getDefn() {
-    return topLevel;
-  }
-
-  /** Find the dependencies of this AST fragment. */
-  Defns dependencies(Defns ds) {
-    return topLevel.dependencies(ds);
-  }
-
-  /** Return a type for an instantiated version of this item when used as Atom (input operand). */
-  public Type instantiate() {
-    return type = topLevel.instantiate(i);
-  }
-
+  /** Return the declared type for this Top. */
   public Scheme getDeclared() {
-    return topLevel.getDeclared();
+    return topLevel.getDeclared(i);
   }
 
   /** Generate code to copy the data for this atom into the specified frame slot. */
@@ -94,7 +91,8 @@ public class TopDef extends Top {
   }
 
   public Tail lookupFact(Facts facts) {
-    return topLevel.lookupFact(this.getTopLevel()); /* top level can't use local facts */
+    // A top level can't use local facts
+    return topLevel.lookupFact(this.getTopLevel());
   }
 
   /**
@@ -106,7 +104,7 @@ public class TopDef extends Top {
   }
 
   /**
-   * Test to determine if this Atom is known to hold a specific function value, represented by a
+   * Test if this Atom is known to hold a specific function value, represented by a
    * ClosAlloc/closure allocator, according to the given set of facts.
    */
   ClosAlloc lookForClosAlloc(Facts facts) {
@@ -118,17 +116,22 @@ public class TopDef extends Top {
   }
 
   /**
-   * Test to determine if this Atom is known to hold a specific data value represented by a
-   * DataAlloc allocator, according to the given set of facts.
+   * Test whether this Atom is known to hold a specific data value represented by a DataAlloc
+   * allocator, according to the given set of facts.
    */
   DataAlloc lookForDataAlloc(Facts facts) {
     return topLevel.lookForDataAlloc();
   }
 
+  /**
+   * Determine the specialized version of an Atom in a context described by a given @TVarSubst@
+   * and @SpecEnv@.
+   */
   Atom specializeAtom(MILSpec spec, TVarSubst s, SpecEnv env) {
     // Find the type for this specific instance:
     Type inst = type.apply(s);
-    // Return the ith component in a specialized version of the associated topLevel:
+    // Return the ith component in a specialized version of
+    // the associated topLevel:
     return new TopDef(inst, topLevel.specializedTopLevel(spec, inst, i), i);
   }
 
@@ -136,8 +139,8 @@ public class TopDef extends Top {
     return set.topDef(topLevel, i);
   }
 
-  public void setDeclared(Handler handler, Position pos, Scheme scheme) {
-    topLevel.setDeclared(handler, pos, i, scheme);
+  public void setDeclared(Position pos, Scheme scheme) throws Failure {
+    topLevel.setDeclared(pos, i, scheme);
   }
 
   public llvm.Value staticValue() {

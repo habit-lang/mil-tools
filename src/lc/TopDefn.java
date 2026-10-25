@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -36,7 +36,7 @@ abstract class TopDefn {
    * Validate this top level definition and add corresponding entries to the environment, if
    * necessary.
    */
-  void validateTopDefn(Handler handler, MILEnv milenv) throws Failure {
+  void validateTopDefn(Handler handler, MILEnv milenv) {
     /* Default behavior is to do nothing */
   }
 

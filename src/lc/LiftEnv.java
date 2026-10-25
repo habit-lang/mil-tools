@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -25,7 +25,7 @@ import mil.*;
 
 class LiftEnv {
 
-  private HashMap<Binding, Lifting> table = new HashMap();
+  private HashMap<Binding, Lifting> table = (new HashMap<Binding, Lifting>());
 
   void dump() {
     System.out.println("LiftEnv ----------------------------");
@@ -92,17 +92,20 @@ class LiftEnv {
   }
 
   TopBindings liftBindings(Bindings bindings, DefVar[] xvs) {
-    // Step 1: Create a list of top-level bindings and add corresponding entries to the lifting
-    // environment
+    // Step 1: Create a list of top-level bindings and add
+    // corresponding entries to the lifting environment
     TopBindings tbs = null;
     for (; bindings != null; bindings = bindings.next) {
       tbs = new TopBindings(bindings.head.liftToTop(xvs, this), tbs);
     }
 
-    // Step 2: Update each of the bodies by adding new parameters and lifting the right hand sides
+    // Step 2: Update each of the bodies by adding new parameters
+    // and lifting the right hand sides
     for (TopBindings ts = tbs; ts != null; ts = ts.next) {
-      ts.head.liftBinding(this); // applying lifting to the right hand side
-      ts.head.bindExtras(xvs); // and update the binding with extra parameters
+      // Apply lifting to the right hand side ...
+      ts.head.liftBinding(this);
+      // ... and update the binding with extra parameters:
+      ts.head.bindExtras(xvs);
     }
     return tbs;
   }

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,62 +22,106 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/** Represents a call that has an associated list of arguments. */
 public abstract class Call extends Tail {
 
-  /** The list of arguments for this call. */
+  /**
+   * Every Call has an associated list of arguments. A null list is used to indicate that the Call
+   * is not fully initialized.
+   */
   protected Atom[] args;
 
-  /**
-   * Set the arguments for this body. A typical use is new call.withArgs(args) to construct a Tail
-   * representing a call with the specific arguments. In this way, we can specify the arguments at
-   * the time of construction, but we also have flexibility to fix the arguments at some later point
-   * instead.
-   */
-  Call withArgs(Atom[] args) {
+  /** Create a call with the given arguments. */
+  public Call withArgs(Atom[] args) {
     this.args = args;
     return this;
   }
 
-  int getArity() {
-    return args.length;
-  }
-
+  /** Create a call with no arguments. */
   public Call withArgs() {
     return withArgs(Atom.noAtoms);
   }
 
-  public Call withArgs(Atom a) {
-    return withArgs(new Atom[] {a});
-  }
-
+  /** Create a call with two Atom arguments. */
   public Call withArgs(Atom a, Atom b) {
     return withArgs(new Atom[] {a, b});
   }
 
+  /** Create a call with two arguments: an Atom and a Word. */
   public Call withArgs(Atom a, long n) {
     return withArgs(new Atom[] {a, new Word(n)});
   }
 
+  /** Create a call with two arguments: a Word and an Atom. */
   public Call withArgs(long n, Atom b) {
     return withArgs(new Atom[] {new Word(n), b});
   }
 
-  /** Test if this Tail expression includes a free occurrence of a particular variable. */
-  boolean contains(Temp w) {
-    return args != null && w.occursIn(args);
+  /**
+   * Construct a sequence of closure and block definitions that will allow this call to be used as a
+   * higher-order function with @n@ arguments. The initial call, this, should expect precisely @n@
+   * arguments but should not be initialized with any parameters, which will be generated and added
+   * automatically at each step. The final result is a completed Tail that will generate the initial
+   * closure for a function value that has not yet been applied to any arguments.
+   */
+  Call maker(Position pos, int n) {
+    Call call = this;
+    for (; n > 0; n--) {
+      // Define a closure:  k{x1,...x_n-1} [xn] = call(x1,...,xn)
+      Temp[] params = Temp.makeTemps(n);
+      Temp[] stored = new Temp[n - 1];
+      for (int i = 0; i < n - 1; i++) {
+        stored[i] = params[i];
+      }
+      Temp arg = params[n - 1];
+      ClosureDefn k =
+          new ClosureDefn(
+              pos,
+              stored, // {x1,...x_n-1}
+              new Temp[] {arg}, // [xn]
+              call.withArgs(params));
+
+      // Define a block:  b[x1,...,x_n-1] = v <- k{x1,...,x_n-1} ; Func(v)
+      params = Temp.makeTemps(n - 1);
+      Temp v = new Temp();
+      Code c =
+          new Bind(
+              v,
+              new ClosAlloc(k, params), // v <- k{x1,...,x_n-1}
+              new Done(new DataAlloc(Cfun.Func, v))); // Func(v)
+      call = new BlockCall(new Block(pos, params, c));
+      // The preceding statement not only defines the new block, but also
+      // prepares a BlockCall (without args) for use in the next step.
+    }
+    return call.withArgs(Atom.noAtoms); // final call with empty args list
+  }
+
+  /** Find the dependencies of this AST fragment. */
+  Defns dependencies(Defns ds) {
+    if (args != null) {
+      for (int i = 0; i < args.length; i++) {
+        ds = args[i].dependencies(ds);
+      }
+    }
+    return ds;
+  }
+
+  /** Add the temporaries used in this node to the given list of Temps. */
+  Temps add(Temps vs) {
+    return Temps.add(args, vs);
   }
 
   /**
-   * Test if this Tail expression includes an occurrence of any of the variables listed in the given
-   * array.
+   * Print a call with a notation that includes the name of the item that is being called and a list
+   * of arguments, wrapped between appropriate open and close symbols.
    */
-  boolean contains(Temp[] ws) {
-    return Atom.occursIn(args, ws);
-  }
-
-  /** Add the variables mentioned in this tail to the given list of variables. */
-  Temps add(Temps vs) {
-    return Temps.add(args, vs);
+  static void dump(PrintWriter out, String name, String open, Atom[] args, String close, Temps ts) {
+    out.print(name);
+    if (args != null) {
+      out.print(open);
+      Atom.dump(out, args, ts);
+      out.print(close);
+    }
   }
 
   /**
@@ -88,26 +132,6 @@ public abstract class Call extends Tail {
     return (this.args == null)
         ? (that.args == null)
         : (that.args != null && Atom.sameAtoms(this.args, that.args));
-  }
-
-  /** Find the dependencies of this AST fragment. */
-  Defns dependencies(Defns ds) {
-    return Atom.dependencies(args, ds);
-  }
-
-  /**
-   * Print a call with a notation that includes the name of the item that is being called and a list
-   * of arguments, appropriately wrapped between a given open and close symbol (parentheses for
-   * block, primitive, and data constructor calls; braces for closure constructors; and brackets for
-   * monadic thunk constructors).
-   */
-  static void dump(PrintWriter out, String name, String open, Atom[] args, String close, Temps ts) {
-    out.print(name);
-    if (args != null) {
-      out.print(open);
-      Atom.dump(out, args, ts);
-      out.print(close);
-    }
   }
 
   /**
@@ -121,51 +145,12 @@ public abstract class Call extends Tail {
   /** Construct a new Call value that is based on the receiver, without copying the arguments. */
   abstract Call callDup(Atom[] args);
 
-  Call returnUnit(Position pos, int n) {
-    // Define a block:  b[x1,...,x_n] = [] <- call(x1,...,xn); return Unit
-    Temp[] params = Temp.makeTemps(n);
-    Code c =
-        new Bind(Temp.noTemps, this.withArgs(params), new Done(new Return(Cfun.Unit.getTop())));
-    return new BlockCall(new Block(pos, params, c));
-  }
-
-  Call thunk(Position pos, int n) {
-    // Define a closure: k{x1,...,xn} [] = call(x1,...,xn)
-    Temp[] stored = Temp.makeTemps(n);
-    ClosureDefn k = new ClosureDefn(pos, stored, Temp.noTemps, this.withArgs(stored));
-
-    // Define a block: b[x1,...,xn] = v <- k{x1,...,xn}; Proc(v)
-    stored = Temp.makeTemps(n);
-    Temp v = new Temp();
-    Code c = new Bind(v, new ClosAlloc(k).withArgs(stored), new Done(Cfun.Proc.withArgs(v)));
-    return new BlockCall(new Block(pos, stored, c));
-  }
-
-  Call maker(Position pos, int n) {
-    Call call = this;
-    for (; n > 0; n--) {
-      // Define a closure:  k{x1,...x_n-1} [xn] = call(x1,...,xn)
-      Temp[] params = Temp.makeTemps(n);
-      Temp[] stored = new Temp[n - 1];
-      for (int i = 0; i < n - 1; i++) {
-        stored[i] = params[i];
-      }
-      Temp arg = params[n - 1];
-      ClosureDefn k = new ClosureDefn(pos, stored, new Temp[] {arg}, call.withArgs(params));
-
-      // Define a block:  b[x1,...,x_n-1] = v <- k{x1,...,x_n-1} ; Func(v)
-      params = Temp.makeTemps(n - 1);
-      Temp v = new Temp();
-      Code c = new Bind(v, new ClosAlloc(k).withArgs(params), new Done(Cfun.Func.withArgs(v)));
-      call = new BlockCall(new Block(pos, params, c));
-    }
-    return call.withArgs(Atom.noAtoms);
-  }
-
+  /** Infer a type for this Tail expression. */
   Type inferType(Position pos) throws Failure {
     return inferCallType(pos, Type.instantiate(args));
   }
 
+  /** Infer a type for this Call expression. */
   abstract Type inferCallType(Position pos, Type[] inputs) throws Failure;
 
   /**
@@ -202,9 +187,11 @@ public abstract class Call extends Tail {
    * most blocks have more temporaries than return results).
    */
   void generateTailArgs(MachineBuilder builder) {
-    // Calculate a representation of the assignments that will be needed as an array ns, where, for
-    // each index i, ns[i] represents the assignment frameSlot[i] = frameSlot[ns[i]].  Note that we
-    // use ns[i]==(-1) if the value to be stored in slot i does not come from another frame slot.
+    // Calculate a representation of the assignments that will be needed
+    // as an array ns, where, for each index i, ns[i] represents the
+    // assignment frameSlot[i] = frameSlot[ns[i]].  Note that we
+    // use ns[i]==(-1) if the value to be stored in slot i does not
+    // come from another frame slot.
     int[] ns = new int[args.length];
     for (int i = 0; i < args.length; i++) {
       ns[i] = args[i].frameSlot(builder);
@@ -267,6 +254,19 @@ public abstract class Call extends Tail {
     return true;
   }
 
+  /** Test if this Tail expression includes a free occurrence of a particular variable. */
+  boolean contains(Temp w) {
+    return args != null && w.occursIn(args);
+  }
+
+  /**
+   * Test if this Tail expression includes an occurrence of any of the variables listed in the given
+   * array.
+   */
+  boolean contains(Temp[] ws) {
+    return Atom.occursIn(args, ws);
+  }
+
   /**
    * Allocate new temporary variables for the parameters specified by an array of Call values. The
    * results are returned as an array with one element (an array of new Temporaries) for each of the
@@ -283,25 +283,24 @@ public abstract class Call extends Tail {
         if (tss == null) {
           tss = new Temp[calls.length][];
         }
-        // Generate a set of new temporary parameters for an allocator, or eliminate the original
-        // parameter
-        // if the call is a Return with a known value.
+        // Generate a set of new temporary parameters for an allocator,
+        // or eliminate the original parameter if the call is a Return
+        // with a known value.
         tss[i] =
-            (calls[i].isAllocator() == null) ? Temp.noTemps : Temp.makeTemps(calls[i].getArity());
+            (calls[i].isAllocator() == null) ? Temp.noTemps : Temp.makeTemps(calls[i].args.length);
       }
     }
     return tss;
   }
 
-  /** Test to determine whether two arrays of Calls have the same form in every element position. */
+  /** Test whether two arrays of Calls have the same form in every element position. */
   public static boolean sameCallForms(Call[] cs, Call[] ds) {
     if (cs == null || ds == null || cs.length != ds.length) {
       return false;
     }
     for (int i = 0; i < cs.length; i++) {
-      // Compare cs[i] and ds[i].  Both must be null, or they must have the same constructor to
-      // continue
-      // to the next i.
+      // Compare cs[i] and ds[i].  Both must be null, or they must have
+      // the same constructor to continue to the next i.
       if (cs[i] == null) {
         if (ds[i] != null) {
           return false;
@@ -353,7 +352,7 @@ public abstract class Call extends Tail {
       if (calls[i] == null || calls[i].cfunNoArgs() != null) {
         ++len;
       } else if (calls[i].isAllocator() != null) {
-        len += calls[i].getArity();
+        len += calls[i].args.length;
       }
     }
 
@@ -390,7 +389,8 @@ public abstract class Call extends Tail {
 
     Atom[] newargs = new Atom[args.length - numDups];
     int j = 0;
-    for (int i = 0; i < dups.length; i++) { // copy parameters that are not duplicates
+    for (int i = 0; i < dups.length; i++) {
+      // copy parameters that are not duplicates
       if (dups[i] == 0) {
         newargs[j++] = args[i];
       }
@@ -401,12 +401,15 @@ public abstract class Call extends Tail {
   int[] hasDuplicateArgs() {
     int[] dups = null;
     for (int i = 1; i < args.length; i++) { // Note: starts at i=1
-      for (int j = 0; j < i; j++) { // Did args[i] previously appear in an earlier position?
+      for (int j = 0; j < i; j++) {
+        // Did args[i] previously appear in an earlier position?
         if (args[j] == args[i]) {
-          if (dups == null) { // Allocate dups array for first duplicate found
+          if (dups == null) {
+            // Allocate dups array for first duplicate found
             dups = new int[args.length];
           }
-          dups[i] = j + 1; // Record the duplicate (+1 because zero indicates no dup)
+          // Record the duplicate (+1 because zero indicates no dup)
+          dups[i] = j + 1;
           break; // No need to search for further occurrences
         }
       }
@@ -428,7 +431,8 @@ public abstract class Call extends Tail {
    * Update an argument list by removing unused arguments, or return null if no change is required.
    */
   void removeUnusedArgs(int numUsedArgs, boolean[] usedArgs) {
-    if (numUsedArgs < args.length) { // Only rewrite if we have found some unused arguments
+    if (numUsedArgs < args.length) {
+      // Only rewrite if we have found some unused arguments
       Atom[] newArgs = new Atom[numUsedArgs];
       int j = 0;
       for (int i = 0; i < args.length; i++) {
@@ -557,5 +561,25 @@ public abstract class Call extends Tail {
   Tail makeTernaryFuncClosure(Position pos, int m, int n, int p) {
     return makeClosure(pos, m + n, p) //    k0{a1,...,b1,...} [c1,...] = ...(a1,...,b1,....,c1,...)
         .makeBinaryFuncClosure(pos, m, n);
+  }
+
+  Call returnUnit(Position pos, int n) {
+    // Define a block:  b[x1,...,x_n] = [] <- call(x1,...,xn); return Unit
+    Temp[] params = Temp.makeTemps(n);
+    Code c =
+        new Bind(Temp.noTemps, this.withArgs(params), new Done(new Return(Cfun.Unit.getTop())));
+    return new BlockCall(new Block(pos, params, c));
+  }
+
+  Call thunk(Position pos, int n) {
+    // Define a closure: k{x1,...,xn} [] = call(x1,...,xn)
+    Temp[] stored = Temp.makeTemps(n);
+    ClosureDefn k = new ClosureDefn(pos, stored, Temp.noTemps, this.withArgs(stored));
+
+    // Define a block: b[x1,...,xn] = v <- k{x1,...,xn}; Proc(v)
+    stored = Temp.makeTemps(n);
+    Temp v = new Temp();
+    Code c = new Bind(v, new ClosAlloc(k, stored), new Done(new DataAlloc(Cfun.Proc, v)));
+    return new BlockCall(new Block(pos, stored, c));
   }
 }

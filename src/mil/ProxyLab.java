@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,6 +21,7 @@ package mil;
 import compiler.*;
 import core.*;
 
+/** Represents the unique value of the singleton type #lab. */
 public class ProxyLab extends Proxy {
 
   private String lab;
@@ -32,7 +33,7 @@ public class ProxyLab extends Proxy {
 
   /** Generate a printable description of this atom. */
   public String toString() {
-    return "#" + lab.toString();
+    return "#" + lab;
   }
 
   /**
@@ -44,12 +45,14 @@ public class ProxyLab extends Proxy {
     return that.sameProxyLab(this);
   }
 
-  /** Test to determine whether this Atom refers to the given ProxyLab constant. */
-  boolean sameProxyLab(ProxyLab c) {
-    return this.lab.equals(c.lab);
+  /** Test whether this Atom is the same as the given ProxyLab. */
+  boolean sameProxyLab(ProxyLab that) {
+    return this.lab.equals(that.lab);
   }
 
-  /** Return a type for an instantiated version of this item when used as Atom (input operand). */
+  /**
+   * Return a type for an instantiated version of this item when used as an Atom (input operand).
+   */
   public Type instantiate() {
     return Type.lab(new TLab(lab));
   }

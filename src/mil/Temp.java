@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -34,87 +34,17 @@ public class Temp extends Atom {
     this.type = type;
   }
 
-  public static final Temp[] noTemps = new Temp[0];
-
+  /** A counter used to assign unique names to temporaries. */
   private static int count = 0;
 
+  /** Create a new temporary variable with a particular type. */
   public Temp(Type type) {
     this("t" + count++, type);
   }
 
+  /** Create a new temporary variable without specifying a type. */
   public Temp() {
     this(null);
-  }
-
-  /** Generate a printable description of this atom. */
-  public String toString() {
-    return id;
-  }
-
-  /**
-   * Generate a printable description of this atom with a renaming of Temp values that is specified
-   * by the list ts.
-   */
-  String toString(Temps ts) {
-    /* If this Temp appears in the list ts, and is followed by i other Temp objects, then it will be displayed as t_i.
-     * This allows the list ts to be built up by pushing new bindings on to the front of ts as they are encountered.
-     * A downside is that it will require a full traversal of ts for every Temp.  However, if we added elements to ts
-     * in order of occurrence, then we could still expect a typical case to require traversal of half the list (so the
-     * constant factor would be the same) and the task of building the list would be more complex.  Another alternative
-     * would be to use a more efficient lookup structure than a list, although that would likely add other overhead.
-     */
-    if (!markedUnused()) { // TODO: markedUnused() is currently part of optimizer, not MIL AST
-      for (; ts != null; ts = ts.next) {
-        if (ts.head == this) {
-          int i = 0;
-          do {
-            ts = ts.next;
-            i++;
-          } while (ts != null);
-          return "t" + (i - 1);
-        }
-      }
-    }
-    return toString();
-  }
-
-  /**
-   * Test to see if two atoms are the same. For Temp values, we use pointer equality to determine
-   * object equality. For all other types of Atom, we use double dispatch to compare component
-   * values.
-   */
-  boolean sameAtom(Atom that) {
-    return this == that;
-  }
-
-  /** Test for an occurrence of this variable in the given array of atoms. */
-  boolean occursIn(Atom[] as) {
-    for (int i = 0; i < as.length; i++) {
-      if (as[i] == this) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /** Build a new array that combines the elements from the left array with those from the right. */
-  public static Temp[] append(Temp[] left, Temp[] right) {
-    int l = left.length;
-    if (l == 0) {
-      return right;
-    }
-    int r = right.length;
-    if (r == 0) {
-      return left;
-    }
-    Temp[] n = new Temp[l + r];
-    for (int i = 0; i < l; i++) {
-      n[i] = left[i];
-    }
-    for (int i = 0; i < r; i++) {
-      n[l + i] = right[i];
-    }
-    return n;
   }
 
   /** Create a list of new variables of a given length. */
@@ -136,18 +66,115 @@ public class Temp extends Atom {
     return vs;
   }
 
-  /** Test to determine whether this atom appears in the given list of Temps. */
+  /**
+   * Test to see if a temporary has had its name replaced with an underscore to mark it as unused.
+   */
+  boolean markedUnused() {
+    return id == underscore;
+  }
+
+  /**
+   * Mark a temporary to indicate that its value is not referenced in the remainder of a given code
+   * sequence by setting its name to an underscore.
+   */
+  Temp markUnused() {
+    return new Temp(underscore, type);
+  }
+
+  /** Return true if all of the variables in the given array are marked as unused. */
+  static boolean allMarkedUnused(Temp[] vs) {
+    for (int i = 0; i < vs.length; i++) {
+      if (!vs[i].markedUnused()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** The underscore string used to mark Temp values as unused. */
+  private static final String underscore = "_";
+
+  /** Build a new array that combines the elements from the left array with those from the right. */
+  public static Temp[] append(Temp[] left, Temp[] right) {
+    int l = left.length;
+    if (l == 0) {
+      return right;
+    }
+    int r = right.length;
+    if (r == 0) {
+      return left;
+    }
+    Temp[] n = new Temp[l + r];
+    for (int i = 0; i < l; i++) {
+      n[i] = left[i];
+    }
+    for (int i = 0; i < r; i++) {
+      n[l + i] = right[i];
+    }
+    return n;
+  }
+
+  /** A constant holding an empty array of Temp values. */
+  public static Temp[] noTemps = new Temp[0];
+
+  /** Test whether this atom appears in the given list of Temps. */
   boolean isIn(Temps vs) {
     return Temps.isIn(this, vs);
   }
 
-  /**
-   * Add this atom as an argument variable to the given list; only local variables and temporaries
-   * are treated as argument variables because wildcards are ignored and all other atoms can be
-   * accessed as constants.
-   */
+  /** Add the temporaries used in this node to the given list of Temps. */
   Temps add(Temps vs) {
     return Temps.add(this, vs);
+  }
+
+  /** Generate a printable description of this atom. */
+  public String toString() {
+    return id;
+  }
+
+  /**
+   * Generate a printable description of this atom with a renaming of Temp values that is specified
+   * by the list ts.
+   */
+  String toString(Temps ts) {
+    /* If this Temp appears in the list ts, and is followed by i other
+     * Temp objects, then it will be displayed as t_i.  This allows the
+     * list ts to be built up by pushing new bindings on to the front of
+     * ts as they are encountered.  A downside is that it will require a
+     * full traversal of ts for every Temp.  However, if we added elements
+     * to ts in order of occurrence, then we could still expect a typical
+     * case to require traversal of half the list (so the constant factor
+     * would be the same) and the task of building the list would be more
+     * complex.  Another alternative would be to use a more efficient
+     * lookup structure than a list, although that would likely add other
+     * overhead. */
+    if (!markedUnused()) { // Skip renaming for variables marked as unused
+      for (; ts != null; ts = ts.next) {
+        if (ts.head == this) {
+          int i = 0;
+          do {
+            ts = ts.next;
+            i++;
+          } while (ts != null);
+          return "t" + (i - 1);
+        }
+      }
+    }
+    return toString();
+  }
+
+  /**
+   * Test to see if two atoms are the same. For Temp values, we use pointer equality to determine
+   * object equality. For all other types of Atom, we use double dispatch to compare component
+   * values.
+   */
+  boolean sameAtom(Atom that) {
+    return that.sameTemp(this);
+  }
+
+  /** Test whether this Atom is the same as the given Temp. */
+  boolean sameTemp(Temp that) {
+    return this == that;
   }
 
   /**
@@ -163,7 +190,9 @@ public class Temp extends Atom {
     return TempSubst.apply(this, s);
   }
 
-  /** Return a type for an instantiated version of this item when used as Atom (input operand). */
+  /**
+   * Return a type for an instantiated version of this item when used as an Atom (input operand).
+   */
   public Type instantiate() {
     return type;
   }
@@ -201,29 +230,14 @@ public class Temp extends Atom {
     /* do nothing */
   }
 
-  /**
-   * Mark a temporary to indicate that its value is not referenced in the remainder of a given code
-   * sequence by setting its name to an underscore.
-   */
-  Temp markUsed() {
-    return new Temp("_", type);
-  }
-
-  /**
-   * Test to see if a temporary has had its name replaced with an underscore to mark it as unused.
-   */
-  boolean markedUnused() {
-    return id.equals("_");
-  }
-
-  /** Return true if all of the variables in the given array are marked as unused. */
-  static boolean allMarkedUnused(Temp[] vs) {
-    for (int i = 0; i < vs.length; i++) {
-      if (!vs[i].markedUnused()) {
-        return false;
+  /** Test for an occurrence of this variable in the given array of atoms. */
+  boolean occursIn(Atom[] as) {
+    for (int i = 0; i < as.length; i++) {
+      if (as[i] == this) {
+        return true;
       }
     }
-    return true;
+    return false;
   }
 
   public Facts kills(Facts facts) {
@@ -259,7 +273,7 @@ public class Temp extends Atom {
   }
 
   /**
-   * Test to determine if this Atom is known to hold a specific function value, represented by a
+   * Test if this Atom is known to hold a specific function value, represented by a
    * ClosAlloc/closure allocator, according to the given set of facts.
    */
   ClosAlloc lookForClosAlloc(Facts facts) {
@@ -268,8 +282,8 @@ public class Temp extends Atom {
   }
 
   /**
-   * Test to determine if this Atom is known to hold a specific data value represented by a
-   * DataAlloc allocator, according to the given set of facts.
+   * Test whether this Atom is known to hold a specific data value represented by a DataAlloc
+   * allocator, according to the given set of facts.
    */
   DataAlloc lookForDataAlloc(Facts facts) {
     Tail t = Facts.lookupFact(this, facts);
@@ -308,7 +322,7 @@ public class Temp extends Atom {
    */
   void updateSources(Defn d, Temp[] params, Temps rebound, Defn b, int i) {
     int j = findParam(params, rebound); // Is this Temp a parameter of d?
-    if (j < 0) { // If not, then b.i could be "any" value.
+    if (j < 0) { // If not, then b.i could be "any"
       b.setSource(i, Src.any);
     } else { // d[...x...] = ... b[...x...]
       b.updateSources(i, d, j); //      j                i
@@ -334,13 +348,9 @@ public class Temp extends Atom {
     }
   }
 
-  Atom specializeAtom(MILSpec spec, TVarSubst s, SpecEnv env) {
-    return SpecEnv.find(this, env);
-  }
-
   /**
-   * Generate a specialized version of this (lambda-bound, monomorphically typed) variable using the
-   * same name and the instance of its type under the substitution s.
+   * Generate a specialized version of this (monomorphically typed) temporary using the same name
+   * and the instance of its type under the substitution s.
    */
   Temp specializeTemp(TVarSubst s) {
     return new Temp(id, type.apply(s));
@@ -353,6 +363,14 @@ public class Temp extends Atom {
       nds[i] = ds[i].specializeTemp(s);
     }
     return nds;
+  }
+
+  /**
+   * Determine the specialized version of an Atom in a context described by a given @TVarSubst@
+   * and @SpecEnv@.
+   */
+  Atom specializeAtom(MILSpec spec, TVarSubst s, SpecEnv env) {
+    return SpecEnv.find(this, env);
   }
 
   /** Return the representation vector for this Atom. */

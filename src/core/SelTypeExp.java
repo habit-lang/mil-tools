@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -34,22 +34,28 @@ public class SelTypeExp extends PosTypeExp {
     this.lab = lab;
   }
 
+  /**
+   * Remove occurrences of InfixTypeExp nodes from this type expression using fixity information.
+   * For all other node types, we update individual fields in place (in case they included
+   * InfixTypeExp nodes) and return the original node (this).
+   */
   public TypeExp tidyInfix(TyconEnv env) throws Failure {
     t = t.tidyInfix(env);
     return this;
   }
 
   /**
-   * Worker function for scopeType that is intended to be called after order of any infix operators
-   * have been determined and has the option to rewrite the type expression if needed.
+   * Worker function that performs the main scope analysis on type expressions. An additional arity
+   * parameter is used here so that we can track and validate the number of arguments that are
+   * passed to type constructors.
    */
-  public TypeExp scopeTypeRewrite(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
+  public TypeExp scopeType(TyvarEnv params, TyconDeps tdeps, TyconEnv env, int arity)
       throws Failure {
-    t = t.scopeTypeRewrite(canAdd, params, env, arity);
+    t = t.scopeType(params, tdeps, env, 0);
     return this;
   }
 
-  public Kind inferKind() throws KindMismatchFailure {
+  public Kind inferKind() throws Failure {
     t.checkKind(KAtom.STAR);
     return KAtom.STAR;
   }
@@ -66,14 +72,5 @@ public class SelTypeExp extends PosTypeExp {
       }
       throw new Failure(pos, "Label " + lab + " is not used in " + bt);
     }
-  }
-
-  /**
-   * Scope analysis on type expressions in a context where we want to determine which (if any)
-   * CoreDefn values a particular type expression depends on.
-   */
-  public CoreDefns scopeTyconsType(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
-    return t.scopeTyconsType(handler, params, env, defns, depends);
   }
 }

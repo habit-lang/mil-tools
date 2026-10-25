@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,26 +22,28 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/** Represents a primitive for sequencing initializers: initSeq :: [Init a, Init a] >>= [Init a] */
 public class Prim {
 
   /** The name that will be used for this primitive. */
   protected String id;
 
   /**
-   * Purity code for this primitive. This can be used to describe the extent to which a given
-   * primitive call may depend on or cause side effects.
+   * BlockType for this primitive, describing the number and types of this primitive's arguments and
+   * results.
    */
-  protected int purity;
-
-  /** BlockType for this primitive. */
   protected BlockType blockType;
 
+  /** Purity code for this primitive. */
+  protected int purity;
+
   /** Default constructor. */
-  public Prim(String id, int purity, BlockType blockType) {
+  public Prim(String id, BlockType blockType, int purity) {
     this.id = id;
-    this.purity = purity;
     this.blockType = blockType;
-    index = addToPrimTable(this);
+    this.purity = purity;
+
+    this.index = addToPrimTable(this);
   }
 
   /** Return the name of this primitive. */
@@ -54,39 +56,63 @@ public class Prim {
     return blockType;
   }
 
+  /**
+   * PURE indicates that, for any fixed argument x, the call p((x)) will always return the same
+   * result. This applies to primitives for basic arithmetic like addition, logical operators,
+   * comparison, etc. (For a primitive to be considered pure in this sense, there must be no
+   * possibility of overflow or other exceptions, of setting flags that are visible to later
+   * instructions, of non-termination, etc., at least to the extent that any such features of the
+   * underlying hardware may be visible in MIL.)
+   */
   static final int PURE = 0;
 
+  /**
+   * OBSERVER indicates that distinct calls to p((x)) with the same arguments can only be guaranteed
+   * to return the same result if there is no side effecting operation between them. (In other
+   * words, the primitive is able to "observe" changes in state.) Examples include operations that
+   * read from local memory or special registers. However, observer status may not be appropriate in
+   * the presence of concurrency or other operations where an implicit side effect might be
+   * triggered, such as a page fault, or setting accessed or dirty bits in a page table data
+   * structure, etc.
+   */
   static final int OBSERVER = 1;
 
+  /**
+   * VOLATILE indicates that distinct calls to p((x)), even with the same arguments, may return
+   * different results. Examples include reading a real-time clock or counter; loading from volatile
+   * memory or device registers (so long as reads do not have a side effect such as automatically
+   * reseting a register contents, etc.); and so on.
+   */
   static final int VOLATILE = 2;
 
+  /**
+   * IMPURE indicates that any call p((x)) may have an externally visible effect. Standard examples
+   * of primitives in this category include: division (which may raise an exception); writing to
+   * memory; effectful I/O operations such as putchar or getchar; etc.
+   */
   static final int IMPURE = 3;
 
+  /**
+   * DOESNTRETURN indicates that any call p((x)) is guaranteed not to return to the caller, so any
+   * code that follows such a call can be deleted. For example, if p has the DOESNTRETURN property,
+   * then any code sequence of the form (y <- p((x)); c) can be replaced with a simple tail call
+   * p((x)).
+   */
   static final int DOESNTRETURN = 4;
 
-  boolean isPure() {
-    return purity == PURE;
-  }
-
-  boolean isRepeatable() {
-    return purity <= OBSERVER;
-  }
-
-  boolean hasNoEffect() {
-    return purity <= VOLATILE;
-  }
-
-  boolean doesntReturn() {
-    return purity >= DOESNTRETURN;
-  }
-
-  static final String[] purityLabels =
+  /**
+   * String labels corresponding to purity codes. The order of the strings should match the numeric
+   * codes.
+   */
+  private static final String[] purityLabels =
       new String[] {"pure", "observer", "volatile", "impure", "doesntReturn"};
 
+  /** Return a string version of the purity code for this primitive. */
   String purityLabel() {
     return (purity < 0 || purity >= purityLabels.length) ? null : purityLabels[purity];
   }
 
+  /** Return a purity code for this string, or null if no matching label. */
   static int purityFromLabel(String p) {
     for (int i = 0; i < purityLabels.length; i++) {
       if (p.equals(purityLabels[i])) {
@@ -96,17 +122,22 @@ public class Prim {
     return (-1);
   }
 
-  private static int numPrims;
-
+  /** A table storing all of the primitives available at source level. */
   private static Prim[] table;
 
+  /** A count of the number of primitives stored in the table. */
+  private static int numPrims;
+
+  /** Each primitive has an index, recording its position in the table. */
   private int index;
 
+  /** Return the index of this primitive in the table. */
   int getIndex() {
     return index;
   }
 
-  int addToPrimTable(Prim val) {
+  /** Add a new primitive to the table. */
+  private static int addToPrimTable(Prim val) {
     if (table == null) {
       table = new Prim[40];
     } else if (numPrims >= table.length) {
@@ -139,69 +170,55 @@ public class Prim {
     out.println(" :: " + blockType);
   }
 
-  public Call withArgs(Atom[] args) {
-    return new PrimCall(this).withArgs(args);
-  }
-
-  public Call withArgs() {
-    return withArgs(Atom.noAtoms);
-  }
-
-  public Call withArgs(Atom a) {
-    return withArgs(new Atom[] {a});
-  }
-
-  public Call withArgs(Atom a, Atom b) {
-    return withArgs(new Atom[] {a, b});
-  }
-
-  public Call withArgs(Atom a, long n) {
-    return withArgs(new Atom[] {a, new Word(n)});
-  }
-
-  public Call withArgs(long n, Atom b) {
-    return withArgs(new Atom[] {new Word(n), b});
-  }
-
   /**
-   * Test whether this primitive is the same as a given primitive. For PrimSing, this requires a
-   * class equality; for other primitives, we can use a pointer equality test.
+   * Test whether this primitive is the same as another primitive. For PrimSing this requires class
+   * equality; for other primitives, we use pointer equality.
    */
   public boolean samePrim(Prim p) {
     return this == p;
   }
 
+  /** Represents tuple type [Flag] */
   protected static final Type flagTuple = Type.tuple(Tycon.flag.asType());
 
+  /** Represents tuple type [Flag, Flag] */
   protected static final Type flagFlagTuple = Type.tuple(Tycon.flag.asType(), Tycon.flag.asType());
 
+  /** Represents [Flag] >>= [Flag] for unary ops on flags. */
   protected static final BlockType unaryFlagType = new BlockType(flagTuple, flagTuple);
 
+  /** Represents [Flag, Flag] >>= [Flag] for binary ops on flags. */
   protected static final BlockType binaryFlagType = new BlockType(flagFlagTuple, flagTuple);
 
+  /** Represents tuple type [Word] */
   protected static final Type wordTuple = Type.tuple(Tycon.word.asType());
 
+  /** Represents tuple type [Word, Word] */
   protected static final Type wordWordTuple = Type.tuple(Tycon.word.asType(), Tycon.word.asType());
 
+  /** Represents [Word] >>= [Word] for unary ops on words. */
   protected static final BlockType unaryWordType = new BlockType(wordTuple, wordTuple);
 
+  /** Represents [Word, Word] >>= [Word] for binary ops on words. */
   protected static final BlockType binaryWordType = new BlockType(wordWordTuple, wordTuple);
 
+  /** Represents [Word, NZWord] >>= [Word] for div/rem on words. */
   protected static final BlockType nzdivType =
       new BlockType(Type.tuple(Tycon.word.asType(), Tycon.nzword.asType()), wordTuple);
 
+  /** Represents [Flag] >>= [Word] for flag to word conversion. */
   protected static final BlockType flagToWordType = new BlockType(flagTuple, wordTuple);
 
+  /** Represents [Word] >>= [Flag] for word to flag conversion. */
   protected static final BlockType wordToFlagType = new BlockType(wordTuple, flagTuple);
 
+  /** Represents [Word, Word] >>= [Flag] for word comparison ops. */
   protected static final BlockType relopType = new BlockType(wordWordTuple, flagTuple);
 
   /** Make a clone of this Prim with a (possibly) new type. */
   Prim clone(BlockType bt) {
-    return new Prim(id, purity, bt);
+    return new Prim(id, bt, purity);
   }
-
-  public static final PrimUnOp not = new not();
 
   public static final class not extends PrimUnOp {
 
@@ -210,13 +227,14 @@ public class Prim {
     }
 
     private not(BlockType bt) {
-      super("not", PURE, bt);
+      super("not", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new not(bt);
     }
 
+    /** Primitive semantics: unary operators on Word values. */
     public long op(long n) {
       return (~n);
     }
@@ -245,7 +263,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinOp and = new and();
+  public static final PrimUnOp not = new not();
 
   public static final class and extends PrimBinOp {
 
@@ -254,13 +272,14 @@ public class Prim {
     }
 
     private and(BlockType bt) {
-      super("and", PURE, bt);
+      super("and", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new and(bt);
     }
 
+    /** Primitive semantics: binary operators on Word values. */
     public long op(long n, long m) {
       return n & m;
     }
@@ -274,7 +293,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinOp or = new or();
+  public static final PrimBinOp and = new and();
 
   public static final class or extends PrimBinOp {
 
@@ -283,13 +302,14 @@ public class Prim {
     }
 
     private or(BlockType bt) {
-      super("or", PURE, bt);
+      super("or", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new or(bt);
     }
 
+    /** Primitive semantics: binary operators on Word values. */
     public long op(long n, long m) {
       return n | m;
     }
@@ -303,7 +323,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinOp xor = new xor();
+  public static final PrimBinOp or = new or();
 
   public static final class xor extends PrimBinOp {
 
@@ -312,13 +332,14 @@ public class Prim {
     }
 
     private xor(BlockType bt) {
-      super("xor", PURE, bt);
+      super("xor", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new xor(bt);
     }
 
+    /** Primitive semantics: binary operators on Word values. */
     public long op(long n, long m) {
       return n ^ m;
     }
@@ -332,7 +353,7 @@ public class Prim {
     }
   }
 
-  public static final PrimUnFOp bnot = new bnot();
+  public static final PrimBinOp xor = new xor();
 
   public static final class bnot extends PrimUnFOp {
 
@@ -341,13 +362,14 @@ public class Prim {
     }
 
     private bnot(BlockType bt) {
-      super("bnot", PURE, bt);
+      super("bnot", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new bnot(bt);
     }
 
+    /** Primitive semantics: unary operators on Flag values. */
     public boolean op(boolean b) {
       return !b;
     }
@@ -376,7 +398,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinFOp band = new band();
+  public static final PrimUnFOp bnot = new bnot();
 
   public static final class band extends PrimBinFOp {
 
@@ -385,13 +407,14 @@ public class Prim {
     }
 
     private band(BlockType bt) {
-      super("band", PURE, bt);
+      super("band", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new band(bt);
     }
 
+    /** Primitive semantics: binary operators on Flag values. */
     public boolean op(boolean n, boolean m) {
       return n & m;
     }
@@ -405,7 +428,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinFOp bor = new bor();
+  public static final PrimBinFOp band = new band();
 
   public static final class bor extends PrimBinFOp {
 
@@ -414,13 +437,14 @@ public class Prim {
     }
 
     private bor(BlockType bt) {
-      super("bor", PURE, bt);
+      super("bor", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new bor(bt);
     }
 
+    /** Primitive semantics: binary operators on Flag values. */
     public boolean op(boolean n, boolean m) {
       return n | m;
     }
@@ -434,7 +458,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinFOp bxor = new bxor();
+  public static final PrimBinFOp bor = new bor();
 
   public static final class bxor extends PrimBinFOp {
 
@@ -443,13 +467,14 @@ public class Prim {
     }
 
     private bxor(BlockType bt) {
-      super("bxor", PURE, bt);
+      super("bxor", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new bxor(bt);
     }
 
+    /** Primitive semantics: binary operators on Flag values. */
     public boolean op(boolean n, boolean m) {
       return n ^ m;
     }
@@ -471,7 +496,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinFOp beq = new beq();
+  public static final PrimBinFOp bxor = new bxor();
 
   public static final class beq extends PrimBinFOp {
 
@@ -480,13 +505,14 @@ public class Prim {
     }
 
     private beq(BlockType bt) {
-      super("beq", PURE, bt);
+      super("beq", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new beq(bt);
     }
 
+    /** Primitive semantics: binary operators on Flag values. */
     public boolean op(boolean n, boolean m) {
       return n == m;
     }
@@ -508,7 +534,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinFOp blt = new blt();
+  public static final PrimBinFOp beq = new beq();
 
   public static final class blt extends PrimBinFOp {
 
@@ -517,13 +543,14 @@ public class Prim {
     }
 
     private blt(BlockType bt) {
-      super("blt", PURE, bt);
+      super("blt", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new blt(bt);
     }
 
+    /** Primitive semantics: binary operators on Flag values. */
     public boolean op(boolean n, boolean m) {
       return !n & m;
     }
@@ -545,7 +572,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinFOp ble = new ble();
+  public static final PrimBinFOp blt = new blt();
 
   public static final class ble extends PrimBinFOp {
 
@@ -554,13 +581,14 @@ public class Prim {
     }
 
     private ble(BlockType bt) {
-      super("ble", PURE, bt);
+      super("ble", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new ble(bt);
     }
 
+    /** Primitive semantics: binary operators on Flag values. */
     public boolean op(boolean n, boolean m) {
       return !n | m;
     }
@@ -582,7 +610,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinFOp bgt = new bgt();
+  public static final PrimBinFOp ble = new ble();
 
   public static final class bgt extends PrimBinFOp {
 
@@ -591,13 +619,14 @@ public class Prim {
     }
 
     private bgt(BlockType bt) {
-      super("bgt", PURE, bt);
+      super("bgt", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new bgt(bt);
     }
 
+    /** Primitive semantics: binary operators on Flag values. */
     public boolean op(boolean n, boolean m) {
       return n & !m;
     }
@@ -619,7 +648,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinFOp bge = new bge();
+  public static final PrimBinFOp bgt = new bgt();
 
   public static final class bge extends PrimBinFOp {
 
@@ -628,13 +657,14 @@ public class Prim {
     }
 
     private bge(BlockType bt) {
-      super("bge", PURE, bt);
+      super("bge", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new bge(bt);
     }
 
+    /** Primitive semantics: binary operators on Flag values. */
     public boolean op(boolean n, boolean m) {
       return n | !m;
     }
@@ -656,7 +686,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinOp shl = new shl();
+  public static final PrimBinFOp bge = new bge();
 
   public static final class shl extends PrimBinOp {
 
@@ -665,13 +695,14 @@ public class Prim {
     }
 
     private shl(BlockType bt) {
-      super("shl", PURE, bt);
+      super("shl", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new shl(bt);
     }
 
+    /** Primitive semantics: binary operators on Word values. */
     public long op(long n, long m) {
       return n << m;
     }
@@ -685,7 +716,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinOp lshr = new lshr();
+  public static final PrimBinOp shl = new shl();
 
   public static final class lshr extends PrimBinOp {
 
@@ -694,13 +725,14 @@ public class Prim {
     }
 
     private lshr(BlockType bt) {
-      super("lshr", PURE, bt);
+      super("lshr", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new lshr(bt);
     }
 
+    /** Primitive semantics: binary operators on Word values. */
     public long op(long n, long m) {
       return n >>> m;
     }
@@ -714,7 +746,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinOp ashr = new ashr();
+  public static final PrimBinOp lshr = new lshr();
 
   public static final class ashr extends PrimBinOp {
 
@@ -723,13 +755,14 @@ public class Prim {
     }
 
     private ashr(BlockType bt) {
-      super("ashr", PURE, bt);
+      super("ashr", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new ashr(bt);
     }
 
+    /** Primitive semantics: binary operators on Word values. */
     public long op(long n, long m) {
       return n >> m;
     }
@@ -743,7 +776,7 @@ public class Prim {
     }
   }
 
-  public static final PrimUnOp neg = new neg();
+  public static final PrimBinOp ashr = new ashr();
 
   public static final class neg extends PrimUnOp {
 
@@ -752,13 +785,14 @@ public class Prim {
     }
 
     private neg(BlockType bt) {
-      super("neg", PURE, bt);
+      super("neg", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new neg(bt);
     }
 
+    /** Primitive semantics: unary operators on Word values. */
     public long op(long n) {
       return (-n);
     }
@@ -787,7 +821,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinOp add = new add();
+  public static final PrimUnOp neg = new neg();
 
   public static final class add extends PrimBinOp {
 
@@ -796,13 +830,14 @@ public class Prim {
     }
 
     private add(BlockType bt) {
-      super("add", PURE, bt);
+      super("add", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new add(bt);
     }
 
+    /** Primitive semantics: binary operators on Word values. */
     public long op(long n, long m) {
       return n + m;
     }
@@ -816,7 +851,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinOp sub = new sub();
+  public static final PrimBinOp add = new add();
 
   public static final class sub extends PrimBinOp {
 
@@ -825,13 +860,14 @@ public class Prim {
     }
 
     private sub(BlockType bt) {
-      super("sub", PURE, bt);
+      super("sub", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new sub(bt);
     }
 
+    /** Primitive semantics: binary operators on Word values. */
     public long op(long n, long m) {
       return n - m;
     }
@@ -845,7 +881,7 @@ public class Prim {
     }
   }
 
-  public static final PrimBinOp mul = new mul();
+  public static final PrimBinOp sub = new sub();
 
   public static final class mul extends PrimBinOp {
 
@@ -854,13 +890,14 @@ public class Prim {
     }
 
     private mul(BlockType bt) {
-      super("mul", PURE, bt);
+      super("mul", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new mul(bt);
     }
 
+    /** Primitive semantics: binary operators on Word values. */
     public long op(long n, long m) {
       return n * m;
     }
@@ -874,7 +911,7 @@ public class Prim {
     }
   }
 
-  public static final PrimSing div = new div();
+  public static final PrimBinOp mul = new mul();
 
   public static final class div extends PrimSing {
 
@@ -883,7 +920,7 @@ public class Prim {
     }
 
     private div(BlockType bt) {
-      super("div", IMPURE, bt);
+      super("div", bt, IMPURE);
     }
 
     Prim clone(BlockType bt) {
@@ -938,7 +975,7 @@ public class Prim {
     }
   }
 
-  public static final PrimSing rem = new rem();
+  public static final PrimSing div = new div();
 
   public static final class rem extends PrimSing {
 
@@ -947,7 +984,7 @@ public class Prim {
     }
 
     private rem(BlockType bt) {
-      super("rem", IMPURE, bt);
+      super("rem", bt, IMPURE);
     }
 
     Prim clone(BlockType bt) {
@@ -1002,7 +1039,7 @@ public class Prim {
     }
   }
 
-  public static final PrimSing nzdiv = new nzdiv();
+  public static final PrimSing rem = new rem();
 
   public static final class nzdiv extends PrimSing {
 
@@ -1011,7 +1048,7 @@ public class Prim {
     }
 
     private nzdiv(BlockType bt) {
-      super("nzdiv", PURE, bt);
+      super("nzdiv", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
@@ -1057,7 +1094,7 @@ public class Prim {
     }
   }
 
-  public static final PrimSing nzrem = new nzrem();
+  public static final PrimSing nzdiv = new nzdiv();
 
   public static final class nzrem extends PrimSing {
 
@@ -1066,7 +1103,7 @@ public class Prim {
     }
 
     private nzrem(BlockType bt) {
-      super("nzrem", PURE, bt);
+      super("nzrem", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
@@ -1112,7 +1149,7 @@ public class Prim {
     }
   }
 
-  public static final PrimRelOp eq = new eq();
+  public static final PrimSing nzrem = new nzrem();
 
   public static final class eq extends PrimRelOp {
 
@@ -1121,13 +1158,14 @@ public class Prim {
     }
 
     private eq(BlockType bt) {
-      super("primEq", PURE, bt);
+      super("primEq", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new eq(bt);
     }
 
+    /** Primitive semantics: comparisons of Word values. */
     public boolean op(long n, long m) {
       return n == m;
     }
@@ -1149,7 +1187,7 @@ public class Prim {
     }
   }
 
-  public static final PrimRelOp neq = new neq();
+  public static final PrimRelOp eq = new eq();
 
   public static final class neq extends PrimRelOp {
 
@@ -1158,13 +1196,14 @@ public class Prim {
     }
 
     private neq(BlockType bt) {
-      super("primNeq", PURE, bt);
+      super("primNeq", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new neq(bt);
     }
 
+    /** Primitive semantics: comparisons of Word values. */
     public boolean op(long n, long m) {
       return n != m;
     }
@@ -1186,7 +1225,7 @@ public class Prim {
     }
   }
 
-  public static final PrimSCmpOp slt = new slt();
+  public static final PrimRelOp neq = new neq();
 
   public static final class slt extends PrimSCmpOp {
 
@@ -1195,13 +1234,14 @@ public class Prim {
     }
 
     private slt(BlockType bt) {
-      super("primSlt", PURE, bt);
+      super("primSlt", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new slt(bt);
     }
 
+    /** Primitive semantics: comparisons of Word values. */
     public boolean op(long n, long m) {
       return n < m;
     }
@@ -1223,7 +1263,7 @@ public class Prim {
     }
   }
 
-  public static final PrimSCmpOp sle = new sle();
+  public static final PrimSCmpOp slt = new slt();
 
   public static final class sle extends PrimSCmpOp {
 
@@ -1232,13 +1272,14 @@ public class Prim {
     }
 
     private sle(BlockType bt) {
-      super("primSle", PURE, bt);
+      super("primSle", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new sle(bt);
     }
 
+    /** Primitive semantics: comparisons of Word values. */
     public boolean op(long n, long m) {
       return n <= m;
     }
@@ -1260,7 +1301,7 @@ public class Prim {
     }
   }
 
-  public static final PrimSCmpOp sgt = new sgt();
+  public static final PrimSCmpOp sle = new sle();
 
   public static final class sgt extends PrimSCmpOp {
 
@@ -1269,13 +1310,14 @@ public class Prim {
     }
 
     private sgt(BlockType bt) {
-      super("primSgt", PURE, bt);
+      super("primSgt", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new sgt(bt);
     }
 
+    /** Primitive semantics: comparisons of Word values. */
     public boolean op(long n, long m) {
       return n > m;
     }
@@ -1297,7 +1339,7 @@ public class Prim {
     }
   }
 
-  public static final PrimSCmpOp sge = new sge();
+  public static final PrimSCmpOp sgt = new sgt();
 
   public static final class sge extends PrimSCmpOp {
 
@@ -1306,13 +1348,14 @@ public class Prim {
     }
 
     private sge(BlockType bt) {
-      super("primSge", PURE, bt);
+      super("primSge", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new sge(bt);
     }
 
+    /** Primitive semantics: comparisons of Word values. */
     public boolean op(long n, long m) {
       return n >= m;
     }
@@ -1334,7 +1377,7 @@ public class Prim {
     }
   }
 
-  public static final PrimUCmpOp ult = new ult();
+  public static final PrimSCmpOp sge = new sge();
 
   public static final class ult extends PrimUCmpOp {
 
@@ -1343,13 +1386,14 @@ public class Prim {
     }
 
     private ult(BlockType bt) {
-      super("primUlt", PURE, bt);
+      super("primUlt", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new ult(bt);
     }
 
+    /** Primitive semantics: comparisons of Word values. */
     public boolean op(long n, long m) {
       return (n < m) ^ (n < 0) ^ (m < 0);
     }
@@ -1371,7 +1415,7 @@ public class Prim {
     }
   }
 
-  public static final PrimUCmpOp ule = new ule();
+  public static final PrimUCmpOp ult = new ult();
 
   public static final class ule extends PrimUCmpOp {
 
@@ -1380,13 +1424,14 @@ public class Prim {
     }
 
     private ule(BlockType bt) {
-      super("primUle", PURE, bt);
+      super("primUle", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new ule(bt);
     }
 
+    /** Primitive semantics: comparisons of Word values. */
     public boolean op(long n, long m) {
       return (n <= m) ^ (n < 0) ^ (m < 0);
     }
@@ -1408,7 +1453,7 @@ public class Prim {
     }
   }
 
-  public static final PrimUCmpOp ugt = new ugt();
+  public static final PrimUCmpOp ule = new ule();
 
   public static final class ugt extends PrimUCmpOp {
 
@@ -1417,13 +1462,14 @@ public class Prim {
     }
 
     private ugt(BlockType bt) {
-      super("primUgt", PURE, bt);
+      super("primUgt", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new ugt(bt);
     }
 
+    /** Primitive semantics: comparisons of Word values. */
     public boolean op(long n, long m) {
       return (n > m) ^ (n < 0) ^ (m < 0);
     }
@@ -1445,7 +1491,7 @@ public class Prim {
     }
   }
 
-  public static final PrimUCmpOp uge = new uge();
+  public static final PrimUCmpOp ugt = new ugt();
 
   public static final class uge extends PrimUCmpOp {
 
@@ -1454,13 +1500,14 @@ public class Prim {
     }
 
     private uge(BlockType bt) {
-      super("primUge", PURE, bt);
+      super("primUge", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new uge(bt);
     }
 
+    /** Primitive semantics: comparisons of Word values. */
     public boolean op(long n, long m) {
       return (n >= m) ^ (n < 0) ^ (m < 0);
     }
@@ -1482,7 +1529,7 @@ public class Prim {
     }
   }
 
-  public static final PrimFtoW flagToWord = new flagToWord();
+  public static final PrimUCmpOp uge = new uge();
 
   public static final class flagToWord extends PrimFtoW {
 
@@ -1491,13 +1538,14 @@ public class Prim {
     }
 
     private flagToWord(BlockType bt) {
-      super("flagToWord", PURE, bt);
+      super("flagToWord", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new flagToWord(bt);
     }
 
+    /** Primitive semantics: operators from Flag to Word. */
     public long op(boolean b) {
       return b ? 1 : 0;
     }
@@ -1519,7 +1567,7 @@ public class Prim {
     }
   }
 
-  public static final PrimWtoF wordToFlag = new wordToFlag();
+  public static final PrimFtoW flagToWord = new flagToWord();
 
   public static final class wordToFlag extends PrimWtoF {
 
@@ -1528,13 +1576,14 @@ public class Prim {
     }
 
     private wordToFlag(BlockType bt) {
-      super("wordToFlag", PURE, bt);
+      super("wordToFlag", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
       return new wordToFlag(bt);
     }
 
+    /** Primitive semantics: operators from Word to Flag. */
     public boolean op(long n) {
       return (n & 1) != 0;
     }
@@ -1556,10 +1605,10 @@ public class Prim {
     }
   }
 
+  public static final PrimWtoF wordToFlag = new wordToFlag();
+
   /** Represents the polymorphic block type forall (r::tuple). [] >>= r. */
   static final BlockType haltType = new PolyBlockType(Type.empty, Type.gen(0), Prefix.tuple);
-
-  public static final Prim halt = new halt();
 
   public static final class halt extends Prim {
 
@@ -1568,27 +1617,27 @@ public class Prim {
     }
 
     private halt(BlockType bt) {
-      super("halt", DOESNTRETURN, bt);
+      super("halt", bt, DOESNTRETURN);
     }
 
     Prim clone(BlockType bt) {
       return new halt(bt);
     }
 
+    void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
+      throw new Failure("halt primitive executed");
+    }
+
     /**
-     * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
-     * loop).
+     * Return true if this code enters a non-productive black hole (i.e., if it immediately calls
+     * halt or loop).
      */
     boolean blackholes() {
       return true;
     }
-
-    void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
-      throw new Failure("halt primitive executed");
-    }
   }
 
-  public static final Prim loop = new loop();
+  public static final Prim halt = new halt();
 
   public static final class loop extends Prim {
 
@@ -1597,7 +1646,7 @@ public class Prim {
     }
 
     private loop(BlockType bt) {
-      super("loop", DOESNTRETURN, bt);
+      super("loop", bt, DOESNTRETURN);
     }
 
     Prim clone(BlockType bt) {
@@ -1605,20 +1654,50 @@ public class Prim {
     }
 
     /**
-     * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
-     * loop).
+     * Return true if this code enters a non-productive black hole (i.e., if it immediately calls
+     * halt or loop).
      */
     boolean blackholes() {
       return true;
     }
   }
 
-  /**
-   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
-   * loop).
-   */
-  boolean blackholes() {
-    return false;
+  public static final Prim loop = new loop();
+
+  /** Create a call with the given arguments. */
+  public Call withArgs(Atom[] args) {
+    return new PrimCall(this, args);
+  }
+
+  /** Create a call with no arguments. */
+  public Call withArgs() {
+    return withArgs(Atom.noAtoms);
+  }
+
+  /** Create a call with a single argument. */
+  public Call withArgs(Atom a) {
+    return withArgs(new Atom[] {a});
+  }
+
+  /** Create a call with two Atom arguments. */
+  public Call withArgs(Atom a, Atom b) {
+    return withArgs(new Atom[] {a, b});
+  }
+
+  /** Create a call with two arguments: an Atom and a Word. */
+  public Call withArgs(Atom a, long n) {
+    return withArgs(new Atom[] {a, new Word(n)});
+  }
+
+  /** Create a call with two arguments: a Word and an Atom. */
+  public Call withArgs(long n, Atom b) {
+    return withArgs(new Atom[] {new Word(n), b});
+  }
+
+  static void addBuiltins(Builtin builtin) throws Failure {
+    for (int i = 0; i < numPrims; i++) {
+      builtin.addNewPrim(table[i]);
+    }
   }
 
   BlockType instantiate() {
@@ -1638,8 +1717,6 @@ public class Prim {
 
   protected static final BlockType wordToUnitType = new BlockType(wordTuple, Type.empty);
 
-  public static final Prim printWord = new printWord();
-
   public static final class printWord extends Prim {
 
     private printWord() {
@@ -1647,7 +1724,7 @@ public class Prim {
     }
 
     private printWord(BlockType bt) {
-      super("printWord", IMPURE, bt);
+      super("printWord", bt, IMPURE);
     }
 
     Prim clone(BlockType bt) {
@@ -1659,13 +1736,34 @@ public class Prim {
     }
   }
 
+  public static final Prim printWord = new printWord();
+
   void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
     throw new Failure("primitive \"" + id + "\" not available");
   }
 
-  protected static final BlockType nopType = new BlockType(Type.empty, Type.empty);
+  /** Test for code that is guaranteed not to return. */
+  boolean doesntReturn() {
+    return purity >= DOESNTRETURN;
+  }
 
-  public static final PrimNop noinline = new noinline();
+  /**
+   * Determine if a given tail expression has no externally visible side effects. This is true for
+   * returns, allocators, and selections, and for calls to primitives that are not impure.
+   */
+  boolean hasNoEffect() {
+    return purity < IMPURE;
+  }
+
+  /**
+   * Return true if this code enters a non-productive black hole (i.e., if it immediately calls halt
+   * or loop).
+   */
+  boolean blackholes() {
+    return false;
+  }
+
+  protected static final BlockType nopType = new BlockType(Type.empty, Type.empty);
 
   public static final class noinline extends PrimNop {
 
@@ -1674,12 +1772,31 @@ public class Prim {
     }
 
     private noinline(BlockType bt) {
-      super("noinline", IMPURE, bt);
+      super("noinline", bt, IMPURE);
     }
 
     Prim clone(BlockType bt) {
       return new noinline(bt);
     }
+  }
+
+  public static final PrimNop noinline = new noinline();
+
+  /**
+   * Test whether a given tail expression may be repeatable (i.e., whether the results of a previous
+   * use of the same tail can be reused instead of repeating the tail). TODO: is there a better name
+   * for this?
+   */
+  public boolean isRepeatable() {
+    return purity <= OBSERVER;
+  }
+
+  /**
+   * Test whether a given tail expression is pure (no externally visible side effects and no
+   * dependence on other effects).
+   */
+  public boolean isPure() {
+    return purity == PURE;
   }
 
   /**
@@ -1692,7 +1809,8 @@ public class Prim {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return id.hashCode();
@@ -1717,7 +1835,7 @@ public class Prim {
 
   /**
    * Generate a specialized version of this primitive at a given monotype. Reuses previously
-   * specialized versions if available, or returns original primitive if type is monomorphic.
+   * specialized versions if available, or returns the original primitive if type is monomorphic.
    */
   Prim specializePrim(MILSpec spec, BlockType type, TVarSubst s) {
     BlockType inst = type.apply(s).canonBlockType(spec);
@@ -1730,8 +1848,8 @@ public class Prim {
           return ps.head;
         }
       }
-      // TODO: should the new primitive include a pointer back to the Prim from which it was
-      // derived?
+      // TODO: should the new primitive include a pointer back to the Prim
+      // from which it was derived?
       Prim newP = this.clone(inst);
       debug.Log.println("specialized version of primitive " + id + " :: " + inst);
       debug.Log.println("            original version was " + id + " :: " + blockType);
@@ -1748,18 +1866,18 @@ public class Prim {
    * A class for primitives whose implementation will be provided by the specified implementation
    * Block, substituted in for the primitive during representation transformation.
    */
-  public static class blockImpl extends Prim {
+  public static class BlockImpl extends Prim {
 
     private Block impl;
 
     /** Default constructor. */
-    public blockImpl(String id, int purity, BlockType blockType, Block impl) {
-      super(id, purity, blockType);
+    public BlockImpl(String id, BlockType blockType, int purity, Block impl) {
+      super(id, blockType, purity);
       this.impl = impl;
     }
 
     public Prim clone(BlockType bt) {
-      return new blockImpl(id, purity, bt, impl);
+      return new BlockImpl(id, bt, purity, impl);
     }
 
     Tail repTransformPrim(RepTypeSet set, Atom[] targs) {
@@ -1803,8 +1921,6 @@ public class Prim {
 
   static final BlockType store64type = new BlockType(Type.tuple(addrType, bit64), unitTuple);
 
-  public static final Prim load1 = new load1();
-
   public static final class load1 extends Prim {
 
     private load1() {
@@ -1812,7 +1928,7 @@ public class Prim {
     }
 
     private load1(BlockType bt) {
-      super("load1", IMPURE, bt);
+      super("load1", bt, IMPURE);
     }
 
     Prim clone(BlockType bt) {
@@ -1836,7 +1952,7 @@ public class Prim {
     }
   }
 
-  public static final Prim load8 = new load8();
+  public static final Prim load1 = new load1();
 
   public static final class load8 extends Prim {
 
@@ -1845,7 +1961,7 @@ public class Prim {
     }
 
     private load8(BlockType bt) {
-      super("load8", IMPURE, bt);
+      super("load8", bt, IMPURE);
     }
 
     Prim clone(BlockType bt) {
@@ -1869,7 +1985,7 @@ public class Prim {
     }
   }
 
-  public static final Prim load16 = new load16();
+  public static final Prim load8 = new load8();
 
   public static final class load16 extends Prim {
 
@@ -1878,7 +1994,7 @@ public class Prim {
     }
 
     private load16(BlockType bt) {
-      super("load16", IMPURE, bt);
+      super("load16", bt, IMPURE);
     }
 
     Prim clone(BlockType bt) {
@@ -1902,7 +2018,7 @@ public class Prim {
     }
   }
 
-  public static final Prim load32 = new load32();
+  public static final Prim load16 = new load16();
 
   public static final class load32 extends Prim {
 
@@ -1911,7 +2027,7 @@ public class Prim {
     }
 
     private load32(BlockType bt) {
-      super("load32", IMPURE, bt);
+      super("load32", bt, IMPURE);
     }
 
     Prim clone(BlockType bt) {
@@ -1935,7 +2051,7 @@ public class Prim {
     }
   }
 
-  public static final Prim load64 = new load64();
+  public static final Prim load32 = new load32();
 
   public static final class load64 extends Prim {
 
@@ -1944,7 +2060,7 @@ public class Prim {
     }
 
     private load64(BlockType bt) {
-      super("load64", IMPURE, bt);
+      super("load64", bt, IMPURE);
     }
 
     Prim clone(BlockType bt) {
@@ -2007,7 +2123,7 @@ public class Prim {
     }
   }
 
-  public static final Prim store1 = new store1();
+  public static final Prim load64 = new load64();
 
   public static final class store1 extends Prim {
 
@@ -2016,7 +2132,7 @@ public class Prim {
     }
 
     private store1(BlockType bt) {
-      super("store1", IMPURE, bt);
+      super("store1", bt, IMPURE);
     }
 
     Prim clone(BlockType bt) {
@@ -2034,7 +2150,7 @@ public class Prim {
     }
   }
 
-  public static final Prim store8 = new store8();
+  public static final Prim store1 = new store1();
 
   public static final class store8 extends Prim {
 
@@ -2043,7 +2159,7 @@ public class Prim {
     }
 
     private store8(BlockType bt) {
-      super("store8", IMPURE, bt);
+      super("store8", bt, IMPURE);
     }
 
     Prim clone(BlockType bt) {
@@ -2061,7 +2177,7 @@ public class Prim {
     }
   }
 
-  public static final Prim store16 = new store16();
+  public static final Prim store8 = new store8();
 
   public static final class store16 extends Prim {
 
@@ -2070,7 +2186,7 @@ public class Prim {
     }
 
     private store16(BlockType bt) {
-      super("store16", IMPURE, bt);
+      super("store16", bt, IMPURE);
     }
 
     Prim clone(BlockType bt) {
@@ -2088,7 +2204,7 @@ public class Prim {
     }
   }
 
-  public static final Prim store32 = new store32();
+  public static final Prim store16 = new store16();
 
   public static final class store32 extends Prim {
 
@@ -2097,7 +2213,7 @@ public class Prim {
     }
 
     private store32(BlockType bt) {
-      super("store32", IMPURE, bt);
+      super("store32", bt, IMPURE);
     }
 
     Prim clone(BlockType bt) {
@@ -2115,7 +2231,7 @@ public class Prim {
     }
   }
 
-  public static final Prim store64 = new store64();
+  public static final Prim store32 = new store32();
 
   public static final class store64 extends Prim {
 
@@ -2124,7 +2240,7 @@ public class Prim {
     }
 
     private store64(BlockType bt) {
-      super("store64", IMPURE, bt);
+      super("store64", bt, IMPURE);
     }
 
     Prim clone(BlockType bt) {
@@ -2142,20 +2258,22 @@ public class Prim {
         return super.repTransformPrim(set, targs);
       } else if (wordsize == 32) {
         if (impl == null) {
+          // Build implementation of the form:
+          //    store64[addr, lsw, msw]
+          //      = _  <- store32(addr, lsw)
+          //        a  <- add((addr, 4))
+          //        store32((a, msw))
           Temp[] vs = Temp.makeTemps(3);
           Temp a = new Temp();
           Prim p = Prim.store32.canonPrim(set);
           impl =
               new Block(
                   BuiltinPosition.pos,
-                  vs, // store64[addr, lsw, msw]
+                  vs,
                   new Bind(
                       new Temp(),
-                      p.withArgs(vs[0], vs[1]), //   = _  <- store32(addr, lsw)
-                      new Bind(
-                          a,
-                          Prim.add.withArgs(vs[0], 4), //     a  <- add((addr, 4))
-                          new Done(p.withArgs(a, vs[2]))))); //     store32((a, msw))
+                      p.withArgs(vs[0], vs[1]),
+                      new Bind(a, Prim.add.withArgs(vs[0], 4), new Done(p.withArgs(a, vs[2])))));
         }
         return new BlockCall(impl, targs);
       } else {
@@ -2178,12 +2296,12 @@ public class Prim {
     }
   }
 
+  public static final Prim store64 = new store64();
+
   static final Type init0Type = Type.init(Type.gen(0));
 
   static final BlockType initSeqType =
       new PolyBlockType(Type.tuple(init0Type, init0Type), Type.tuple(init0Type), Prefix.area);
-
-  public static final Prim initSeq = new initSeq();
 
   public static final class initSeq extends Prim {
 
@@ -2192,7 +2310,7 @@ public class Prim {
     }
 
     private initSeq(BlockType bt) {
-      super("primInitSeq", PURE, bt);
+      super("primInitSeq", bt, PURE);
     }
 
     Prim clone(BlockType bt) {
@@ -2220,106 +2338,13 @@ public class Prim {
                 BuiltinPosition.pos,
                 ij,
                 r, // impl{i, j} r
-                new BlockCall(b).withArgs(Temp.append(ij, r))); //   = b[i, j, r]
+                new BlockCall(b, Temp.append(ij, r))); //   = b[i, j, r]
       }
-      return new ClosAlloc(impl).withArgs(targs);
+      return new ClosAlloc(impl, targs);
     }
   }
 
-  static final Type ref0Type = Type.ref(Type.gen(0));
-
-  static final BlockType initSelfType =
-      new PolyBlockType(
-          Type.tuple(Type.milfun(Type.tuple(ref0Type), Type.tuple(init0Type))),
-          Type.tuple(init0Type),
-          Prefix.area);
-
-  public static final Prim initSelf = new initSelf();
-
-  public static final class initSelf extends Prim {
-
-    private initSelf() {
-      this(initSelfType);
-    }
-
-    private initSelf(BlockType bt) {
-      super("primInitSelf", PURE, bt);
-    }
-
-    Prim clone(BlockType bt) {
-      return new initSelf(bt);
-    }
-
-    /** Records the closure structure that is used to implement this primitive. */
-    private ClosureDefn impl = null;
-
-    Tail repTransformPrim(RepTypeSet set, Atom[] targs) {
-      if (impl == null) {
-        Temp[] fr = Temp.makeTemps(2);
-        Temp g = new Temp();
-        Block b =
-            new Block(
-                BuiltinPosition.pos,
-                fr, // b[f, r]
-                new Bind(
-                    g,
-                    new Enter(fr[0], fr[1]), //   = g <- f @ r
-                    new Done(new Enter(g, fr[1])))); //     g @ r
-        Temp[] f = Temp.makeTemps(1);
-        Temp[] r = Temp.makeTemps(1);
-        impl =
-            new ClosureDefn(
-                BuiltinPosition.pos,
-                f,
-                r, // impl{f} r
-                new BlockCall(b).withArgs(Temp.append(f, r))); //   = b[f, r]
-      }
-      return new ClosAlloc(impl).withArgs(targs);
-    }
-  }
-
-  static final BlockType reInitType =
-      new PolyBlockType(Type.tuple(ref0Type, init0Type), Type.empty, Prefix.area);
-
-  public static final Prim reInit = new reInit();
-
-  public static final class reInit extends Prim {
-
-    private reInit() {
-      this(reInitType);
-    }
-
-    private reInit(BlockType bt) {
-      super("primReInit", IMPURE, bt);
-    }
-
-    Prim clone(BlockType bt) {
-      return new reInit(bt);
-    }
-
-    /** Records the closure structure that is used to implement this primitive. */
-    private ClosureDefn impl = null;
-
-    Tail repTransformPrim(RepTypeSet set, Atom[] targs) {
-      if (impl == null) {
-        Temp[] ri = Temp.makeTemps(2);
-        Block b =
-            new Block(
-                BuiltinPosition.pos,
-                ri, // b[r, i]
-                new Done(new Enter(ri[1], ri[0]))); //   = i @ r
-        Temp[] r = Temp.makeTemps(1);
-        Temp[] i = Temp.makeTemps(1);
-        impl =
-            new ClosureDefn(
-                BuiltinPosition.pos,
-                r,
-                i, // impl{r} i
-                new BlockCall(b).withArgs(Temp.append(r, i))); //   = b[r, i]
-      }
-      return new ClosAlloc(impl).withArgs(targs);
-    }
-  }
+  public static final Prim initSeq = new initSeq();
 
   /**
    * Representation for structure field initializers that map initializers for single fields into
@@ -2327,18 +2352,18 @@ public class Prim {
    * initialization of a structure; instead, they should be used in combination when compiling a
    * structure with one initializer for every field.
    */
-  static class initStructField extends Prim {
+  static class InitStructField extends Prim {
 
     private int offset;
 
     /** Default constructor. */
-    initStructField(String id, int purity, BlockType blockType, int offset) {
-      super(id, purity, blockType);
+    InitStructField(String id, BlockType blockType, int purity, int offset) {
+      super(id, blockType, purity);
       this.offset = offset;
     }
 
     Prim clone(BlockType bt) {
-      return new initStructField(id, purity, bt, offset);
+      return new InitStructField(id, bt, purity, offset);
     }
 
     /**
@@ -2371,7 +2396,7 @@ public class Prim {
               BuiltinPosition.pos,
               io,
               r, // initStructFieldClos{i, o} r
-              new BlockCall(b).withArgs(Temp.append(io, r))); //   = b[i, o, r]
+              new BlockCall(b, Temp.append(io, r))); //   = b[i, o, r]
     }
 
     /**
@@ -2444,7 +2469,7 @@ public class Prim {
    */
   static llvm.Code storeLLVM(
       LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Type ty, llvm.Code c) {
-    llvm.Type pt = ty.ptr(); // pointer type
+    llvm.Type pt = llvm.Type.ptr; // pointer type
     llvm.Local p = vm.reg(pt); // register to hold pointer
     llvm.Value v = args[1].toLLVMAtom(lm, vm, s); // value to store
     if (ty == v.getType()) { // store v directly if types match
@@ -2464,13 +2489,18 @@ public class Prim {
    */
   static llvm.Code loadLLVM(
       LLVMMap lm, VarMap vm, TempSubst s, Atom[] args, llvm.Type ty, llvm.Local lhs, llvm.Code c) {
-    llvm.Type pt = ty.ptr(); // pointer type
+    llvm.Type pt = llvm.Type.ptr; // pointer type
     llvm.Local p = vm.reg(pt); // register to hold pointer
-    if (ty == lhs.getType()) { // load directly into lhs if types match
-      c = new llvm.Op(lhs, new llvm.Load(p), c);
-    } else { // zero extend loaded value if types do not match (assumes lhs type is wider than ty)
+    if (ty == lhs.getType()) {
+      // load directly into lhs if types match
+      c = new llvm.Op(lhs, new llvm.Load(ty, p), c);
+    } else {
+      // zero extend loaded value if types do not match (assumes lhs
+      // type is wider than ty)
       llvm.Local v = vm.reg(ty); // register to hold value
-      c = new llvm.Op(v, new llvm.Load(p), new llvm.Op(lhs, new llvm.Zext(v, lhs.getType()), c));
+      c =
+          new llvm.Op(
+              v, new llvm.Load(ty, p), new llvm.Op(lhs, new llvm.Zext(v, lhs.getType()), c));
     }
     return new llvm.Op(p, new llvm.IntToPtr(args[0].toLLVMAtom(lm, vm, s), pt), c);
   }

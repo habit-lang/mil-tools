@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -55,8 +55,10 @@ abstract class TVarsInScope {
     } else {
       TVars tvs = tvarsInScope(tis.enclosing);
       if (tvs == null) {
-        // If there are no unbound type variables in the enclosing object now, then there will never
-        // be any unbound type variables there in the future and we can unlink it from this list.
+        // If there are no unbound type variables in the enclosing
+        // object now, then there will never be any unbound type
+        // variables there in the future and we can unlink it from
+        // this list.
         tis.enclosing = null;
       }
       return tis.tvarsInScope(tvs);

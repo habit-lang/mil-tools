@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,13 +22,16 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
-/** Represents a branch that attempts to match a specific constructor function. */
+/** Represents a branch that matchs a specific constructor function. */
 public class CfunAlt extends Alts {
 
+  /** The constructor to match against. */
   private Cfun cf;
 
+  /** The blockcall to make if there is a match. */
   private BlockCall bc;
 
+  /** Additional alternatives if there is no match. */
   private Alts next;
 
   /** Default constructor. */
@@ -38,17 +41,12 @@ public class CfunAlt extends Alts {
     this.next = next;
   }
 
-  /** Test for a free occurrence of a particular variable. */
-  boolean contains(Temp w) {
-    return bc.contains(w) || next.contains(w);
-  }
-
   /** Find the dependencies of this AST fragment. */
   Defns dependencies(Defns ds) {
     return bc.dependencies(next.dependencies(ds));
   }
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
   void dump(PrintWriter out, Temps ts) {
     Code.indent(out); // double indent
     Code.indent(out);
@@ -63,25 +61,33 @@ public class CfunAlt extends Alts {
     return new CfunAlt(cf, bc.applyBlockCall(s), next.apply(s));
   }
 
-  private AllocType type;
+  /** The AllocType instance for this call. */
+  private AllocType ltype;
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   TVars tvars(TVars tvs) {
-    return next.tvars(type.tvars(tvs));
+    return next.tvars(ltype.tvars(tvs));
   }
 
   void checkTypeAlts(Position pos, Type dom, Type rng) throws Failure {
-    type = cf.instantiate(); // get a type for the constructor
-    type.resultUnifiesWith(pos, dom); // check that cf is a possible constructor for dom
+    // get a type for the constructor
+    ltype = cf.instantiate();
+    // check that cf is a possible constructor for dom
+    ltype.resultUnifiesWith(pos, dom);
     bc.inferType(pos).unify(pos, rng);
     next.checkTypeAlts(pos, dom, rng);
   }
 
   /** Generate code for this list of alternatives. */
   void generateCode(MachineBuilder builder, int o) {
-    int patchAddr = builder.jntag(cf.getNum(), 0); // 0 is a dummy address here
+    int patchAddr = builder.jntag(cf.getNum(), 0); // 0 is a dummy address
     bc.generateTailCode(builder, o);
     next.generateCode(builder, o, patchAddr);
+  }
+
+  /** Test for a free occurrence of a particular variable. */
+  boolean contains(Temp w) {
+    return bc.contains(w) || next.contains(w);
   }
 
   /**
@@ -133,7 +139,8 @@ public class CfunAlt extends Alts {
   }
 
   public void flow(Defn d, Atom a, Facts facts, TempSubst s) {
-    // We know which constructor will be used for a, but not its arguments:
+    // We know which constructor will be used for a, but not its
+    // arguments:
     bc = bc.applyBlockCall(s).rewriteBlockCall(d, a.addFact(cf, facts), false);
     next.flow(d, a, facts, s);
   }
@@ -162,7 +169,8 @@ public class CfunAlt extends Alts {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return (3 + 7 * bc.summary()) + 13 * next.summary();
@@ -187,8 +195,8 @@ public class CfunAlt extends Alts {
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
-    if (type != null) {
-      type = type.canonAllocType(set);
+    if (ltype != null) {
+      ltype = ltype.canonAllocType(set);
     }
     cf = cf.canonCfun(set);
     bc.collect(set);
@@ -214,12 +222,17 @@ public class CfunAlt extends Alts {
     return used;
   }
 
+  /**
+   * Update the given array of Cfuns with entries for any constructor functions that are used in
+   * these alternatives.
+   */
   Alts cfunsUsed(Cfun[] used) {
     // Flag use of this constructor as having been mentioned:
     int num = cf.getNum(); // flag use of this constructor
     if (num >= 0 && num < used.length) {
       if (used[num] != null) {
-        // This constructor (number) has been used earlier in the list of Alts.
+        // This constructor (number) has been used earlier in the list of
+        // Alts, so this later match will never be used.
         return next.cfunsUsed(used);
       }
       used[num] = cf;
@@ -245,25 +258,37 @@ public class CfunAlt extends Alts {
     return this;
   }
 
+  /**
+   * Rewrite a set of alternatives that includes a CfunAlt for all but one of the associated
+   * constructors. In this situation, we can eliminate a default branch with a match against the
+   * only missing constructor. While this might appear to create more work (forcing a match where it
+   * was already implied), it will actually mean that we have more accurate type information when
+   * analyzing the block call for what was previously the default branch.
+   */
   Alts promoteDefault(Cfun cf) {
     next = next.promoteDefault(cf);
     return this;
   }
 
-  /** Generate a specialized version of this Alt. */
+  /** Generate a specialized version of this Alts structure. */
   Alts specializeAlts(MILSpec spec, TVarSubst s, SpecEnv env) {
     return new CfunAlt(
-        cf.specializeCfun(spec, type, s),
+        cf.specializeCfun(spec, ltype, s),
         bc.specializeBlockCall(spec, s, env),
         next.specializeAlts(spec, s, env));
   }
 
+  /** Rewrite these case alternatives to use the bitdata representations provided by BitdataMap. */
   Alts bitdataRewrite(BitdataMap m) {
     BitdataRep r = cf.findRep(m);
     Cfun ncf = (r == null) ? cf : cf.bitdataRewrite(r);
     return new CfunAlt(ncf, bc, next.bitdataRewrite(m));
   }
 
+  /**
+   * Generate a new version of these case alternatives to update references to constructor functions
+   * consistent with the datatype equalities in the given MergeMap.
+   */
   Alts mergeRewrite(MergeMap mmap) {
     return new CfunAlt(cf.lookup(mmap), bc, next.mergeRewrite(mmap));
   }

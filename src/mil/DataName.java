@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -32,6 +32,10 @@ public abstract class DataName extends Tycon {
   /** Holds the list of constructor functions for this DataName. */
   protected Cfun[] cfuns;
 
+  /**
+   * Set the Cfuns for this DataName. This is needed to establish the cyclic references between
+   * DataName objects and their Cfuns.
+   */
   public void setCfuns(Cfun[] cfuns) {
     this.cfuns = cfuns;
   }
@@ -64,14 +68,16 @@ public abstract class DataName extends Tycon {
 
   /** Return the canonical version of a Tycon wrt to the given set. */
   Tycon canonTycon(TypeSet set) {
+    // Use previously computed canonical version if available
     Tycon ntycon = set.mapsTyconTo(this);
-    if (ntycon != null) { // Use previously computed canonical version if available
+    if (ntycon != null) {
       return ntycon;
-    } else if (set.containsTycon(
-        this)) { // Tycon is already in the target?  (TODO: is this still necessary?)
+    } else if (set.containsTycon(this)) {
+      // Tycon is already in the target?  (TODO: is this still necessary?)
       return this;
     }
-    return makeCanonTycon(set); // But otherwise, make a new canonical version
+    // But otherwise, make a new canonical version
+    return makeCanonTycon(set);
   }
 
   /**
@@ -94,10 +100,15 @@ public abstract class DataName extends Tycon {
     return false;
   }
 
+  /**
+   * Create a specialized version of this type constructor, if necessary, and if the appropriate
+   * specialized version has not already been created.
+   */
   Tycon specializeDataName(MILSpec spec, Type inst) {
     return canonTycon(spec);
   }
 
+  /** Find the DataType for this object, if any, or else return null. */
   DataType dataType() {
     return null;
   }

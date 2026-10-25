@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -28,43 +28,9 @@ class BitdataRep extends BitdataType {
     super(pos, id);
   }
 
-  BitdataRep isBitdataRep() {
+  /** Test whether this Tycon is an BitdataRep. */
+  public BitdataRep isBitdataRep() {
     return this;
-  }
-
-  private Block[] consBlocks = null;
-
-  /**
-   * Return the block of code that can be used to construct a value using the numth constructor in
-   * this BitdataRep.
-   */
-  Block bitdataConsBlock(int num) {
-    if (consBlocks == null) { // First time for this BitdataRep?  Make a new array ...
-      consBlocks = new Block[cfuns.length];
-    }
-    if (consBlocks[num] == null) { // First time for this value of num?  Make a new block ...
-      return consBlocks[num] = layouts[num].makeConsBlock(cfuns[num]);
-    }
-    return consBlocks[num]; // Return the previously constructed block
-  }
-
-  private Block[][] selBlocks = null;
-
-  /**
-   * Return the block of code that can be used to construct a value using the numth constructor in
-   * this BitdataRep.
-   */
-  Block bitdataSelBlock(int num, int n) {
-    if (selBlocks == null) { // First time for this BitdataRep?  Make a new array ...
-      selBlocks = new Block[cfuns.length][];
-    }
-    if (selBlocks[num] == null) { // First time for this value of num?  Make a new (sub)array ...
-      selBlocks[num] = new Block[layouts[num].getArity()];
-    }
-    if (selBlocks[num][n] == null) { // First time for this n?  Make a new block ...
-      return selBlocks[num][n] = layouts[num].makeSelBlock(cfuns[num], n);
-    }
-    return selBlocks[num][n]; // Return the previously constructed block
   }
 
   /**
@@ -73,5 +39,56 @@ class BitdataRep extends BitdataType {
    */
   Cfun bitdataCfun(int i) {
     return cfuns[i];
+  }
+
+  /**
+   * Stores a cache of blocks for constructing values of the constructor functions for this Bitdata
+   * Rep.
+   */
+  private Block[] consBlocks = null;
+
+  /**
+   * Return the block of code that can be used to construct a value using the (num)th constructor in
+   * this BitdataRep.
+   */
+  Block bitdataConsBlock(int num) {
+    if (consBlocks == null) {
+      // First time for this BitdataRep?  Make a new array ...
+      consBlocks = new Block[cfuns.length];
+    }
+    if (consBlocks[num] == null) {
+      // First time for this value of num?  Make a new block ...
+      return consBlocks[num] = layouts[num].makeConsBlock(cfuns[num]);
+    }
+    // Return the previously constructed block
+    return consBlocks[num];
+  }
+
+  /**
+   * Stores a cache of of blocks for selecting fields from this BitdataRep. Specifically,
+   * selBlocks[num][n] will hold a block that selects the nth field of the numth constructor.
+   */
+  private Block[][] selBlocks = null;
+
+  /**
+   * Return a block that can be called to select the nth field of the (num)th constructor of this
+   * BitdataRep. New blocks are generated on demand and added to the selBlocks cache so that they
+   * can be reused for subsequent calls, if needed.
+   */
+  Block bitdataSelBlock(int num, int n) {
+    if (selBlocks == null) {
+      // First time for this BitdataRep?  Make a new array ...
+      selBlocks = new Block[cfuns.length][];
+    }
+    if (selBlocks[num] == null) {
+      // First time for this value of num?  Make a new (sub)array ...
+      selBlocks[num] = new Block[layouts[num].getArity()];
+    }
+    if (selBlocks[num][n] == null) {
+      // First time for this n?  Make a new block ...
+      return selBlocks[num][n] = layouts[num].makeSelBlock(cfuns[num], n);
+    }
+    // Return the previously constructed block
+    return selBlocks[num][n];
   }
 }

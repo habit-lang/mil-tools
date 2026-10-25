@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -44,17 +44,17 @@ public class TNat extends TLit {
   }
 
   /**
-   * Test to determine whether this type is alpha equivalent to another type, by checking to see if
-   * the two type skeletons are equal, possibly with some correspondence between the TGen objects in
-   * the two types. We use the names left and right to keep track of which types were on the left
-   * and the right in the original alphaEquiv() call so that we can build the TGenCorresp in a
-   * consistent manner.
+   * Test whether this type is alpha equivalent to another type, by checking to see if the two type
+   * skeletons are equal, possibly with some correspondence between the TGen objects in the two
+   * types. We use the names left and right to keep track of which types were on the left and the
+   * right in the original alphaEquiv() call so that we can build the TGenCorresp in a consistent
+   * manner.
    */
   boolean alphaType(Type left, TGenCorresp corresp) {
     return left.alphaTNat(this);
   }
 
-  /** Test to determine whether this type is equal to a given TNat. */
+  /** Test whether this type is equal to a given TNat. */
   boolean alphaTNat(TNat right) {
     return this.num.equals(right.num);
   }
@@ -67,7 +67,7 @@ public class TNat extends TLit {
     tw.writeNat(num);
   }
 
-  /** Test to determine whether this type is equal to a specified type literal. */
+  /** Test whether this type is equal to a specified type literal. */
   boolean sameTLit(Type[] thisenv, TLit t) {
     return t.alphaTNat(this);
   }
@@ -93,7 +93,7 @@ public class TNat extends TLit {
    * either an unbound TVar, or else a TNat literal. TODO: This could be used more generally as a
    * way to eliminate all TGen, TInd, bound TVar, or Synonym nodes at the root of any type, not just
    * natural number types ... Suggest rewriting description and renaming method to reflect that ...
-   * (and testing too ...)
+   * (and testing too ...).
    */
   public Type simplifyNatType(Type[] tenv) {
     return this;

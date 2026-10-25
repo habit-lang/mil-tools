@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,6 +21,7 @@ package mil;
 import compiler.*;
 import core.*;
 
+/** Represents a closure definition expression. */
 class ClosureDefnExp extends DefnExp {
 
   private String id;
@@ -56,7 +57,7 @@ class ClosureDefnExp extends DefnExp {
    * Perform scope analysis on this definition to ensure that all referenced identifiers are
    * appropriately bound.
    */
-  void inScopeOf(Handler handler, MILEnv milenv) throws Failure {
+  void inScopeOf(Handler handler, MILEnv milenv) throws Failure { // id{ids} args = cexp
     k.inScopeOf(handler, milenv, ids, args, cexp);
   }
 

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,8 +22,10 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/** Represents an area declaration: id <- area l a [init]. */
 public abstract class Area extends TopDefn {
 
+  /** The name of the area being defined. */
   protected String id;
 
   /** Default constructor. */
@@ -32,15 +34,8 @@ public abstract class Area extends TopDefn {
     this.id = id;
   }
 
+  /** The declared or inferred type for this area. */
   protected Scheme declared;
-
-  /**
-   * Return references to all components of this top level definition in an array of
-   * atoms/arguments.
-   */
-  Atom[] tops() {
-    return new TopArea[] {new TopArea(this)};
-  }
 
   /** Get the declared type, or null if no type has been set. */
   public Scheme getDeclared() {
@@ -61,12 +56,13 @@ public abstract class Area extends TopDefn {
     return id;
   }
 
+  /** Specifies the dot attributes for a node representing a particular type of definition. */
   String dotAttrs() {
     return "style=filled fillcolor=darkolivegreen1";
   }
 
-  /** Display a printable representation of this definition on the specified PrintWriter. */
-  void dump(PrintWriter out, boolean isEntrypoint) {
+  /** Display a header for this definition. */
+  void dumpHeader(PrintWriter out, boolean isEntrypoint) {
     if (declared != null) {
       if (isEntrypoint) {
         out.print("entrypoint ");
@@ -75,7 +71,9 @@ public abstract class Area extends TopDefn {
     }
   }
 
-  /** Return a type for an instantiated version of this item when used as Atom (input operand). */
+  /**
+   * Return a type for an instantiated version of this item when used as an Atom (input operand).
+   */
   public Type instantiate() {
     return declared.instantiate();
   }
@@ -121,6 +119,14 @@ public abstract class Area extends TopDefn {
   }
 
   /**
+   * Return references to all components of this top level definition in an array of
+   * atoms/arguments.
+   */
+  Atom[] tops() {
+    return new TopArea[] {new TopArea(this)};
+  }
+
+  /**
    * Compute a summary for this definition (if it is a block, top-level, or closure) and then look
    * for a previously encountered item with the same code in the given table. Return true if a
    * duplicate was found.
@@ -138,23 +144,36 @@ public abstract class Area extends TopDefn {
     /* Nothing to do here */
   }
 
+  /** Worker function for MILSpec.dump(): Print a signature line for this definition. */
   void printlnSig(PrintWriter out) {
     out.println(id + " :: " + declared);
   }
 
+  /**
+   * Return an Atom corresponding to a specialized version of this memory area under the given
+   * substitution. (We do not currently allow memory areas with polymorphic types, so the
+   * substitution will have no effect here. But we keep the plumbing, just in case it might be
+   * needed in future, for example, in connection with type expressions that are used to specify
+   * size and alignment.
+   */
   abstract Atom specializeArea(MILSpec spec, Type inst);
 
+  /** Rewrite a program to use the bitdata representations provided by BitdataMap. */
   void bitdataRewrite(BitdataMap m) {
     /* Nothing to do here */
   }
 
+  /**
+   * Rewrite this definition to update references to constructor functions consistent with the
+   * datatype equalities in the given MergeMap.
+   */
   void mergeRewrite(MergeMap mmap) {
     /* Nothing to do here */
   }
 
-  public void setDeclared(Handler handler, Position pos, Scheme scheme) {
+  public void setDeclared(Position pos, Scheme scheme) throws Failure {
     if (declared != null) {
-      handler.report(new Failure(pos, "Multiple type annotations for \"" + id + "\""));
+      throw new Failure(pos, "Multiple type annotations for \"" + id + "\"");
     }
     declared = scheme;
   }
@@ -182,7 +201,7 @@ public abstract class Area extends TopDefn {
   }
 
   protected llvm.Value calcStaticValue(String id) {
-    return new llvm.PtrToInt(new llvm.Global(llvm.Type.i8.ptr(), id), llvm.Type.word());
+    return new llvm.PtrToInt(new llvm.Global(llvm.Type.ptr, id), llvm.Type.word());
   }
 
   /** Count the number of non-tail calls to blocks in this abstract syntax fragment. */

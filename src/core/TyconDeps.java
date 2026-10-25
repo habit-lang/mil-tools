@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,16 +21,25 @@ package core;
 import compiler.*;
 import mil.*;
 
-public class StaticAnalysis extends Phase {
+public class TyconDeps {
+
+  private CoreDefns defns;
 
   /** Default constructor. */
-  public StaticAnalysis(Handler handler) {
-    super(handler);
+  public TyconDeps(CoreDefns defns) {
+    this.defns = defns;
   }
 
-  /** Run static analysis on the specified core program, returning the resulting environment. */
-  public TyconEnv analyze(CoreProgram program) throws Failure {
-    // TODO: do we really need this method/class?
-    return program.typeEnv(handler, TyconEnv.builtin);
+  private CoreDefns dependencies = null;
+
+  public CoreDefns getDependencies() {
+    return dependencies;
+  }
+
+  public void add(String id) {
+    CoreDefn defn = CoreDefns.find(id, defns);
+    if (defn != null) {
+      dependencies = defn.uniqueCons(dependencies);
+    }
   }
 }

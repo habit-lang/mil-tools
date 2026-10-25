@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,7 +22,8 @@ import compiler.*;
 import core.*;
 
 /**
- * A null-terminated linked list of items that can be accessed using (public) head and next fields.
+ * A null-terminated linked list of Block objects that can be accessed using (public) head and next
+ * fields.
  */
 public class Blocks {
 
@@ -46,6 +47,7 @@ public class Blocks {
     return false;
   }
 
+  /** Generate a printable representation for a given list of blocks. */
   static String toString(Blocks bs) {
     StringBuilder buf = new StringBuilder("{");
     for (; bs != null; bs = bs.next) {

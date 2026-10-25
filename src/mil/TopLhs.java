@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/** Represents a left hand side (lhs) of a top-level variable definition. */
 public class TopLhs {
 
   private String id;
@@ -31,14 +32,17 @@ public class TopLhs {
     this.id = id;
   }
 
+  /** Each left hand side is assigned a distinct name of the form sN for some numeric suffix N. */
   private static int count = 0;
 
   public TopLhs() {
     this("s" + count++);
   }
 
+  /** Holds a declared or inferred type for a top-level lhs. */
   private Scheme declared;
 
+  /** Holds the type of the defining occurrence of a top-level lhs. */
   private Type defining;
 
   /** Get the declared type, or null if no type has been set. */
@@ -56,8 +60,8 @@ public class TopLhs {
     return id;
   }
 
-  /** Display a printable representation of this definition on the specified PrintWriter. */
-  void dump(PrintWriter out, boolean isEntrypoint) {
+  /** Display a header for this definition. */
+  void dumpHeader(PrintWriter out, boolean isEntrypoint) {
     if (declared != null) {
       if (isEntrypoint) {
         out.print("entrypoint ");
@@ -66,13 +70,16 @@ public class TopLhs {
     }
   }
 
-  /** Return a type for an instantiated version of this item when used as Atom (input operand). */
+  /**
+   * Return a type for an instantiated version of this item when used as an Atom (input operand).
+   */
   public Type instantiate() {
     return (declared != null) ? declared.instantiate() : defining;
   }
 
   Type setInitialType() {
-    return defining = (declared != null) ? declared.instantiate() : new TVar(Tyvar.star);
+    defining = (declared != null) ? declared.instantiate() : new TVar(Tyvar.star);
+    return defining;
   }
 
   /** Check that there are declared types for all of the items defined here. */
@@ -82,7 +89,8 @@ public class TopLhs {
 
   void generalizeLhsType(Position pos, Handler handler, TVars gens, TVar[] generics)
       throws Failure {
-    if (defining != null) { // defining will be null if previous stage of type checker failed
+    // defining will be null if previous stage of type checker failed
+    if (defining != null) {
       debug.Log.println(
           "Generalizing definition for: " + id + " with generics " + TVar.show(generics));
       Scheme inferred = defining.generalize(generics);
@@ -100,7 +108,8 @@ public class TopLhs {
       } else {
         declared = inferred;
       }
-      findAmbigTVars(handler, gens); // search for ambiguous type variables ...
+      // search for ambiguous type variables ...
+      findAmbigTVars(handler, gens);
     }
   }
 
@@ -116,10 +125,17 @@ public class TopLhs {
     }
   }
 
+  /** Worker function for MILSpec.dump(): Print a signature line for this definition. */
   void printlnSig(PrintWriter out) {
     out.println(id + " :: " + declared);
   }
 
+  /** Update all declared types with canonical versions. */
+  void canonDeclared(MILSpec spec) {
+    declared = declared.canonScheme(spec);
+  }
+
+  /** Create an array of new TopLhs objects for a specialized TopLevel. */
   static TopLhs[] makeLhs(TopLhs[] lhs, int n) {
     if (n == 0 && lhs.length == 1) {
       return new TopLhs[] {new TopLhs(lhs[0].id)};
@@ -132,9 +148,10 @@ public class TopLhs {
     }
   }
 
-  /** Set the type of this specialized TopLhs to the appropriate instance of the defining type. */
-  void specialize(TopLhs lorig, TVarSubst s) {
-    this.declared = lorig.defining.apply(s);
+  static void copyIds(TopLhs[] newLhs, TopLhs[] oldLhs) {
+    for (int i = 0; i < oldLhs.length; i++) {
+      newLhs[i].id = oldLhs[i].id;
+    }
   }
 
   /** Return a substitution that can instantiate this Lhs to the given type. */
@@ -142,15 +159,9 @@ public class TopLhs {
     return declared.specializingSubst(generics, inst);
   }
 
-  static void copyIds(TopLhs[] newLhs, TopLhs[] oldLhs) {
-    for (int i = 0; i < oldLhs.length; i++) {
-      newLhs[i].id = oldLhs[i].id;
-    }
-  }
-
-  /** Update all declared types with canonical versions. */
-  void canonDeclared(MILSpec spec) {
-    declared = declared.canonScheme(spec);
+  /** Set the type of this specialized TopLhs to the appropriate instance of the defining type. */
+  void specialize(TopLhs lorig, TVarSubst s) {
+    this.declared = lorig.defining.apply(s);
   }
 
   /**
@@ -180,9 +191,11 @@ public class TopLhs {
   Defn makeEntryBlock(Position pos, TopLevel tl) {
     Block b = declared.liftToBlock0(pos, id, tl);
     if (b != null) {
-      b.setIsEntrypoint(tl.isEntrypoint()); // Use the same entrypoint flag as the original ...
-      id = id + "_impl"; // ... rename the original entrypoint ...
-      tl.setIsEntrypoint(false); // ... and clear the flag for the original entrypoint.
+      // Use the same entrypoint flag as the original, but rename the original
+      // entrypoint, and clear its flag:
+      b.setIsEntrypoint(tl.isEntrypoint());
+      id = id + "_impl";
+      tl.setIsEntrypoint(false);
       return b;
     }
     return tl;
@@ -193,9 +206,9 @@ public class TopLhs {
     declared = declared.canonScheme(set);
   }
 
-  public void setDeclared(Handler handler, Position pos, Scheme scheme) {
+  public void setDeclared(Position pos, Scheme scheme) throws Failure {
     if (declared != null) {
-      handler.report(new Failure(pos, "Multiple type annotations for \"" + id + "\""));
+      throw new Failure(pos, "Multiple type annotations for \"" + id + "\"");
     }
     declared = scheme;
   }

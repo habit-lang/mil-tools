@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -37,7 +37,7 @@ class VarExp extends AtomExp {
    * Perform scope analysis on this AtomExp, checking that any referenced identifier is in scope,
    * and returning a corresponding MIL Atom.
    */
-  Atom inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
+  Atom inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) throws Failure {
     Temp a = TempEnv.find(id, tenv); // Look for locally bound atom
     if (a != null) {
       return a;
@@ -46,6 +46,6 @@ class VarExp extends AtomExp {
     if (cf != null) {
       return cf.getTop();
     }
-    return milenv.mustFindTop(handler, pos, id); // Look for a top-level definition
+    return milenv.mustFindTop(pos, id); // Look for a top-level definition
   }
 }

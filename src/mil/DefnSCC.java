@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,17 +22,18 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/** Represents a strongly connected component of Defn objects. */
 public class DefnSCC {
 
-  /** Records the list of X\s in this binding group. */
+  /** Records the list of Defns in this binding group. */
   private Defns bindings = null;
 
-  /** Return the list of X\s in this scc. */
+  /** Return the list of Defns in this scc. */
   public Defns getBindings() {
     return bindings;
   }
 
-  /** Add an X to this scc. */
+  /** Add an Defn to this scc. */
   public void add(Defn binding) {
     bindings = new Defns(binding, bindings);
   }
@@ -57,7 +58,7 @@ public class DefnSCC {
 
   /**
    * A list of the binding sccs on which this scc depends. (This particular scc will not be
-   * included, so the graph of XSCCs will not have any cycles in it.)
+   * included, so the graph of DefnSCCs will not have any cycles in it.)
    */
   private DefnSCCs dependsOn = null;
 
@@ -84,8 +85,16 @@ public class DefnSCC {
     return false;
   }
 
+  /** Display a printable representation of this object on the standard output. */
+  public void dump() {
+    PrintWriter out = new PrintWriter(System.out);
+    dump(out);
+    out.flush();
+  }
+
   /** Display a printable representation of this object on the specified PrintWriter. */
   public void dump(PrintWriter out) {
+    // out.print("----------------------------------------- ");
     out.println("-----------------------------------------");
     out.print("-- ");
     out.println(isRecursive() ? "recursive" : "not recursive");
@@ -98,7 +107,8 @@ public class DefnSCC {
   private boolean checked = true;
 
   void inferTypes(Handler handler) {
-    // Step 0: do not type check this SCC if it depends on an earlier SCC that failed to type check.
+    // Step 0: do not type check this SCC if it depends on an earlier
+    // SCC that failed to type check.
     for (DefnSCCs deps = dependsOn; deps != null; deps = deps.next) {
       if (!deps.head.checked) {
         this.checked = false;
@@ -107,7 +117,8 @@ public class DefnSCC {
     }
 
     try {
-      // Check that there are no recursive top level definitions in this binding group.
+      // Check that there are no recursive top level definitions in
+      // this binding group.
       if (recursive) {
         for (Defns ds = bindings; ds != null; ds = ds.next) {
           ds.head.limitRecursion();
@@ -135,6 +146,13 @@ public class DefnSCC {
     }
   }
 
+  /** Clear derived blocks and closure definitions. */
+  void clearDerived() {
+    for (Defns ds = getBindings(); ds != null; ds = ds.next) {
+      ds.head.clearDerived();
+    }
+  }
+
   /**
    * Heuristic to determine if this block is a good candidate for the casesOn(). TODO: investigate
    * better functions for finding candidates!
@@ -152,8 +170,8 @@ public class DefnSCC {
   }
 
   /**
-   * Test to determine if this SCC contains only Block definitions, and if the only (non- tail)
-   * calls in the code sequences for those blocks are to blocks in other SCCs.
+   * Test to determine if this SCC contains only Block definitions, and if the only (non-tail) calls
+   * in the code sequences for those blocks are to blocks in other SCCs.
    */
   boolean localLoopSCC() {
     for (Defns ds = bindings; ds != null; ds = ds.next) {
@@ -168,7 +186,8 @@ public class DefnSCC {
    * Compute values for doesntReturn for all of the definitions (specifically Blocks) in this SCC.
    */
   void returnAnalysis() {
-    // Initialize return analysis information for each definition in this scc:
+    // Initialize return analysis information for each definition
+    // in this scc:
     for (Defns ds = getBindings(); ds != null; ds = ds.next) {
       ds.head.setDoesntReturn();
     }
@@ -181,6 +200,7 @@ public class DefnSCC {
         changed |= ds.head.returnAnalysis();
       }
     } while (changed);
+    //  // TODO: Why is this done on a per Block basis instead of per SCC?
   }
 
   /** Perform pre-inlining cleanup on each Block in this SCC. */
@@ -215,15 +235,9 @@ public class DefnSCC {
     }
   }
 
-  void dumpSources(PrintWriter out) {
-    for (Defns ds = bindings; ds != null; ds = ds.next) {
-      ds.head.dumpSources(out);
-    }
-  }
-
   /**
-   * Traverse the abstract syntax tree to calculate initial values for the sources of the parameters
-   * of each Block and Closure definition.
+   * Traverse the abstract syntax tree to calculate initial values for the the sources of the
+   * parameters of each Block and Closure definition.
    */
   void calcSources() {
     for (Defns ds = bindings; ds != null; ds = ds.next) {

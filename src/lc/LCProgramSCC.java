@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,17 +22,18 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** Represents a strongly connected component of LCProgram objects. */
 public class LCProgramSCC {
 
-  /** Records the list of X\s in this binding group. */
+  /** Records the list of LCPrograms in this binding group. */
   private LCPrograms bindings = null;
 
-  /** Return the list of X\s in this scc. */
+  /** Return the list of LCPrograms in this scc. */
   public LCPrograms getBindings() {
     return bindings;
   }
 
-  /** Add an X to this scc. */
+  /** Add an LCProgram to this scc. */
   public void add(LCProgram binding) {
     bindings = new LCPrograms(binding, bindings);
   }
@@ -57,7 +58,7 @@ public class LCProgramSCC {
 
   /**
    * A list of the binding sccs on which this scc depends. (This particular scc will not be
-   * included, so the graph of XSCCs will not have any cycles in it.)
+   * included, so the graph of LCProgramSCCs will not have any cycles in it.)
    */
   private LCProgramSCCs dependsOn = null;
 

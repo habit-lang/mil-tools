@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,17 +22,18 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** Represents a strongly connected component of Binding objects. */
 public class BindingSCC {
 
-  /** Records the list of X\s in this binding group. */
+  /** Records the list of Bindings in this binding group. */
   private Bindings bindings = null;
 
-  /** Return the list of X\s in this scc. */
+  /** Return the list of Bindings in this scc. */
   public Bindings getBindings() {
     return bindings;
   }
 
-  /** Add an X to this scc. */
+  /** Add an Binding to this scc. */
   public void add(Binding binding) {
     bindings = new Bindings(binding, bindings);
   }
@@ -57,7 +58,7 @@ public class BindingSCC {
 
   /**
    * A list of the binding sccs on which this scc depends. (This particular scc will not be
-   * included, so the graph of XSCCs will not have any cycles in it.)
+   * included, so the graph of BindingSCCs will not have any cycles in it.)
    */
   private BindingSCCs dependsOn = null;
 
@@ -109,7 +110,8 @@ public class BindingSCC {
         fvs = bs.head.addExtraVars(fvs);
       }
 
-      // For recursive SCCs, check format and remove vars defined in this SCC from fvs:
+      // For recursive SCCs, check format and remove vars defined in this
+      // SCC from fvs:
       if (scc.isRecursive()) {
         for (Bindings bs = bindings; bs != null; bs = bs.next) {
           bs.head.checkSafeToRecurse(handler);
@@ -127,7 +129,8 @@ public class BindingSCC {
   private boolean checked = true;
 
   TVarsInScope inferTypes(Handler handler, TVarsInScope tis) throws Failure {
-    // Step 0: do not type check this SCC if it depends on an earlier SCC that failed to type check.
+    // Step 0: do not type check this SCC if it depends on an earlier
+    // SCC that failed to type check.
     for (BindingSCCs deps = dependsOn; deps != null; deps = deps.next) {
       if (!deps.head.checked) {
         this.checked = false;
@@ -135,9 +138,9 @@ public class BindingSCC {
       }
     }
 
-    // Step 1: set the type of each item in this binding group to an appropriate initial type,
-    // either
-    // an instance of the declared type or a fresh type variable if there is no declared type.
+    // Step 1: set the type of each item in this binding group to an
+    // appropriate initial type, either an instance of the declared
+    // type or a fresh type variable if there is no declared type.
     for (Bindings bs = bindings; bs != null; bs = bs.next) {
       bs.head.setInitialType();
     }
@@ -148,11 +151,12 @@ public class BindingSCC {
       for (Bindings bs = bindings; bs != null; bs = bs.next) {
         bs.head.checkType(handler, tis);
       }
-      // Step 3: calculate most general types for each item in this binding group.
+      // Step 3: calculate most general types for each item in this
+      // binding group.
       TVars fixed = TVarsInScope.tvarsInScope(tis.getEnclosing());
-      // [Note: we intentionally use tis.getEnclosing() rather than the original value of tis here
-      // so that we can take advantage of any pruning of the TVarsInScope objects that has taken
-      // place.
+      // [Note: we intentionally use tis.getEnclosing() rather than
+      // the original value of tis here so that we can take advantage
+      // of any pruning of the TVarsInScope objects that has taken place.
       for (Bindings bs = bindings; bs != null; bs = bs.next) {
         bs.head.generalizeType(fixed);
       }

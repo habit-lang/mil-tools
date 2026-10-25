@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -31,8 +31,13 @@ public class TyconTypeExp extends PosTypeExp {
     this.tycon = tycon;
   }
 
+  /**
+   * Remove occurrences of InfixTypeExp nodes from this type expression using fixity information.
+   * For all other node types, we update individual fields in place (in case they included
+   * InfixTypeExp nodes) and return the original node (this).
+   */
   public TypeExp tidyInfix(TyconEnv env) throws Failure {
-    return this;
+    return this; // No infix operators in this type expression!
   }
 
   /**
@@ -46,15 +51,16 @@ public class TyconTypeExp extends PosTypeExp {
   }
 
   /**
-   * Worker function for scopeType that is intended to be called after order of any infix operators
-   * have been determined and has the option to rewrite the type expression if needed.
+   * Worker function that performs the main scope analysis on type expressions. An additional arity
+   * parameter is used here so that we can track and validate the number of arguments that are
+   * passed to type constructors.
    */
-  public TypeExp scopeTypeRewrite(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
+  public TypeExp scopeType(TyvarEnv params, TyconDeps tdeps, TyconEnv env, int arity)
       throws Failure {
     return tycon.scopeTycon(pos, arity);
   }
 
-  public Kind inferKind() throws KindMismatchFailure {
+  public Kind inferKind() throws Failure {
     // check for null to allow for earlier failure in scope analysis
     return (tycon == null) ? new KVar() : tycon.getKind();
   }
@@ -63,14 +69,5 @@ public class TyconTypeExp extends PosTypeExp {
     // TODO: Similar to the problem for VaridTypeExp, could tycon be null here?
     // TODO: bogus Type.gen(0) should be replaced with something better.
     return tycon == null ? Type.gen(0) : tycon.asType();
-  }
-
-  /**
-   * Scope analysis on type expressions in a context where we want to determine which (if any)
-   * CoreDefn values a particular type expression depends on.
-   */
-  public CoreDefns scopeTyconsType(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
-    return depends;
   }
 }

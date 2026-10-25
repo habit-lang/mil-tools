@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -31,7 +31,6 @@ class LCLexer extends LayoutLexer implements LCTokens {
     reserved.put("\\", Integer.valueOf(LAMBDA));
     reserved.put("&&", Integer.valueOf(AMPAMP));
     reserved.put("||", Integer.valueOf(BARBAR));
-    reserved.put("where", Integer.valueOf(WHERE));
     nextToken(); // Start the token stream
   }
 
@@ -46,8 +45,6 @@ class LCLexer extends LayoutLexer implements LCTokens {
         return "&& (logical and)";
       case BARBAR:
         return "|| (logical or)";
-      case WHERE:
-        return "\"where\" keyword";
       default:
         return super.describeToken(token, lexeme);
     }

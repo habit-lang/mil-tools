@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** Represents an identifier for a known var. */
 class EVar extends PosExpr {
 
   protected Var v;
@@ -120,10 +121,8 @@ class EVar extends PosExpr {
    * value of the type specified by kty).
    */
   Code compTailM(final CGEnv env, final Block abort, final Type kty, final TailCont kt) { //  v
+    // compile as: t <- Proc 0 v; t @ []
     Temp t = new Temp(Type.milfun(Type.empty, Type.tuple(type.argOf(null))));
-    return new Bind(
-        t,
-        new Sel(Cfun.Proc, 0, v.lookup(env)), // t <- Proc 0 v
-        kt.with(new Enter(t, Atom.noAtoms))); // t @ []
+    return new Bind(t, new Sel(Cfun.Proc, 0, v.lookup(env)), kt.with(new Enter(t, Atom.noAtoms)));
   }
 }

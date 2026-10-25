@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -107,8 +107,8 @@ abstract class Expr {
   abstract DefVars inScopeOf(Handler handler, MILEnv milenv, Env env);
 
   /**
-   * Test to determine whether this expression can be used on the right hand side of a binding in a
-   * recursive binding group.
+   * Test whether this expression can be used on the right hand side of a binding in a recursive
+   * binding group.
    */
   boolean isSafeToRecurse() {
     return false;
@@ -161,7 +161,7 @@ abstract class Expr {
   }
 
   /** Check that this expression will produce a value of the specified type. */
-  void checkType(TVarsInScope tis, Type t) throws Failure { // default, used for EVar, ELit, EType
+  void checkType(TVarsInScope tis, Type t) throws Failure { // used for EVar, ELit, EType
     inferType(tis).unify(getPos(), t);
   }
 

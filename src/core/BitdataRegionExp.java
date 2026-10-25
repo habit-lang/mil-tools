@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -29,21 +29,22 @@ abstract class BitdataRegionExp {
    * Perform scope analysis on portions of a type constructor definition, returning a list with the
    * elements from defns that it references.
    */
-  abstract CoreDefns scopeTycons(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends)
-      throws Failure;
+  abstract void scopeDefn(Handler handler, TyvarEnv params, TyconDeps tdeps, TyconEnv env);
 
   public abstract void kindInfer(Handler handler);
 
+  /** Records the type of the value(s) in this region. */
   protected Type type;
 
+  /** Records the bit/byte size of the value(s) in this region. */
   protected Type size;
 
+  /** Records the offset for the start of this region. */
   protected int offset;
 
   /**
    * Validate the type and size of this region expression and add a term to the specified linear
-   * equation to characterize the overall size (possibly including multiple fields)
+   * equation to characterize the overall size (possibly including multiple fields).
    */
   abstract void addTermTo(LinearEqn eqn) throws Failure;
 

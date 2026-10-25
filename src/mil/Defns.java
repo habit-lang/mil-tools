@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,7 +22,8 @@ import compiler.*;
 import core.*;
 
 /**
- * A null-terminated linked list of items that can be accessed using (public) head and next fields.
+ * A null-terminated linked list of Defn objects that can be accessed using (public) head and next
+ * fields.
  */
 public class Defns {
 
@@ -34,6 +35,16 @@ public class Defns {
   public Defns(Defn head, Defns next) {
     this.head = head;
     this.next = next;
+  }
+
+  /** Test for membership in a list. */
+  public static boolean isIn(Defn val, Defns list) {
+    for (; list != null; list = list.next) {
+      if (list.head == val) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -65,7 +76,7 @@ public class Defns {
   }
 
   /**
-   * Calculate the strongly connected components of a list of Xs that have been augmented with
+   * Calculate the strongly connected components of a list of Defns that have been augmented with
    * dependency information.
    */
   public static DefnSCCs scc(Defns xs) {
@@ -73,39 +84,21 @@ public class Defns {
     return searchReverse(searchForward(xs, null));
   }
 
-  /** Test for membership in a list. */
-  public static boolean isIn(Defn val, Defns list) {
-    for (; list != null; list = list.next) {
-      if (list.head == val) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /** Return the length of a linked list of elements. */
-  public static int length(Defns list) {
-    int len = 0;
-    for (; list != null; list = list.next) {
-      len++;
-    }
-    return len;
-  }
-
   static void inferTypes(Handler handler, Defns defns) throws Failure {
-    // Step 1: set the type of each item in this binding group to an appropriate initial type
-    // (typically an
-    // instance of the declared type, or a fresh type skeleton if there is no declared type).
+    // Step 1: Set the type of each item in this binding group to an
+    // appropriate initial type (typically an instance of the declared
+    // type, or a fresh type skeleton if there is no declared type).
     for (Defns ds = defns; ds != null; ds = ds.next) {
       ds.head.setInitialType();
     }
 
-    // Step 2: run type inference on the body of each definition in this SCC.
+    // Step 2: Run type inference on the body of each definition in
+    // this SCC.
     for (Defns ds = defns; ds != null; ds = ds.next) {
       ds.head.checkBody(handler);
     }
 
-    // Step 3: calculate most general types for each definition in this SCC.
+    // Step 3: Calculate most general types for each definition in this SCC.
     for (Defns ds = defns; ds != null; ds = ds.next) {
       ds.head.generalizeType(handler);
     }

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -36,18 +36,9 @@ public class PrimTyconDefn extends TyconDefn {
 
   private Tycon tycon;
 
-  /**
-   * Return the Tycon associated with this definition, if any. TODO: this method is only used in one
-   * place, and it's awkward ... look for opportunities to rewrite
-   */
-  public Tycon getTycon() {
-    return tycon;
-  }
-
+  /** Add environment entries for the type constructors introduced in this definition. */
   public void introduceTycons(Handler handler, TyconEnv env) {
     try {
-      // TODO: why does this PrimTycon need an arity?
-      // TODO: rewrite to clarify that the try..catch is only here for the toKind() call
       env.add(tycon = new PrimTycon(pos, id, kexp.toKind(), arity));
     } catch (Failure f) {
       handler.report(f);
@@ -58,12 +49,17 @@ public class PrimTyconDefn extends TyconDefn {
    * Determine the list of type definitions (a sublist of defns) that this particular definition
    * depends on.
    */
-  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) throws Failure {
+  public void scopeDefn(Handler handler, TyconDeps tdeps, TyconEnv env) throws Failure {
     /* Nothing to do in this case */
   }
 
   public void kindInfer(Handler handler) {
     /* no kind inference required here */
+  }
+
+  /** Default kind variables to STAR, unless they have already been bound. */
+  public void defaultKinds() {
+    /* do nothing */
   }
 
   /** Calculate types for each of the values that are introduced by this definition. */
@@ -72,8 +68,8 @@ public class PrimTyconDefn extends TyconDefn {
   }
 
   /**
-   * Extend the specified MIL environment with entries for any functions/values introduced in this
-   * definition.
+   * Extend the specified MIL environment with entries for any functions or values introduced in
+   * this definition.
    */
   public void addToMILEnv(Handler handler, CoreProgram prog, MILEnv milenv) {
     /* Nothing to do here! */

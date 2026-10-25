@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -88,7 +88,7 @@ public class RepTypeSet extends TypeSet {
    * Stores a mapping from top-level definitions to the arrays of representation vectors produced by
    * the reps() method.
    */
-  private HashMap<TopLevel, Type[][]> topLevelRepMap = new HashMap();
+  private HashMap<TopLevel, Type[][]> topLevelRepMap = (new HashMap<TopLevel, Type[][]>());
 
   /** Add an entry to the topLevelRepMap. */
   void putTopLevelReps(TopLevel tl, Type[][] reps) {
@@ -105,14 +105,14 @@ public class RepTypeSet extends TypeSet {
     if (reps == null) {
       return null;
     } else {
-      int n = 0; // Find start position in new TopLevel definition:
+      // Find start position in new TopLevel definition:
+      int n = 0;
       for (int j = 0; j < i; j++) {
         n += (reps[j] == null) ? 1 : reps[j].length;
       }
 
-      int len =
-          reps[i]
-              .length; // Create an array with the new atoms to reference the ith component of tl:
+      // Create an array with the new atoms to reference the ith component of tl:
+      int len = reps[i].length;
       Atom[] as = new Atom[len];
       for (int j = 0; j < len; j++) {
         as[j] = new TopDef(tl, n + j);

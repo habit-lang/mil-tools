@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,7 +21,7 @@ package mil;
 import compiler.*;
 import core.*;
 
-/** Represents a top-level variable. */
+/** Represents definitions of one or more top-level variables. */
 public abstract class Top extends Atom {
 
   protected Type type;
@@ -31,23 +31,38 @@ public abstract class Top extends Atom {
     this.type = type;
   }
 
+  /** Return the definition associated with this Top object. */
+  public abstract Defn getDefn();
+
+  /** Return the identifer referenced by this Top. */
+  public abstract String getId();
+
+  /** Create a clone of this Top object. */
   public abstract Top clone();
+
+  /** Find the dependencies of this AST fragment. */
+  Defns dependencies(Defns ds) {
+    return getDefn().dependencies(ds);
+  }
 
   /** Generate a printable description of this atom. */
   public String toString() {
     return getId();
   }
 
-  public abstract String getId();
-
-  /** Return the definition associated with this Top object. */
-  public abstract Defn getDefn();
-
   /** Apply a TempSubst to this Atom. */
   Atom apply(TempSubst s) {
     return this.clone();
   }
 
+  /**
+   * Return a type for an instantiated version of this item when used as an Atom (input operand).
+   */
+  public Type instantiate() {
+    return type = getDeclared().instantiate();
+  }
+
+  /** Type check the implementation for an external. */
   void checkImp(Handler handler, Position pos) {
     Scheme declared = getDeclared();
     if (declared == null) {
@@ -59,8 +74,10 @@ public abstract class Top extends Atom {
     instantiate();
   }
 
+  /** Return the declared type for this Top. */
   public abstract Scheme getDeclared();
 
+  /** Determine whether this Atom has a known (static) value. */
   boolean isStatic() {
     return true;
   }
@@ -85,10 +102,9 @@ public abstract class Top extends Atom {
       new TopDef(
           new TopLevel(BuiltinPosition.pos, new TopLhs(), new DataAlloc(Cfun.Unit).withArgs()), 0);
 
-  public void setDeclared(Handler handler, Position pos, Scheme scheme) {
-    handler.report(
-        new Failure(
-            pos, "Cannot use type signature; \"" + getId() + "\" is not a top level variable"));
+  public void setDeclared(Position pos, Scheme scheme) throws Failure {
+    throw new Failure(
+        pos, "Cannot use type signature; \"" + getId() + "\" is not a top level variable");
   }
 
   /**

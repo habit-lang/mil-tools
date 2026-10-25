@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,17 +21,18 @@ package mil;
 import compiler.*;
 import core.*;
 
+/** Represents a strongly connected component of MILAST objects. */
 public class MILASTSCC {
 
-  /** Records the list of X\s in this binding group. */
+  /** Records the list of MILASTs in this binding group. */
   private MILASTs bindings = null;
 
-  /** Return the list of X\s in this scc. */
+  /** Return the list of MILASTs in this scc. */
   public MILASTs getBindings() {
     return bindings;
   }
 
-  /** Add an X to this scc. */
+  /** Add an MILAST to this scc. */
   public void add(MILAST binding) {
     bindings = new MILASTs(binding, bindings);
   }
@@ -56,7 +57,7 @@ public class MILASTSCC {
 
   /**
    * A list of the binding sccs on which this scc depends. (This particular scc will not be
-   * included, so the graph of XSCCs will not have any cycles in it.)
+   * included, so the graph of MILASTSCCs will not have any cycles in it.)
    */
   private MILASTSCCs dependsOn = null;
 

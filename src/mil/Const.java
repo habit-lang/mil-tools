@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import java.math.BigInteger;
 
+/** Represents constant atoms. */
 public abstract class Const extends Atom {
 
   /** Apply a TempSubst to this Atom. */
@@ -42,6 +43,7 @@ public abstract class Const extends Atom {
   /** Find the Value for a given mil constant. */
   abstract Value constValue();
 
+  /** Determine whether this Atom has a known (static) value. */
   boolean isStatic() {
     return true;
   }
@@ -51,6 +53,10 @@ public abstract class Const extends Atom {
     instantiate().canonType(set);
   }
 
+  /**
+   * Determine the specialized version of an Atom in a context described by a given @TVarSubst@
+   * and @SpecEnv@.
+   */
   Atom specializeAtom(MILSpec spec, TVarSubst s, SpecEnv env) {
     return this;
   }
@@ -80,7 +86,7 @@ public abstract class Const extends Atom {
     } else {
       Word[] as = new Word[Word.numWords(w)];
       int wordsize = Word.size();
-      int i = 0; // index into array as (least significant word first)
+      int i = 0; // index into array as (least sig word first)
       while (w > 0) { // while there are still bits to write
         long bits = Word.fromBig(v); // get least significant bits
         if ((w -= wordsize) < 0) { // truncate if necessary

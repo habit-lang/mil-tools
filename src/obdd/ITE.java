@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -43,25 +43,23 @@ class ITE extends OBDD {
    * are equal.
    */
   public OBDD ite(OBDD ifTrue, OBDD ifFalse) {
-    // The resulting OBDD will make a decision based on newVar, the highest numbered variable from
-    // this, ifTrue,
-    // and ifFalse:
+    // The resulting OBDD will make a decision based on newVar, the highest
+    // numbered variable from this, ifTrue, and ifFalse:
     int newVar = Math.max(var, Math.max(ifTrue.testVar(), ifFalse.testVar()));
 
-    // The true and false branches of the resulting OBDD are obtained using recursive calls to
-    // ite(), with
-    // appropriate specializations for the value of newVar (which will be true on the ifTrue branch,
-    // and false
+    // The true and false branches of the resulting OBDD are obtained using
+    // recursive calls to ite(), with appropriate specializations for the
+    // value of newVar (which will be true on the ifTrue branch, and false
     // on the ifFalse branch):
     OBDD newIfTrue =
         this.with(newVar, true).ite(ifTrue.with(newVar, true), ifFalse.with(newVar, true));
     OBDD newIfFalse =
         this.with(newVar, false).ite(ifTrue.with(newVar, false), ifFalse.with(newVar, false));
 
-    // If the resulting true and false branches are the same, then there is no need for an ITE and
-    // we can just use
-    // one of the branches as given (i.e., without an additional test).  Otherwise, we construct a
-    // new ITE node.
+    // If the resulting true and false branches are the same, then there
+    // is no need for an ITE and we can just use one of the branches as
+    // given (i.e., without an additional test).  Otherwise, we construct
+    // a new ITE node.
     return newIfTrue.same(newIfFalse) ? newIfTrue : new ITE(newVar, newIfTrue, newIfFalse);
   }
 
@@ -107,7 +105,7 @@ class ITE extends OBDD {
 
   /**
    * Test for a specific bit pattern in the set represented by an OBDD (assumes that the argument
-   * bit pattern is in the correct range for the width of the OBDD.
+   * bit pattern is in the correct range for the width of the OBDD).
    */
   boolean includes(long i) {
     return (((1L << var) & i) == 0) ? ifFalse.includes(i) : ifTrue.includes(i);
@@ -133,7 +131,7 @@ class ITE extends OBDD {
         : ifFalse.smallestOutside();
   }
 
-  /** Test to determine whether two OBDD structures are the same. */
+  /** Test whether two OBDD structures are the same. */
   public boolean same(OBDD that) {
     return that.isITE(this);
   }
@@ -164,7 +162,7 @@ class ITE extends OBDD {
   /**
    * A worker function to output a textual description of this BDD into the given array of lines,
    * starting at the line specified by next and returning the first unused line number (if there is
-   * one) as a result.
+   * one) as the result.
    */
   int showBits(int width, String[] lines, int next) {
     if (width - 1 > var) {

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -38,31 +38,31 @@ class MILParser extends CoreParser implements MILTokens {
         lexer.nextToken(/* ; */ );
       } else {
         try {
-          CoreDefn defn = maybeCoreDefn();
-          if (defn != null) {
-            ast.add(defn);
-          } else if (lexer.getToken() == REQUIRE) {
-            if (lexer.nextToken(/* REQUIRE */ ) != STRLIT) {
-              throw new Failure(lexer.getPos(), "Missing file name for require declaration");
-            }
-            String name = lexer.getLexeme();
-            if (name.endsWith(".mil") || name.endsWith(".lmil")) {
-              ast.requires(loader.require(name));
+          if (!handleCoreDefn(ast)) {
+            if (lexer.getToken() == REQUIRE) {
+              if (lexer.nextToken(/* REQUIRE */ ) != STRLIT) {
+                throw new Failure(lexer.getPos(), "Missing file name for require declaration");
+              }
+              String name = lexer.getLexeme();
+              if (name.endsWith(".mil") || name.endsWith(".lmil")) {
+                ast.requires(loader.require(name));
+              } else {
+                handler.report(
+                    new Failure(
+                        lexer.getPos(),
+                        "Filename \""
+                            + name
+                            + "\" does not end with \".mil\" (or \".lmil\")"
+                            + " extension"));
+              }
+              lexer.nextToken(/* STRLIT */ );
+              lexer.itemEnd("require declaration");
             } else {
-              handler.report(
-                  new Failure(
-                      lexer.getPos(),
-                      "Filename \""
-                          + name
-                          + "\" does not end with \".mil\" (or \".lmil\") extension"));
-            }
-            lexer.nextToken(/* STRLIT */ );
-            lexer.itemEnd("require declaration");
-          } else {
-            if (!maybeParseDefn(ast)) {
-              lexer.leaveSection();
-              checkForEnd();
-              return;
+              if (!maybeParseDefn(ast)) {
+                lexer.leaveSection();
+                checkForEnd();
+                return;
+              }
             }
           }
         } catch (Failure f) {
@@ -181,9 +181,12 @@ class MILParser extends CoreParser implements MILTokens {
       if (ids.length != 1) {
         throw new Failure(lexer.getPos(), "An area definition can only bind a single identifier");
       }
-      TypeExp typeExp = typeAtomExp(); // Read expression describing area type
-      AtomExp init = parseAtom(); // Read initializer expression
-      TypeExp alignExp = lexer.match(ALIGNED) ? typeExp() : null; // Read (optional) alignment
+      TypeExp typeExp = typeAtomExp(); // Read area type expr
+      AtomExp init = parseAtom(); // Read initializer expr
+      TypeExp alignExp =
+          lexer.match(ALIGNED) // Read (optional) alignment
+              ? typeExp()
+              : null;
       lexer.itemEnd("area definition");
       return new AreaDefnExp(pos, ids[0], typeExp, init, alignExp);
     } else if (lexer.getToken() == STRLIT) {
@@ -294,7 +297,7 @@ class MILParser extends CoreParser implements MILTokens {
 
   /**
    * Parse a Code sequence. TODO: ?allow bindings with a wildcard on the lhs, as in _ <- t (work
-   * around is to use a variable that isn't used elsewhere)
+   * around is to use a variable that isn't used elsewhere).
    */
   private CodeExp parseCode() throws Failure {
     Position pos = lexer.getPos();

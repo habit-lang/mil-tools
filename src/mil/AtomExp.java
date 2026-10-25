@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -27,14 +27,15 @@ abstract class AtomExp {
    * Perform scope analysis on this AtomExp, checking that any referenced identifier is in scope,
    * and returning a corresponding MIL Atom.
    */
-  abstract Atom inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv);
+  abstract Atom inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) throws Failure;
 
   /**
    * Check that each of the identifiers in the given list of atom expressions are in scope, either
    * as top level values (defined in the given MIL environment) or as temporaries (defined in the
    * given atom environment). The result is a corresponding array of MIL Atom values.
    */
-  static Atom[] inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv, AtomExp[] es) {
+  static Atom[] inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv, AtomExp[] es)
+      throws Failure {
     Atom[] as = new Atom[es.length];
     for (int i = 0; i < es.length; i++) {
       as[i] = es[i].inScopeOf(handler, milenv, tenv);

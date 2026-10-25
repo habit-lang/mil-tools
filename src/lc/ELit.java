@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** Represents a MIL atom/literal. */
 class ELit extends PosExpr {
 
   Atom a;
@@ -64,8 +65,8 @@ class ELit extends PosExpr {
    * of writing "0") or by adding type information.
    */
   void findAmbigTVars(TVars gens) throws Failure { // literals
-    // Do nothing: Literals have monomorphic types, so there is no possibility of an ambiguous type
-    // variable.
+    // Do nothing: Literals have monomorphic types, so there is no
+    // possibility of an ambiguous type variable.
   }
 
   /**

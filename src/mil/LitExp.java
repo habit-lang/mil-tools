@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -34,7 +34,7 @@ class LitExp extends AtomExp {
    * Perform scope analysis on this AtomExp, checking that any referenced identifier is in scope,
    * and returning a corresponding MIL Atom.
    */
-  Atom inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
+  Atom inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) throws Failure {
     return a;
   }
 }

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -34,12 +34,6 @@ public abstract class CoreDefn {
   public boolean answersTo(String id) {
     return false;
   }
-
-  /**
-   * Return the Tycon associated with this definition, if any. TODO: this method is only used in one
-   * place, and it's awkward ... look for opportunities to rewrite
-   */
-  public abstract Tycon getTycon();
 
   /** Records the successors/callees of this node. */
   private CoreDefns callees = null;
@@ -86,8 +80,8 @@ public abstract class CoreDefn {
    */
   void reverseVisit(CoreDefnSCC scc) {
     if (this.scc == null) {
-      // If we arrive at a binding that hasn't been allocated to any SCC,
-      // then we should put it in this SCC.
+      // If we arrive at a binding that hasn't been allocated to any
+      // SCC, then we should put it in this SCC.
       this.scc = scc;
       scc.add(this);
       for (CoreDefns callers = this.callers; callers != null; callers = callers.next) {
@@ -112,23 +106,23 @@ public abstract class CoreDefn {
     return CoreDefns.isIn(this, xs) ? xs : new CoreDefns(this, xs);
   }
 
+  public void setRecursive() {
+    /* by default, no action is required */
+  }
+
+  /** Add environment entries for the type constructors introduced in this definition. */
   public abstract void introduceTycons(Handler handler, TyconEnv env);
 
   /**
    * Determine the list of type definitions (a sublist of defns) that this particular definition
    * depends on.
    */
-  public abstract void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) throws Failure;
-
-  public void setRecursive() {
-    /* by default, no action is required */
-  }
+  public abstract void scopeDefn(Handler handler, TyconDeps tdeps, TyconEnv env) throws Failure;
 
   public abstract void kindInfer(Handler handler);
 
-  public void fixKinds() {
-    /* do nothing */
-  }
+  /** Default kind variables to STAR, unless they have already been bound. */
+  public abstract void defaultKinds();
 
   /** Initialize size information for this definition, if appropriate. */
   void initSizes(Handler handler) {
@@ -154,8 +148,8 @@ public abstract class CoreDefn {
   public abstract void calcCfuns(Handler handler);
 
   /**
-   * Extend the specified MIL environment with entries for any functions/values introduced in this
-   * definition.
+   * Extend the specified MIL environment with entries for any functions or values introduced in
+   * this definition.
    */
   public abstract void addToMILEnv(Handler handler, CoreProgram prog, MILEnv milenv);
 

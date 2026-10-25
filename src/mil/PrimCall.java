@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,8 +22,10 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/** Represents a Call of the form p((as)) that calls the primitive p with the given arguments as. */
 public class PrimCall extends Call {
 
+  /** The primitive for the call. */
   private Prim p;
 
   /** Default constructor. */
@@ -31,9 +33,20 @@ public class PrimCall extends Call {
     this.p = p;
   }
 
-  /** Test to determine whether a given tail expression has no externally visible side effect. */
-  boolean hasNoEffect() {
-    return p.hasNoEffect();
+  /** Constructor for calls where arguments are already known. */
+  public PrimCall(Prim p, Atom[] args) {
+    this(p);
+    this.args = args;
+  }
+
+  /** Constructor for calls with one argument that is already known. */
+  public PrimCall(Prim p, Atom a) {
+    this(p, new Atom[] {a});
+  }
+
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
+  void dump(PrintWriter out, Temps ts) {
+    dump(out, p.getId(), "((", args, "))", ts);
   }
 
   /** Test if two Tail expressions are the same. */
@@ -41,43 +54,33 @@ public class PrimCall extends Call {
     return that.samePrimCall(this);
   }
 
+  /** Test whether this Tail is the same as the given PrimCall. */
   boolean samePrimCall(PrimCall that) {
     return this.p == that.p && this.sameArgs(that);
   }
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  void dump(PrintWriter out, Temps ts) {
-    dump(out, p.getId(), "((", args, "))", ts);
-  }
-
   /** Construct a new Call value that is based on the receiver, without copying the arguments. */
   Call callDup(Atom[] args) {
-    return p.withArgs(args);
+    return new PrimCall(p, args);
   }
 
-  /**
-   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
-   * loop).
-   */
-  boolean blackholes() {
-    return p.blackholes();
-  }
-
-  private BlockType type;
+  /** The BlockType instance for this call. */
+  private BlockType btype;
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   TVars tvars(TVars tvs) {
-    return type.tvars(tvs);
+    return btype.tvars(tvs);
   }
 
   /** Return the type tuple describing the result that is produced by executing this Tail. */
   Type resultType() {
-    return type.rngType();
+    return btype.rngType();
   }
 
+  /** Infer a type for this Call expression. */
   Type inferCallType(Position pos, Type[] inputs) throws Failure {
-    type = p.instantiate();
-    return type.apply(pos, inputs);
+    btype = p.instantiate();
+    return btype.apply(pos, inputs);
   }
 
   void invokeCall(MachineBuilder builder, int o) {
@@ -105,6 +108,22 @@ public class PrimCall extends Call {
   }
 
   /**
+   * Determine if a given tail expression has no externally visible side effects. This is true for
+   * returns, allocators, and selections, and for calls to primitives that are not impure.
+   */
+  boolean hasNoEffect() {
+    return p.hasNoEffect();
+  }
+
+  /**
+   * Return true if this code enters a non-productive black hole (i.e., if it immediately calls halt
+   * or loop).
+   */
+  boolean blackholes() {
+    return p.blackholes();
+  }
+
+  /**
    * Skip goto blocks in a Tail (for a ClosureDefn or TopLevel). TODO: can this be simplified now
    * that ClosureDefns hold Tails rather than Calls?
    */
@@ -114,19 +133,21 @@ public class PrimCall extends Call {
   }
 
   /**
-   * Test to determine whether a given tail expression may be repeatable (i.e., whether the results
-   * of a previous use of the same tail can be reused instead of repeating the tail). TODO: is there
-   * a better name for this?
+   * Test whether a given tail expression may be repeatable (i.e., whether the results of a previous
+   * use of the same tail can be reused instead of repeating the tail). TODO: is there a better name
+   * for this?
    */
   public boolean isRepeatable() {
+    // PrimCalls are repeatable if the primitive is not impure.
     return p.isRepeatable();
   }
 
   /**
-   * Test to determine whether a given tail expression is pure (no externally visible side effects
-   * and no dependence on other effects).
+   * Test whether a given tail expression is pure (no externally visible side effects and no
+   * dependence on other effects).
    */
   public boolean isPure() {
+    // For PrimCalls, purity depends on the primitive.
     return p.isPure();
   }
 
@@ -291,7 +312,8 @@ public class PrimCall extends Call {
         Word a = x.isWord();
         if (a != null) {
           long n = a.getVal(); // Look for a constant numerator
-          if (n >= 0) { // To be cautious, only consider nonnegative values
+          if (n >= 0) {
+            // To be cautious, only consider nonnegative values
             MILProgram.report("constant folding for nzdiv");
             return done(n / d);
           }
@@ -319,7 +341,8 @@ public class PrimCall extends Call {
         Word a = x.isWord();
         if (a != null) {
           long n = a.getVal(); // Look for a constant numerator
-          if (n >= 0) { // To be cautious, only consider nonnegative values
+          if (n >= 0) {
+            // To be cautious, only consider nonnegative values
             MILProgram.report("constant folding for nzrem");
             return done(n % d);
           }
@@ -328,7 +351,7 @@ public class PrimCall extends Call {
           MILProgram.report("eliminate remainder modulo 1");
           return done(0L);
         }
-        if ((d & (d - 1)) == 0) { // Look for remainder modulo a power of two, d=(1L<<n)
+        if ((d & (d - 1)) == 0) { // Look for remainder mod power of two, d=(1L<<n)
           MILProgram.report("rewrite: nzrem((x, " + d + ")) ==> and((x, " + (d - 1) + "))");
           return done(Prim.and, x, d - 1);
         }
@@ -471,8 +494,10 @@ public class PrimCall extends Call {
       Atom y = args[1];
       Word a = x.isWord();
       Word b = y.isWord();
-      boolean less = Prim.slt.op(0L, 1L); // is this a less than operation? (< or <=)
-      boolean nonstrict = Prim.slt.op(0L, 0L); // is this a nonstrict comparison? (<= or >=)
+      // is this a less than operation? (< or <=)
+      boolean less = Prim.slt.op(0L, 1L);
+      // is this a nonstrict comparison? (<= or >=)
+      boolean nonstrict = Prim.slt.op(0L, 0L);
       if (a != null) {
         if (b != null) {
           return Prim.slt.fold(a.getVal(), b.getVal());
@@ -496,8 +521,10 @@ public class PrimCall extends Call {
       Atom y = args[1];
       Word a = x.isWord();
       Word b = y.isWord();
-      boolean less = Prim.sgt.op(0L, 1L); // is this a less than operation? (< or <=)
-      boolean nonstrict = Prim.sgt.op(0L, 0L); // is this a nonstrict comparison? (<= or >=)
+      // is this a less than operation? (< or <=)
+      boolean less = Prim.sgt.op(0L, 1L);
+      // is this a nonstrict comparison? (<= or >=)
+      boolean nonstrict = Prim.sgt.op(0L, 0L);
       if (a != null) {
         if (b != null) {
           return Prim.sgt.fold(a.getVal(), b.getVal());
@@ -521,8 +548,10 @@ public class PrimCall extends Call {
       Atom y = args[1];
       Word a = x.isWord();
       Word b = y.isWord();
-      boolean less = Prim.sle.op(0L, 1L); // is this a less than operation? (< or <=)
-      boolean nonstrict = Prim.sle.op(0L, 0L); // is this a nonstrict comparison? (<= or >=)
+      // is this a less than operation? (< or <=)
+      boolean less = Prim.sle.op(0L, 1L);
+      // is this a nonstrict comparison? (<= or >=)
+      boolean nonstrict = Prim.sle.op(0L, 0L);
       if (a != null) {
         if (b != null) {
           return Prim.sle.fold(a.getVal(), b.getVal());
@@ -546,8 +575,10 @@ public class PrimCall extends Call {
       Atom y = args[1];
       Word a = x.isWord();
       Word b = y.isWord();
-      boolean less = Prim.sge.op(0L, 1L); // is this a less than operation? (< or <=)
-      boolean nonstrict = Prim.sge.op(0L, 0L); // is this a nonstrict comparison? (<= or >=)
+      // is this a less than operation? (< or <=)
+      boolean less = Prim.sge.op(0L, 1L);
+      // is this a nonstrict comparison? (<= or >=)
+      boolean nonstrict = Prim.sge.op(0L, 0L);
       if (a != null) {
         if (b != null) {
           return Prim.sge.fold(a.getVal(), b.getVal());
@@ -571,8 +602,10 @@ public class PrimCall extends Call {
       Atom y = args[1];
       Word a = x.isWord();
       Word b = y.isWord();
-      boolean less = Prim.ult.op(0L, 1L); // is this a less than operation? (< or <=)
-      boolean nonstrict = Prim.ult.op(0L, 0L); // is this a nonstrict comparison? (<= or >=)
+      // is this a less than operation? (< or <=)
+      boolean less = Prim.ult.op(0L, 1L);
+      // is this a nonstrict comparison? (<= or >=)
+      boolean nonstrict = Prim.ult.op(0L, 0L);
       if (a != null) {
         if (b != null) {
           return Prim.ult.fold(a.getVal(), b.getVal());
@@ -596,8 +629,10 @@ public class PrimCall extends Call {
       Atom y = args[1];
       Word a = x.isWord();
       Word b = y.isWord();
-      boolean less = Prim.ugt.op(0L, 1L); // is this a less than operation? (< or <=)
-      boolean nonstrict = Prim.ugt.op(0L, 0L); // is this a nonstrict comparison? (<= or >=)
+      // is this a less than operation? (< or <=)
+      boolean less = Prim.ugt.op(0L, 1L);
+      // is this a nonstrict comparison? (<= or >=)
+      boolean nonstrict = Prim.ugt.op(0L, 0L);
       if (a != null) {
         if (b != null) {
           return Prim.ugt.fold(a.getVal(), b.getVal());
@@ -621,8 +656,10 @@ public class PrimCall extends Call {
       Atom y = args[1];
       Word a = x.isWord();
       Word b = y.isWord();
-      boolean less = Prim.ule.op(0L, 1L); // is this a less than operation? (< or <=)
-      boolean nonstrict = Prim.ule.op(0L, 0L); // is this a nonstrict comparison? (<= or >=)
+      // is this a less than operation? (< or <=)
+      boolean less = Prim.ule.op(0L, 1L);
+      // is this a nonstrict comparison? (<= or >=)
+      boolean nonstrict = Prim.ule.op(0L, 0L);
       if (a != null) {
         if (b != null) {
           return Prim.ule.fold(a.getVal(), b.getVal());
@@ -646,8 +683,10 @@ public class PrimCall extends Call {
       Atom y = args[1];
       Word a = x.isWord();
       Word b = y.isWord();
-      boolean less = Prim.uge.op(0L, 1L); // is this a less than operation? (< or <=)
-      boolean nonstrict = Prim.uge.op(0L, 0L); // is this a nonstrict comparison? (<= or >=)
+      // is this a less than operation? (< or <=)
+      boolean less = Prim.uge.op(0L, 1L);
+      // is this a nonstrict comparison? (<= or >=)
+      boolean nonstrict = Prim.uge.op(0L, 0L);
       if (a != null) {
         if (b != null) {
           return Prim.uge.fold(a.getVal(), b.getVal());
@@ -682,7 +721,7 @@ public class PrimCall extends Call {
   }
 
   static Code done(boolean b) {
-    return done(new Flag(b));
+    return done(Flag.fromBool(b));
   }
 
   static Code done(Prim p, Atom[] args) {
@@ -713,6 +752,7 @@ public class PrimCall extends Call {
     return (this.p.samePrim(p)) ? args : null;
   }
 
+  /** Look for possible rewrites for a tail of the form bnot((x)). */
   private static Code bnotVar(Atom x, Facts facts) {
     Tail a = x.lookupFact(facts);
     return (a != null) ? a.bnotRewrite() : null;
@@ -736,6 +776,7 @@ public class PrimCall extends Call {
     return null; // No further rewrites apply
   }
 
+  /** Look for possible rewrites for a tail of the form not((x)). */
   private static Code notVar(Atom x, Facts facts) {
     Tail a = x.lookupFact(facts);
     if (a != null) {
@@ -749,6 +790,7 @@ public class PrimCall extends Call {
     return null;
   }
 
+  /** Look for possible rewrites for a tail of the form neg((x)). */
   private static Code negVar(Atom x, Facts facts) {
     Tail a = x.lookupFact(facts);
     if (a != null) {
@@ -766,6 +808,7 @@ public class PrimCall extends Call {
     return null;
   }
 
+  /** Look for possible rewrites for a tail of the form flagToWord((x)). */
   private static Code flagToWordVar(Atom x, Facts facts) {
     Tail a = x.lookupFact(facts);
     Atom[] ap;
@@ -777,8 +820,8 @@ public class PrimCall extends Call {
         if (b != null && (bp = b.isPrim(Prim.and)) != null) {
           if ((w = bp[1].isWord()) != null) {
             long d = w.getVal();
-            if ((d & (d - 1)) == 0) { // Look for a mask with a single bit, d=(1L<<n)
-              int n = 0; // Calculate the value of n (TODO: make reusable function for this)
+            if ((d & (d - 1)) == 0) { // Look for mask with a single bit, d=(1L<<n)
+              int n = 0; // Calculate  value of n (TODO: make reusable)
               for (long i = d; (i >>>= 1) > 0; n++) {
                 /* no extra work here */
               }
@@ -793,16 +836,22 @@ public class PrimCall extends Call {
     return null;
   }
 
+  /** Look for possible rewrites for a tail of the form wordToFlag((x)). */
   private static Code wordToFlagVar(Atom x, Facts facts) {
+    // No rewrites implemented at this time.
+    // TODO: Consider possible rewrite for wordToFlag((flagToWord((u)))) == u,
+    // if this seems to show up in practice.  (Note that the dual,
+    // flagToWord((wordToFlag((u)))) = u is NOT valid because the expression on
+    // the left loses information about the original value of u.)
     return null;
   }
 
   /** Look for opportunities to simplify an expression using idempotence. */
   private static Code idempotent(Atom x, Atom y) {
     if (x == y) { // simple idempotence
-      // TODO: in an expression of the form (x & y), we could further exploit idempotence if x
-      // includes an
-      // or with y (or vice versa); handling this would require the addition of Prim and a Facts
+      // TODO: in an expression of the form (x & y), we could further
+      // exploit idempotence if x includes an or with y (or vice versa);
+      // handling this would require the addition of Prim and a Facts
       // arguments.
       MILProgram.report("rewrite: x ! x ==> x");
       return done(x);
@@ -886,13 +935,16 @@ public class PrimCall extends Call {
     return null;
   }
 
+  /** Look for rewrites for expressions of the form x + y. */
   private static Code addVarVar(Atom x, Atom y, Facts facts) {
     Tail a = x.lookupFact(facts);
     Tail b = y.lookupFact(facts);
-    if (a != null || b != null) { // Only look for a rewrite if there are some facts
+    // Only look for a rewrite if there are some facts
+    if (a != null || b != null) {
       Code nc;
-      // TODO: commuteRearrange calls redistBin, which checks for combinations that cannot
-      // occur here (single constant on one side of operation) ... look for ways to clean up!
+      // TODO: commuteRearrange calls redistBin, which checks for
+      // combinations that cannot occur here (single constant on
+      // one side of operation) ... look for ways to clean up!
       return ((null != (nc = commuteRearrange(Prim.add, x, a, y, b)))
               || (null != (nc = distAdd(x, a, y, b))))
           ? nc
@@ -901,6 +953,7 @@ public class PrimCall extends Call {
     return distAddAnyAny(x, y);
   }
 
+  /** Look for rewrites for expressions of the form x + m. */
   private static Code addVarConst(Atom x, long m, Facts facts) {
     if (m == 0) { // x + 0 == x
       MILProgram.report("rewrite: x + 0 ==> x");
@@ -933,6 +986,10 @@ public class PrimCall extends Call {
     return null;
   }
 
+  /**
+   * Look for rewrites for expressions of the form x + y where a and b are tails that may hold
+   * further details about x and y, resp.
+   */
   private static Code distAdd(Atom x, Tail a, Atom y, Tail b) {
     if (a != null) {
       Atom[] ap;
@@ -961,11 +1018,12 @@ public class PrimCall extends Call {
     return distSubAny(x, y, b);
   }
 
+  /** Look for rewrites for an expression of the form (-u) + y. */
   private static Code distAddNeg(Atom u, Atom y, Tail b) {
     if (b != null) {
       Atom[] bp;
       Word n;
-      if ((bp = b.isPrim(Prim.neg)) != null) {
+      if ((bp = b.isPrim(Prim.neg)) != null) { // (-u) + (-v)
         return distAddNegNeg(u, bp[0]);
       }
       if ((bp = b.isPrim(Prim.mul)) != null && (n = bp[1].isWord()) != null) {
@@ -1045,8 +1103,8 @@ public class PrimCall extends Call {
     return distSubCMulAny(u, c, y);
   }
 
-  private static Code distCC(
-      Atom u, Prim m, long c, PrimBinOp a, Atom v, long d) { // (u `m` c) `a` (v `m` d) = ...
+  private static Code distCC(Atom u, Prim m, long c, PrimBinOp a, Atom v, long d) {
+    // (u `m` c) `a` (v `m` d) = ...
     if (u == v) {
       MILProgram.report("rewrite: (u `m` c) `a` (u `m` d) ==> u `m` (c `a` d)");
       return done(m, u, a.op(c, d));
@@ -1062,10 +1120,10 @@ public class PrimCall extends Call {
   private static Code distRearrange(PrimBinOp p, PrimBinOp q, Atom x, Tail a, Atom y, Tail b) {
     Atom[] ap, bp;
     Word c, d;
+    // check for an expression of the form required by distCC
     if (a != null
         && b != null
-        && // check for an expression of the form required by distCC
-        (ap = a.isPrim(q)) != null
+        && (ap = a.isPrim(q)) != null
         && (bp = b.isPrim(q)) != null
         && (c = ap[1].isWord()) != null
         && (d = bp[1].isWord()) != null) {
@@ -1074,18 +1132,21 @@ public class PrimCall extends Call {
     return null;
   }
 
+  /** Rewrite expression of the form (-u) + (-v). */
   private static Code distAddNegNeg(Atom u, Atom v) {
     MILProgram.report("rewrite: (-u) + (-v) ==> - (u + v)");
     Temp t = new Temp();
     return new Bind(t, Prim.add.withArgs(u, v), done(Prim.neg, t));
   }
 
+  /** Rewrite expression of the form (-u) - (-v). */
   private static Code distSubNegNeg(Atom u, Atom v) {
     MILProgram.report("rewrite: (-u) - (-v) ==> v - u)");
     return done(Prim.sub, v, u);
   }
 
-  private static Code distAddCMulNeg(Atom x, Atom u, long c, Atom v) { // x@(u * c) + (-v) = ...
+  /** Rewrite expression of the form x@(u * c) + (-v). */
+  private static Code distAddCMulNeg(Atom x, Atom u, long c, Atom v) {
     if (u == v) {
       MILProgram.report("rewrite: (u * c) + (-u) ==> u * (c - 1)");
       return done(Prim.mul, u, c - 1);
@@ -1093,7 +1154,8 @@ public class PrimCall extends Call {
     return distAddAnyNeg(x, v);
   }
 
-  private static Code distAddNegCMul(Atom u, Atom y, Atom v, long d) { // (-u) + y@(v * d) = ...
+  /** Rewrite expression of the form (-u) + y@(v * d). */
+  private static Code distAddNegCMul(Atom u, Atom y, Atom v, long d) {
     if (u == v) {
       MILProgram.report("rewrite: (-u) + (u * d)  ==>  u * (d - 1)");
       return done(Prim.mul, u, d - 1);
@@ -1101,7 +1163,8 @@ public class PrimCall extends Call {
     return distAddNegAny(u, y);
   }
 
-  private static Code distSubCMulNeg(Atom x, Atom u, long c, Atom v) { // x@(u * c) - (-v) = ...
+  /** Rewrite expression of the form x@(u * c) - (-v). */
+  private static Code distSubCMulNeg(Atom x, Atom u, long c, Atom v) {
     if (u == v) {
       MILProgram.report("rewrite: (u * c) - (-u) ==> u * (c + 1)");
       return done(Prim.mul, u, c + 1);
@@ -1109,7 +1172,8 @@ public class PrimCall extends Call {
     return distAddAnyNeg(x, v);
   }
 
-  private static Code distSubNegCMul(Atom u, Atom y, Atom v, long d) { // (-u) - y@(v * d) = ...
+  /** Rewrite expression of the form (-u) - y@(v * d). */
+  private static Code distSubNegCMul(Atom u, Atom y, Atom v, long d) {
     if (u == v) {
       MILProgram.report("rewrite: (-u) - (u * d)  ==>  u * (-(1 + d))");
       return done(Prim.mul, u, -(1 + d));
@@ -1117,7 +1181,8 @@ public class PrimCall extends Call {
     return distAddNegAny(u, y);
   }
 
-  private static Code distAddCMulAny(Atom u, long c, Atom y) { // (u * c) + y = ...
+  /** Rewrite expression of the form (u * c) + y. */
+  private static Code distAddCMulAny(Atom u, long c, Atom y) {
     if (u == y) {
       MILProgram.report("rewrite: (u * c) + u ==> u * (c + 1)");
       return done(Prim.mul, u, c + 1);
@@ -1125,7 +1190,8 @@ public class PrimCall extends Call {
     return null;
   }
 
-  private static Code distAddAnyCMul(Atom x, Atom v, long d) { // x + (v * d) = ...
+  /** Rewrite expression of the form x + (v * d). */
+  private static Code distAddAnyCMul(Atom x, Atom v, long d) {
     if (x == v) {
       MILProgram.report("rewrite: v + (v * d)  ==>  v * (1 + d)");
       return done(Prim.mul, v, 1 + d);
@@ -1133,7 +1199,8 @@ public class PrimCall extends Call {
     return null;
   }
 
-  private static Code distSubCMulAny(Atom u, long c, Atom y) { // (u * c) - y = ...
+  /** Rewrite expression of the form (u * c) - y. */
+  private static Code distSubCMulAny(Atom u, long c, Atom y) {
     if (u == y) {
       MILProgram.report("rewrite: (u * c) - u ==> u * (c - 1)");
       return done(Prim.mul, u, c - 1);
@@ -1141,7 +1208,8 @@ public class PrimCall extends Call {
     return null;
   }
 
-  private static Code distSubAnyCMul(Atom x, Atom v, long d) { // x - (v * d) = ...
+  /** Rewrite expression of the form x - (v * d). */
+  private static Code distSubAnyCMul(Atom x, Atom v, long d) {
     if (x == v) {
       MILProgram.report("rewrite: v - (v * d)  ==>  v * (1 - d)");
       return done(Prim.mul, v, 1 - d);
@@ -1149,27 +1217,32 @@ public class PrimCall extends Call {
     return null;
   }
 
+  /** Rewrite for expressions of the form (-u) + y. */
   private static Code distAddNegAny(Atom u, Atom y) {
     MILProgram.report("rewrite: (-u) + y ==> y - u");
     return done(Prim.sub, y, u);
   }
 
+  /** Rewrite for expressions of the form x + (-u). */
   private static Code distAddAnyNeg(Atom x, Atom v) {
     MILProgram.report("rewrite: x + (-v) ==> x - v");
     return done(Prim.sub, x, v);
   }
 
+  /** Rewrite for expressions of the form (-u) - y. */
   private static Code distSubNegAny(Atom u, Atom y) {
     MILProgram.report("rewrite: (-u) - y ==> -(u + y)");
     Temp t = new Temp();
     return new Bind(t, Prim.add.withArgs(u, y), done(Prim.neg, t));
   }
 
+  /** Rewrite for expressions of the form x - (-v). */
   private static Code distSubAnyNeg(Atom x, Atom v) {
     MILProgram.report("rewrite: x - (-v) ==> x + v");
     return done(Prim.add, x, v);
   }
 
+  /** Rewrite expression of the form x + y. */
   private static Code distAddAnyAny(Atom x, Atom y) {
     if (x == y) {
       MILProgram.report("rewrite: x + x ==> x * 2");
@@ -1178,6 +1251,7 @@ public class PrimCall extends Call {
     return null;
   }
 
+  /** Rewrite expression of the form x - y. */
   private static Code distSubAnyAny(Atom x, Atom y) {
     if (x == y) {
       MILProgram.report("rewrite: x - x ==> 0");
@@ -1186,10 +1260,12 @@ public class PrimCall extends Call {
     return null;
   }
 
+  /** Rewrites for multiplications where both arguments are variables. */
   private static Code mulVarVar(Atom x, Atom y, Facts facts) {
     return commuteRearrange(Prim.mul, x, x.lookupFact(facts), y, y.lookupFact(facts));
   }
 
+  /** Rewrites for expressions of the form x * m. */
   private static Code mulVarConst(Atom x, long m, Facts facts) {
     if (m == 0) { // x * 0 == 0
       MILProgram.report("rewrite: x * 0 ==> 0");
@@ -1233,6 +1309,7 @@ public class PrimCall extends Call {
     return null;
   }
 
+  /** Rewrites for expressions of the form x | y. */
   private static Code orVarVar(Atom x, Atom y, Facts facts) {
     Code nc;
     if ((nc = idempotent(x, y)) != null) {
@@ -1266,12 +1343,14 @@ public class PrimCall extends Call {
     return null;
   }
 
+  /** Test if t an application of the form (u & M) for some M. */
   private static Word andVarWith(Atom t, Atom u, Facts facts) {
     Tail c = t.lookupFact(facts);
     Atom[] cp;
     return (c != null && (cp = c.isPrim(Prim.and)) != null && cp[0] == u) ? cp[1].isWord() : null;
   }
 
+  /** Rewrites for expressions of the form x | m, where m constant. */
   private static Code orVarConst(Atom x, long m, Facts facts) {
     if (m == 0) {
       MILProgram.report("rewrite: x | 0 ==> x");
@@ -1316,6 +1395,7 @@ public class PrimCall extends Call {
     return null;
   }
 
+  /** Rewrites for expressions of the form x & y. */
   private static Code andVarVar(Atom x, Atom y, Facts facts) {
     Code nc = idempotent(x, y);
     if (nc == null) {
@@ -1330,6 +1410,7 @@ public class PrimCall extends Call {
     return nc;
   }
 
+  /** Rewrites for expressions of the form x & m, where m constant. */
   private static Code andVarConst(Atom x, long m, Facts facts) {
     if (m == 0) {
       MILProgram.report("rewrite: x & 0 ==> 0");
@@ -1377,17 +1458,22 @@ public class PrimCall extends Call {
           }
         }
       } else if ((ap = a.isPrim(Prim.shl)) != null) {
-        // TODO: would it be better to rewrite (x << c) & m ==> (x & (m>>c)) << c?
-        // (observation: rewriting would avoid repeated triggering the logic here)
-        // Q1: is this valid (intuition: (x<<c)&m = (x<<c)&((m>>c)<<c) = (x&(m>>c))<<c)
-        // Q2: does this interfere with rewrites for (x & m) << c?  May need to remove those ...
+        // TODO: would it be better to rewrite (x << c) & m ==>
+        // (x & (m>>c)) << c?  (observation: rewriting would avoid repeated
+        // triggering the logic here)
+        // Q1: is this valid (intuition:
+        //    (x<<c)&m = (x<<c)&((m>>c)<<c) = (x&(m>>c))<<c)
+        // Q2: does this interfere with rewrites for (x & m) << c?
+        //     May need to remove those ...
         Word c = ap[1].isWord(); // (_ << c) & m
         if (c != null) {
           long w = c.getVal();
           if (w > 0 && w < Word.size()) {
-            // left shifting by w bits performs an effective mask by em on the result:
+            // left shifting by w bits performs an effective mask by em
+            // on the result:
             long em = ~((1L << w) - 1);
-            if ((m & em) == em) { // if specified mask doesn't do more than effective mask ...
+            if ((m & em) == em) {
+              // if specified mask doesn't do more than effective mask ...
               MILProgram.report(
                   "rewrite: (x << " + w + ") & 0x" + Long.toHexString(m) + " ==> (x << " + w + ")");
               return done(x);
@@ -1399,9 +1485,11 @@ public class PrimCall extends Call {
         if (c != null) {
           long w = c.getVal();
           if (w > 0 && w < Word.size()) {
-            // right shifting by w bits performs an effective mask by em on the result:
+            // right shifting by w bits performs an effective mask by
+            // em on the result:
             long em = (1L << (Word.size() - w)) - 1;
-            if ((m & em) == em) { // if specified mask doesn't do more than effective mask ...
+            if ((m & em) == em) {
+              // if specified mask doesn't do more than effective mask ...
               MILProgram.report(
                   "rewrite: (x >> " + w + ") & 0x" + Long.toHexString(m) + " ==> (x >> " + w + ")");
               return done(x);
@@ -1409,8 +1497,9 @@ public class PrimCall extends Call {
           }
         }
       } else if ((ap = a.isPrim(Prim.add)) != null) {
-        // TODO: generalize this to work with other primitives (e.g., sub, mul)
-        // and to eliminate masks on either left or right hand sides
+        // TODO: generalize this to work with other primitives
+        // (e.g., sub, mul) and to eliminate masks on either left
+        // or right hand sides
         Tail b = ap[0].lookupFact(facts); // ((b) + y) & m
         if (b != null) {
           Atom[] bp = b.isPrim(Prim.and);
@@ -1436,20 +1525,21 @@ public class PrimCall extends Call {
 
   /** Return true if ((x & m1) + y) & m2 == (x + y) & m2. */
   private static boolean modarith(long m1, long m2) {
-    // if m is a run of bits, then  m | ~(m-1)  has  the same run of bits
-    // with all more significant bits set to 1
+    // if m is a run of bits, then  m | ~(m-1)  has  the same run
+    // of bits with all more significant bits set to 1
     return bitrun(m1) && bitrun(m2) && ((m1 & (m2 | ~(m2 - 1))) == m1);
   }
 
   /** Return true if value m is a single run of 1 bits (no zero bits between 1s). */
   private static boolean bitrun(long m) {
-    // If m is a run of bits, then m | (m-1) will be a run of bits with the
-    // same most significant bit and all lower bits set to 1.
+    // If m is a run of bits, then m | (m-1) will be a run of bits
+    // with the same most significant bit and all lower bits set to 1.
     long v = (m | (m - 1));
     // In which case, that value plus one will be a power of two:
     return (v & (v + 1)) == 0;
   }
 
+  /** Rewrites for expressions of the form x ^ y. */
   private static Code xorVarVar(Atom x, Atom y, Facts facts) {
     if (x == y) { // simple annihilator
       // TODO: in an expression of the form (x ^ y), we could further
@@ -1460,6 +1550,7 @@ public class PrimCall extends Call {
     return commuteRearrange(Prim.xor, x, x.lookupFact(facts), y, y.lookupFact(facts));
   }
 
+  /** Rewrites for expressions of the form x ^ m, where m constant. */
   private static Code xorVarConst(Atom x, long m, Facts facts) {
     if (m == 0) { // x ^ 0 == x
       MILProgram.report("rewrite: x ^ 0 ==> x");
@@ -1479,7 +1570,8 @@ public class PrimCall extends Call {
     }
     Tail a = x.lookupFact(facts);
     Tail b = y.lookupFact(facts);
-    if (a != null || b != null) { // Only look for a rewrite if there are some facts
+    if (a != null || b != null) {
+      // Only look for a rewrite if there are some facts
       Code nc;
       return ((null != (nc = redistBin(Prim.sub, Prim.add, x, a, y, b)))
               || (null != (nc = distSub(x, a, y, b))))
@@ -1520,9 +1612,10 @@ public class PrimCall extends Call {
       }
     }
 
-    // TODO: not sure about this one; it turns simple decrements like sub(x,1) into
-    // adds like add(x, -1); I guess this could be addressed by a code generator that
-    // doesn't just naively turn every add(x,n) into an add instruction ...
+    // TODO: not sure about this one; it turns simple decrements like
+    // sub(x,1) into adds like add(x, -1); I guess this could be
+    // addressed by a code generator that doesn't just naively turn
+    // every add(x,n) into an add instruction ...
     //
     // If n==0,  then add(x,n) shouldn't occur ...
     //    n==1,  then add(x,n) becomes an increment instruction
@@ -1612,7 +1705,8 @@ public class PrimCall extends Call {
       } else if ((ap = a.isPrim(Prim.and)) != null) {
         Word b = ap[1].isWord();
         if (b != null) {
-          // TODO: is this a good idea?  Unless n << m == 0, this makes the mask bigger ...
+          // TODO: is this a good idea?  Unless n << m == 0, this
+          // makes the mask bigger ...
           MILProgram.report("rewrite: (x & n) << m  ==  (x<<m) & (n<<m)");
           long n = b.getVal();
           Temp v = new Temp();
@@ -1621,9 +1715,10 @@ public class PrimCall extends Call {
       } else if ((ap = a.isPrim(Prim.or)) != null) {
         Word b = ap[1].isWord();
         if (b != null) {
-          // TODO: is this a good idea?  Unless n << m == 0, this makes the constant bigger ...
-          // (But it might reduce the need for a shift if the shift on x can be combined with
-          // another shift (i.e., if x = (y << p), say) ... which can happen in practice ...
+          // TODO: is this a good idea?  Unless n << m == 0, this makes
+          // the constant bigger ... (But it might reduce the need for a
+          // shift if the shift on x can be combined with another shift
+          // (i.e., if x = (y << p), say) ... which can happen in practice ...
           MILProgram.report("rewrite: (x | n) << m  ==  (x<<m) | (n<<m)");
           long n = b.getVal();
           Temp v = new Temp();
@@ -1776,8 +1871,9 @@ public class PrimCall extends Call {
           }
         }
       } else if ((ap = a.isPrim(Prim.and)) != null) {
-        // It seems unlikely that arithmetic shifts will be used with bitwise operators,
-        // but it shouldn't do any harm to include these optimization cases ...
+        // It seems unlikely that arithmetic shifts will be used with
+        // bitwise operators, but it shouldn't do any harm to include
+        // these optimization cases ...
         Word b = ap[1].isWord();
         if (b != null) {
           MILProgram.report("rewrite: (x & n) >> m  ==  (x>>m) & (n>>m)");
@@ -1819,7 +1915,8 @@ public class PrimCall extends Call {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return summary(p.summary()) * 33 + 1;
@@ -1837,8 +1934,8 @@ public class PrimCall extends Call {
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
-    if (type != null) {
-      type = type.canonBlockType(set);
+    if (btype != null) {
+      btype = btype.canonBlockType(set);
     }
     p = p.canonPrim(set);
     Atom.collect(args, set);
@@ -1846,7 +1943,7 @@ public class PrimCall extends Call {
 
   /** Generate a specialized version of this Call. */
   Call specializeCall(MILSpec spec, TVarSubst s, SpecEnv env) {
-    return new PrimCall(p.specializePrim(spec, type, s));
+    return new PrimCall(p.specializePrim(spec, btype, s));
   }
 
   Tail repTransform(RepTypeSet set, RepEnv env) {

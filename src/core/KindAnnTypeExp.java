@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -34,6 +34,11 @@ public class KindAnnTypeExp extends PosTypeExp {
     this.k = k;
   }
 
+  /**
+   * Remove occurrences of InfixTypeExp nodes from this type expression using fixity information.
+   * For all other node types, we update individual fields in place (in case they included
+   * InfixTypeExp nodes) and return the original node (this).
+   */
   public TypeExp tidyInfix(TyconEnv env) throws Failure {
     t = t.tidyInfix(env);
     return this;
@@ -49,20 +54,22 @@ public class KindAnnTypeExp extends PosTypeExp {
     return t.getFixity();
   }
 
+  /** The Kind for this kind annotation. */
   private Kind kind = null;
 
   /**
-   * Worker function for scopeType that is intended to be called after order of any infix operators
-   * have been determined and has the option to rewrite the type expression if needed.
+   * Worker function that performs the main scope analysis on type expressions. An additional arity
+   * parameter is used here so that we can track and validate the number of arguments that are
+   * passed to type constructors.
    */
-  public TypeExp scopeTypeRewrite(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
+  public TypeExp scopeType(TyvarEnv params, TyconDeps tdeps, TyconEnv env, int arity)
       throws Failure {
     kind = k.toKind();
-    t = t.scopeTypeRewrite(canAdd, params, env, arity);
+    t = t.scopeType(params, tdeps, env, arity);
     return this;
   }
 
-  public Kind inferKind() throws KindMismatchFailure {
+  public Kind inferKind() throws Failure {
     t.checkKind(kind);
     return kind;
   }
@@ -73,31 +80,16 @@ public class KindAnnTypeExp extends PosTypeExp {
   }
 
   /**
-   * Analyze a type parameter to check basic syntax and return a corresponding Tyvar. A Kind
-   * parameter is used to track the declared kind of the parameter (if specified) or else is set to
-   * null, indicating that the required kind is not yet known. The kind of the returned Tyvar will
-   * be set to the declared kind, if known, or else to a fresh kind variable to be bound during kind
-   * inference.
+   * Check that this type expression can be interpreted as a valid type parameter, for example, in a
+   * datatype definition. The kind parameter is used to capture a kind declared through a kind
+   * annotation as we descend the abstract syntax tree. It should initially be set to null, and
+   * hence will still be null if we reach a variable name without seeing any kind annotations.
    */
-  public Tyvar scopeTypeParam(Kind kind) throws Failure {
+  public void addTypeParam(TyvarEnv params, Kind kind) throws Failure {
     this.kind = k.toKind();
     if (kind != null && !kind.same(this.kind)) {
       throw new MultipleKindsSpecifiedFailure(this, this.kind, kind);
     }
-    return t.scopeTypeParam(this.kind);
-  }
-
-  /**
-   * Scope analysis on type expressions in a context where we want to determine which (if any)
-   * CoreDefn values a particular type expression depends on.
-   */
-  public CoreDefns scopeTyconsType(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
-    try {
-      kind = k.toKind();
-    } catch (Failure f) {
-      handler.report(f);
-    }
-    return t.scopeTyconsType(handler, params, env, defns, depends);
+    t.addTypeParam(params, this.kind);
   }
 }

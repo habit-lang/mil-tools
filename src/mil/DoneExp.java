@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -31,7 +31,8 @@ class DoneExp extends CodeExp {
     this.texp = texp;
   }
 
-  Tail toTail(Handler handler, MILEnv milenv, String[] ids, Temp[] ps, String[] args, Temp[] as) {
+  Tail toTail(Handler handler, MILEnv milenv, String[] ids, Temp[] ps, String[] args, Temp[] as)
+      throws Failure {
     return texp.inScopeOf(handler, milenv, new TempEnv(args, as, new TempEnv(ids, ps, null)));
   }
 
@@ -44,9 +45,9 @@ class DoneExp extends CodeExp {
   /**
    * Perform scope analysis on the AST for a sequence of code, checking that all of the referenced
    * identifiers are in scope, introducing new temporaries for each identifier that is bound in a
-   * BindExp, and returning the corresponding mil Code sequence.
+   * BindExp, and returning the corresponding MIL Code sequence.
    */
-  Code inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
+  Code inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) throws Failure {
     return new Done(texp.inScopeOf(handler, milenv, tenv));
   }
 }

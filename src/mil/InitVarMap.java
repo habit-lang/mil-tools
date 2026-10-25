@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -65,19 +65,6 @@ class InitVarMap extends VarMap {
       }
     }
     debug.Internal.error("Failed to find initial value for \"" + top + "\"");
-    return null;
-  }
-
-  /**
-   * Find an LLVM value corresponding to the given External in the GlobalInitList, or return null,
-   * indicating that it will be necessary to use a load to read the external.
-   */
-  llvm.Value lookupExternal(External external) {
-    for (GlobalInitList gs = globalInits; gs != null; gs = gs.next) {
-      if (gs.top.sameTopExt(external)) {
-        return gs.v;
-      }
-    }
     return null;
   }
 

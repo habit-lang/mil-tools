@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,8 +21,13 @@ package mil;
 import compiler.*;
 import core.*;
 
+/**
+ * Documents an error resulting from an attempt to declare a definition with a polymorphic type as
+ * an entrypoint to a program.
+ */
 class PolymorphicEntrypointFailure extends Failure {
 
+  /** Represents a failure that occurs when an entrypoint to a program has a polymorphic type. */
   PolymorphicEntrypointFailure(String what, Defn d) {
     super(
         d.getPos(),

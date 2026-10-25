@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -26,16 +26,18 @@ import java.io.PrintWriter;
 public abstract class PrimBinOp extends PrimSing {
 
   /** Default constructor. */
-  public PrimBinOp(String id, int purity, BlockType blockType) {
-    super(id, purity, blockType);
+  public PrimBinOp(String id, BlockType blockType, int purity) {
+    super(id, blockType, purity);
   }
 
-  abstract long op(long n, long m);
+  /** Primitive semantics: binary operators on Word values. */
+  public abstract long op(long n, long m);
 
   void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
     stack[fp] = new WordValue(op(stack[fp].getInt(), stack[fp + 1].getInt()));
   }
 
+  /** Perform constant folding for binary primitives with two long arguments. */
   Code fold(long n, long m) {
     MILProgram.report("constant folding for " + getId());
     return PrimCall.done(op(n, m));

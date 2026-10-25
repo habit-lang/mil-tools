@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -44,17 +44,17 @@ public class TGen extends Type {
   }
 
   /**
-   * Test to determine whether this type is alpha equivalent to another type, by checking to see if
-   * the two type skeletons are equal, possibly with some correspondence between the TGen objects in
-   * the two types. We use the names left and right to keep track of which types were on the left
-   * and the right in the original alphaEquiv() call so that we can build the TGenCorresp in a
-   * consistent manner.
+   * Test whether this type is alpha equivalent to another type, by checking to see if the two type
+   * skeletons are equal, possibly with some correspondence between the TGen objects in the two
+   * types. We use the names left and right to keep track of which types were on the left and the
+   * right in the original alphaEquiv() call so that we can build the TGenCorresp in a consistent
+   * manner.
    */
   boolean alphaType(Type left, TGenCorresp corresp) {
     return left.alphaTGen(this, corresp);
   }
 
-  /** Test to determine whether this type is equal to a given TGen. */
+  /** Test whether this type is equal to a given TGen. */
   boolean alphaTGen(TGen right, TGenCorresp corresp) {
     return this.mapsTo(right, corresp);
   }
@@ -98,33 +98,29 @@ public class TGen extends Type {
     return thisenv[this.n].skeleton(null, generics);
   }
 
-  /**
-   * Test to determine whether two types are equal.
-   *
-   * <p>same :: Type -> Env -> Type -> Env -> Bool
-   */
+  /** Test whether two types are equal. same :: Type -> Env -> Type -> Env -> Bool. */
   public boolean same(Type[] thisenv, Type t, Type[] tenv) {
     return thisenv[n].same(null, t, tenv);
   }
 
-  /** Test to determine whether this type is equal to a specified type application. */
+  /** Test whether this type is equal to a specified type application. */
   boolean sameTAp(Type[] thisenv, TAp tap, Type[] tapenv) {
     return thisenv[n].sameTAp(null, tap, tapenv);
   }
 
-  /** Test to determine whether this type is equal to a specified type constant. */
+  /** Test whether this type is equal to a specified type constant. */
   boolean sameTTycon(Type[] thisenv, TTycon that) {
     return thisenv[n].sameTTycon(null, that);
   }
 
-  /** Test to determine whether this type is equal to a specified type literal. */
+  /** Test whether this type is equal to a specified type literal. */
   boolean sameTLit(Type[] thisenv, TLit t) {
     return thisenv[n].sameTLit(null, t);
   }
 
   /**
-   * Test to determine whether this type is equal to a specified type variable. NOTE: we assume here
-   * that the specified TVar is unbound!
+   * Test whether this type is equal to a specified type variable. NOTE: we assume here that the
+   * specified TVar is unbound!
    */
   boolean sameTVar(Type[] thisenv, TVar v) {
     return thisenv[n].sameTVar(null, v);
@@ -141,7 +137,7 @@ public class TGen extends Type {
   }
 
   /**
-   * Matching of types: test to see if the type on the right can be obtained by instantiating type
+   * Matching of types: test whether the type on the right can be obtained by instantiating type
    * variables in the type on the left. (The "receiver", or "this", in the following code.)
    *
    * <p>match :: Type -> Env -> Type -> Env -> IO ()
@@ -154,17 +150,17 @@ public class TGen extends Type {
   }
 
   /**
-   * Test to determine whether the specified type application will match this type. For this method,
-   * we should only instantiate type variables that appear in the type application, tap.
+   * Test whether the specified type application will match this type. For this method, we should
+   * only instantiate type variables that appear in the type application, tap.
    */
   boolean matchTAp(Type[] thisenv, TAp tap, Type[] tapenv) {
     return thisenv[n].matchTAp(null, tap, tapenv);
   }
 
   /**
-   * Test to determine whether the specified variable can be matched to this type. The only type
-   * variable that can be instantiated during this process is the variable v passed in as the second
-   * argument. The variable v must be unbound.
+   * Test whether the specified variable can be matched to this type. The only type variable that
+   * can be instantiated during this process is the variable v passed in as the second argument. The
+   * variable v must be unbound.
    */
   boolean matchTVar(Type[] thisenv, TVar v) {
     return thisenv[n].matchTVar(null, v);
@@ -174,11 +170,7 @@ public class TGen extends Type {
     return thisenv[n].contains(null, v);
   }
 
-  /**
-   * Unification of types.
-   *
-   * <p>unify :: Type -> Env -> Type -> Env -> IO ()
-   */
+  /** Unification of types. unify :: Type -> Env -> Type -> Env -> IO () */
   public void unify(Type[] thisenv, Type t, Type[] tenv) throws UnifyException {
     thisenv[n].unify(null, t, tenv);
   }
@@ -208,7 +200,7 @@ public class TGen extends Type {
    * either an unbound TVar, or else a TNat literal. TODO: This could be used more generally as a
    * way to eliminate all TGen, TInd, bound TVar, or Synonym nodes at the root of any type, not just
    * natural number types ... Suggest rewriting description and renaming method to reflect that ...
-   * (and testing too ...)
+   * (and testing too ...).
    */
   public Type simplifyNatType(Type[] tenv) {
     return tenv[n].simplifyNatType(null);
@@ -232,10 +224,19 @@ public class TGen extends Type {
     return (env == null) ? set.canonOther(this, args) : env[n].canonType(null, set, args);
   }
 
+  /**
+   * Apply the given substitution to this type skeleton, using the specified type environment to
+   * interpret TGens.
+   */
   Type apply(Type[] thisenv, TVarSubst s) {
     return thisenv[n].apply(null, s);
   }
 
+  /**
+   * Build a canonical version of this type, using the given TypeSet and tracking the total number
+   * of arguments that have found so far. In the process, we do the usual dance to elide TGen and
+   * TInd nodes, as well as synonyms and bound TVars.
+   */
   Type canonArgs(Type[] tenv, TypeSet set, int args) {
     return (tenv == null) ? super.canonArgs(tenv, set, args) : tenv[n].canonArgs(null, set, args);
   }
@@ -245,18 +246,30 @@ public class TGen extends Type {
     return thisenv[n].sameMod(null, t, tenv, mmap);
   }
 
+  /** Determine whether this Type is equivalent to a specified TAp, modulo the given MergeMap. */
   boolean sameApMod(Type[] tenv, TAp l, Type[] lenv, MergeMap mmap) {
     return tenv[n].sameApMod(null, l, lenv, mmap);
   }
 
+  /**
+   * Determine whether this Type is equivalent to a particular unbound TVar, modulo the given
+   * MergeMap.
+   */
   boolean sameTVarMod(Type[] tenv, TVar l, MergeMap mmap) {
     return tenv[n].sameTVarMod(null, l, mmap);
   }
 
+  /**
+   * Determine whether this Type is equivalent to the specified type constructor, modulo the given
+   * MergeMap.
+   */
   boolean sameTyconMod(Type[] tenv, Tycon l, MergeMap mmap) {
     return tenv[n].sameTyconMod(null, l, mmap);
   }
 
+  /**
+   * Determine whether this Type is equivalent to the specified DataType, modulo the given MergeMap.
+   */
   boolean sameDataTypeMod(Type[] tenv, DataType l, MergeMap mmap) {
     return tenv[n].sameDataTypeMod(null, l, mmap);
   }

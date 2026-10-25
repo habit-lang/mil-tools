@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -28,20 +28,32 @@ public class Flag extends Const {
   private boolean val;
 
   /** Default constructor. */
-  public Flag(boolean val) {
+  private Flag(boolean val) {
     this.val = val;
   }
 
+  /** Return the boolean value for this Flag. */
   boolean getVal() {
     return val;
   }
 
+  /** A constant Flag with value true. */
   static final Flag True = new Flag(true);
 
+  /** A constant Flag with value false. */
   static final Flag False = new Flag(false);
 
+  /**
+   * Return a Flag for the given boolean. Use this to build Flag values because the constructor for
+   * Flag is private.
+   */
   static Flag fromBool(boolean b) {
     return b ? True : False;
+  }
+
+  /** Test whether this Atom is an Flag. */
+  public Flag isFlag() {
+    return this;
   }
 
   /** Generate a printable description of this atom. */
@@ -58,17 +70,14 @@ public class Flag extends Const {
     return that.sameFlag(this);
   }
 
-  /** Test to determine whether this Atom refers to the given flag constant. */
-  boolean sameFlag(Flag c) {
-    return this.val == c.val;
+  /** Test whether this Atom is the same as the given Flag. */
+  boolean sameFlag(Flag that) {
+    return this.val == that.val;
   }
 
-  /** Test to determine whether this Atom is a flag constant (or not). */
-  Flag isFlag() {
-    return this;
-  }
-
-  /** Return a type for an instantiated version of this item when used as Atom (input operand). */
+  /**
+   * Return a type for an instantiated version of this item when used as an Atom (input operand).
+   */
   public Type instantiate() {
     return Tycon.flag.asType();
   }
@@ -79,10 +88,11 @@ public class Flag extends Const {
   }
 
   /**
-   * A simple test for MIL code fragments that return a known Flag, returning either the constant or
-   * null.
+   * A simple test for MIL code fragments that return a known Flag; this is a helper for the method
+   * without an argument that adds a counter that is decreased for every BlockCall encountered to
+   * avoid triggering an unbounded loop in pathological corner cases.
    */
-  Flag returnsFlag() {
+  Flag returnsFlag(int n) {
     return this;
   }
 
@@ -92,7 +102,8 @@ public class Flag extends Const {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return val ? 71 : -11;

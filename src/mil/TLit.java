@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -23,22 +23,18 @@ import core.*;
 
 public abstract class TLit extends TConst {
 
-  /**
-   * Test to determine whether two types are equal.
-   *
-   * <p>same :: Type -> Env -> Type -> Env -> Bool
-   */
+  /** Test whether two types are equal. same :: Type -> Env -> Type -> Env -> Bool. */
   public boolean same(Type[] thisenv, Type t, Type[] tenv) {
     return t.sameTLit(tenv, this);
   }
 
-  /** Test to determine whether this type is equal to a specified type constant. */
+  /** Test whether this type is equal to a specified type constant. */
   boolean sameTTycon(Type[] thisenv, TTycon that) {
     return that.sameTLit(null, this);
   }
 
   /**
-   * Matching of types: test to see if the type on the right can be obtained by instantiating type
+   * Matching of types: test whether the type on the right can be obtained by instantiating type
    * variables in the type on the left. (The "receiver", or "this", in the following code.)
    *
    * <p>match :: Type -> Env -> Type -> Env -> IO ()
@@ -50,11 +46,7 @@ public abstract class TLit extends TConst {
     return t.sameTLit(tenv, this);
   }
 
-  /**
-   * Unification of types.
-   *
-   * <p>unify :: Type -> Env -> Type -> Env -> IO ()
-   */
+  /** Unification of types. unify :: Type -> Env -> Type -> Env -> IO () */
   public void unify(Type[] thisenv, Type t, Type[] tenv) throws UnifyException {
     t.unifyTLit(tenv, this);
   }

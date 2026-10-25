@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -28,8 +28,10 @@ import obdd.Pat;
 /** Represents a conventional algebraic datatype. */
 public class DataType extends DataName {
 
+  /** Describes the kind of this DataType. */
   private Kind kind;
 
+  /** Specifies the arity of this DataType. */
   private int arity;
 
   /** Default constructor. */
@@ -49,8 +51,9 @@ public class DataType extends DataName {
     return arity;
   }
 
-  public void fixKinds() {
-    kind = kind.fixKind();
+  /** Apply defaults to the kind of this type constructor to eliminate any remaining KVars. */
+  public void defaultKinds() {
+    kind = kind.defaultKind();
     debug.Log.println(id + " :: " + kind);
   }
 
@@ -66,12 +69,10 @@ public class DataType extends DataName {
     this.fixity = fixity;
   }
 
-  /**
-   * Print a definition for this type constructor using source level syntax. TODO: Find a more
-   * appropriate place for this code ...
-   */
+  /** Print a definition for this type constructor using source level syntax. */
   void dumpTypeDefinition(PrintWriter out) {
     if (cfuns != null) {
+      this.dumpFixity(out);
       out.print("data ");
       out.print(id);
       Type head = kind.makeHead(pos, out, 0, asType());
@@ -90,17 +91,24 @@ public class DataType extends DataName {
    * (subclasses of) DataName.
    */
   Tycon makeCanonTycon(TypeSet set) {
-    if (isEnumeration()) { // Do not make copies of enumerations
-      set.addTycon(this); // (but still register them as being in use)
+    // Do not make copies of enumerations
+    if (isEnumeration()) {
+      // (but still register them as being in use)
+      set.addTycon(this);
       return this;
     }
-    DataType newDt =
-        new DataType(pos, id, kind, arity); // Make new type, copying attributes of original
+
+    // Make new type, copying attributes of original
+    DataType newDt = new DataType(pos, id, kind, arity);
     newDt.isRecursive = this.isRecursive;
     newDt.fixity = this.fixity;
-    set.mapTycon(this, newDt); // Add mapping from old to new
+
+    // Add mapping from old to new
+    set.mapTycon(this, newDt);
     debug.Log.println("new version of DataType " + id + " is " + newDt);
-    newDt.cfuns = new Cfun[cfuns.length]; // Add canonical versions of constructors
+
+    // Add canonical versions of constructors
+    newDt.cfuns = new Cfun[cfuns.length];
     for (int i = 0; i < cfuns.length; i++) {
       newDt.cfuns[i] = cfuns[i].makeCanonCfun(set, newDt);
     }
@@ -131,14 +139,20 @@ public class DataType extends DataName {
    * Attempt to translate a type with this type constructor at its head and some number of arguments
    * on the stack to eliminate newtypes. This will only succeed if the head is a newtype constructor
    * and there are enough arguments; otherwise the call will return null to indicate that no
-   * translation was possible.
+   * translation was possible. TODO: Will this work correctly on source programs that use partially
+   * applied newtypes?
    */
   Type translate(NewtypeTypeSet set, int args) {
-    if (arity <= args && isNewtype()) { // newtype with enough arguments to expand?
-      Type t = cfuns[0].getAllocType().storedType(0); // find skeleton for stored value
-      return t.canonType(set.pop(arity), set, args - arity); // find canonical type
+    // newtype with enough arguments to expand?
+    if (arity <= args && isNewtype()) {
+      // find skeleton for stored value
+      Type t = cfuns[0].getAllocType().storedType(0);
+
+      // find canonical type
+      return t.canonType(set.pop(arity), set, args - arity);
     } else if (args == 0 && isSingleton() && this != Tycon.unit) {
-      return Tycon.unit.asType(); // Singleton (non unit) type with no arguments
+      // Singleton (non unit) type with no arguments
+      return Tycon.unit.asType();
     }
     return null;
   }
@@ -174,20 +188,28 @@ public class DataType extends DataName {
         : null;
   }
 
+  /** A counter used to generate numeric suffixes on new DataType names. */
   private static int count = 0;
 
+  /**
+   * Create a specialized version of this type constructor, if necessary, and if the appropriate
+   * specialized version has not already been created.
+   */
   Tycon specializeDataName(MILSpec spec, Type inst) {
-    if (spec.containsTycon(this)) { // Already specialized type
+    if (spec.containsTycon(this)) {
+      // Already specialized type
       return this;
     }
-    TypeSpecs typespecs = spec.getTypeSpecs(this); // Search previous specializations
+    // Search previous specializations
+    TypeSpecs typespecs = spec.getTypeSpecs(this);
     for (TypeSpecs ts = typespecs; ts != null; ts = ts.next) {
       if (ts.inst.instMatches(inst)) {
         return ts.dt; // return previously specialized version of this type
       }
     }
     // Make a new specialized version of this type:
-    if (isEnumeration()) { // Keep original Unit definition (and other enumerated types)
+    if (isEnumeration()) {
+      // Keep original Unit definition (and other enumerated types)
       spec.addTycon(this);
       return this;
     }
@@ -204,9 +226,13 @@ public class DataType extends DataName {
     return newDt;
   }
 
-  /** Find the bitdata representation for this object, or null if there is none. */
+  /**
+   * Find the synthesized bitdata representation for this object in the given BitdataMap, or else
+   * return null if there is none.
+   */
   BitdataRep findRep(BitdataMap m) {
-    return m.findRep(this);
+    Tycon tycon = m.mapsTyconTo(this);
+    return (tycon == null) ? null : tycon.isBitdataRep();
   }
 
   /** Determine whether this Tycon is a DataType that is a candidate for bitdata representation. */
@@ -226,16 +252,17 @@ public class DataType extends DataName {
    * either of the last two cases, the receiver should be removed from the list of candidates.
    */
   int bitdataEncoding(BitdataMap m, DataTypes cands, DataTypes retained) {
-    int numNullary = 0; // count the number of nullary constructors (constructors of arity 0)
-    int numNonNullary = 0; // count the number of non-nullary constructors
-    int indexNonNullary = 0; // index of the last non-nullary constructor found
-    int maxWidth = 0; // maximum width for individual non-nullary constructors
-    Pat[][] pats = null; // bit patterns for each constructor
+    int numNullary = 0; // # of nullary constructors
+    int numNonNullary = 0; // # of non-nullary constructors
+    int indexNonNullary = 0; // index of last non-nullary constr
+    int maxWidth = 0; // max width for non-nullary constrs
+    Pat[][] pats = null; // bit patterns for each constr
 
+    // Loop over all the constructors for this datatype:
     for (int i = 0; i < cfuns.length; i++) {
-      if (cfuns[i].getArity() == 0) {
+      if (cfuns[i].getArity() == 0) { // constr has no arguments => nullary
         numNullary++;
-      } else {
+      } else { // constr has arguments => non-nullary
         numNonNullary++;
         indexNonNullary = i;
         AllocType at = cfuns[i].getAllocType();
@@ -243,32 +270,35 @@ public class DataType extends DataName {
         Pat[] fpats = null; // bit patterns for all fields so far
         int width = 0; // width of all fields so far
         for (int j = 0; j < n; j++) {
-          Pat p = at.bitPat(j);
-          if (p == null) { // No bit pattern yet, but perhaps we have added one to the mapping?
+          Pat p = at.bitPat(j); // find bit pattern for this argument
+          if (p == null) {
+            // No bit pattern yet, but perhaps we added one in the mapping?
             DataType dt = at.storedType(j).dataType();
-            if (dt == null) {
-              return (-1); // Remove this dataname from the list of candidates
+            if (dt == null) { // Is component type a DataName?
+              return (-1); // If not, eliminate this as a candidate
             } else if ((p = dt.bitPat(m)) == null) {
-              // Still no bit pattern, but keep this DataType as a candidate if dn is still a
-              // candidate
+              // Still no bit pattern, but keep this as a candidate
+              // if dn is still a candidate
               return (DataTypes.isIn(dt, cands) || DataTypes.isIn(dt, retained)) ? 0 : (-1);
             }
           }
-          if (fpats == null) {
+          if (fpats == null) { // First pattern => initialize array
             fpats = new Pat[n];
           }
-          fpats[j] = p;
+          fpats[j] = p; // Save pattern for this constructor
           width += p.getWidth();
         }
 
-        // At this point, we know that all fields for this constructor are bit representable.
-        if (width > maxWidth) {
+        // At this point, we know that all fields for this constructor are
+        // bit representable, or else we would have already returned.
+        if (width > maxWidth) { // Update max width, if necessary
           maxWidth = width;
-          if (maxWidth > Word.size()) { // reject this datatype if an encoding will be too long
+          if (maxWidth > Word.size()) {
+            // reject this datatype if an encoding will be too long
             return (-1);
           }
         }
-        if (pats == null) {
+        if (pats == null) { // Save bit patterns for this constr
           pats = new Pat[cfuns.length][];
         }
         pats[i] = fpats;
@@ -276,21 +306,24 @@ public class DataType extends DataName {
     }
 
     // At this point, we know that:
-    // - There are numNullary constructors with zero arguments and numNonNullary constructors with
-    // 1+ arguments
-    // - All fields of all constructors are bit representable; if constructor is non-nullary, then
-    // the bit patterns
-    //   for its fields are in pats[i]
-    // - The number of bits needed to represent any value of this type, not including tagbits, is
-    // maxWidth
+    // - There are numNullary constructors with zero arguments and
+    //   numNonNullary constructors with 1+ arguments
+    // - All fields of all constructors are bit representable; if
+    //   constructor is non-nullary, then the bit patterns for its fields
+    //   are in pats[i]
+    // - The number of bits needed to represent any value of this type, not
+    //   including tagbits, is maxWidth
 
     BitdataRep br = null;
-    if (numNullary == 1 && numNonNullary == 1) { // Special case: Recycling - making use of junk
+    if (numNullary == 1 && numNonNullary == 1) {
+      // Special case: Recycling - making use of junk
       br = recycling(m, maxWidth, pats[indexNonNullary]);
-    } else if (numNullary == 0 && numNonNullary > 0) { // Simple tagging:
+    } else if (numNullary == 0 && numNonNullary > 0) {
+      // Simple tagging:
       br = simpleTagging(m, maxWidth, pats);
     }
-    if (br == null && numNullary > 0) { // General tagging:
+    if (br == null && numNullary > 0) {
+      // General tagging:
       br = generalTagging(m, maxWidth, pats, numNullary, numNonNullary);
     }
     if (br != null) { // If we found a new representation, add it to m
@@ -298,20 +331,21 @@ public class DataType extends DataName {
       debug.Log.println("added mapping from " + this + " to bitdata " + br);
       return 1;
     }
-    // At this point, we have either found a new representation for this DataType and added it to
-    // the
-    // BitdataMap, or else we have determined that no such representation is possible.  Either way,
-    // it
-    // should not be kept on the list of candidates for further consideration.
+    // At this point, we have either found a new representation for this
+    // DataType and added it to the BitdataMap, or else we have determined
+    // that no such representation is possible.  Either way, it should not
+    // be kept on the list of candidates for further consideration.
     return (-1);
   }
 
+  /** Find the DataType for this object, if any, or else return null. */
   DataType dataType() {
     return this;
   }
 
+  /** Find the BitdataRep for this datatype in the current BitdataMap, if there is one. */
   Pat bitPat(BitdataMap m) {
-    BitdataRep r = findRep(m);
+    BitdataRep r = this.findRep(m);
     return (r == null) ? null : r.bitPat();
   }
 
@@ -325,24 +359,24 @@ public class DataType extends DataName {
   BitdataRep recycling(BitdataMap m, int maxWidth, Pat[] fpats) {
     if (maxWidth <= Word.size()) {
       Pat p = Pat.concat(fpats); // Bit pattern for the non-nullary case
-      if (!p.isAll() && !p.isEmpty()) { // If they are not all used ...
-        long s = p.smallestOutside(); // then pick the smallest value to represent the nullary cfun
-        Pat q = Pat.intmod(maxWidth, s); // Find the bit pattern for that single value
+      if (!p.isAll() && !p.isEmpty()) {
+        // If they are not all used, then pick the smallest value to represent
+        // the nullary cfun:
+        long s = p.smallestOutside();
+        // Find the bit pattern for that single value:
+        Pat q = Pat.intmod(maxWidth, s);
 
-        // Create a new bitdata type T based on the following encoding:
-        //     bitdata T/maxWidth = C [ s ]      -- for the nullary constructor
-        //                        | D [ fields ] -- for the non nullary constructor
-
+        // Create a new bitdata representation:
         BitdataRep br = new BitdataRep(pos, id);
-        br.setBitSize(new TNat(maxWidth)); // set the width
-        br.setPat(p.or(q)); // set the bit pattern, including both constructors
+        br.setBitSize(new TNat(maxWidth)); // set width
+        br.setPat(p.or(q)); // set bit pattern, including both constructors
 
         // Create layouts for two constructors:
         BitdataLayout[] layouts = new BitdataLayout[cfuns.length];
         for (int i = 0; i < cfuns.length; i++) {
           Cfun cf = cfuns[i];
           layouts[i] =
-              (cf.getArity() == 0)
+              (cf.getArity() == 0) // nullary or non-nullary?
                   ? cf.makeLayout(
                       m, br, BigInteger.valueOf(s), 0, null, q, new MaskTestPat(q, false))
                   : cf.makeLayout(m, br, BigInteger.ZERO, 0, fpats, p, new MaskTestPat(p, true));
@@ -359,6 +393,24 @@ public class DataType extends DataName {
   }
 
   /**
+   * Return the minimum number of bits needed to represent n distinct values. For example, lg(1) =
+   * 0, lg(2) = 1, lg(3) = lg(4) = 2, lg(5) = lg(6) = lg(7) = lg(8) = 3, etc. This function is
+   * included in DataType as a utility function for the bitdataEncoding method, but otherwise has no
+   * special relation to the DataType class.
+   */
+  static int lg(int n) {
+    if (n <= 1) {
+      return 0;
+    } else {
+      int i = 0;
+      for (n--; n > 0; i++) {
+        n = n >>> 1;
+      }
+      return i;
+    }
+  }
+
+  /**
    * Try to find a bitdata encoding of a type where every constructor has a distinct tag of some
    * fixed width. We will assume that this method is only used when there are no nullary
    * constructors in the type; the generalTagging scheme can be used instead if there are nullary
@@ -368,16 +420,10 @@ public class DataType extends DataName {
   BitdataRep simpleTagging(BitdataMap m, int maxWidth, Pat[][] pats) {
     int tagWidth = lg(cfuns.length); // how many bits will be needed for tags?
     if (maxWidth + tagWidth <= Word.size()) {
-      // Create a new bitdata type T based on the following encoding:
-      //
-      //     bitdata T/(maxWidth+tagWidth)
-      //        = C_0   [ pad_0   | fields_1   | 0   ]
-      //        | ...
-      //        | C_n-1 [ pad_n-1 | fields_n-1 | n-1 ]
-
+      // Create a new bitdata representation:
       BitdataRep br = new BitdataRep(pos, id);
       int width = maxWidth + tagWidth;
-      Pat p = Pat.empty(width); // to calculate the pattern for all constructors
+      Pat p = Pat.empty(width); // to calc pattern for all constrs
       br.setBitSize(new TNat(width)); // set the width
 
       BitdataLayout[] layouts = new BitdataLayout[cfuns.length];
@@ -387,7 +433,7 @@ public class DataType extends DataName {
         MaskTestPat mt;
         if (tagWidth > 0) {
           Pat tag = Pat.intmod(tagWidth, tagbits, 0);
-          q = q.concat(tag); // add on bit pattern for tag
+          q = q.concat(tag); // add bit pattern for tag
           mt = new MaskTestPat(tag.padLeftTo(width), false);
         } else {
           mt = new MaskTestPat(Pat.all(width), false);
@@ -415,32 +461,23 @@ public class DataType extends DataName {
    */
   BitdataRep generalTagging(
       BitdataMap m, int maxWidth, Pat[][] pats, int numNullary, int numNonNullary) {
-    int tagWidth = lg(1 + numNonNullary); // how many bits will be needed for tags?
-    int nullaryWidth = lg(numNullary); // how many bits needed for nullary tags?
-    if (nullaryWidth > maxWidth) { // maxWidth should be big enough to include nullaryWidth
+    int nullaryTag = 0; // first tag for nullary constr
+    int nonNullaryTag =
+        numNullary > 0 // first tag for non-nullary constr
+            ? 1
+            : 0;
+    int tagWidth = lg(nonNullaryTag + numNonNullary); // bits for tags
+    int nullaryWidth = lg(numNullary); // bits needed for nullary tags
+    if (nullaryWidth > maxWidth) {
+      // maxWidth should be big enough to include nullaryWidth
       maxWidth = nullaryWidth;
     }
     if (maxWidth + tagWidth <= Word.size()) {
-      // Create a new bitdata type T based on the following encoding:
-      //
-      //     bitdata T'/S = C1   [ pad1 | fields1 | 1 ]  -- \v -> (v&mask)==1
-      //                  | ...
-      //                  | CM   [ padM | fieldsM | M ]  -- \v -> (v&mask)==M
-      //                  | CM+1 [              0 | 0 ]  -- \v -> (v==0)
-      //                  | ...
-      //                  | CM+N [            N-1 | 0 ]  -- \v -> (v==(N-1)<<lg(1+M))
-      //
-      // In this example, we assume all the non-nullary constructors come first; in practice, they
-      // could
-      // be arbitrarily interleaved with the nullary constructors.
-
+      // Create a new bitdata representation:
       BitdataRep br = new BitdataRep(pos, id);
       int width = maxWidth + tagWidth;
-      Pat p = Pat.empty(width); // to calculate the pattern for all constructors
+      Pat p = Pat.empty(width); // to calc pattern for all constrs
       br.setBitSize(new TNat(width)); // set the width
-
-      int nullaryTag = 0; // Next available integer for a nullary constructor tag
-      int nonNullaryTag = 1; // Next available integer for a non-nullary constructor tag
 
       BitdataLayout[] layouts = new BitdataLayout[cfuns.length];
       for (int i = 0; i < cfuns.length; i++) {
@@ -478,22 +515,9 @@ public class DataType extends DataName {
     return null;
   }
 
-  /**
-   * Return the minimum number of bits needed to represent n distinct values. For example, lg(1) =
-   * 0, lg(2) = 1, lg(3) = lg(4) = 2, lg(5) = lg(6) = lg(7) = lg(8) = 3, etc. This function is
-   * included in DataType as a utility function for the bitdataEncoding method, but otherwise has no
-   * special relation to the DataType class.
-   */
-  static int lg(int n) {
-    if (n <= 1) {
-      return 0;
-    } else {
-      int i = 0;
-      for (n--; n > 0; i++) {
-        n = n >>> 1;
-      }
-      return i;
-    }
+  /** Determine whether this Tycon is a DataType that is a candidate for merging. */
+  DataType mergeCandidate() {
+    return (arity == 0 && cfuns != null && cfuns.length > 0) ? this : null;
   }
 
   /**
@@ -521,11 +545,6 @@ public class DataType extends DataName {
     }
   }
 
-  /** Determine whether this Tycon is a DataType that is a candidate for merging. */
-  DataType mergeCandidate() {
-    return (arity == 0 && cfuns != null && cfuns.length > 0) ? this : null;
-  }
-
   /**
    * Determine whether this DataType is equivalent to that DataType, modulo the mappings in a given
    * MergeMap. As preconditions, we assume that this and that are distinct DataType objects and that
@@ -551,10 +570,9 @@ public class DataType extends DataName {
       }
     }
 
-    // If those basic structural constraints are satisfied, then we will try to prove an equivalence
-    // by making an
-    // assumption that equates them, and then trying to show that the corresponding types are all
-    // equivalent.
+    // If those basic structural constraints are satisfied, then we will try
+    // to prove an equivalence by making an assumption that equates them, and
+    // then trying to show that the corresponding types are all equivalent.
     mmap.assume(this, that);
     for (int i = 0; i < n; i++) {
       AllocType ct = cs[i].getAllocType();
@@ -569,12 +587,13 @@ public class DataType extends DataName {
     return true;
   }
 
-  boolean sameMod(Type t, Type[] tenv, MergeMap mmap) {
+  /** Determine whether this Tycon is equivalent to a specified type, modulo the given MergeMap. */
+  boolean sameTTyconMod(Type t, Type[] tenv, MergeMap mmap) {
     return t.sameDataTypeMod(tenv, this, mmap);
   }
 
   /**
-   * Determine whether this Tycon is equivalent to a specified DataType, modulo a given MergeMap.
+   * Determine whether this Tycon is equivalent to the specified DataType, modulo a given MergeMap.
    */
   boolean sameDataTypeMod(DataType l, MergeMap mmap) {
     if (l == this) {
@@ -604,10 +623,9 @@ public class DataType extends DataName {
       if (vs.length == 1) {
         return new Bind(vs, new Sel(cf.canonCfun(set), offset, a), c);
       } else {
-        // A sequence of Sel operations are needed in this situation to load each of the components
-        // in the
-        // representation for the value that was loaded from offset n in the original version of the
-        // code
+        // A sequence of Sel operations are needed in this situation to
+        // load each of the components in the representation for the value
+        // that was loaded from offset n in the original version of the code
         // (i.e., before the representation transformation).
         for (int k = vs.length; 0 < k--; ) {
           c = new Bind(new Temp[] {vs[k]}, new Sel(cf.canonCfun(set), offset + k, a), c);
@@ -634,6 +652,7 @@ public class DataType extends DataName {
       debug.Internal.error("DataType toLLVM arity mismatch");
       return llvm.Type.vd;
     }
-    return lm.dataPtrTypeCalc(c);
+    // return lm.dataPtrTypeCalc(c);
+    return llvm.Type.ptr;
   }
 }

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** Represents a do expression, do e. */
 class EDo extends PosExpr {
 
   private Expr e;
@@ -52,8 +53,8 @@ class EDo extends PosExpr {
   }
 
   /**
-   * Test to determine whether this expression can be used on the right hand side of a binding in a
-   * recursive binding group.
+   * Test whether this expression can be used on the right hand side of a binding in a recursive
+   * binding group.
    */
   boolean isSafeToRecurse() {
     return true;
@@ -105,7 +106,8 @@ class EDo extends PosExpr {
     // returns t <- k{...}; kt.with(Proc(t))
     // where k{...} [] = b[...]
     //       b[...]    = monadic code for e
-    Type rty = type.argOf(null); // Result type for this expression (i.e., e :: Proc rty)
+    // Result type for this expression (i.e., e :: Proc rty):
+    Type rty = type.argOf(null);
     Type cty = Type.milfun(Type.empty, Type.tuple(rty));
     Temp t = new Temp(cty);
     return new Bind(

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -57,7 +57,7 @@ class TopLevelExp extends DefnExp {
    * Perform scope analysis on this definition to ensure that all referenced identifiers are
    * appropriately bound.
    */
-  void inScopeOf(Handler handler, MILEnv milenv) throws Failure {
+  void inScopeOf(Handler handler, MILEnv milenv) throws Failure { // id <- {args} cexp
     t.inScopeOf(handler, milenv, args, cexp);
   }
 

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -81,6 +81,7 @@ public class BitdataType extends DataName {
     return layouts[num].getPat();
   }
 
+  /** Output information about this type for debugging purposes. */
   public void debugDump() {
     debug.Log.println(
         "bitdata " + id + ": size " + bitSize + ", with " + layouts.length + " layout(s):");
@@ -92,6 +93,8 @@ public class BitdataType extends DataName {
 
   /** Print a definition for this bitdata type using source level syntax. */
   void dumpTypeDefinition(PrintWriter out) {
+    // unlikely to be used in practice, but technically possible
+    this.dumpFixity(out);
     out.print("bitdata ");
     out.print(id);
     out.print(" /");
@@ -121,28 +124,86 @@ public class BitdataType extends DataName {
   }
 
   /**
+   * Generate LaTeX preamble code that defines the macros needed to typeset diagrams of
+   * BitdataTypes.
+   */
+  static void dumpDiagramPreamble(PrintWriter out) {
+    out.println("\\usepackage{tikz}");
+    out.println("\\usepackage{fancyvrb,newverbs}");
+    out.println();
+    out.println("% General formatting for bitdata diagrams:");
+    out.println("\\definecolor{bitdatacolor}{HTML}{E0F0E0}");
+    out.println("\\newenvironment{bitdatapicture}%");
+    out.println(
+        "  {\\begin{center}\\begin{tikzpicture}"
+            + "[scale=0.1,>=stealth,rectangle,minimum size=0.5cm]}%");
+    out.println("  {\\end{tikzpicture}\\end{center}}");
+    out.println();
+    out.println("% Select where type labels appear:");
+    out.println("\\def\\typelabelAbove#1#2{#1}");
+    out.println("\\def\\typelabelBeside#1#2{#2}");
+    out.println("\\def\\typelabelNone#1#2{}");
+    out.println();
+    out.println("% default position of type labels:");
+    out.println("\\let\\typelabel\\typelabelAbove");
+    out.println("% default position of label for short types:");
+    out.println("\\let\\shorttypelabel\\typelabelBeside");
+    out.println();
+    out.println("% Select where field labels appear:");
+    out.println("\\def\\fieldlabelUnder#1#2#3{#1}");
+    out.println("\\def\\fieldlabelInside#1#2#3{#2}");
+    out.println("\\def\\fieldlabelOver#1#2#3{#3}");
+    out.println("\\def\\fieldlabelNone#1#2#3{}");
+    out.println();
+    out.println("% default position of field labels:");
+    out.println("\\let\\fieldlabel\\fieldlabelUnder");
+    out.println("% default position of label for short fields:");
+    out.println("\\let\\shortfieldlabel\\fieldlabelOver");
+    out.println();
+    out.println("% Formatting of width annotations:");
+    out.println("\\def\\widthSlash#1{\\Verb\"/#1\"}");
+    out.println("\\def\\widthParen#1{\\Verb\"\\,(#1)\"}");
+    out.println();
+    out.println("%#1=typewidth, modify to show fieldwidths");
+    out.println("\\def\\typewidth#1{\\ifnum#1>6\\relax{\\widthSlash{#1}}\\fi}");
+    out.println("% #1=fieldwidth, modify to show fieldwidths");
+    out.println("\\def\\fieldwidth#1{\\ifnum#1>4\\relax{\\widthSlash{#1}}\\fi}");
+  }
+
+  /**
    * Make a canonical version of a type definition wrt the given set, replacing component types with
    * canonical versions as necessary. We only need implementations of this method for StructType and
    * (subclasses of) DataName.
    */
   Tycon makeCanonTycon(TypeSet set) {
-    if (isEnumeration()) { // Do not make copies of enumerations
-      set.addTycon(this); // (but still register them as being in use)
+    // Do not make copies of enumerations
+    if (isEnumeration()) {
+      // (but still register them as being in use)
+      set.addTycon(this);
       return this;
     }
-    BitdataType newBt = new BitdataType(pos, id); // Make new type, copying attributes of original
+
+    // Make new type, copying attributes of original
+    BitdataType newBt = new BitdataType(pos, id);
     newBt.bitSize = bitSize;
     newBt.pat = pat;
-    set.mapTycon(this, newBt); // Add mapping from old to new
+
+    // Add mapping from old to new
+    set.mapTycon(this, newBt);
     debug.Log.println("new version of BitdataType " + id + " is " + newBt);
     newBt.layouts = new BitdataLayout[layouts.length];
-    for (int i = 0; i < layouts.length; i++) { // Create skeletons for canonical versions of layouts
+
+    // Create skeletons for canonical versions of layouts
+    for (int i = 0; i < layouts.length; i++) {
       newBt.layouts[i] = layouts[i].makeCanonBitdataLayout(set, newBt);
     }
-    newBt.cfuns = new Cfun[cfuns.length]; // Add canonical versions of constructors ...
+
+    // Add canonical versions of constructors ...
+    newBt.cfuns = new Cfun[cfuns.length];
     for (int i = 0; i < cfuns.length; i++) {
+      // ... and fill in field types with canonical versions
       newBt.cfuns[i] = cfuns[i].makeCanonCfun(set, newBt);
-      newBt.layouts[i].makeCanonFields(set); // ... and fill in field types with canonical versions
+      newBt.layouts[i].makeCanonFields(set);
     }
     return newBt;
   }

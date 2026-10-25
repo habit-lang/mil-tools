@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -23,7 +23,8 @@ import core.*;
 import mil.*;
 
 /**
- * A null-terminated linked list of items that can be accessed using (public) head and next fields.
+ * A null-terminated linked list of Binding objects that can be accessed using (public) head and
+ * next fields.
  */
 public class Bindings {
 
@@ -99,7 +100,7 @@ public class Bindings {
   }
 
   /**
-   * Calculate the strongly connected components of a list of Xs that have been augmented with
+   * Calculate the strongly connected components of a list of Bindings that have been augmented with
    * dependency information.
    */
   public static BindingSCCs scc(Bindings xs) {
@@ -108,7 +109,7 @@ public class Bindings {
   }
 
   /**
-   * Test to see if any identifier names more than one X\Name in the specified list, reporting a
+   * Test to see if any identifier names more than one XName in the specified list, reporting a
    * single error for each name that is used multiple times.
    */
   public static void checkForMultiple(Handler handler, Bindings ns) {

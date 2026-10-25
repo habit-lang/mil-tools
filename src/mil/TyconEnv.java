@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -30,8 +30,10 @@ public class TyconEnv {
     this.enclosing = enclosing;
   }
 
+  /** Points to the first item in the list (null if the list is empty). */
   private Tycons tycons = null;
 
+  /** Points to the last item in the list (null if the list is empty). */
   private Tycons tyconsLast = null;
 
   /** Add an element to the end of the list in this class. */

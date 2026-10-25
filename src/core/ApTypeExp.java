@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -38,6 +38,11 @@ public class ApTypeExp extends TypeExp {
     return l.position();
   }
 
+  /**
+   * Remove occurrences of InfixTypeExp nodes from this type expression using fixity information.
+   * For all other node types, we update individual fields in place (in case they included
+   * InfixTypeExp nodes) and return the original node (this).
+   */
   public TypeExp tidyInfix(TyconEnv env) throws Failure {
     l = l.tidyInfix(env);
     r = r.tidyInfix(env);
@@ -55,17 +60,20 @@ public class ApTypeExp extends TypeExp {
   }
 
   /**
-   * Worker function for scopeType that is intended to be called after order of any infix operators
-   * have been determined and has the option to rewrite the type expression if needed.
+   * Worker function that performs the main scope analysis on type expressions. An additional arity
+   * parameter is used here so that we can track and validate the number of arguments that are
+   * passed to type constructors.
    */
-  public TypeExp scopeTypeRewrite(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
+  public TypeExp scopeType(TyvarEnv params, TyconDeps tdeps, TyconEnv env, int arity)
       throws Failure {
-    l = l.scopeTypeRewrite(canAdd, params, env, arity + 1);
-    r = r.scopeTypeRewrite(canAdd, params, env, 0);
+    // descend tree with one extra argument
+    l = l.scopeType(params, tdeps, env, arity + 1);
+    // reset the arity count for each argument
+    r = r.scopeType(params, tdeps, env, 0);
     return this;
   }
 
-  public Kind inferKind() throws KindMismatchFailure {
+  public Kind inferKind() throws Failure {
     Kind rng = new KVar();
     l.checkKind(new KFun(r.inferKind(), rng));
     return rng;
@@ -76,12 +84,16 @@ public class ApTypeExp extends TypeExp {
   }
 
   /**
-   * Scope analysis on type expressions in a context where we want to determine which (if any)
-   * CoreDefn values a particular type expression depends on.
+   * Analyze the left hand side of a data definition. It must be possible to determine the name and
+   * arity of a datatype without relying on fixity information. Uses of multiple infix operators
+   * without parentheses to show exact grouping will result in the construction of an InfixTypeExp
+   * object during parsing, which will trigger a syntax error here. (In practice, using multiple
+   * infix operators in the header of a data definition would not be syntactically valid anyway.)
    */
-  public CoreDefns scopeTyconsType(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends) {
-    return r.scopeTyconsType(
-        handler, params, env, defns, l.scopeTyconsType(handler, params, env, defns, depends));
+  String analyzeDataDefnHead(TyvarEnv params) throws Failure {
+    // Analyze left-to-right to preserve order in source expr.
+    String id = l.analyzeDataDefnHead(params);
+    r.addTypeParam(params);
+    return id;
   }
 }

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,17 +21,18 @@ package core;
 import compiler.*;
 import mil.*;
 
+/** Represents a strongly connected component of CoreDefn objects. */
 public class CoreDefnSCC {
 
-  /** Records the list of X\s in this binding group. */
+  /** Records the list of CoreDefns in this binding group. */
   private CoreDefns bindings = null;
 
-  /** Return the list of X\s in this scc. */
+  /** Return the list of CoreDefns in this scc. */
   public CoreDefns getBindings() {
     return bindings;
   }
 
-  /** Add an X to this scc. */
+  /** Add an CoreDefn to this scc. */
   public void add(CoreDefn binding) {
     bindings = new CoreDefns(binding, bindings);
   }
@@ -56,7 +57,7 @@ public class CoreDefnSCC {
 
   /**
    * A list of the binding sccs on which this scc depends. (This particular scc will not be
-   * included, so the graph of XSCCs will not have any cycles in it.)
+   * included, so the graph of CoreDefnSCCs will not have any cycles in it.)
    */
   private CoreDefnSCCs dependsOn = null;
 
@@ -89,15 +90,17 @@ public class CoreDefnSCC {
       ds.head.initSizes(handler);
     }
 
-    // Validate the type components of the definitions and used them to calculate
-    // types for the constructors and to set up linear equations for layout calculations
+    // Validate the type components of the definitions and used them to
+    // calculate types for the constructors and to set up linear equations
+    // for layout calculations
     LinearEqns eqns = null;
     for (CoreDefns ds = getBindings(); ds != null; ds = ds.next) {
       eqns = ds.head.initEqns(handler, eqns);
     }
     handler.abortOnFailures();
 
-    // Calculate size information by collecting and solving corresponding linear equations
+    // Calculate size information by collecting and solving corresponding
+    // linear equations
     try {
       LinearEqns.solve(eqns);
       int count = 0;
@@ -105,7 +108,9 @@ public class CoreDefnSCC {
         ds.head.checkSizes();
         count++;
       }
-      BitdataDefn def = null; // Tracks most recent bitdata definition with unknown pattern
+
+      // Tracks most recent bitdata definition with unknown pattern
+      BitdataDefn def = null;
       while (count > 0) {
         int unresolvedCount = 0;
         for (CoreDefns ds = getBindings(); ds != null; ds = ds.next) {

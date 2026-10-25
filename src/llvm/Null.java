@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -19,24 +19,12 @@
 package llvm;
 
 
-/**
- * Represents an LLVM null pointer value. TODO: should we store the type that is pointed to rather
- * than the actual pointer type? With the current definition, it is possible to create a Null value
- * that does not have pointer type ...
- */
+/** Represents an LLVM null pointer value. */
 public class Null extends Value {
-
-  /** The type for this null (which should be a pointer type). */
-  private Type ty;
-
-  /** Default constructor. */
-  public Null(Type ty) {
-    this.ty = ty;
-  }
 
   /** Return the LLVM type of this value. */
   public Type getType() {
-    return ty;
+    return Type.ptr;
   }
 
   /**

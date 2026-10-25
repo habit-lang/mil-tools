@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -40,7 +40,8 @@ class AltExp {
   }
 
   /** Perform scope analysis on the given array of case alternatives. */
-  static Alts inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv, AltExp[] altexps, Alts alts) {
+  static Alts inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv, AltExp[] altexps, Alts alts)
+      throws Failure {
     for (int i = altexps.length; --i >= 0; ) {
       alts = altexps[i].inScopeOf(handler, milenv, tenv, alts);
     }
@@ -51,10 +52,8 @@ class AltExp {
    * Perform scope analysis on this case alternative, checking that the referenced constructor
    * function is in scope and that the block call is valid.
    */
-  Alts inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv, Alts alts) {
+  Alts inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv, Alts alts) throws Failure {
     return new CfunAlt(
-        milenv.mustFindCfun(handler, pos, id, subid),
-        bc.blockCallInScopeOf(handler, milenv, tenv),
-        alts);
+        milenv.mustFindCfun(pos, id, subid), bc.blockCallInScopeOf(handler, milenv, tenv), alts);
   }
 }

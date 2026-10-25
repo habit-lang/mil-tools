@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -44,10 +44,9 @@ class SelExp extends TailExp {
 
   /**
    * Perform scope analysis on this TailExp, checking that all of the referenced identifiers are in
-   * scope and returning a corresponding mil Tail.
+   * scope and returning a corresponding MIL Tail.
    */
-  Tail inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
-    return new Sel(
-        milenv.mustFindCfun(handler, pos, id, subid), n, a.inScopeOf(handler, milenv, tenv));
+  Tail inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) throws Failure {
+    return new Sel(milenv.mustFindCfun(pos, id, subid), n, a.inScopeOf(handler, milenv, tenv));
   }
 }

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import java.math.BigInteger;
 
+/** Represents the unique value of the singleton type #nat. */
 public class ProxyNat extends Proxy {
 
   private BigInteger nat;
@@ -45,12 +46,14 @@ public class ProxyNat extends Proxy {
     return that.sameProxyNat(this);
   }
 
-  /** Test to determine whether this Atom refers to the given ProxyNat constant. */
-  boolean sameProxyNat(ProxyNat c) {
-    return this.nat.equals(c.nat);
+  /** Test whether this Atom is the same as the given ProxyNat. */
+  boolean sameProxyNat(ProxyNat that) {
+    return this.nat.equals(that.nat);
   }
 
-  /** Return a type for an instantiated version of this item when used as Atom (input operand). */
+  /**
+   * Return a type for an instantiated version of this item when used as an Atom (input operand).
+   */
   public Type instantiate() {
     return Type.nat(new TNat(nat));
   }

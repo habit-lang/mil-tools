@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -30,8 +30,8 @@ class TooManyTyconArgsFailure extends Failure {
             + name.getId()
             + "\" has "
             + arity
-            + " arguments but cannot take more than "
+            + " argument(s) but cannot take more than "
             + name.getArity()
-            + " arguments");
+            + " argument(s)");
   }
 }

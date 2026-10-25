@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** Represents a case expression, case e of alts. */
 class ECase extends PosExpr {
 
   private Expr e;
@@ -93,8 +94,8 @@ class ECase extends PosExpr {
       return new TVar(Tyvar.res); //  result type unconstrained
     }
 
-    type = alts[0].inferAltType(tis, et); // result type for first alternative
-    for (int i = 1; i < alts.length; i++) { // should also be the result type of
+    type = alts[0].inferAltType(tis, et); // result type for 1st alternative
+    for (int i = 1; i < alts.length; i++) { // should also be result type of
       alts[i].checkAltType(tis, et, type); // the remaining alternatives ...
     }
     return type;

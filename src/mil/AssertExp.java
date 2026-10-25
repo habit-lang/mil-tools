@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -43,12 +43,12 @@ class AssertExp extends CodeExp {
   /**
    * Perform scope analysis on the AST for a sequence of code, checking that all of the referenced
    * identifiers are in scope, introducing new temporaries for each identifier that is bound in a
-   * BindExp, and returning the corresponding mil Code sequence.
+   * BindExp, and returning the corresponding MIL Code sequence.
    */
-  Code inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
+  Code inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) throws Failure {
     return new Assert(
         a.inScopeOf(handler, milenv, tenv),
-        milenv.mustFindCfun(handler, pos, id, subid),
+        milenv.mustFindCfun(pos, id, subid),
         cexp.inScopeOf(handler, milenv, tenv));
   }
 }

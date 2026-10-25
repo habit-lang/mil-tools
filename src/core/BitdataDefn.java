@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -25,7 +25,7 @@ import mil.*;
 
 public class BitdataDefn extends TyconDefn {
 
-  TypeExp sizeExp;
+  private TypeExp sizeExp;
 
   private BitdataConDefn[] constrs;
 
@@ -38,14 +38,7 @@ public class BitdataDefn extends TyconDefn {
 
   private BitdataType bt;
 
-  /**
-   * Return the Tycon associated with this definition, if any. TODO: this method is only used in one
-   * place, and it's awkward ... look for opportunities to rewrite
-   */
-  public Tycon getTycon() {
-    return bt;
-  }
-
+  /** Add environment entries for the type constructors introduced in this definition. */
   public void introduceTycons(Handler handler, TyconEnv env) {
     env.add(bt = new BitdataType(pos, id));
   }
@@ -54,16 +47,17 @@ public class BitdataDefn extends TyconDefn {
    * Determine the list of type definitions (a sublist of defns) that this particular definition
    * depends on.
    */
-  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) throws Failure {
-    CoreDefns depends = null;
+  public void scopeDefn(Handler handler, TyconDeps tdeps, TyconEnv env) throws Failure {
     if (sizeExp != null) {
-      sizeExp = sizeExp.tidyInfix(env);
-      depends = sizeExp.scopeTyconsType(handler, null, env, defns, depends);
+      try {
+        sizeExp = sizeExp.scopeType(null, tdeps, env);
+      } catch (Failure f) {
+        handler.report(f);
+      }
     }
     for (int i = 0; i < constrs.length; i++) {
-      depends = constrs[i].scopeTycons(handler, null, env, defns, depends);
+      constrs[i].scopeDefn(handler, null, tdeps, env);
     }
-    this.calls(depends);
   }
 
   public void kindInfer(Handler handler) {
@@ -75,8 +69,9 @@ public class BitdataDefn extends TyconDefn {
     }
   }
 
-  public void fixKinds() {
-    bt.fixKinds();
+  /** Default kind variables to STAR, unless they have already been bound. */
+  public void defaultKinds() {
+    bt.defaultKinds();
   }
 
   void undeterminedBitPat() throws Failure {
@@ -106,6 +101,7 @@ public class BitdataDefn extends TyconDefn {
     return eqns;
   }
 
+  /** Provides a place to save the calculated width as an integer. */
   private int width;
 
   void checkSizes() throws Failure {
@@ -124,7 +120,8 @@ public class BitdataDefn extends TyconDefn {
   }
 
   BitdataDefn checkPats() throws Failure {
-    // Calculate region lists for each of the constructors and a bit pattern for the full type:
+    // Calculate region lists for each of the constructors and a bit
+    // pattern for the full type:
     if (constrs.length == 0) {
       bt.setPat(obdd.Pat.all(width).restrict());
     } else {
@@ -150,8 +147,9 @@ public class BitdataDefn extends TyconDefn {
       }
 
       // Test for confusion and for the existence of mask-test predicates:
-      // TODO: we could make a special case for single constructor types, none of which
-      // require checking for confusion or a search for a mask-test predicate
+      // TODO: we could make a special case for single constructor types,
+      // none of which require checking for confusion or a search for a
+      // mask-test predicate.
       for (int i = 0; i < constrs.length; i++) {
         BitdataConDefn.calcMaskTest(constrs, i, width);
       }
@@ -165,11 +163,11 @@ public class BitdataDefn extends TyconDefn {
   }
 
   /**
-   * Extend the specified MIL environment with entries for any functions/values introduced in this
-   * definition.
+   * Extend the specified MIL environment with entries for any functions or values introduced in
+   * this definition.
    */
   public void addToMILEnv(Handler handler, CoreProgram prog, MILEnv milenv) {
-    Cfun[] cfuns = getTycon().getCfuns();
+    Cfun[] cfuns = getCfuns();
     for (int i = 0; i < cfuns.length; i++) {
       try {
         milenv.addCfunAndTop(cfuns[i]);
@@ -177,6 +175,11 @@ public class BitdataDefn extends TyconDefn {
         handler.report(f);
       }
     }
+  }
+
+  /** Return the array of constructor functions for this type. */
+  Cfun[] getCfuns() {
+    return bt.getCfuns();
   }
 
   public TopBindings coreBindings(TopBindings tbs) {

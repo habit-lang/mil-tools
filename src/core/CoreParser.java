@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -19,7 +19,6 @@
 package core;
 
 import compiler.*;
-import java.math.BigInteger;
 import mil.*;
 
 public class CoreParser extends Phase implements CoreTokens {
@@ -51,9 +50,10 @@ public class CoreParser extends Phase implements CoreTokens {
 
   /** Generate Failure object for a missing item. */
   protected Failure missing(String what) {
-    // TODO: it would be nice to detect the special case when the next token is a semicolon,
-    // inserted by the layout rule, in which case the error message might suggest that the
-    // error results from something missing earlier on the line or on a previous line.
+    // TODO: it would be nice to detect the special case when the next token
+    // is a semicolon, inserted by the layout rule, in which case the error
+    // message might suggest that the error results from something missing
+    // earlier on the line or on a previous line.
     return new MissingFailure(lexer.getPos(), what, lexer.describeToken());
   }
 
@@ -65,7 +65,7 @@ public class CoreParser extends Phase implements CoreTokens {
     }
   }
 
-  /** Parse a comma separated list of ONE or more variable names (VARIDs or VARSYMs). */
+  /** Parse a comma separated list of ONE or more identifier or symbol names. */
   protected String[] parseIds1() throws Failure {
     String[] ids = parseIds();
     if (ids.length == 0) {
@@ -75,7 +75,7 @@ public class CoreParser extends Phase implements CoreTokens {
   }
 
   /**
-   * Parse a comma separated list of ZERO or more variable names (vars or cons). TODO: redo this to
+   * Parse a comma separated list of ZERO or more identifier or symbol names. TODO: redo this to
    * allow section syntax for operators?
    */
   protected String[] parseIds() throws Failure {
@@ -215,11 +215,6 @@ public class CoreParser extends Phase implements CoreTokens {
     return null;
   }
 
-  /** Hack to provide access to otherwise hidden kindExp() function. */
-  public KindExp sneakKindExp() {
-    return kindExp();
-  }
-
   /**
    * Parse a type expression, generating a MissingTypeExp object and a corresponding diagnostic if
    * no valid type expression can be read.
@@ -241,10 +236,15 @@ public class CoreParser extends Phase implements CoreTokens {
   /** Try to parse a type, returning null if no valid type is found. */
   protected TypeExp maybeTypeExp() {
     TypeExp t = maybeTypeOpExp();
-    if (t != null && lexer.getToken() == COCO) {
-      Position pos = lexer.getPos();
-      lexer.nextToken(/* COCO */ );
-      return new KindAnnTypeExp(pos, t, kindExp());
+    if (t != null) {
+      switch (lexer.getToken()) {
+        case COCO:
+          {
+            Position pos = lexer.getPos();
+            lexer.nextToken(/* COCO */ );
+            return new KindAnnTypeExp(pos, t, kindExp());
+          }
+      }
     }
     return t;
   }
@@ -257,10 +257,13 @@ public class CoreParser extends Phase implements CoreTokens {
   private TypeExp maybeTypeOpExp() {
     TypeExp t = maybeTypeApExp();
     if (t != null) {
-      TypeExp arr = maybeTypeArrow(); // Look for an arrow ...
+      // Look for an arrow ...
+      TypeExp arr = maybeTypeArrow();
       if (arr != null) {
-        TypeExp rng = notMissing(maybeTypeOpExp()); // Find the range
-        return new ApTypeExp(new ApTypeExp(arr, t), rng); // Return function type
+        // Find the range
+        TypeExp rng = notMissing(maybeTypeOpExp());
+        // Return function type
+        return new ApTypeExp(new ApTypeExp(arr, t), rng);
       } else if (lexer.getToken() == VARSYM) {
         NatArithOp op = NatArithOp.isOp(lexer.getLexeme());
         if (op != null) {
@@ -306,8 +309,9 @@ public class CoreParser extends Phase implements CoreTokens {
         op1 = op;
       }
     }
-    // Cover various cases to build the resulting type expression, using TypeExpInfix
-    // only in cases where there were at least two type operators.
+    // Cover various cases to build the resulting type expression, using
+    // TypeExpInfix only in cases where there were at least two type
+    // operators.
     return (typeOps != null)
         ? new InfixTypeExp(new TypeOps(typeOps, t1, op1), t)
         : (op1 == null)
@@ -405,11 +409,13 @@ public class CoreParser extends Phase implements CoreTokens {
       case POPEN:
         {
           Position pos = lexer.getPos();
-          if (lexer.nextToken(/* ( */ ) == PCLOSE) { // Look for a unit type?
+          // Look for a unit type?
+          if (lexer.nextToken(/* ( */ ) == PCLOSE) {
             lexer.nextToken(/* ) */ );
             return new TyconTypeExp(pos, Tycon.unit);
           }
-          TypeExp t = maybeTypeArrow(); // Look for an arrow
+          // Look for an arrow
+          TypeExp t = maybeTypeArrow();
           if (t == null) {
             t = typeExp(); // or else some other type expression
             if (lexer.getToken() == COMMA) { // .. that could be part of a tuple
@@ -461,28 +467,21 @@ public class CoreParser extends Phase implements CoreTokens {
     return null;
   }
 
-  /** Hack to provide access to otherwise hidden typeExp() function. */
-  public TypeExp sneakTypeExp() {
-    return typeExp();
-  }
-
   /**
    * Parse a core program comprising a list of core definitions. parse: _ "{" (defn? ";")* defn? "}"
    */
   public CoreProgram coreProgram() {
-    CoreProgram program = new CoreProgram();
+    CoreProgram prog = new CoreProgram();
     lexer.enterSection();
     for (; ; ) {
       if (lexer.getToken() == SEMI) {
         lexer.nextToken();
       } else {
         try {
-          CoreDefn defn = maybeCoreDefn();
-          if (defn == null) {
+          if (!handleCoreDefn(prog)) {
             lexer.leaveSection();
-            return program;
+            return prog;
           }
-          program.add(defn);
         } catch (Failure f) {
           report(f);
           lexer.itemEnd("definition");
@@ -492,68 +491,87 @@ public class CoreParser extends Phase implements CoreTokens {
   }
 
   /** Parse a core definition, if possible. */
-  public CoreDefn maybeCoreDefn() throws Failure {
+  public boolean handleCoreDefn(CoreProgram prog) throws Failure {
     switch (lexer.getToken()) {
       case DATA:
-        return coreDefnItem(dataDefn(), "data type definition");
+        prog.add(dataDefn());
+        lexer.itemEnd("data type definition");
+        break;
+
       case BITDATA:
-        return coreDefnItem(bitdataDefn(), "bitdata definition");
+        prog.add(bitdataDefn());
+        lexer.itemEnd("bitdata definition");
+        break;
+
       case STRUCT:
-        return coreDefnItem(structDefn(), "struct definition");
+        prog.add(structDefn());
+        lexer.itemEnd("struct definition");
+        break;
+
       case TYPE:
-        return coreDefnItem(typeDefn(), "type definition");
+        prog.add(typeDefn());
+        lexer.itemEnd("type definition");
+        break;
+
       case EXTERNAL:
-        return coreDefnItem(externalDecl(), "external declaration");
+        prog.add(externalDecl());
+        lexer.itemEnd("external declaration");
+        break;
+
       case INFIX:
-        return coreDefnItem(fixityDecl(Fixity.NONASS), "infix declaration");
+        prog.add(fixityDecl(Fixity.NONASS));
+        lexer.itemEnd("infix declaration");
+        break;
+
       case INFIXL:
-        return coreDefnItem(fixityDecl(Fixity.LEFT), "infixl declaration");
+        prog.add(fixityDecl(Fixity.LEFT));
+        lexer.itemEnd("infixl declaration");
+        break;
+
       case INFIXR:
-        return coreDefnItem(fixityDecl(Fixity.RIGHT), "infixr declaration");
+        prog.add(fixityDecl(Fixity.RIGHT));
+        lexer.itemEnd("infixr declaration");
+        break;
+
       default:
-        return null;
+        return false;
     }
+    return true;
   }
 
-  /**
-   * Worker function that captures recurring pattern for maybeCoreDefn(), with the first argument in
-   * each call expected to be to a function that returns a particular type of definition, signalled
-   * by a leading keyword that indicates the definition type.
-   */
-  private CoreDefn coreDefnItem(CoreDefn d, String itemName) {
-    lexer.itemEnd(itemName);
-    return d;
-  }
-
-  private CoreDefn fixityDecl(int assoc) throws Failure {
+  private FixityDecl fixityDecl(int assoc) throws Failure {
     Position pos = lexer.getPos();
-    int prec = Fixity.LOW_PREC;
+    // Following Haskell, default precedence is high
+    int prec = Fixity.HIGH_PREC;
     boolean typeFixity = false;
     if (lexer.nextToken(/* INFIX/INFIXL/INFIXR */ ) == TYPE) {
       typeFixity = true;
       lexer.nextToken(/* type */ );
     }
     if (lexer.getToken() == NATLIT) {
-      BigInteger userPrecNat = lexer.getNat();
-      int userPrec = userPrecNat.intValue();
-      if (BigInteger.valueOf(userPrec).equals(userPrecNat)
-          && userPrec >= Fixity.LOW_PREC
-          && userPrec <= Fixity.HIGH_PREC) {
-        prec = userPrec;
-      } else {
-        report(new Failure(lexer.getPos(), "precedence value is out of range"));
+      try {
+        int userPrec = lexer.getInt();
+        if (userPrec >= Fixity.LOW_PREC && userPrec <= Fixity.HIGH_PREC) {
+          prec = userPrec;
+        } else {
+          report(new Failure(lexer.getPos(), "precedence value is out of range"));
+        }
+      } catch (Failure f) {
+        report(f);
       }
       lexer.nextToken(/* precedence */ );
     }
     Fixity fixity = new Fixity(assoc, prec);
+    String[] ids = parseIds1();
     if (typeFixity) {
-      String[] ids = parseIds1();
       lexer.itemEnd("type fixity declaration");
       return new TypeFixityDecl(pos, fixity, ids);
     } else {
-      String[] ids = parseIds1();
       lexer.itemEnd("fixity declaration");
-      return new FixityDecl(pos, fixity, ids);
+      // Will need to move the following into a method that can be overriden
+      // to do something useful for LC programs. The following is just a
+      // placeholder.
+      throw new Failure(pos, "Illegal fixity declaration");
     }
   }
 
@@ -617,7 +635,8 @@ public class CoreParser extends Phase implements CoreTokens {
                       return new TopImpId(pos, id, impPos, impId);
                     }
 
-                  // TODO: add BITLIT and STRLIT?  Do they make sense post rep transformation?
+                  // TODO: add BITLIT and STRLIT?  Do they make sense post rep
+                  // transformation?
                   case NATLIT:
                     {
                       Atom a = null;
@@ -650,14 +669,16 @@ public class CoreParser extends Phase implements CoreTokens {
    */
   private DataDefn dataDefn() throws Failure {
     Position pos = lexer.getPos();
-    if (lexer.nextToken(/* DATA */ ) != CONID) {
-      throw missing("data type name");
-    }
-    String id = lexer.getLexeme();
-    lexer.nextToken(/* CONID */ );
-    TypeExp[] args = typeAtomExps(0);
+    lexer.nextToken(/* DATA */ );
+    TypeExp lhs = dataDefnLhs();
     DataConDefn[] ds = (lexer.getToken() == EQ) ? dataConDefns(0) : new DataConDefn[0];
-    return new DataDefn(pos, id, args, ds);
+    return new DataDefn(pos, null, lhs, ds); // set id in introduceTycons()
+  }
+
+  /** Parse the left hand side of a data definition. */
+  private TypeExp dataDefnLhs() {
+    TypeExp t = maybeTypeOpExp();
+    return notMissing(t);
   }
 
   /**
@@ -910,7 +931,7 @@ public class CoreParser extends Phase implements CoreTokens {
    * Parse a type expression that begins with the atomic type expression t. This is useful when we
    * have been forced to use lookahead to determine how to parse a given input and have already
    * consumed tokens that make up the initial portion of a type expressions. TODO: This code is
-   * positioned here because it is currently only used in structRegion(), but perhaps it should be
+   * positioned here because it is currently only used in structRegion(). But perhaps it should be
    * positioned next to typeExp() instead so that it can be more easily related to and maintained
    * with that code?
    */
@@ -929,7 +950,7 @@ public class CoreParser extends Phase implements CoreTokens {
   /**
    * Parse a list of one or more structure fields, having just read and skipped past the VARID at
    * the start of the next field (with the given position and id) and having previously read i other
-   * field specificiations.
+   * field specifications.
    */
   private StructFieldExp[] structFields(Position pos, String id, int i) throws Failure {
     StructFieldExp field = structField(pos, id);

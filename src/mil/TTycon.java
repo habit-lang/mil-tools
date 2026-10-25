@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -32,32 +32,32 @@ public class TTycon extends TConst {
   }
 
   /**
-   * Test to determine whether this type is alpha equivalent to another type, by checking to see if
-   * the two type skeletons are equal, possibly with some correspondence between the TGen objects in
-   * the two types. We use the names left and right to keep track of which types were on the left
-   * and the right in the original alphaEquiv() call so that we can build the TGenCorresp in a
-   * consistent manner.
+   * Test whether this type is alpha equivalent to another type, by checking to see if the two type
+   * skeletons are equal, possibly with some correspondence between the TGen objects in the two
+   * types. We use the names left and right to keep track of which types were on the left and the
+   * right in the original alphaEquiv() call so that we can build the TGenCorresp in a consistent
+   * manner.
    */
   boolean alphaType(Type left, TGenCorresp corresp) {
     return this.tycon.alphaType(left, corresp);
   }
 
-  /** Test to determine whether this type is equal to a given type application. */
+  /** Test whether this type is equal to a given type application. */
   boolean alphaTAp(TAp right, TGenCorresp corresp) {
     return tycon.alphaTAp(right, corresp);
   }
 
-  /** Test to determine whether this type is equal to a given Tycon. */
+  /** Test whether this type is equal to a given Tycon. */
   boolean alphaTycon(Tycon right) {
     return this.tycon.alphaTycon(right);
   }
 
-  /** Test to determine whether this type is equal to a given TNat. */
+  /** Test whether this type is equal to a given TNat. */
   boolean alphaTNat(TNat right) {
     return tycon.alphaTNat(right);
   }
 
-  /** Test to determine whether this type is equal to a given TLab. */
+  /** Test whether this type is equal to a given TLab. */
   boolean alphaTLab(TLab right) {
     return tycon.alphaTLab(right);
   }
@@ -74,22 +74,18 @@ public class TTycon extends TConst {
     return tycon.findLevel();
   }
 
-  /**
-   * Test to determine whether two types are equal.
-   *
-   * <p>same :: Type -> Env -> Type -> Env -> Bool
-   */
+  /** Test whether two types are equal. same :: Type -> Env -> Type -> Env -> Bool. */
   public boolean same(Type[] thisenv, Type t, Type[] tenv) {
     return t.sameTTycon(tenv, this);
   }
 
-  /** Test to determine whether this type is equal to a specified type application. */
+  /** Test whether this type is equal to a specified type application. */
   boolean sameTAp(Type[] thisenv, TAp tap, Type[] tapenv) {
     Synonym s = tycon.isSynonym();
     return (s != null) && s.getExpansion().sameTAp(null, tap, tapenv);
   }
 
-  /** Test to determine whether this type is equal to a specified type constant. */
+  /** Test whether this type is equal to a specified type constant. */
   boolean sameTTycon(Type[] thisenv, TTycon that) {
     if (this.tycon == that.tycon) {
       return true;
@@ -122,7 +118,7 @@ public class TTycon extends TConst {
         : sthat.getExpansion().same(null, this, null);
   }
 
-  /** Test to determine whether this type is equal to a specified type literal. */
+  /** Test whether this type is equal to a specified type literal. */
   boolean sameTLit(Type[] thisenv, TLit t) {
     return tycon.sameTLit(t);
   }
@@ -138,7 +134,7 @@ public class TTycon extends TConst {
   }
 
   /**
-   * Matching of types: test to see if the type on the right can be obtained by instantiating type
+   * Matching of types: test whether the type on the right can be obtained by instantiating type
    * variables in the type on the left. (The "receiver", or "this", in the following code.)
    *
    * <p>match :: Type -> Env -> Type -> Env -> IO ()
@@ -151,19 +147,15 @@ public class TTycon extends TConst {
   }
 
   /**
-   * Test to determine whether the specified type application will match this type. For this method,
-   * we should only instantiate type variables that appear in the type application, tap.
+   * Test whether the specified type application will match this type. For this method, we should
+   * only instantiate type variables that appear in the type application, tap.
    */
   boolean matchTAp(Type[] thisenv, TAp tap, Type[] tapenv) {
     Synonym s = tycon.isSynonym();
     return (s != null) && s.getExpansion().matchTAp(null, tap, tapenv);
   }
 
-  /**
-   * Unification of types.
-   *
-   * <p>unify :: Type -> Env -> Type -> Env -> IO ()
-   */
+  /** Unification of types. unify :: Type -> Env -> Type -> Env -> IO () */
   public void unify(Type[] thisenv, Type t, Type[] tenv) throws UnifyException {
     t.unifyTTycon(tenv, this);
   }
@@ -193,7 +185,7 @@ public class TTycon extends TConst {
             sthat = null;
           } else if (levelthis < levelthat) { // don't expand (lower level) this
             sthis = null;
-          } else { // equal levels: expand both, try again
+          } else { // equal levels: expand & try again
             // levels are equal, so expand both sides and repeat equality test
             sthat.getExpansion().unify(null, sthis.getExpansion(), null);
           }
@@ -223,7 +215,7 @@ public class TTycon extends TConst {
    * either an unbound TVar, or else a TNat literal. TODO: This could be used more generally as a
    * way to eliminate all TGen, TInd, bound TVar, or Synonym nodes at the root of any type, not just
    * natural number types ... Suggest rewriting description and renaming method to reflect that ...
-   * (and testing too ...)
+   * (and testing too ...).
    */
   public Type simplifyNatType(Type[] tenv) {
     Type t = tycon.simplifyNatType(null);
@@ -272,31 +264,53 @@ public class TTycon extends TConst {
     return tycon.canonType(env, set, args);
   }
 
-  boolean instMatches(Type right) {
-    return right.instMatchesTycon(tycon);
+  /**
+   * Determine whether this instance of a datatype matches that instance. Note that we cannot be
+   * sure that the TAp nodes on the spine of the new instance are canonical because of the way it
+   * will have been constructed (by rebuild()). We can, however, assume that the head and argument
+   * types are canonical.
+   */
+  boolean instMatches(Type that) {
+    return that.instMatchesTycon(tycon);
   }
 
-  boolean instMatchesTycon(Tycon left) {
-    return left == tycon;
+  /**
+   * Worker function for instMatches: Determine whether this instance matches that type constructor.
+   */
+  boolean instMatchesTycon(Tycon that) {
+    return that == tycon;
   }
 
+  /**
+   * Build a canonical version of this type, using the given TypeSet and tracking the total number
+   * of arguments that have found so far. In the process, we do the usual dance to elide TGen and
+   * TInd nodes, as well as synonyms and bound TVars.
+   */
   Type canonArgs(Type[] tenv, TypeSet set, int args) {
     return tycon.canonArgs(tenv, set, args);
   }
 
+  /** Find the DataType for this object, if any, or else return null. */
   DataType dataType() {
     return tycon.dataType();
   }
 
   /** Determine whether two types are equivalent modulo a given MergeMap. */
   boolean sameMod(Type[] thisenv, Type t, Type[] tenv, MergeMap mmap) {
-    return tycon.sameMod(t, tenv, mmap);
+    return tycon.sameTTyconMod(t, tenv, mmap);
   }
 
+  /**
+   * Determine whether this Type is equivalent to the specified type constructor, modulo the given
+   * MergeMap.
+   */
   boolean sameTyconMod(Type[] tenv, Tycon l, MergeMap mmap) {
     return tycon.sameTyconMod(l, mmap);
   }
 
+  /**
+   * Determine whether this Type is equivalent to the specified DataType, modulo the given MergeMap.
+   */
   boolean sameDataTypeMod(Type[] tenv, DataType l, MergeMap mmap) {
     return tycon.sameDataTypeMod(l, mmap);
   }

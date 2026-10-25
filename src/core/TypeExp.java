@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -27,6 +27,11 @@ public abstract class TypeExp {
   /** Find a position for this type expression. */
   public abstract Position position();
 
+  /**
+   * Remove occurrences of InfixTypeExp nodes from this type expression using fixity information.
+   * For all other node types, we update individual fields in place (in case they included
+   * InfixTypeExp nodes) and return the original node (this).
+   */
   public abstract TypeExp tidyInfix(TyconEnv env) throws Failure;
 
   /**
@@ -40,60 +45,93 @@ public abstract class TypeExp {
   }
 
   /**
-   * Scope analysis on type expressions in a context where we expect all of the type constructors to
-   * be defined, but (if canAdd is true) we will treat undefined type variables as implicitly bound,
-   * universally quantified type variables.
+   * Scope analysis on type expressions. Applies tidyInfix to resolve questions about order of
+   * operations in expressions that use adjacent infix operators. This is followed by the main scope
+   * analysis pass, which attempts to check that all of the type variables and constants defined
+   * within a type expression are in scope. In particular, type variables are added to the params
+   * environment, while type constructors are expected to have existing entries in the specified
+   * TyconEnv. The tdeps parameter supports tracking of dependencies between the type constructors
+   * defined in a group of CoreDefns, but is ignored if tdeps is set to null.
    */
-  public TypeExp scopeType(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
-      throws Failure {
-    return this.tidyInfix(env).scopeTypeRewrite(canAdd, params, env, arity);
+  public TypeExp scopeType(TyvarEnv params, TyconDeps tdeps, TyconEnv env) throws Failure {
+    return this.tidyInfix(env).scopeType(params, tdeps, env, 0);
+  }
+
+  /** Convenience interface for scopeType when dependency tracking is not required (tdeps=null). */
+  public TypeExp scopeType(TyvarEnv params, TyconEnv env) throws Failure {
+    return scopeType(params, null, env);
   }
 
   /**
-   * Worker function for scopeType that is intended to be called after order of any infix operators
-   * have been determined and has the option to rewrite the type expression if needed.
+   * Worker function that performs the main scope analysis on type expressions. An additional arity
+   * parameter is used here so that we can track and validate the number of arguments that are
+   * passed to type constructors.
    */
-  public abstract TypeExp scopeTypeRewrite(boolean canAdd, TyvarEnv params, TyconEnv env, int arity)
+  public abstract TypeExp scopeType(TyvarEnv params, TyconDeps tdeps, TyconEnv env, int arity)
       throws Failure;
 
-  public abstract Kind inferKind() throws KindMismatchFailure;
+  public abstract Kind inferKind() throws Failure;
 
-  public void checkKind(Kind k) throws KindMismatchFailure {
-    Kind k1 = this.inferKind();
-    if (!k1.unify(k)) {
-      throw new KindMismatchFailure(this, k, k1);
+  public void checkKind(Kind kexpected) throws Failure {
+    Kind kinferred = this.inferKind();
+    if (!kinferred.unify(kexpected)) {
+      throw new KindMismatchFailure(this, kexpected, kinferred);
     }
   }
 
-  public Type toType(Prefix prefix) throws Failure {
-    throw new TypeSyntaxFailure(this);
-  }
+  public abstract Type toType(Prefix prefix) throws Failure;
 
   public Scheme toScheme(TyconEnv env) throws Failure {
-    TyvarEnv params = new TyvarEnv(); // Collect implicitly quantified variables
-    TypeExp t = this.scopeType(true, params, env, 0); // Run scope analysis on the type expression
-    t.checkKind(KAtom.STAR); // Run kind inference
-    Prefix prefix = params.toPrefix(); // Calculate a prefix for the type scheme
-    return prefix.forall(t.toType(prefix));
+    // Collect implicitly quantified variables
+    TyvarEnv params = new TyvarEnv();
+
+    // Run scope analysis on the type expression
+    TypeExp t = this.scopeType(params, env);
+
+    // Run kind inference
+    t.checkKind(KAtom.STAR);
+
+    // Build type scheme
+    Prefix prefix = params.toPrefix();
+    return prefix.forall(this.toType(prefix));
   }
 
   /**
-   * Analyze a type parameter to check basic syntax and return a corresponding Tyvar. A Kind
-   * parameter is used to track the declared kind of the parameter (if specified) or else is set to
-   * null, indicating that the required kind is not yet known. The kind of the returned Tyvar will
-   * be set to the declared kind, if known, or else to a fresh kind variable to be bound during kind
-   * inference.
+   * Analyze a type parameter to check basic syntax and add a corresponding Tyvar to the environment
+   * of parameters.
    */
-  public Tyvar scopeTypeParam(Kind kind) throws Failure {
+  public void addTypeParam(TyvarEnv params) throws Failure {
+    addTypeParam(params, null);
+  }
+
+  /**
+   * Check that this type expression can be interpreted as a valid type parameter, for example, in a
+   * datatype definition. The kind parameter is used to capture a kind declared through a kind
+   * annotation as we descend the abstract syntax tree. It should initially be set to null, and
+   * hence will still be null if we reach a variable name without seeing any kind annotations.
+   */
+  public void addTypeParam(TyvarEnv params, Kind kind) throws Failure {
     throw new TypeParamSyntaxFailure(this);
   }
 
   /**
-   * Scope analysis on type expressions in a context where we want to determine which (if any)
-   * CoreDefn values a particular type expression depends on.
+   * Analyze the left hand side of a data definition to find the name of the new type and to
+   * populate an environment with its parameters.
    */
-  public abstract CoreDefns scopeTyconsType(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends);
+  String analyzeDataDefnLhs(TyvarEnv params) throws Failure {
+    return analyzeDataDefnHead(params);
+  }
+
+  /**
+   * Analyze the left hand side of a data definition. It must be possible to determine the name and
+   * arity of a datatype without relying on fixity information. Uses of multiple infix operators
+   * without parentheses to show exact grouping will result in the construction of an InfixTypeExp
+   * object during parsing, which will trigger a syntax error here. (In practice, using multiple
+   * infix operators in the header of a data definition would not be syntactically valid anyway.)
+   */
+  String analyzeDataDefnHead(TyvarEnv params) throws Failure {
+    throw new DataLhsSyntaxFailure(this);
+  }
 
   void checkKind(Handler handler, Kind kind) {
     try {

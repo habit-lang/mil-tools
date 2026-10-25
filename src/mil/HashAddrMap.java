@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -31,7 +31,7 @@ import java.util.HashMap;
  */
 public class HashAddrMap extends AddrMap {
 
-  private HashMap<Integer, String> map = new HashMap();
+  private HashMap<Integer, String> map = (new HashMap<Integer, String>());
 
   void addGlobalLabel(int addr, String label) {
     map.put(-(1 + addr), label);

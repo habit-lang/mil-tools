@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,10 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/**
+ * Represents a Call of the form f @ as that enters a closure (referenced by f) with a list of
+ * arguments (given by as).
+ */
 public class Enter extends Call {
 
   private Atom f;
@@ -31,40 +35,15 @@ public class Enter extends Call {
     this.f = f;
   }
 
-  public Enter(Atom f, Atom a) { // f @ a
-    this(f, new Atom[] {a});
-  }
-
-  public Enter(Atom f, Atom[] args) { // f @ args
-    this.f = f;
+  /** Constructor for calls where arguments are already known. */
+  public Enter(Atom f, Atom[] args) {
+    this(f);
     this.args = args;
   }
 
-  /** Test if this Tail expression includes a free occurrence of a particular variable. */
-  boolean contains(Temp w) {
-    return f == w || super.contains(w);
-  }
-
-  /**
-   * Test if this Tail expression includes an occurrence of any of the variables listed in the given
-   * array.
-   */
-  boolean contains(Temp[] ws) {
-    return f.occursIn(ws) || super.contains(ws);
-  }
-
-  /** Add the variables mentioned in this tail to the given list of variables. */
-  Temps add(Temps vs) {
-    return f.add(super.add(vs));
-  }
-
-  /** Test if two Tail expressions are the same. */
-  boolean sameTail(Tail that) {
-    return that.sameEnter(this);
-  }
-
-  boolean sameEnter(Enter that) {
-    return this.f.sameAtom(that.f) && this.sameArgs(that);
+  /** Constructor for calls with one argument that is already known. */
+  public Enter(Atom f, Atom a) {
+    this(f, new Atom[] {a});
   }
 
   /** Find the dependencies of this AST fragment. */
@@ -72,10 +51,25 @@ public class Enter extends Call {
     return f.dependencies(super.dependencies(ds));
   }
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
+  /** Add the temporaries used in this node to the given list of Temps. */
+  Temps add(Temps vs) {
+    return f.add(super.add(vs));
+  }
+
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
   void dump(PrintWriter out, Temps ts) {
     out.print(f.toString(ts) + " @ ");
     Atom.displayTuple(out, args, ts);
+  }
+
+  /** Test if two Tail expressions are the same. */
+  boolean sameTail(Tail that) {
+    return that.sameEnter(this);
+  }
+
+  /** Test whether this Tail is the same as the given Enter. */
+  boolean sameEnter(Enter that) {
+    return this.f.sameAtom(that.f) && this.sameArgs(that);
   }
 
   /**
@@ -91,9 +85,10 @@ public class Enter extends Call {
     return new Enter(f).withArgs(args);
   }
 
-  /** The type tuple that describes the outputs of this Tail. */
+  /** Records the type tuple that describes the outputs of this Tail. */
   private Type outputs;
 
+  /** The type of the function in this Enter call. */
   private Type ftype;
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
@@ -106,6 +101,7 @@ public class Enter extends Call {
     return outputs;
   }
 
+  /** Infer a type for this Call expression. */
   Type inferCallType(Position pos, Type[] inputs) throws Failure {
     outputs = new TVar(Tyvar.tuple);
     ftype = f.instantiate();
@@ -136,6 +132,19 @@ public class Enter extends Call {
       f.load(builder);
       builder.cjump();
     }
+  }
+
+  /** Test if this Tail expression includes a free occurrence of a particular variable. */
+  boolean contains(Temp w) {
+    return f == w || super.contains(w);
+  }
+
+  /**
+   * Test if this Tail expression includes an occurrence of any of the variables listed in the given
+   * array.
+   */
+  boolean contains(Temp[] ws) {
+    return f.occursIn(ws) || super.contains(ws);
   }
 
   /**
@@ -198,8 +207,8 @@ public class Enter extends Call {
   Tail rewriteEnter(Facts facts) {
     ClosAlloc clos = f.lookForClosAlloc(facts); // Is f a known closure?
     if (clos != null) {
-      // TODO: Is this rewrite always a good idea? Are there cases where it
-      // ends up creating more work than it saves?
+      // TODO: Is this rewrite always a good idea? Are there cases where
+      // it ends up creating more work than it saves?
       MILProgram.report("rewriting " + f + " @ [" + Atom.toString(args) + "]");
       return clos.enterWith(args); // If so, apply it in place
     }
@@ -208,7 +217,8 @@ public class Enter extends Call {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return summary(3);
@@ -258,9 +268,11 @@ public class Enter extends Call {
    * isTail to true if the code sequence c is an immediate ret void instruction.
    */
   llvm.Code toLLVMBindVoid(LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Code c) {
-    llvm.Value[] acts = closureActuals(lm, vm, s); // actual parameters
-    llvm.Local cptr = vm.reg(lm.toLLVM(ftype)); // a register to hold the code pointer
-    return enterCode(vm, acts[0], cptr, new llvm.CallVoid(isTail, cptr, acts, c));
+    // actual parameters
+    llvm.Value[] acts = closureActuals(lm, vm, s);
+    // a register to hold the code pointer
+    llvm.Local cptr = vm.reg(llvm.Type.ptr);
+    return enterCode(lm, vm, acts[0], cptr, new llvm.CallVoid(isTail, cptr, acts, c));
   }
 
   /**
@@ -270,9 +282,12 @@ public class Enter extends Call {
    */
   llvm.Code toLLVMBindCont(
       LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Local lhs, llvm.Code c) {
-    llvm.Value[] acts = closureActuals(lm, vm, s); // actual parameters
-    llvm.Local cptr = vm.reg(lm.codePtrType(ftype)); // a register to hold the code pointer
+    // actual parameters
+    llvm.Value[] acts = closureActuals(lm, vm, s);
+    // a register to hold the code pointer
+    llvm.Local cptr = vm.reg(llvm.Type.ptr);
     return enterCode(
+        lm,
         vm,
         acts[0],
         cptr,
@@ -281,33 +296,37 @@ public class Enter extends Call {
 
   llvm.Value[] closureActuals(LLVMMap lm, VarMap vm, TempSubst s) {
     Atom[] nuargs = Atom.nonUnits(args);
-    llvm.Value[] acts = new llvm.Value[1 + nuargs.length]; // make the argument list
-    acts[0] = f.toLLVMAtom(lm, vm, s); // a pointer to the closure for f as an llvm value
-    for (int i = 0; i < nuargs.length; i++) { // with llvm values for each of the function arguments
+    // make the argument list
+    llvm.Value[] acts = new llvm.Value[1 + nuargs.length];
+    // a pointer to the closure for f as an llvm value
+    acts[0] = f.toLLVMAtom(lm, vm, s);
+    // with llvm values for each of the function arguments
+    for (int i = 0; i < nuargs.length; i++) {
       acts[i + 1] = nuargs[i].toLLVMAtom(lm, vm, s);
     }
     return acts;
   }
 
-  llvm.Code enterCode(VarMap vm, llvm.Value clo, llvm.Local cptr, llvm.Code c) {
-    // TODO: this method doesn't really belong in Enter because it doesn't use any Enter fields or
-    // methods ...
-    // We are generating code for a closure entry  f @ as  where f :: dom ->> rng for some tuples of
-    // domain and range values.  Specifically here, we are assuming that rng is not [], and that f
-    // is
-    // represented by a value of type %t.layout*, where:
-    //     type %t.layout = { %t.entry* }     -- layout of a generic dom ->> rng closure in memory
-    //     type %t.entry  = rng' (%t.layout*, dom')  -- rng' and dom' corresponding to rng and dom
-    llvm.Type ct = cptr.getType().ptr();
-    llvm.Local cptrptr =
-        vm.reg(ct); // a register to hold the address where the code pointer is stored
+  llvm.Code enterCode(LLVMMap lm, VarMap vm, llvm.Value clo, llvm.Local cptr, llvm.Code c) {
+    // TODO: this method doesn't really belong in Enter because it doesn't
+    // use any Enter fields or methods ...
+    // We are generating code for a closure entry  f @ as  where
+    // f :: dom ->> rng for some tuples of domain and range values.
+    //  Specifically here, we are assuming that rng is not [], and that
+    // f is represented by a value of type %t.layout*, where:
+    //     -- layout of a generic dom ->> rng closure in memory
+    //     type %t.layout = { %t.entry* }
+    //       -- rng' and dom' corresponding to rng and dom
+    //     type %t.entry  = rng' (%t.layout*, dom')
+    llvm.Type ct = lm.closureLayout();
+    // a register to hold the address where the code pointer is stored
+    llvm.Local cptrptr = vm.reg(llvm.Type.ptr);
     return new llvm.Op(
-        cptrptr,
-        new llvm.Getelementptr(
-            ct, clo, llvm.Word.ZERO, llvm.Index.ZERO), // 0th field of 0th closure
+        cptrptr, // 0th field of 0th closure
+        new llvm.Getelementptr(ct, clo, llvm.Word.ZERO, llvm.Index.ZERO),
         new llvm.Op(
-            cptr,
-            new llvm.Load(cptrptr), // load function address
+            cptr, // load function address
+            new llvm.Load(llvm.Type.ptr, cptrptr),
             c));
   }
 }

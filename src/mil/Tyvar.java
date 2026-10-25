@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,7 +21,9 @@ package mil;
 import compiler.*;
 import core.*;
 
-/** Names for type variables/parameters. */
+/**
+ * Represents the signature of a type variable, including a name (used for reference) and a kind.
+ */
 public class Tyvar extends Name {
 
   private Kind kind;
@@ -51,7 +53,8 @@ public class Tyvar extends Name {
     return kind;
   }
 
-  public void fixKinds() {
-    kind = kind.fixKind();
+  /** Apply defaults to the kind of this type constructor to eliminate any remaining KVars. */
+  public void defaultKinds() {
+    kind = kind.defaultKind();
   }
 }

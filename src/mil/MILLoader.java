@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -36,10 +36,11 @@ public class MILLoader extends core.Loader {
    */
   public MILAST require(String name) {
     MILAST ast;
-    if ((ast = findIn(name, loaded)) == null
-        && // if this file hasn't already been loaded and
-        (ast = findIn(name, required)) == null) { //              hasn't already been required
-      ast = new MILAST(name); // then add a new requirement
+    // if this file hasn't already been loaded and
+    //              hasn't already been required
+    // then add a new requirement
+    if ((ast = findIn(name, loaded)) == null && (ast = findIn(name, required)) == null) {
+      ast = new MILAST(name);
       required = new MILASTs(ast, required);
     }
     return ast;
@@ -76,19 +77,20 @@ public class MILLoader extends core.Loader {
   public MILEnv load(Handler handler, MILProgram program) throws Failure {
     MILASTSCCs sccs = MILASTs.scc(syntaxAnalysis(handler));
 
-    // Run through strongly connected components to build up a MIL environment for the complete
-    // program.
+    // Run through strongly connected components to build up a MIL
+    // environment for the complete program.
     MILEnv milenv = Builtin.obj;
     MILProgram full = new MILProgram();
     for (; sccs != null; sccs = sccs.next) {
       MILASTSCC scc = sccs.head;
-      // TODO: At some point, we may be able to allow for mutual recursion between MIL files,
-      // loading
-      // all of them together as a group.  But that still wouldn't provide any good reason for a MIL
-      // file to require itself, so perhaps some of this error checking code would still be useful
-      // then ...
+      // TODO: At some point, we may be able to allow for mutual recursion
+      // between MIL files, loading all of them together as a group.  But
+      // that still wouldn't provide any good reason for a MIL file to
+      // require itself, so perhaps some of this error checking code would
+      // still be useful then ...
       if (scc.isRecursive()) {
-        // TODO: add functionality to construct this list in a common class and reuse for mil & lc
+        // TODO: add functionality to construct this list in a common class
+        // and reuse for mil & lc
         StringBuilder buf = new StringBuilder("Recursive requirements for ");
         for (MILASTs asts = scc.getBindings(); asts != null; asts = asts.next) {
           buf.append(asts.head.getName());
@@ -102,8 +104,8 @@ public class MILLoader extends core.Loader {
         MILAST ast = scc.getBindings().head;
         debug.Log.println("Checking " + ast.getName() + " ...");
 
-        // Validate the type definitions in the program, recording the results in a corresponding
-        // type environment:
+        // Validate the type definitions in the program, recording the
+        // results in a corresponding type environment:
         TyconEnv tenv = ast.typeEnv(handler, milenv.getTyconEnv());
 
         // Run scope analysis:

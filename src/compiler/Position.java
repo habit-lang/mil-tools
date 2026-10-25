@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -19,10 +19,9 @@
 package compiler;
 
 /**
- * An abstraction of a position within a source document.
- *
- * <p>[We might also like to have a mechanism for starting an editor at a particular position so
- * that users can view and potentially change the corresponding sections of source code.]
+ * An abstraction of a position within a source document. [We might also like to have a mechanism
+ * for starting an editor at a particular position so that users can view and potentially change the
+ * corresponding sections of source code.]
  */
 public abstract class Position {
 

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -28,7 +28,7 @@ public class StructField extends Name {
   /** Specifies the type of area in this field. */
   private Type type;
 
-  /** The offset (measured in bytes from the start of the struct to this field. */
+  /** The offset (measured in bytes) from the start of the struct to this field. */
   private int offset;
 
   /** The width (in bytes) of this field. */
@@ -54,6 +54,7 @@ public class StructField extends Name {
     return width;
   }
 
+  /** Output information about this type for debugging purposes. */
   public void debugDump() {
     debug.Log.println(id + " :: " + type + " -- offset=" + offset + ", width=" + width);
   }
@@ -86,7 +87,7 @@ public class StructField extends Name {
     Temp[] args = Temp.makeTemps(Tycon.wordRep);
     Block impl = new Block(pos, args, new Done(Prim.add.withArgs(args[0], offset)));
     BlockType bt = new BlockType(Type.tuple(Type.ref(st.asType())), Type.tuple(Type.ref(type)));
-    selectPrim = new Prim.blockImpl("select_" + id, Prim.PURE, bt, impl);
+    selectPrim = new Prim.BlockImpl("select_" + id, bt, Prim.PURE, impl);
   }
 
   /**
@@ -102,7 +103,7 @@ public class StructField extends Name {
   Prim initStructFieldPrim(StructType st) {
     if (initStructField == null) {
       BlockType bt = new BlockType(Type.tuple(Type.init(type)), Type.tuple(Type.init(st.asType())));
-      initStructField = new Prim.initStructField("init_" + id, Prim.PURE, bt, offset);
+      initStructField = new Prim.InitStructField("init_" + id, bt, Prim.PURE, offset);
     }
     return initStructField;
   }

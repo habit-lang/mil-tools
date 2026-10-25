@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -25,5 +25,16 @@ class NotInScopeTyvarFailure extends Failure {
 
   NotInScopeTyvarFailure(Position pos, String id) {
     super(pos, "The type variable \"" + id + "\" is not in scope");
+  }
+
+  /**
+   * Report an out of scope error for any type variable that was added to this environment after the
+   * snapshot of its length was captured (by using a call to getLen()).
+   */
+  public static void beyond(Handler handler, TyvarEnv params, int len) {
+    for (Tyvars ts = params.beyond(len); ts != null; ts = ts.next) {
+      Tyvar tyvar = ts.head;
+      handler.report(new core.NotInScopeTyvarFailure(tyvar.getPos(), tyvar.getId()));
+    }
   }
 }

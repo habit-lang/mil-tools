@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -37,10 +37,11 @@ public class LCLoader extends core.Loader {
    */
   public LCProgram require(String name) {
     LCProgram ast;
-    if ((ast = findIn(name, loaded)) == null
-        && // if this file hasn't already been loaded and
-        (ast = findIn(name, required)) == null) { //              hasn't already been required
-      ast = new LCProgram(name); // then add a new requirement
+    // if this file hasn't already been loaded and
+    //              hasn't already been required
+    // then add a new requirement
+    if ((ast = findIn(name, loaded)) == null && (ast = findIn(name, required)) == null) {
+      ast = new LCProgram(name);
       required = new LCPrograms(ast, required);
     }
     return ast;
@@ -116,7 +117,8 @@ public class LCLoader extends core.Loader {
     for (; sccs != null; sccs = sccs.next) {
       LCProgramSCC scc = sccs.head;
       if (scc.isRecursive()) {
-        // TODO: add functionality to construct this list in a common class and reuse for mil & lc
+        // TODO: add functionality to construct this list in a common
+        // class and reuse for mil & lc
         StringBuilder buf = new StringBuilder("Recursive requirements for ");
         for (LCPrograms asts = scc.getBindings(); asts != null; asts = asts.next) {
           buf.append(asts.head.getName());
@@ -143,7 +145,7 @@ public class LCLoader extends core.Loader {
       }
     } else if (mil.isEmpty()) {
       handler.report(
-          new Failure("No entrypoints or main function have been specified for this program"));
+          new Failure("No entrypoints or main function have been " + "specified for this program"));
     }
     mil.addArgs(); // Add arguments to blocks and closures
     handler.abortOnFailures();

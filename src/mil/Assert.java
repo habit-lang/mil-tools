@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -24,7 +24,7 @@ import java.io.PrintWriter;
 
 /**
  * Represents a code sequence that begins with an assertion that the specified atom has been
- * constructed using the given constructor function.
+ * constructed using the given constructor.
  */
 public class Assert extends Code {
 
@@ -44,17 +44,12 @@ public class Assert extends Code {
     this.c = c;
   }
 
-  /** Test for a free occurrence of a particular variable. */
-  boolean contains(Temp w) {
-    return a == w || c.contains(w);
-  }
-
   /** Find the dependencies of this AST fragment. */
   Defns dependencies(Defns ds) {
     return c.dependencies(ds);
   }
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
   void dump(PrintWriter out, Temps ts) {
     indent(out);
     out.println("assert " + a.toString(ts) + " " + cf);
@@ -70,16 +65,23 @@ public class Assert extends Code {
     return new Assert(a.apply(s), cf, c.apply(s));
   }
 
-  private AllocType type;
+  /** The AllocType instance for this call. */
+  private AllocType ltype;
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   TVars tvars(TVars tvs) {
-    return c.tvars(type.tvars(tvs));
+    return c.tvars(ltype.tvars(tvs));
   }
 
+  /**
+   * Infer a type for this code sequence. TODO: use more fine-grained position information instead
+   * of passing around the position of the enclosing Defn.
+   */
   Type inferType(Position pos) throws Failure { // assert a cf; c
-    type = cf.instantiate(); // get a type for the constructor
-    type.resultUnifiesWith(pos, a.instantiate()); // check that it is compatible with a
+    // get a type for the constructor
+    ltype = cf.instantiate();
+    // check that it is compatible with a
+    ltype.resultUnifiesWith(pos, a.instantiate());
     return c.inferType(pos);
   }
 
@@ -89,6 +91,11 @@ public class Assert extends Code {
    */
   void generateCode(MachineBuilder builder, int o) {
     c.generateCode(builder, o); // asserts are treated as nops
+  }
+
+  /** Test for a free occurrence of a particular variable. */
+  boolean contains(Temp w) {
+    return a == w || c.contains(w);
   }
 
   /**
@@ -128,7 +135,8 @@ public class Assert extends Code {
    */
   Code cleanup(Block src) {
     c = c.cleanup(src);
-    if (a.markedUnused()) { // Rewrite (assert _ cf ; c) ==> c
+    if (a.markedUnused()) {
+      // Rewrite (assert _ cf ; c) ==> c
       MILProgram.report("eliminated an unused assertion in " + src);
       return c;
     }
@@ -148,6 +156,10 @@ public class Assert extends Code {
     return this;
   }
 
+  /**
+   * Prepend a copy of this code sequence, whose final result will be captured in the temporaries
+   * us, onto the code sequence d.
+   */
   Code prefixInline(TempSubst s, Temp[] us, Code d) {
     return new Assert(a.apply(s), cf, c.prefixInline(s, us, d));
   }
@@ -186,8 +198,8 @@ public class Assert extends Code {
   /** Optimize a Code block using a simple flow analysis. */
   public Code flow(Defn d, Facts facts, TempSubst s) {
     Tail t = a.lookupFact(facts);
-    // If we already have a fact in place for the asserted atom, then we
-    // will assume that this assert is satisfied and is no longer needed.
+    // If we already have a fact in place for the asserted atom, then we will
+    // assume that this assert is satisfied and is no longer needed.
     // e.g.,  x <- MkInt(2); assert MkInt x; c   ==>   x <- MkInt(2); c
     // TODO: should we check that t is a DataAlloc with constructor function cf?
     if (t != null) {
@@ -210,7 +222,7 @@ public class Assert extends Code {
     Temps us = c.liveness();
     if (!a.markedUnused() && !a.isIn(us)) {
       MILProgram.report("liveness replaced " + a + " in assertion with a wildcard");
-      a = a.markUsed();
+      a = a.markUnused();
     }
     return us;
   }
@@ -229,7 +241,8 @@ public class Assert extends Code {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return cf.summary() * 7 + c.summary() * 13 + 257;
@@ -253,8 +266,8 @@ public class Assert extends Code {
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
-    if (type != null) {
-      type = type.canonAllocType(set);
+    if (ltype != null) {
+      ltype = ltype.canonAllocType(set);
     }
     cf = cf.canonCfun(set);
     a.collect(set);
@@ -264,7 +277,8 @@ public class Assert extends Code {
   /** Simplify uses of constructor functions in this code sequence. */
   Code cfunSimplify() {
     c = c.cfunSimplify(); // Simplify rest of code
-    if (cf.isSingleConstructor()) { // Eliminate assert for a single constructor type
+    if (cf.isSingleConstructor()) {
+      // Eliminate assert for a single constructor type
       MILProgram.report("eliminating assert for singleton constructor " + cf.getId());
       return c;
     }
@@ -275,15 +289,20 @@ public class Assert extends Code {
   Code specializeCode(MILSpec spec, TVarSubst s, SpecEnv env) {
     return new Assert(
         a.specializeAtom(spec, s, env),
-        cf.specializeCfun(spec, type, s),
+        cf.specializeCfun(spec, ltype, s),
         c.specializeCode(spec, s, env));
   }
 
+  /** Rewrite this code sequence to use the bitdata representations provided by BitdataMap. */
   Code bitdataRewrite(BitdataMap m) {
     BitdataRep r = cf.findRep(m);
     return new Assert(a, (r == null ? cf : cf.bitdataRewrite(r)), c.bitdataRewrite(m));
   }
 
+  /**
+   * Generate a new version of this code sequence to update references to constructor functions
+   * consistent with the datatype equalities in the given MergeMap.
+   */
   Code mergeRewrite(MergeMap mmap) {
     return new Assert(a, cf.lookup(mmap), c.mergeRewrite(mmap));
   }

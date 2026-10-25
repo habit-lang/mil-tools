@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -60,7 +60,8 @@ class CodeLabel extends Label {
   /** Generate code for this Label within an enclosing LLVM function definition. */
   llvm.Code toLLVMLabel(LLVMMap lm, VarMap vm, TempSubst s) {
     llvm.Code code = b.toLLVMBlock(lm, vm, s, succs);
-    if (preds.next != null) { // multiple predecessors: merge parameters using phi functions
+    // multiple predecessors: merge parameters using phi functions
+    if (preds.next != null) {
       Temp[] params = Temp.nonUnits(b.getParams());
       if (params.length > 0) {
         int numpreds = 2; // count the number of predecessor nodes

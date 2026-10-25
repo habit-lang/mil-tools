@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -130,7 +130,7 @@ class Main {
     }
   }
 
-  /** Store the list of passes to run (null ==> run with a sensible default for other options) */
+  /** Store the list of passes to run (null ==> run with a sensible default for other options). */
   private String passes = null;
 
   private void addPasses(String ps) {
@@ -351,25 +351,30 @@ class Main {
   public void run(String[] args) {
     Handler handler = new SimpleHandler();
     try {
-      // TODO: initial messages will not appear so long as trace is initialized to false :-)
+      // TODO: initial messages will not appear so long as trace
+      // is initialized to false :-)
       LCLoader loader = new LCLoader();
+      // Process options in .milc file, if present
       if (optionsFromFile(handler, ".milc", loader, 1)) {
-        message("Read options from .milc ..."); // Process options in .milc file, if present
+        message("Read options from .milc ...");
       }
       ;
-      message("Reading command line arguments ..."); // Process command line arguments
+      // Process command line arguments
+      message("Reading command line arguments ...");
       processArgs(handler, new StringArgStream(args), loader, 0);
       handler.abortOnFailures();
 
-      if (Word.size() == 0) { // Ensure that a word size is set, defaulting to 32 bits
-        Word.setSize(32); // TODO: figure out how to set this automatically ...
+      if (Word.size() == 0) { // Ensure that word size set, defaulting to 32
+        Word.setSize(32);
       }
 
       if (numSourceFiles > 0) {
-        message("Loading source files ..."); // Load and compile everything
+        // Load and compile everything
+        message("Loading source files ...");
         MILProgram mil = loader.load(handler, milMain);
 
-        message("Running type checker ..."); // Sanity check/dependency analysis
+        // Sanity check/dependency analysis
+        message("Running type checker ...");
         mil.typeChecking(handler);
 
         process(handler, mil);
@@ -401,16 +406,20 @@ class Main {
   private void process(Handler handler, MILProgram mil) throws Failure {
     MILSpec spec = null;
     RepTypeSet rep = null;
-    boolean optimized = false; // Keep track of whether the optimizer has been run
-    boolean cfunRewrite = false; // Keep track of whether the cfun rewrite has been run
+    // Keep track of whether the optimizer has been run
+    boolean optimized = false;
+    // Keep track of whether the cfun rewrite has been run
+    boolean cfunRewrite = false;
 
     if (passes != null) {
       message("Using passes \"" + passes + "\":");
     } else {
-      // If no passes are specified, try to set some sensible defaults to satisfy
-      // requirements implied by other command line arguments.  This does not prevent
-      // errors that can occur with user-specified pass strings (e.g., use of 'r' without
-      // a prior 's', or an attempt to generate LLVM code without specialization).
+      // If no passes are specified, try to set some sensible
+      // defaults to satisfy requirements implied by other
+      // command line arguments.  This does not prevent errors
+      // that can occur with user-specified pass strings (e.g.,
+      // use of 'r' without a prior 's', or an attempt to generate
+      // LLVM code without specialization).
 
       passes =
           (llvmOutput.isSet() || llvmInterfaceOutput.isSet() || cfgsGraphvizOutput.isSet())
@@ -457,10 +466,11 @@ class Main {
           message("Running representation transformation ...");
           if (!cfunRewrite) {
             throw new Failure(
-                "Representation transformation requires an earlier constructor function rewrite");
+                "Representation transformation requires an earlier "
+                    + "constructor function rewrite");
           } else if (spec == null) {
             throw new Failure(
-                "Representation transformation requires an earlier specialization pass");
+                "Representation transformation requires " + "an earlier specialization pass");
           }
           rep = mil.repTransform(handler);
           handler.abortOnFailures();
@@ -470,13 +480,14 @@ class Main {
           break;
 
         case 'm': // Merging of DataTypes
-          // TODO: This is currently a "secret" option (because it is not documented in the usage
-          // message).  Merging is used
-          // as part of the representation transformation process above.  Including it as a separate
-          // option here allows us to
-          // experiment with the feature more generally, but it is not clear how useful this will be
-          // in isolation.  If it turns
-          // out to be useful, then it should be documented.  If not, then it should be deleted ...
+          // TODO: This is currently a "secret" option (because it
+          // is not documented in the usage message).  Merging is used
+          // as part of the representation transformation process above.
+          // Including it as a separate option here allows us to
+          // experiment with the feature more generally, but it is
+          // not clear how useful this will be in isolation.  If it turns
+          // out to be useful, then it should be documented.  If not,
+          // then it should be deleted ...
           message("Merging datatypes ...");
           mil.mergeRewrite();
           mil.shake();
@@ -516,7 +527,7 @@ class Main {
           void run(PrintWriter out) throws Failure {
             if (spec == null) {
               throw new Failure(
-                  "A specialization pass is required for specialization type set output");
+                  "A specialization pass is required for" + " specialization type set output");
             } else {
               spec.dump(out);
             }
@@ -528,7 +539,7 @@ class Main {
           void run(PrintWriter out) throws Failure {
             if (rep == null) {
               throw new Failure(
-                  "A representation pass is required for representation type set output");
+                  "A representation pass is required for" + " representation type set output");
             } else {
               rep.dump(out);
             }
@@ -644,8 +655,8 @@ class Main {
     }
 
     /**
-     * The filename is one of: - null, indicating no action is required - empty, indicating output
-     * to stdout is required - nonempty, indicating output to file is required
+     * The filename is one of: - null, indicating no action is required; - empty, indicating output
+     * to stdout is required; - nonempty, indicating output to file is required.
      */
     private String filename = null;
 

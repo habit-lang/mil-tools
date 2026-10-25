@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -47,11 +47,11 @@ public class KFun extends Kind {
     if (that instanceof KFun) {
       KFun kf = (KFun) that;
       if (dom.same(kf.dom)) {
-        // TODO: the following code rewrites the graph to reduce duplication of kind
-        // data structures; is it worth the trouble?
+        // TODO: the following code rewrites the graph to reduce duplication
+        // of kind data structures; is it worth the trouble?
         dom = kf.dom;
         if (rng.same(kf.rng)) {
-          rng = kf.rng; //
+          rng = kf.rng;
           return true;
         }
       }
@@ -65,10 +65,8 @@ public class KFun extends Kind {
   }
 
   /** Copy a kind, replacing any unbound kind variables with star. */
-  Kind fixKind() {
-    this.dom = dom.fixKind();
-    this.rng = rng.fixKind();
-    return this;
+  Kind defaultKind() {
+    return new KFun(dom.defaultKind(), rng.defaultKind());
   }
 
   /**
@@ -92,6 +90,7 @@ public class KFun extends Kind {
     return rng;
   }
 
+  /** Output a representation for the head of a datatype definition. */
   Type makeHead(Position pos, PrintWriter out, int i, Type h) {
     int suffix = (i / 26);
     String id = ((char) ('a' + (i % 26))) + ((suffix > 0) ? Integer.toString(suffix) : "");

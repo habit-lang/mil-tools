@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -23,77 +23,76 @@ import mil.*;
 
 public class DataDefn extends TyconDefn {
 
-  private TypeExp[] args;
+  private TypeExp lhs;
 
   private DataConDefn[] constrs;
 
   /** Default constructor. */
-  public DataDefn(Position pos, String id, TypeExp[] args, DataConDefn[] constrs) {
+  public DataDefn(Position pos, String id, TypeExp lhs, DataConDefn[] constrs) {
     super(pos, id);
-    this.args = args;
+    this.lhs = lhs;
     this.constrs = constrs;
   }
 
   private DataType dt;
 
+  /** An environment to capture the parameters. */
   private TyvarEnv params;
 
-  /**
-   * Return the Tycon associated with this definition, if any. TODO: this method is only used in one
-   * place, and it's awkward ... look for opportunities to rewrite
-   */
-  public Tycon getTycon() {
-    return dt;
+  public void setRecursive() {
+    dt.setRecursive();
   }
 
+  /** Add environment entries for the type constructors introduced in this definition. */
   public void introduceTycons(Handler handler, TyconEnv env) {
     params = new TyvarEnv();
-    for (int i = 0; i < args.length; i++) {
-      try {
-        params.add(args[i].scopeTypeParam(null));
-      } catch (Failure f) {
-        handler.report(f);
-      }
+    try {
+      id = lhs.analyzeDataDefnLhs(params);
+      params.checkForMultipleTyvars(handler);
+      env.add(dt = params.makeDataType(pos, id));
+    } catch (Failure f) {
+      handler.report(f);
     }
-    params.checkForMultipleTyvars(handler);
-    env.add(dt = new DataType(pos, id, params.toKind(), args.length));
   }
 
   /**
    * Determine the list of type definitions (a sublist of defns) that this particular definition
    * depends on.
    */
-  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) throws Failure {
-    CoreDefns depends = null;
+  public void scopeDefn(Handler handler, TyconDeps tdeps, TyconEnv env) throws Failure {
+    lhs = lhs.tidyInfix(env);
+    int len = params.getLen();
     for (int i = 0; i < constrs.length; i++) {
-      depends = constrs[i].scopeTycons(handler, params, env, defns, depends);
+      constrs[i].scopeDefn(handler, params, tdeps, env);
     }
-    this.calls(depends);
-  }
-
-  public void setRecursive() {
-    dt.setRecursive();
+    NotInScopeTyvarFailure.beyond(handler, params, len);
   }
 
   public void kindInfer(Handler handler) {
     // The type expressions for every constructor should be well-kinded.
     for (int i = 0; i < constrs.length; i++) {
-      if (constrs[i] != null) { // (guards against continuing after previously detected error)
+      // (guards against continuing after previously detected error)
+      if (constrs[i] != null) {
         constrs[i].kindInfer(handler);
       }
     }
   }
 
-  public void fixKinds() {
-    params.fixKinds();
-    dt.fixKinds();
+  /** Default kind variables to STAR, unless they have already been bound. */
+  public void defaultKinds() {
+    params.defaultKinds();
+    dt.defaultKinds();
   }
 
   /** Calculate types for each of the values that are introduced by this definition. */
   public void calcCfuns(Handler handler) {
     // Calculate the range type for constructors in this type
     Type rng = dt.asType();
-    for (int i = 0; i < args.length; i++) {
+    // TODO: if the context includes extra variables, determined by the head,
+    // then len will be greater than arity, and the following code will
+    // generate a kind with too many arguments.
+    int len = params.getLen();
+    for (int i = 0; i < len; i++) {
       rng = new TAp(rng, Type.gen(i));
     }
 
@@ -117,11 +116,11 @@ public class DataDefn extends TyconDefn {
   }
 
   /**
-   * Extend the specified MIL environment with entries for any functions/values introduced in this
-   * definition.
+   * Extend the specified MIL environment with entries for any functions or values introduced in
+   * this definition.
    */
   public void addToMILEnv(Handler handler, CoreProgram prog, MILEnv milenv) {
-    Cfun[] cfuns = getTycon().getCfuns();
+    Cfun[] cfuns = getCfuns();
     for (int i = 0; i < cfuns.length; i++) {
       try {
         milenv.addCfunAndTop(cfuns[i]);
@@ -129,5 +128,10 @@ public class DataDefn extends TyconDefn {
         handler.report(f);
       }
     }
+  }
+
+  /** Return the array of constructor functions for this type. */
+  Cfun[] getCfuns() {
+    return dt.getCfuns();
   }
 }

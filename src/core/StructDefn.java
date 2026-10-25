@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -25,9 +25,9 @@ import mil.*;
 
 public class StructDefn extends TyconDefn {
 
-  TypeExp sizeExp;
+  private TypeExp sizeExp;
 
-  TypeExp alignExp;
+  private TypeExp alignExp;
 
   private StructRegionExp[] regexps;
 
@@ -42,14 +42,7 @@ public class StructDefn extends TyconDefn {
 
   private StructType st;
 
-  /**
-   * Return the Tycon associated with this definition, if any. TODO: this method is only used in one
-   * place, and it's awkward ... look for opportunities to rewrite
-   */
-  public Tycon getTycon() {
-    return st;
-  }
-
+  /** Add environment entries for the type constructors introduced in this definition. */
   public void introduceTycons(Handler handler, TyconEnv env) {
     env.add(st = new StructType(pos, id));
   }
@@ -58,20 +51,24 @@ public class StructDefn extends TyconDefn {
    * Determine the list of type definitions (a sublist of defns) that this particular definition
    * depends on.
    */
-  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) throws Failure {
-    CoreDefns depends = null;
+  public void scopeDefn(Handler handler, TyconDeps tdeps, TyconEnv env) throws Failure {
     if (sizeExp != null) {
-      sizeExp = sizeExp.tidyInfix(env);
-      depends = sizeExp.scopeTyconsType(handler, null, env, defns, depends);
+      try {
+        sizeExp = sizeExp.scopeType(null, tdeps, env);
+      } catch (Failure f) {
+        handler.report(f);
+      }
     }
     if (alignExp != null) {
-      alignExp = alignExp.tidyInfix(env);
-      depends = alignExp.scopeTyconsType(handler, null, env, defns, depends);
+      try {
+        alignExp = alignExp.scopeType(null, tdeps, env);
+      } catch (Failure f) {
+        handler.report(f);
+      }
     }
     for (int i = 0; i < regexps.length; i++) {
-      depends = regexps[i].scopeTycons(handler, null, env, defns, depends);
+      regexps[i].scopeDefn(handler, null, tdeps, env);
     }
-    this.calls(depends);
   }
 
   public void kindInfer(Handler handler) {
@@ -86,13 +83,16 @@ public class StructDefn extends TyconDefn {
     }
   }
 
-  public void fixKinds() {
-    st.fixKinds();
+  /** Default kind variables to STAR, unless they have already been bound. */
+  public void defaultKinds() {
+    st.defaultKinds();
   }
 
   /** Initialize size information for this definition, if appropriate. */
   void initSizes(Handler handler) {
-    try { // TODO: merge this code with the above (only difference is in names st and bt)
+    // TODO: merge following code with the above (only difference is in names
+    //  st and bt)
+    try {
       st.setByteSize((sizeExp == null) ? new TVar(Tyvar.nat) : sizeExp.toType(null));
       if (alignExp != null) {
         st.setAlignment(alignExp.calcAlignment());
@@ -107,10 +107,13 @@ public class StructDefn extends TyconDefn {
    */
   public LinearEqns initEqns(Handler handler, LinearEqns eqns) {
     try {
-      Type end = st.byteSize(); // size is offset after the last region
+      // size is offset after the last region
+      Type end = st.byteSize();
       String label = "Size of " + st.getId();
       LinearEqn eqn = new LinearEqn(pos, label);
-      for (int i = regexps.length; --i >= 0; ) { // Add an equation for each region
+
+      // Add an equation for each region
+      for (int i = regexps.length; --i >= 0; ) {
         eqns = new LinearEqns(regexps[i].structRegionEqn(pos, end, label), eqns);
         end = regexps[i].getStart();
         label = "Offset of " + regexps[i].makeLabel();
@@ -153,17 +156,20 @@ public class StructDefn extends TyconDefn {
     }
     st.setFields(fields);
 
-    // Calculate the minimal alignment for this structure and validate field alignment/offsets:
+    // Calculate the minimal alignment for this structure and validate
+    // field alignment/offsets:
     long minAlignment = 1;
     for (int i = 0; i < fields.length; i++) {
       StructField f = fields[i];
-      Type t = f.getType(); // Find the type of this field
-      long align = t.alignment(null); // Find the alignment of this field
+      Type t = f.getType(); // Find type of this field
+      long align = t.alignment(null); // Find alignment of this field
       if (align < 1) {
         throw new Failure(
             f.getPos(), "Unable to determine alignment for field " + f.getId() + " :: " + t);
       }
-      int offset = f.getOffset(); // Check that field alignment divides field offset
+
+      // Check that field alignment divides field offset
+      int offset = f.getOffset();
       if ((((long) offset) % align) != 0) {
         throw new Failure(
             f.getPos(),
@@ -210,8 +216,8 @@ public class StructDefn extends TyconDefn {
   }
 
   /**
-   * Extend the specified MIL environment with entries for any functions/values introduced in this
-   * definition.
+   * Extend the specified MIL environment with entries for any functions or values introduced in
+   * this definition.
    */
   public void addToMILEnv(Handler handler, CoreProgram prog, MILEnv milenv) {
     /* Nothing to do here! */

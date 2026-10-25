@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -52,6 +52,16 @@ public final class TVar extends TInd {
     return tyvar;
   }
 
+  /** Calculate the signature for an array of TVar values. */
+  public static Tyvar[] toSig(TVar[] vs) {
+    int len = vs.length;
+    Tyvar[] ts = new Tyvar[len];
+    for (int i = 0; i < len; i++) {
+      ts[i] = vs[i].tyvar;
+    }
+    return ts;
+  }
+
   void write(TypeWriter tw, int prec, int args) {
     tw.write("?" + num);
   }
@@ -73,8 +83,11 @@ public final class TVar extends TInd {
         : TVars.isIn(this, tvs) ? tvs : new TVars(this, tvs);
   }
 
-  public static final TVar[] noTVars = new TVar[0];
-
+  /**
+   * Calculate an array of generic (i.e., not fixed) TVars from the given list gens, which has been
+   * built by adding (zero or more) TVars on to the front of fixed. This method will fail if gens
+   * does not have fixed as a suffix.
+   */
   public static TVar[] generics(TVars gens, TVars fixed) {
     // Count generic variables:
     int n = 0;
@@ -89,6 +102,9 @@ public final class TVar extends TInd {
     }
     return generics;
   }
+
+  /** A constant holding an empty array of TVar values. */
+  public static TVar[] noTVars = new TVar[0];
 
   /**
    * Calculate a type skeleton for this type, replacing occurrences of any of the TVar objects in
@@ -108,33 +124,29 @@ public final class TVar extends TInd {
     }
   }
 
-  /**
-   * Test to determine whether two types are equal.
-   *
-   * <p>same :: Type -> Env -> Type -> Env -> Bool
-   */
+  /** Test whether two types are equal. same :: Type -> Env -> Type -> Env -> Bool. */
   public boolean same(Type[] thisenv, Type t, Type[] tenv) {
     return (bound == null) ? t.sameTVar(tenv, this) : bound.same(boundenv, t, tenv);
   }
 
-  /** Test to determine whether this type is equal to a specified type application. */
+  /** Test whether this type is equal to a specified type application. */
   boolean sameTAp(Type[] thisenv, TAp tap, Type[] tapenv) {
     return (bound != null) && bound.sameTAp(boundenv, tap, tapenv);
   }
 
-  /** Test to determine whether this type is equal to a specified type constant. */
+  /** Test whether this type is equal to a specified type constant. */
   boolean sameTTycon(Type[] thisenv, TTycon that) {
     return (bound != null) && bound.sameTTycon(boundenv, that);
   }
 
-  /** Test to determine whether this type is equal to a specified type literal. */
+  /** Test whether this type is equal to a specified type literal. */
   boolean sameTLit(Type[] thisenv, TLit t) {
     return (bound != null) && bound.sameTLit(boundenv, t);
   }
 
   /**
-   * Test to determine whether this type is equal to a specified type variable. NOTE: we assume here
-   * that the specified TVar is unbound!
+   * Test whether this type is equal to a specified type variable. NOTE: we assume here that the
+   * specified TVar is unbound!
    */
   boolean sameTVar(Type[] thisenv, TVar v) {
     return (bound == null) ? (this == v) : bound.sameTVar(boundenv, v);
@@ -160,7 +172,7 @@ public final class TVar extends TInd {
   }
 
   /**
-   * Matching of types: test to see if the type on the right can be obtained by instantiating type
+   * Matching of types: test whether the type on the right can be obtained by instantiating type
    * variables in the type on the left. (The "receiver", or "this", in the following code.)
    *
    * <p>match :: Type -> Env -> Type -> Env -> IO ()
@@ -173,17 +185,17 @@ public final class TVar extends TInd {
   }
 
   /**
-   * Test to determine whether the specified type application will match this type. For this method,
-   * we should only instantiate type variables that appear in the type application, tap.
+   * Test whether the specified type application will match this type. For this method, we should
+   * only instantiate type variables that appear in the type application, tap.
    */
   boolean matchTAp(Type[] thisenv, TAp tap, Type[] tapenv) {
     return (bound != null) && bound.matchTAp(boundenv, tap, tapenv);
   }
 
   /**
-   * Test to determine whether the specified variable can be matched to this type. The only type
-   * variable that can be instantiated during this process is the variable v passed in as the second
-   * argument. The variable v must be unbound.
+   * Test whether the specified variable can be matched to this type. The only type variable that
+   * can be instantiated during this process is the variable v passed in as the second argument. The
+   * variable v must be unbound.
    */
   boolean matchTVar(Type[] thisenv, TVar v) {
     return (bound == null) ? (this == v || v.matchBind(this, null)) : bound.matchTVar(boundenv, v);
@@ -208,11 +220,7 @@ public final class TVar extends TInd {
     return bound != null ? bound.contains(boundenv, v) : (v == this);
   }
 
-  /**
-   * Unification of types.
-   *
-   * <p>unify :: Type -> Env -> Type -> Env -> IO ()
-   */
+  /** Unification of types. unify :: Type -> Env -> Type -> Env -> IO () */
   public void unify(Type[] thisenv, Type t, Type[] tenv) throws UnifyException {
     if (bound == null) {
       t.unifyTVar(tenv, this);
@@ -262,7 +270,7 @@ public final class TVar extends TInd {
    * either an unbound TVar, or else a TNat literal. TODO: This could be used more generally as a
    * way to eliminate all TGen, TInd, bound TVar, or Synonym nodes at the root of any type, not just
    * natural number types ... Suggest rewriting description and renaming method to reflect that ...
-   * (and testing too ...)
+   * (and testing too ...).
    */
   public Type simplifyNatType(Type[] tenv) {
     return (bound == null) ? this : bound.simplifyNatType(boundenv);
@@ -270,9 +278,8 @@ public final class TVar extends TInd {
 
   /** Bind a type variable of kind nat to a specific natural number value. */
   void bindNat(BigInteger n) {
-    if (bound == null) {
-      bound = new TNat(n);
-    } else super.bindNat(n);
+    if (bound == null) bound = new TNat(n);
+    else super.bindNat(n);
   }
 
   /**
@@ -310,10 +317,18 @@ public final class TVar extends TInd {
     return (bound == null) ? set.canonOther(this, args) : bound.canonType(boundenv, set, args);
   }
 
+  /**
+   * Apply the given substitution to this type skeleton, using the specified type environment to
+   * interpret TGens.
+   */
   Type apply(Type[] thisenv, TVarSubst s) {
     return (bound == null) ? s.find(this) : bound.apply(boundenv, s);
   }
 
+  /**
+   * Access the type that is pointed to by a type variable that was created by instantiating a
+   * polymorphic type and then bound by a subsequent use of matching.
+   */
   Type removeTVar() {
     if (bound == null) {
       debug.Internal.error("removeTVar: variable has not been bound");
@@ -323,6 +338,11 @@ public final class TVar extends TInd {
     return bound;
   }
 
+  /**
+   * Build a canonical version of this type, using the given TypeSet and tracking the total number
+   * of arguments that have found so far. In the process, we do the usual dance to elide TGen and
+   * TInd nodes, as well as synonyms and bound TVars.
+   */
   Type canonArgs(Type[] tenv, TypeSet set, int args) {
     return (bound == null)
         ? super.canonArgs(tenv, set, args)
@@ -336,18 +356,30 @@ public final class TVar extends TInd {
         : bound.sameMod(boundenv, t, tenv, mmap);
   }
 
+  /** Determine whether this Type is equivalent to a specified TAp, modulo the given MergeMap. */
   boolean sameApMod(Type[] tenv, TAp l, Type[] lenv, MergeMap mmap) {
     return (bound != null) && bound.sameApMod(boundenv, l, lenv, mmap);
   }
 
+  /**
+   * Determine whether this Type is equivalent to a particular unbound TVar, modulo the given
+   * MergeMap.
+   */
   boolean sameTVarMod(Type[] tenv, TVar l, MergeMap mmap) {
     return (bound != null) && bound.sameTVarMod(boundenv, l, mmap);
   }
 
+  /**
+   * Determine whether this Type is equivalent to the specified type constructor, modulo the given
+   * MergeMap.
+   */
   boolean sameTyconMod(Type[] tenv, Tycon l, MergeMap mmap) {
     return (bound != null) && bound.sameTyconMod(boundenv, l, mmap);
   }
 
+  /**
+   * Determine whether this Type is equivalent to the specified DataType, modulo the given MergeMap.
+   */
   boolean sameDataTypeMod(Type[] tenv, DataType l, MergeMap mmap) {
     return (bound != null) && bound.sameDataTypeMod(boundenv, l, mmap);
   }

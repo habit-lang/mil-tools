@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -25,11 +25,12 @@ import core.*;
 public abstract class PrimBinFOp extends PrimSing {
 
   /** Default constructor. */
-  public PrimBinFOp(String id, int purity, BlockType blockType) {
-    super(id, purity, blockType);
+  public PrimBinFOp(String id, BlockType blockType, int purity) {
+    super(id, blockType, purity);
   }
 
-  abstract boolean op(boolean n, boolean m);
+  /** Primitive semantics: binary operators on Flag values. */
+  public abstract boolean op(boolean n, boolean m);
 
   Code fold(boolean n, boolean m) {
     MILProgram.report("constant folding for " + getId());

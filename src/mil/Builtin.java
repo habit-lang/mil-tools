@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -44,59 +44,7 @@ class Builtin extends MILEnvHash {
       addCfunAndTop(Cfun.Proc); // TODO: maybe we shouldn't add the Top here ...
 
       // Add definitions for built-in primitive functions:
-      addNewPrim(Prim.not);
-      addNewPrim(Prim.and);
-      addNewPrim(Prim.or);
-      addNewPrim(Prim.xor);
-      addNewPrim(Prim.bnot);
-      addNewPrim(Prim.band);
-      addNewPrim(Prim.bor);
-      addNewPrim(Prim.bxor);
-      addNewPrim(Prim.beq);
-      addNewPrim(Prim.blt);
-      addNewPrim(Prim.ble);
-      addNewPrim(Prim.bgt);
-      addNewPrim(Prim.bge);
-      addNewPrim(Prim.shl);
-      addNewPrim(Prim.lshr);
-      addNewPrim(Prim.ashr);
-      addNewPrim(Prim.neg);
-      addNewPrim(Prim.add);
-      addNewPrim(Prim.sub);
-      addNewPrim(Prim.mul);
-      addNewPrim(Prim.div);
-      addNewPrim(Prim.rem);
-      addNewPrim(Prim.nzdiv);
-      addNewPrim(Prim.nzrem);
-      addNewPrim(Prim.eq);
-      addNewPrim(Prim.neq);
-      addNewPrim(Prim.slt);
-      addNewPrim(Prim.sle);
-      addNewPrim(Prim.sgt);
-      addNewPrim(Prim.sge);
-      addNewPrim(Prim.ult);
-      addNewPrim(Prim.ule);
-      addNewPrim(Prim.ugt);
-      addNewPrim(Prim.uge);
-      addNewPrim(Prim.flagToWord);
-      addNewPrim(Prim.wordToFlag);
-      addNewPrim(Prim.halt);
-      addNewPrim(Prim.loop);
-      addNewPrim(Prim.printWord);
-      addNewPrim(Prim.noinline);
-      addNewPrim(Prim.load1);
-      addNewPrim(Prim.load8);
-      addNewPrim(Prim.load16);
-      addNewPrim(Prim.load32);
-      addNewPrim(Prim.load64);
-      addNewPrim(Prim.store1);
-      addNewPrim(Prim.store8);
-      addNewPrim(Prim.store16);
-      addNewPrim(Prim.store32);
-      addNewPrim(Prim.store64);
-      addNewPrim(Prim.initSeq);
-      addNewPrim(Prim.initSelf);
-      addNewPrim(Prim.reInit);
+      Prim.addBuiltins(this);
 
     } catch (Exception e) { // Should this be a more specific exception?
       debug.Internal.error("Failed to initialize primitives");
@@ -109,10 +57,10 @@ class Builtin extends MILEnvHash {
    * Add specified primitive to this MILEnv, triggering a failure if there is already a primitive
    * with the same name.
    */
-  private void addNewPrim(Prim p) throws Failure {
+  void addNewPrim(Prim p) throws Failure {
     if (addPrim(p) != null) {
-      // TODO: it would be good to give better position information for this primitive
-      // TODO: it would be good to give position information for the other definition too
+      // TODO: it would be good to give better position information for this
+      // primitive (and for the other definition too).
       multipleDefns(BuiltinPosition.pos, "primitive", p.getId());
     }
   }

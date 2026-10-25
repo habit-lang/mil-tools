@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,12 +22,19 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/**
+ * Represents a computation Cf n a that selects the nth field from the value in a that has been
+ * constructed using Cf.
+ */
 public class Sel extends Tail {
 
+  /** The constructor used to build a value. */
   private Cfun cf;
 
+  /** The index of the field we wish to select. */
   private int n;
 
+  /** An atom referencing a value constructed using Cf. */
   private Atom a;
 
   /** Default constructor. */
@@ -37,27 +44,19 @@ public class Sel extends Tail {
     this.a = a;
   }
 
-  /** Test to determine whether a given tail expression has no externally visible side effect. */
-  boolean hasNoEffect() {
-    return true;
+  /** Find the dependencies of this AST fragment. */
+  Defns dependencies(Defns ds) {
+    return a.dependencies(ds);
   }
 
-  /** Test if this Tail expression includes a free occurrence of a particular variable. */
-  boolean contains(Temp w) {
-    return a == w;
-  }
-
-  /**
-   * Test if this Tail expression includes an occurrence of any of the variables listed in the given
-   * array.
-   */
-  boolean contains(Temp[] ws) {
-    return a.occursIn(ws);
-  }
-
-  /** Add the variables mentioned in this tail to the given list of variables. */
+  /** Add the temporaries used in this node to the given list of Temps. */
   Temps add(Temps vs) {
     return a.add(vs);
+  }
+
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
+  void dump(PrintWriter out, Temps ts) {
+    out.print(cf + " " + n + " " + a.toString(ts));
   }
 
   /** Test if two Tail expressions are the same. */
@@ -65,18 +64,9 @@ public class Sel extends Tail {
     return that.sameSel(this);
   }
 
+  /** Test whether this Tail is the same as the given Sel. */
   boolean sameSel(Sel that) {
     return this.cf == that.cf && this.n == that.n && this.a.sameAtom(that.a);
-  }
-
-  /** Find the dependencies of this AST fragment. */
-  Defns dependencies(Defns ds) {
-    return a.dependencies(ds);
-  }
-
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  void dump(PrintWriter out, Temps ts) {
-    out.print(cf + " " + n + " " + a.toString(ts));
   }
 
   /**
@@ -87,14 +77,15 @@ public class Sel extends Tail {
     return new Sel(cf, n, a.apply(s));
   }
 
-  private AllocType type;
+  /** The AllocType instance for this call. */
+  private AllocType ltype;
 
-  /** The type tuple that describes the outputs of this Tail. */
+  /** Records the type tuple that describes the outputs of this Tail. */
   private Type outputs;
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   TVars tvars(TVars tvs) {
-    return type.tvars(outputs.tvars(tvs));
+    return ltype.tvars(outputs.tvars(tvs));
   }
 
   /** Return the type tuple describing the result that is produced by executing this Tail. */
@@ -102,10 +93,11 @@ public class Sel extends Tail {
     return outputs;
   }
 
+  /** Infer a type for this Tail expression. */
   Type inferType(Position pos) throws Failure {
-    type = cf.checkSelIndex(pos, n).instantiate();
-    type.resultUnifiesWith(pos, a.instantiate());
-    return outputs = Type.tuple(type.storedType(n));
+    ltype = cf.checkSelIndex(pos, n).instantiate();
+    ltype.resultUnifiesWith(pos, a.instantiate());
+    return outputs = Type.tuple(ltype.storedType(n));
   }
 
   /**
@@ -130,6 +122,27 @@ public class Sel extends Tail {
     builder.retn();
   }
 
+  /** Test if this Tail expression includes a free occurrence of a particular variable. */
+  boolean contains(Temp w) {
+    return a == w;
+  }
+
+  /**
+   * Test if this Tail expression includes an occurrence of any of the variables listed in the given
+   * array.
+   */
+  boolean contains(Temp[] ws) {
+    return a.occursIn(ws);
+  }
+
+  /**
+   * Determine if a given tail expression has no externally visible side effects. This is true for
+   * returns, allocators, and selections, and for calls to primitives that are not impure.
+   */
+  boolean hasNoEffect() {
+    return true;
+  }
+
   /**
    * Skip goto blocks in a Tail (for a ClosureDefn or TopLevel). TODO: can this be simplified now
    * that ClosureDefns hold Tails rather than Calls?
@@ -149,19 +162,21 @@ public class Sel extends Tail {
   }
 
   /**
-   * Test to determine whether a given tail expression may be repeatable (i.e., whether the results
-   * of a previous use of the same tail can be reused instead of repeating the tail). TODO: is there
-   * a better name for this?
+   * Test whether a given tail expression may be repeatable (i.e., whether the results of a previous
+   * use of the same tail can be reused instead of repeating the tail). TODO: is there a better name
+   * for this?
    */
   public boolean isRepeatable() {
+    // This is an example of Tail that is repeatable.
     return true;
   }
 
   /**
-   * Test to determine whether a given tail expression is pure (no externally visible side effects
-   * and no dependence on other effects).
+   * Test whether a given tail expression is pure (no externally visible side effects and no
+   * dependence on other effects).
    */
   public boolean isPure() {
+    // This is an example of a Tail that is pure.
     return true;
   }
 
@@ -178,10 +193,11 @@ public class Sel extends Tail {
 
   /**
    * Attempt to rewrite this selector if the argument is known to have been constructed using a
-   * specific DataAlloc. TODO: find a better name?
+   * specific DataAlloc.
    */
   Tail rewriteSel(Facts facts) {
-    DataAlloc data = a.lookForDataAlloc(facts); // is a a known data allocator?
+    // is a a known data allocator?
+    DataAlloc data = a.lookForDataAlloc(facts);
     if (data != null) {
       Atom a1 = data.select(cf, n); // find matching component
       if (a1 != null) {
@@ -194,7 +210,8 @@ public class Sel extends Tail {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return 4 + cf.summary() + n;
@@ -216,8 +233,8 @@ public class Sel extends Tail {
     if (outputs != null) {
       outputs = outputs.canonType(set);
     }
-    if (type != null) {
-      type = type.canonAllocType(set);
+    if (ltype != null) {
+      ltype = ltype.canonAllocType(set);
     }
     cf = cf.canonCfun(set);
   }
@@ -227,33 +244,43 @@ public class Sel extends Tail {
    * that simply returns the original argument of the constructor or selector.
    */
   Tail removeNewtypeCfun() {
-    if (cf.isNewtype()) { // Look for use of a newtype constructor
+    if (cf.isNewtype()) {
+      // Look for use of a newtype constructor
       if (n != 0) {
         debug.Internal.error("newtype selector for arg!=0");
       }
       return new Return(a);
     }
-    // No point looking for a selector of a singleton type because they do not have any fields.
+    // No point looking for a selector of a singleton type because they do
+    // not have any fields.
     return this;
   }
 
   /** Generate a specialized version of this Tail. */
   Tail specializeTail(MILSpec spec, TVarSubst s, SpecEnv env) {
-    return new Sel(cf.specializeCfun(spec, type, s), n, a.specializeAtom(spec, s, env));
+    return new Sel(cf.specializeCfun(spec, ltype, s), n, a.specializeAtom(spec, s, env));
   }
 
+  /** Rewrite this tail to use the bitdata representations provided by BitdataMap. */
   Tail bitdataRewrite(BitdataMap m) {
-    BitdataRep r = cf.findRep(m); // Look for a possible change of representation
-    if (r == null) { // No new representation for this type
+    // Look for a possible change of representation
+    BitdataRep r = cf.findRep(m);
+    if (r == null) {
+      // No new representation for this type
       return this;
-    } else if (cf.getArity()
-        == 0) { // Representation change, but nullary so there is no layout constructor
+    } else if (cf.getArity() == 0) {
+      // Representation change, but nullary so there is no layout constructor
       return new Sel(cf.bitdataRewrite(r), n, a);
-    } else { // Representation change, requires layout constructor
-      return new BlockCall(cf.bitdataSelBlock(r, n)).withArgs(a);
+    } else {
+      // Representation change, requires layout constructor
+      return new BlockCall(cf.bitdataSelBlock(r, n), a);
     }
   }
 
+  /**
+   * Generate a new version of this Tail to update references to constructor functions consistent
+   * with the datatype equalities in the given MergeMap.
+   */
   Tail mergeRewrite(MergeMap mmap) {
     return new Sel(cf.lookup(mmap), n, a);
   }
@@ -290,16 +317,14 @@ public class Sel extends Tail {
    */
   llvm.Code toLLVMBindCont(
       LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Local lhs, llvm.Code c) { // cf n a
-    llvm.Type objt = lm.cfunLayoutType(this.cf).ptr();
-    llvm.Local base = vm.reg(objt); // register to hold a pointer to a structure for cfun this.cf
-    llvm.Type at = lhs.getType().ptr();
-    llvm.Local addr = vm.reg(at); // register to hold pointer to the nth component of this.c
+    llvm.Type objt = lm.cfunLayoutType(this.cf);
+    llvm.Type at = lhs.getType();
+    // register to hold pointer to the nth component of this.c
+    llvm.Local addr = vm.reg(llvm.Type.ptr);
     return new llvm.Op(
-        base,
-        new llvm.Bitcast(a.toLLVMAtom(lm, vm, s), objt),
-        new llvm.Op(
-            addr,
-            new llvm.Getelementptr(at, base, llvm.Word.ZERO, new llvm.Index(n + 1)),
-            new llvm.Op(lhs, new llvm.Load(addr), c)));
+        addr,
+        new llvm.Getelementptr(
+            objt, a.toLLVMAtom(lm, vm, s), llvm.Word.ZERO, new llvm.Index(n + 1)),
+        new llvm.Op(lhs, new llvm.Load(at, addr), c));
   }
 }

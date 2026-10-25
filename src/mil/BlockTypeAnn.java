@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -49,14 +49,12 @@ class BlockTypeAnn extends TypeAnn {
    */
   void inScopeOf(Handler handler, MILEnv milenv) throws Failure {
     for (int i = 0; i < ids.length; i++) {
-      Block b = milenv.mustFindBlock(handler, pos, ids[i]);
-      if (b != null) {
-        if (b.getDeclared() != null) {
-          handler.report(
-              new Failure(pos, "Multiple type annotations for block \"" + b.getId() + "\""));
-        } else {
-          b.setDeclared(blockType);
-        }
+      Block b = milenv.mustFindBlock(pos, ids[i]);
+      if (b.getDeclared() != null) {
+        handler.report(
+            new Failure(pos, "Multiple type annotations for block \"" + b.getId() + "\""));
+      } else {
+        b.setDeclared(blockType);
       }
     }
   }

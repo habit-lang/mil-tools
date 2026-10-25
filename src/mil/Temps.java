@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,7 +22,8 @@ import compiler.*;
 import core.*;
 
 /**
- * A null-terminated linked list of items that can be accessed using (public) head and next fields.
+ * A null-terminated linked list of Temp objects that can be accessed using (public) head and next
+ * fields.
  */
 public class Temps {
 
@@ -55,39 +56,6 @@ public class Temps {
     return len;
   }
 
-  /**
-   * Push each of the variables in the given array, starting at index 0, on to the list of Temps,
-   * and returning the new list as the result. There is no attempt to check for or prevent duplicate
-   * occurrences.
-   */
-  static Temps push(Temp[] vs, Temps ts) {
-    for (int i = 0; i < vs.length; i++) {
-      ts = new Temps(vs[i], ts);
-    }
-    return ts;
-  }
-
-  static String toString(Temps vs) {
-    StringBuilder b = new StringBuilder("{");
-    if (vs != null) {
-      b.append(vs.head.toString());
-      while ((vs = vs.next) != null) {
-        b.append(",");
-        b.append(vs.head.toString());
-      }
-    }
-    b.append("}");
-    return b.toString();
-  }
-
-  public static Temp[] toArray(Temps vs) {
-    Temp[] va = new Temp[Temps.length(vs)];
-    for (int i = 0; vs != null; vs = vs.next) {
-      va[i++] = vs.head;
-    }
-    return va;
-  }
-
   /** Add a single element v to the list vs if it is not already included. */
   public static Temps add(Temp v, Temps vs) {
     return Temps.isIn(v, vs) ? vs : new Temps(v, vs);
@@ -101,11 +69,13 @@ public class Temps {
     return vs;
   }
 
-  static Temps add(Atom[] args, Temps us) {
-    for (int i = 0; i < args.length; i++) {
-      us = args[i].add(us);
+  /** Construct an array of Temp values from the elements of the list vs. */
+  public static Temp[] toArray(Temps vs) {
+    Temp[] va = new Temp[Temps.length(vs)];
+    for (int i = 0; vs != null; vs = vs.next) {
+      va[i++] = vs.head;
     }
-    return us;
+    return va;
   }
 
   /** Destructively remove a single element v from the list vs. */
@@ -133,11 +103,45 @@ public class Temps {
     return vs;
   }
 
-  public static Temps remove(Temp[] ts, Temps us) {
-    for (int i = 0; i < ts.length; i++) {
-      us = Temps.remove(ts[i], us);
+  /** Destructively remove an array of elements us from the list vs. */
+  public static Temps remove(Temp[] us, Temps vs) {
+    for (int i = 0; i < us.length; i++) {
+      vs = remove(us[i], vs);
+    }
+    return vs;
+  }
+
+  /** Add the atoms used in the args array to the given list of Temps. */
+  static Temps add(Atom[] args, Temps us) {
+    for (int i = 0; i < args.length; i++) {
+      us = args[i].add(us);
     }
     return us;
+  }
+
+  static String toString(Temps vs) {
+    StringBuilder b = new StringBuilder("{");
+    if (vs != null) {
+      b.append(vs.head.toString());
+      while ((vs = vs.next) != null) {
+        b.append(",");
+        b.append(vs.head.toString());
+      }
+    }
+    b.append("}");
+    return b.toString();
+  }
+
+  /**
+   * Push each of the variables in the given array, starting at index 0, on to the list of Temps,
+   * and returning the new list as the result. There is no attempt to check for or prevent duplicate
+   * occurrences.
+   */
+  static Temps push(Temp[] vs, Temps ts) {
+    for (int i = 0; i < vs.length; i++) {
+      ts = new Temps(vs[i], ts);
+    }
+    return ts;
   }
 
   /**

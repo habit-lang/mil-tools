@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,25 +22,38 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/** Represents tuple type constructors. */
 public class TupleCon extends Tycon {
 
+  /** The arity (number of arguments) of this TupleCon. */
   private int arity;
 
+  /** Return the arity of this TupleCon. */
+  public int getArity() {
+    return arity;
+  }
+
+  /** Construct a TupleCon with a specified arity. */
   private TupleCon(int arity) {
     super(BuiltinPosition.pos, "TupleCon" + arity);
     this.arity = arity;
   }
 
+  /** Return the kind for this TupleCon, as determined by its arity. */
   public Kind getKind() {
     return Kind.tuple(arity);
   }
 
-  public int getArity() {
-    return arity;
-  }
-
+  /**
+   * Caches values of TupleCon for natural number arg values, automatically expanding the array as
+   * necessary to accommodate larger arguments.
+   */
   private static TupleCon[] tupleCache;
 
+  /**
+   * Return the TupleCon value for a given natural number argument, either returning a previously
+   * cached value from tupleCache where possible or else calculating (and caching) a new value.
+   */
   public static TupleCon tuple(int n) {
     if (tupleCache == null) {
       tupleCache = new TupleCon[10];
@@ -54,6 +67,7 @@ public class TupleCon extends Tycon {
       return tupleCache[n];
     }
     // Code to update cache[arg] = ... will be appended here.
+
     return tupleCache[n] = new TupleCon(n);
   }
 
@@ -66,6 +80,7 @@ public class TupleCon extends Tycon {
     return (n == arity) ? n : (-1);
   }
 
+  /** Write a description of this TupleCon to the specified TypeWriter. */
   void write(TypeWriter tw, int prec, int args) {
     if (args == arity) {
       tw.write("[");
@@ -84,10 +99,7 @@ public class TupleCon extends Tycon {
     }
   }
 
-  /**
-   * Print a definition for this type constructor using source level syntax. TODO: Find a more
-   * appropriate place for this code ...
-   */
+  /** Print a definition for this type constructor using source level syntax. */
   void dumpTypeDefinition(PrintWriter out) {
     /* do nothing */
   }
@@ -107,10 +119,10 @@ public class TupleCon extends Tycon {
       debug.Internal.error("repTransform on type, arity=" + arity + ", args=" + args);
     }
 
-    // The first step is to calculate (in len) how many components will be required in the rewritten
-    // tuple and, if rewrites are required in any of the components, to build a map of the
-    // corresponding
-    // representation vectors:
+    // The first step is to calculate (in len) how many components will be
+    // required in the rewritten tuple and, if rewrites are required in any
+    // of the components, to build a map of the corresponding representation
+    // vectors:
     Type[][] reps = null; // Look for changes in representation
     int len = 0;
     for (int i = 0; i < args; i++) {
@@ -130,9 +142,10 @@ public class TupleCon extends Tycon {
       return (-1);
     }
 
-    // If changes are required, then we package them together in a new tuple type of the specified
-    // length:
-    Type[] ts = set.pop(args); // Rewrite stack, removing old args and pushing new
+    // If changes are required, then we package them together in a new tuple
+    // type of the specified length:
+    Type[] ts = set.pop(args);
+    // Rewrite stack, removing old args and pushing new
     for (int i = args; 0 < i--; ) {
       Type[] us = reps[i];
       if (us == null) {

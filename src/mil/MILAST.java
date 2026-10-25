@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -37,8 +37,10 @@ class MILAST extends CoreProgram {
     return name;
   }
 
+  /** Points to the first item in the list (null if the list is empty). */
   private DefnExps milDefns = null;
 
+  /** Points to the last item in the list (null if the list is empty). */
   private DefnExps milDefnsLast = null;
 
   /** Add an element to the end of the list in this class. */
@@ -59,7 +61,7 @@ class MILAST extends CoreProgram {
       if (name.endsWith(".lmil")) {
         source = new LiterateSource(handler, true, source);
       }
-      source = new CacheSource(handler, source); // Add a caching layer
+      source = new CacheSource(handler, source);
       MILLexer lexer = new MILLexer(handler, true, source);
       MILParser parser = new MILParser(handler, lexer, loader);
       parser.parse(this);
@@ -72,25 +74,27 @@ class MILAST extends CoreProgram {
   /** Use scope analysis to convert a sequence of MIL definitions to corresponding MIL code. */
   MILEnv scopeAnalysis(Handler handler, TyconEnv tenv, MILEnv imports, MILProgram program)
       throws Failure {
-    // Pass 1: Build internal environment that contains bindings for all symbols defined in this
-    // MILAST:
-    MILEnv external = newmil(handler, tenv, imports); // Build two external environment layers
-    MILEnv internal = new MILEnvChain(tenv, external); // internal is used only inside this MILAST
+    // Pass 1: Build internal environment that contains bindings for
+    // all symbols defined in this MILAST:
+    // Build two external environment layers:
+    MILEnv external = newmil(handler, tenv, imports);
+    // (internal is used only inside this MILAST):
+    MILEnv internal = new MILEnvChain(tenv, external);
     for (DefnExps ds = milDefns; ds != null; ds = ds.next) {
       ds.head.addTo(handler, internal);
     }
     handler.abortOnFailures();
 
-    // Pass 2: Use the internal environment to match all identifier uses with corresponding
-    // definitions:
+    // Pass 2: Use the internal environment to match all identifier
+    // uses with corresponding definitions:
     for (DefnExps ds = milDefns; ds != null; ds = ds.next) {
       ds.head.inScopeOf(handler, internal);
     }
     super.scopeExtImps(handler, internal);
     handler.abortOnFailures();
 
-    // Pass 3: Add bindings for exported symbols to the external environment, and return that as
-    // final result:
+    // Pass 3: Add bindings for exported symbols to the external
+    // environment, and return that as final result:
     for (DefnExps ds = milDefns; ds != null; ds = ds.next) {
       ds.head.addExports(external, program);
     }
@@ -155,8 +159,8 @@ class MILAST extends CoreProgram {
    */
   void reverseVisit(MILASTSCC scc) {
     if (this.scc == null) {
-      // If we arrive at a binding that hasn't been allocated to any SCC,
-      // then we should put it in this SCC.
+      // If we arrive at a binding that hasn't been allocated to any
+      // SCC, then we should put it in this SCC.
       this.scc = scc;
       scc.add(this);
       for (MILASTs callers = this.callers; callers != null; callers = callers.next) {

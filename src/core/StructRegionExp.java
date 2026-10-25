@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -39,11 +39,12 @@ class StructRegionExp {
    * Perform scope analysis on portions of a type constructor definition, returning a list with the
    * elements from defns that it references.
    */
-  CoreDefns scopeTycons(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends)
-      throws Failure {
-    texp = texp.tidyInfix(env);
-    return texp.scopeTyconsType(handler, params, env, defns, depends);
+  void scopeDefn(Handler handler, TyvarEnv params, TyconDeps tdeps, TyconEnv env) {
+    try {
+      texp = texp.scopeType(params, tdeps, env);
+    } catch (Failure f) {
+      handler.report(f);
+    }
   }
 
   public void kindInfer(Handler handler) {
@@ -65,8 +66,8 @@ class StructRegionExp {
   LinearEqn structRegionEqn(Position pos, Type end, String endlabel) throws Failure {
     start = new TVar(Tyvar.nat); // We don't know the start of this region yet
     type = texp.toType(null); // But we should know the type ...
-    size = type.byteSize(null); // .. and can look up it's width (which could be a variable)
-    if (size == null) {
+    size = type.byteSize(null); // .. and can look up it's width (which
+    if (size == null) { //      could be a variable)
       throw new NoByteLevelRepresentationFailure(texp.position(), type);
     }
     // Build equation:  coeff * size = end - start
@@ -80,10 +81,13 @@ class StructRegionExp {
     return eqn;
   }
 
+  /** Records the type of the value(s) in this region. */
   protected Type type;
 
+  /** Records the bit/byte size of the value(s) in this region. */
   protected Type size;
 
+  /** Records the offset for the start of this region. */
   protected int offset;
 
   void validate() throws Failure {

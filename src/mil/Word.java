@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -25,7 +25,7 @@ import java.math.BigInteger;
 /** Represents a Word (integer) constant. */
 public class Word extends Const {
 
-  /** Specifies the number of bits in every value of type Word. (Should be either 32 or 64.) */
+  /** Specifies the number of bits in every value of type Word, which should be either 32 or 64. */
   private static int size;
 
   /** The current Word size, expressed as a BigInteger. */
@@ -66,6 +66,21 @@ public class Word extends Const {
     return maxUnsigned;
   }
 
+  /**
+   * Return a long value corresponding to a given BigInteger and consistent with the current word
+   * size setting.
+   */
+  static long fromBig(BigInteger v) {
+    if (size == 32) {
+      return (long) v.intValue();
+    } else if (size == 64) {
+      return v.longValue();
+    } else {
+      debug.Internal.error("Unrecognized Word.size in fromBig");
+      return 0; /* not reached */
+    }
+  }
+
   /** The value of this Word constant. */
   private long val;
 
@@ -92,19 +107,13 @@ public class Word extends Const {
     return (val << offset) >> offset;
   }
 
-  static long fromBig(BigInteger v) {
-    if (size == 32) {
-      return (long) v.intValue();
-    } else if (size == 64) {
-      return v.longValue();
-    } else {
-      debug.Internal.error("Unrecognized Word.size in fromBig");
-      return 0; /* not reached */
-    }
-  }
-
   /** As a special case, to allow easy reuse, export a constant representing the value zero. */
   public static final Word Zero = new Word(0);
+
+  /** Test whether this Atom is an Word. */
+  public Word isWord() {
+    return this;
+  }
 
   /** Generate a printable description of this atom. */
   public String toString() {
@@ -120,17 +129,14 @@ public class Word extends Const {
     return that.sameWord(this);
   }
 
-  /** Test to determine whether this Atom refers to the given Word value. */
-  boolean sameWord(Word c) {
-    return this.val == c.val;
+  /** Test whether this Atom is the same as the given Word. */
+  boolean sameWord(Word that) {
+    return this.val == that.val;
   }
 
-  /** Test to determine whether this Atom is an integer constant (or not). */
-  Word isWord() {
-    return this;
-  }
-
-  /** Return a type for an instantiated version of this item when used as Atom (input operand). */
+  /**
+   * Return a type for an instantiated version of this item when used as an Atom (input operand).
+   */
   public Type instantiate() {
     return Tycon.word.asType();
   }
@@ -146,7 +152,8 @@ public class Word extends Const {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return (int) val;

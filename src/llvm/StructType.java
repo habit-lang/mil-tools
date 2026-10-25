@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -44,8 +44,9 @@ public class StructType extends Type {
 
   /** Calculate a default value of this type, suitable for use as an initial value. */
   public Value defaultValue() {
-    // TODO: This case is included for completeness, but I don't think it will ever be needed;
-    // maybe we should generate an internal error instead?
+    // TODO: This case is included for completeness, but I don't think
+    // it will ever be needed; maybe we should generate an internal
+    // error instead?
     Value[] vals = new Value[tys.length];
     for (int i = 0; i < tys.length; i++) {
       vals[i] = tys[i].defaultValue();

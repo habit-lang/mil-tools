@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -46,8 +46,9 @@ public class PrimTycon extends Tycon {
     return arity;
   }
 
-  public void fixKinds() {
-    kind = kind.fixKind();
+  /** Apply defaults to the kind of this type constructor to eliminate any remaining KVars. */
+  public void defaultKinds() {
+    kind = kind.defaultKind();
     debug.Log.println(id + " :: " + kind);
   }
 
@@ -63,12 +64,17 @@ public class PrimTycon extends Tycon {
     this.fixity = fixity;
   }
 
-  /**
-   * Print a definition for this type constructor using source level syntax. TODO: Find a more
-   * appropriate place for this code ...
-   */
+  /** Print a definition for this type constructor using source level syntax. */
   void dumpTypeDefinition(PrintWriter out) {
-    /* do nothing */
+    this.dumpFixity(out);
+    out.print("type ");
+    out.print(id);
+    if (this.arity < Integer.MAX_VALUE && arity >= 0) {
+      out.print(" ");
+      out.print(this.arity);
+    }
+    out.print(" :: ");
+    out.println(kind.toString());
   }
 
   /** Return the canonical version of a Tycon wrt to the given set. */

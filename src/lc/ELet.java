@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** represents a let expression, let defns in e. */
 class ELet extends PosExpr {
 
   private LCDefns defns;
@@ -118,11 +119,11 @@ class ELet extends PosExpr {
       BindingSCC scc = bsccs.head;
       Bindings bs = scc.getBindings();
       if (scc.isRecursive() || Binding.anyQuantified(bs)) {
-        // Compute extra variables needed to lift bindings in this scc: Even if there are no extra
-        // variables
-        // to add (i.e., if xvs is empty), we still need to add a lifting so that the original
-        // DefVar for each
-        // variable binding is replaced with an appropriate Top value.
+        // Compute extra variables needed to lift bindings in this scc:
+        // Even if there are no extra variables to add (i.e., if xvs is
+        // empty), we still need to add a lifting so that the original
+        // DefVar for each variable binding is replaced with an
+        // appropriate Top value.
         DefVar[] xvs = scc.extraVars(lenv);
 
         // Rename all of the bindings in this SCC
@@ -136,8 +137,10 @@ class ELet extends PosExpr {
         } else {
           prev.next = bsccs.next;
         }
-      } else { // Keep the local definition in this (non-recursive, monomorphic,
-        for (; bs != null; bs = bs.next) { // singleton) binding group, but still lift the rhs
+      } else {
+        // Keep the local definition in this (non-recursive, monomorphic,
+        // singleton) binding group, but still lift the rhs:
+        for (; bs != null; bs = bs.next) {
           bs.head.liftBinding(lenv);
         }
         prev = bsccs;

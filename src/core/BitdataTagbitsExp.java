@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -41,10 +41,8 @@ class BitdataTagbitsExp extends BitdataRegionExp {
    * Perform scope analysis on portions of a type constructor definition, returning a list with the
    * elements from defns that it references.
    */
-  CoreDefns scopeTycons(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends)
-      throws Failure {
-    return depends;
+  void scopeDefn(Handler handler, TyvarEnv params, TyconDeps tdeps, TyconEnv env) {
+    /* Nothing to do here */
   }
 
   public void kindInfer(Handler handler) {
@@ -53,7 +51,7 @@ class BitdataTagbitsExp extends BitdataRegionExp {
 
   /**
    * Validate the type and size of this region expression and add a term to the specified linear
-   * equation to characterize the overall size (possibly including multiple fields)
+   * equation to characterize the overall size (possibly including multiple fields).
    */
   void addTermTo(LinearEqn eqn) throws Failure {
     size = (width >= 0) ? new TNat(width) : new TVar(Tyvar.nat);

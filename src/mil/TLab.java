@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -36,17 +36,17 @@ public class TLab extends TLit {
   }
 
   /**
-   * Test to determine whether this type is alpha equivalent to another type, by checking to see if
-   * the two type skeletons are equal, possibly with some correspondence between the TGen objects in
-   * the two types. We use the names left and right to keep track of which types were on the left
-   * and the right in the original alphaEquiv() call so that we can build the TGenCorresp in a
-   * consistent manner.
+   * Test whether this type is alpha equivalent to another type, by checking to see if the two type
+   * skeletons are equal, possibly with some correspondence between the TGen objects in the two
+   * types. We use the names left and right to keep track of which types were on the left and the
+   * right in the original alphaEquiv() call so that we can build the TGenCorresp in a consistent
+   * manner.
    */
   boolean alphaType(Type left, TGenCorresp corresp) {
     return left.alphaTLab(this);
   }
 
-  /** Test to determine whether this type is equal to a given TLab. */
+  /** Test whether this type is equal to a given TLab. */
   boolean alphaTLab(TLab right) {
     return this.str.equals(right.str);
   }
@@ -59,7 +59,7 @@ public class TLab extends TLit {
     tw.write("\"", str, "\""); // TODO: handle escape codes
   }
 
-  /** Test to determine whether this type is equal to a specified type literal. */
+  /** Test whether this type is equal to a specified type literal. */
   boolean sameTLit(Type[] thisenv, TLit t) {
     return t.alphaTLab(this);
   }

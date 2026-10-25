@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -35,20 +35,19 @@ class DataConDefn extends Name {
    * Perform scope analysis on portions of a type constructor definition, returning a list with the
    * elements from defns that it references.
    */
-  CoreDefns scopeTycons(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends)
-      throws Failure {
+  void scopeDefn(Handler handler, TyvarEnv params, TyconDeps tdeps, TyconEnv env) {
     for (int i = 0; i < args.length; i++) {
-      args[i] = args[i].tidyInfix(env);
-      depends = args[i].scopeTyconsType(handler, params, env, defns, depends);
+      try {
+        args[i] = args[i].scopeType(params, tdeps, env);
+      } catch (Failure f) {
+        handler.report(f);
+      }
     }
-    return depends;
   }
 
   public void kindInfer(Handler handler) {
-    for (int i = 0;
-        i < args.length;
-        i++) { // Every constructor argument should be a type of kind *.
+    // Every constructor argument should be a type of kind *.
+    for (int i = 0; i < args.length; i++) {
       args[i].checkKind(handler, KAtom.STAR);
     }
   }

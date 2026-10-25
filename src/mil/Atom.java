@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,129 +22,36 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
-/** Represents basic atoms in a MIL program, each of which is either a variable or a constant. */
+/**
+ * Represents basic atoms (operands) in a MIL program, each of which is either a constant or a
+ * (top-level or temporary) variable.
+ */
 public abstract class Atom {
 
-  public static final Atom[] noAtoms = new Atom[0];
-
-  /** Generate a printable description of this atom. */
-  public abstract String toString();
-
-  /**
-   * Generate a printable description of this atom with a renaming of Temp values that is specified
-   * by the list ts.
-   */
-  String toString(Temps ts) {
-    return toString();
-  }
-
-  /**
-   * Generate a printable description of the given list of atoms as a comma separated list of the
-   * individual atoms.
-   */
-  static String toString(Atom[] as) {
-    return toString(as, null);
-  }
-
-  static String toString(Atom[] as, Temps ts) {
-    if (as == null || as.length == 0) { // An empty list?
-      return "";
-    } else if (as.length == 1) { // A single atom?
-      return as[0].toString(ts);
-    } else { // General case
-      StringBuilder buf = new StringBuilder();
-      for (int i = 0; i < as.length; i++) {
-        if (i > 0) {
-          buf.append(", ");
-        }
-        buf.append(as[i].toString(ts));
-      }
-      return buf.toString();
-    }
-  }
-
-  /**
-   * Test to see if two atoms are the same. For Temp values, we use pointer equality to determine
-   * object equality. For all other types of Atom, we use double dispatch to compare component
-   * values.
-   */
-  abstract boolean sameAtom(Atom that);
-
-  /** Test to determine whether this Atom refers to the given Word value. */
-  boolean sameWord(Word c) {
-    return false;
-  }
-
-  /** Test to determine whether this Atom refers to the specified bit vector constant. */
-  boolean sameBits(Bits c) {
-    return false;
-  }
-
-  /** Test to determine whether this Atom refers to the given flag constant. */
-  boolean sameFlag(Flag c) {
-    return false;
-  }
-
-  /** Test to determine whether this Atom refers to the given ProxyNat constant. */
-  boolean sameProxyNat(ProxyNat c) {
-    return false;
-  }
-
-  /** Test to determine whether this Atom refers to the given ProxyLab constant. */
-  boolean sameProxyLab(ProxyLab c) {
-    return false;
-  }
-
-  /** Test to determine whether this Atom refers to the ith TopLhs in the given TopLevel. */
-  boolean sameTopDef(TopLevel topLevel, int i) {
-    return false;
-  }
-
-  /** Test to determine whether this Atom refers to the specified External. */
-  boolean sameTopExt(External external) {
-    return false;
-  }
-
-  /** Test to determine whether this Atom refers to the specified Area. */
-  boolean sameTopArea(Area area) {
-    return false;
-  }
-
-  static boolean sameAtoms(Atom[] as, Atom[] bs) {
-    if (as.length != bs.length) {
-      return false;
-    }
-    for (int i = 0; i < as.length; i++) {
-      if (!as[i].sameAtom(bs[i])) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /** Test to determine whether this Atom is an integer constant (or not). */
-  Word isWord() {
+  /** Test whether this Atom is an Word. */
+  public Word isWord() {
     return null;
   }
 
-  /** Test to determine whether this Atom is a flag constant (or not). */
-  Flag isFlag() {
+  /** Test whether this Atom is an Flag. */
+  public Flag isFlag() {
     return null;
   }
 
-  /** Test for an occurrence of this variable in the given array of atoms. */
-  boolean occursIn(Atom[] as) {
+  /**
+   * Test to see if a temporary has had its name replaced with an underscore to mark it as unused.
+   */
+  boolean markedUnused() {
     return false;
   }
 
-  /** Test to see if any of the items in bs one array appear in a give array of atoms. */
-  static boolean occursIn(Atom[] bs, Atom[] as) {
-    for (int i = 0; i < bs.length; i++) {
-      if (bs[i].occursIn(as)) {
-        return true;
-      }
-    }
-    return false;
+  /**
+   * Mark a temporary to indicate that its value is not referenced in the remainder of a given code
+   * sequence by setting its name to an underscore.
+   */
+  Temp markUnused() {
+    debug.Internal.error("markUnused should only be called on a Temp");
+    return null;
   }
 
   /** Build a new array that combines the elements from the left array with those from the right. */
@@ -167,33 +74,62 @@ public abstract class Atom {
     return n;
   }
 
-  /** Test to determine whether this atom appears in the given list of Temps. */
-  boolean isIn(Temps vs) {
-    return false;
-  }
-
-  /**
-   * Add this atom as an argument variable to the given list; only local variables and temporaries
-   * are treated as argument variables because wildcards are ignored and all other atoms can be
-   * accessed as constants.
-   */
-  Temps add(Temps vs) {
-    return vs;
-  }
+  /** A constant holding an empty array of Atom values. */
+  public static Atom[] noAtoms = new Atom[0];
 
   /** Find the dependencies of this AST fragment. */
   Defns dependencies(Defns ds) {
     return ds;
   }
 
-  /** Find the list of Defns that this array of Atoms depends on. */
-  static Defns dependencies(Atom[] args, Defns ds) {
-    if (args != null) {
-      for (int i = 0; i < args.length; i++) {
-        ds = args[i].dependencies(ds);
+  /** Test whether this atom appears in the given list of Temps. */
+  boolean isIn(Temps vs) {
+    return false;
+  }
+
+  /** Add the temporaries used in this node to the given list of Temps. */
+  Temps add(Temps vs) {
+    return vs;
+  }
+
+  /** Generate a printable description of this atom. */
+  public abstract String toString();
+
+  /**
+   * Generate a printable description of this atom with a renaming of Temp values that is specified
+   * by the list ts.
+   */
+  String toString(Temps ts) {
+    return toString();
+  }
+
+  /**
+   * Generate a printable description of the given list of atoms as a comma separated list of the
+   * individual atoms.
+   */
+  static String toString(Atom[] as) {
+    return toString(as, null);
+  }
+
+  /**
+   * Generate a printable description of the atoms in the array as a comma separated list with the
+   * renaming of Temp values specified by ts.
+   */
+  static String toString(Atom[] as, Temps ts) {
+    if (as == null || as.length == 0) { // An empty list?
+      return "";
+    } else if (as.length == 1) { // A single atom?
+      return as[0].toString(ts);
+    } else { // General case
+      StringBuilder buf = new StringBuilder();
+      for (int i = 0; i < as.length; i++) {
+        if (i > 0) {
+          buf.append(", ");
+        }
+        buf.append(as[i].toString(ts));
       }
+      return buf.toString();
     }
-    return ds;
   }
 
   /** Print an array of atoms, separated by commas. */
@@ -208,8 +144,8 @@ public abstract class Atom {
   }
 
   /**
-   * Print an array of atoms, separated by commas and enclosed in parentheses if the number of atoms
-   * is not 1.
+   * Print an array of atoms, separated by commas and enclosed in parentheses unless there is
+   * exactly one atom.
    */
   static void displayTuple(PrintWriter out, Atom[] args, Temps ts) {
     if (args != null && args.length == 1) {
@@ -219,6 +155,71 @@ public abstract class Atom {
       Atom.dump(out, args, ts);
       out.print("]");
     }
+  }
+
+  /**
+   * Test to see if two atoms are the same. For Temp values, we use pointer equality to determine
+   * object equality. For all other types of Atom, we use double dispatch to compare component
+   * values.
+   */
+  abstract boolean sameAtom(Atom that);
+
+  /** Test whether this Atom is the same as the given Word. */
+  boolean sameWord(Word that) {
+    return false;
+  }
+
+  /** Test whether this Atom is the same as the given Bits. */
+  boolean sameBits(Bits that) {
+    return false;
+  }
+
+  /** Test whether this Atom is the same as the given Flag. */
+  boolean sameFlag(Flag that) {
+    return false;
+  }
+
+  /** Test whether this Atom is the same as the given ProxyNat. */
+  boolean sameProxyNat(ProxyNat that) {
+    return false;
+  }
+
+  /** Test whether this Atom is the same as the given ProxyLab. */
+  boolean sameProxyLab(ProxyLab that) {
+    return false;
+  }
+
+  /** Test whether this Atom is the same as the given Temp. */
+  boolean sameTemp(Temp that) {
+    return false;
+  }
+
+  /** Test whether this Atom is the same as the given TopDef. */
+  boolean sameTopDef(TopDef that) {
+    return false;
+  }
+
+  /** Test whether this Atom is the same as the given TopExt. */
+  boolean sameTopExt(TopExt that) {
+    return false;
+  }
+
+  /** Test whether this Atom is the same as the given TopArea. */
+  boolean sameTopArea(TopArea that) {
+    return false;
+  }
+
+  /** Test whether two arrays of Atom values are the same. */
+  static boolean sameAtoms(Atom[] as, Atom[] bs) {
+    if (as.length != bs.length) {
+      return false;
+    }
+    for (int i = 0; i < as.length; i++) {
+      if (!as[i].sameAtom(bs[i])) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -232,9 +233,12 @@ public abstract class Atom {
   /** Apply a TempSubst to this Atom. */
   abstract Atom apply(TempSubst s);
 
-  /** Return a type for an instantiated version of this item when used as Atom (input operand). */
+  /**
+   * Return a type for an instantiated version of this item when used as an Atom (input operand).
+   */
   public abstract Type instantiate();
 
+  /** Type check the implementation for an external. */
   void checkImp(Handler handler, Position pos) {
     /* nothing to do */
   }
@@ -260,22 +264,22 @@ public abstract class Atom {
     copyTo(dst, builder);
   }
 
-  /**
-   * Mark a temporary to indicate that its value is not referenced in the remainder of a given code
-   * sequence by setting its name to an underscore.
-   */
-  Temp markUsed() {
-    debug.Internal.error("markUsed should only be called on a Temp");
-    return null;
+  /** Test for an occurrence of this variable in the given array of atoms. */
+  boolean occursIn(Atom[] as) {
+    return false;
   }
 
-  /**
-   * Test to see if a temporary has had its name replaced with an underscore to mark it as unused.
-   */
-  boolean markedUnused() {
-    return true;
+  /** Test if any of the items in one array (bs) appear in another array (as). */
+  static boolean occursIn(Atom[] bs, Atom[] as) {
+    for (int i = 0; i < bs.length; i++) {
+      if (bs[i].occursIn(as)) {
+        return true;
+      }
+    }
+    return false;
   }
 
+  /** Determine whether this Atom has a known (static) value. */
   boolean isStatic() {
     return false;
   }
@@ -289,10 +293,11 @@ public abstract class Atom {
   }
 
   /**
-   * A simple test for MIL code fragments that return a known Flag, returning either the constant or
-   * null.
+   * A simple test for MIL code fragments that return a known Flag; this is a helper for the method
+   * without an argument that adds a counter that is decreased for every BlockCall encountered to
+   * avoid triggering an unbounded loop in pathological corner cases.
    */
-  Flag returnsFlag() {
+  Flag returnsFlag(int n) {
     return null;
   }
 
@@ -317,7 +322,7 @@ public abstract class Atom {
   }
 
   /**
-   * Test to determine if this Atom is known to hold a specific function value, represented by a
+   * Test if this Atom is known to hold a specific function value, represented by a
    * ClosAlloc/closure allocator, according to the given set of facts.
    */
   ClosAlloc lookForClosAlloc(Facts facts) {
@@ -329,8 +334,8 @@ public abstract class Atom {
   }
 
   /**
-   * Test to determine if this Atom is known to hold a specific data value represented by a
-   * DataAlloc allocator, according to the given set of facts.
+   * Test whether this Atom is known to hold a specific data value represented by a DataAlloc
+   * allocator, according to the given set of facts.
    */
   DataAlloc lookForDataAlloc(Facts facts) {
     return null;
@@ -346,7 +351,8 @@ public abstract class Atom {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return -17;
@@ -365,12 +371,17 @@ public abstract class Atom {
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   abstract void collect(TypeSet set);
 
+  /** Return an array of atoms that stores canonical versions of each atom in the input list. */
   static void collect(Atom[] args, TypeSet set) {
     for (int i = 0; i < args.length; i++) {
       args[i].collect(set);
     }
   }
 
+  /**
+   * Determine the specialized version of an Atom in a context described by a given @TVarSubst@
+   * and @SpecEnv@.
+   */
   abstract Atom specializeAtom(MILSpec spec, TVarSubst s, SpecEnv env);
 
   /** Generate a specialized list of source atoms from the given list. */

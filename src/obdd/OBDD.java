@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -90,7 +90,7 @@ public abstract class OBDD {
 
   /**
    * Test for a specific bit pattern in the set represented by an OBDD (assumes that the argument
-   * bit pattern is in the correct range for the width of the OBDD.
+   * bit pattern is in the correct range for the width of the OBDD).
    */
   abstract boolean includes(long i);
 
@@ -112,7 +112,7 @@ public abstract class OBDD {
     return 0;
   }
 
-  /** Test to determine whether two OBDD structures are the same. */
+  /** Test whether two OBDD structures are the same. */
   public abstract boolean same(OBDD that);
 
   public boolean isITE(ITE that) {
@@ -165,7 +165,7 @@ public abstract class OBDD {
   /**
    * A worker function to output a textual description of this BDD into the given array of lines,
    * starting at the line specified by next and returning the first unused line number (if there is
-   * one) as a result.
+   * one) as the result.
    */
   abstract int showBits(int width, String[] lines, int next);
 

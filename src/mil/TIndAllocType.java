@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -55,10 +55,12 @@ class TIndAllocType extends AllocType {
     return new AllocType(set.canonTypes(stored, tenv), result.canonType(tenv, set));
   }
 
+  /** Apply the given substitution to this AllocType. */
   AllocType apply(TVarSubst s) {
     return apply(tenv, s);
   }
 
+  /** Check that the result of this AllocType matches the given instance. */
   boolean resultMatches(Type inst) {
     return result.match(tenv, inst, null);
   }

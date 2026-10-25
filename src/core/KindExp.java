@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,6 +21,7 @@ package core;
 import compiler.*;
 import mil.*;
 
+/** Represents a kind expression. */
 public abstract class KindExp {
 
   public abstract Kind toKind() throws Failure;

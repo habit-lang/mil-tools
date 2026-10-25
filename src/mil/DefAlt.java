@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 /** Represents a default branch, if none of the previous alternatives apply. */
 public class DefAlt extends Alts {
 
+  /** A block to call if no previous matches found */
   private BlockCall bc;
 
   /** Default constructor. */
@@ -32,17 +33,12 @@ public class DefAlt extends Alts {
     this.bc = bc;
   }
 
-  /** Test for a free occurrence of a particular variable. */
-  boolean contains(Temp w) {
-    return bc.contains(w);
-  }
-
   /** Find the dependencies of this AST fragment. */
   Defns dependencies(Defns ds) {
     return bc.dependencies(ds);
   }
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
   void dump(PrintWriter out, Temps ts) {
     Code.indent(out); // double indent
     Code.indent(out);
@@ -67,6 +63,11 @@ public class DefAlt extends Alts {
   /** Generate code for this list of alternatives. */
   void generateCode(MachineBuilder builder, int o) {
     bc.generateTailCode(builder, o);
+  }
+
+  /** Test for a free occurrence of a particular variable. */
+  boolean contains(Temp w) {
+    return bc.contains(w);
   }
 
   /**
@@ -131,7 +132,8 @@ public class DefAlt extends Alts {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return bc.summary();
@@ -173,11 +175,18 @@ public class DefAlt extends Alts {
     return new FailAlt();
   }
 
+  /**
+   * Rewrite a set of alternatives that includes a CfunAlt for all but one of the associated
+   * constructors. In this situation, we can eliminate a default branch with a match against the
+   * only missing constructor. While this might appear to create more work (forcing a match where it
+   * was already implied), it will actually mean that we have more accurate type information when
+   * analyzing the block call for what was previously the default branch.
+   */
   Alts promoteDefault(Cfun cf) {
     return new CfunAlt(cf, bc, new FailAlt());
   }
 
-  /** Generate a specialized version of this Alt. */
+  /** Generate a specialized version of this Alts structure. */
   Alts specializeAlts(MILSpec spec, TVarSubst s, SpecEnv env) {
     return new DefAlt(bc.specializeBlockCall(spec, s, env));
   }

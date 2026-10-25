@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.Reader;
 
 /**
- * An implementation of the Source interface that follows the low- level lexical conventions of Java
+ * An implementation of the Source interface that follows the low-level lexical conventions of Java
  * for Unicode escapes, etc.. Uses a Reader to obtain its input. Also expands tabs.
  */
 public class JavaSource extends Source {
@@ -118,7 +118,8 @@ public class JavaSource extends Source {
               skip();
             }
             if (i != 4) {
-              // TODO: fix the zero column number in the following diagnostic message ...
+              // TODO: fix the zero column number in the following
+              // diagnostic message ...
               report(
                   new Warning(
                       new SourcePosition(this, lineNumber, 0), "Error in Unicode escape sequence"));

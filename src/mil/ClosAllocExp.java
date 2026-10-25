@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -33,7 +33,7 @@ class ClosAllocExp extends CallExp {
    * defined elsewhere in the program. The resulting Call object can then be extended with the
    * appropriate list of arguments in the implementation of inScopeOf() for CallExp objects.
    */
-  Call calleeInScopeOf(Handler handler, MILEnv milenv) {
-    return new ClosAlloc(milenv.mustFindClosureDefn(handler, pos, id));
+  Call calleeInScopeOf(Handler handler, MILEnv milenv) throws Failure {
+    return new ClosAlloc(milenv.mustFindClosureDefn(pos, id));
   }
 }

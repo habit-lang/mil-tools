@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** Represents a bind expression, v<-e; e1. */
 class EFrom extends PosExpr {
 
   private DefVar v;
@@ -62,8 +63,8 @@ class EFrom extends PosExpr {
   }
 
   /**
-   * Test to determine whether this expression can be used on the right hand side of a binding in a
-   * recursive binding group.
+   * Test whether this expression can be used on the right hand side of a binding in a recursive
+   * binding group.
    */
   boolean isSafeToRecurse() {
     return true;

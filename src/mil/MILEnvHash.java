@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -37,7 +37,7 @@ abstract class MILEnvHash extends MILEnv {
   }
 
   /** Construct a hash table to store mappings for this environment component. */
-  protected HashMap<String, Cfun> tableCfun = new HashMap();
+  protected HashMap<String, Cfun> tableCfun = (new HashMap<String, Cfun>());
 
   public void printThis() {
     System.out.println(Cfun.class.getSimpleName() + ": " + tableCfun);
@@ -63,7 +63,7 @@ abstract class MILEnvHash extends MILEnv {
   }
 
   /** Construct a hash table to store mappings for this environment component. */
-  protected HashMap<String, Prim> tablePrim = new HashMap();
+  protected HashMap<String, Prim> tablePrim = (new HashMap<String, Prim>());
 
   public Prim addPrim(String id, Prim x) {
     return tablePrim.put(id, x);
@@ -77,7 +77,7 @@ abstract class MILEnvHash extends MILEnv {
   }
 
   /** Construct a hash table to store mappings for this environment component. */
-  protected HashMap<String, Block> tableBlock = new HashMap();
+  protected HashMap<String, Block> tableBlock = (new HashMap<String, Block>());
 
   public Block addBlock(String id, Block x) {
     return tableBlock.put(id, x);
@@ -91,7 +91,7 @@ abstract class MILEnvHash extends MILEnv {
   }
 
   /** Construct a hash table to store mappings for this environment component. */
-  protected HashMap<String, ClosureDefn> tableClosureDefn = new HashMap();
+  protected HashMap<String, ClosureDefn> tableClosureDefn = (new HashMap<String, ClosureDefn>());
 
   public ClosureDefn addClosureDefn(String id, ClosureDefn x) {
     return tableClosureDefn.put(id, x);
@@ -105,7 +105,7 @@ abstract class MILEnvHash extends MILEnv {
   }
 
   /** Construct a hash table to store mappings for this environment component. */
-  protected HashMap<String, Top> tableTop = new HashMap();
+  protected HashMap<String, Top> tableTop = (new HashMap<String, Top>());
 
   public Top addTop(String id, Top x) {
     return tableTop.put(id, x);

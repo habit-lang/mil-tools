@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,10 +21,13 @@ package mil;
 import compiler.*;
 import core.*;
 
+/** Represents a request to specialize a ClosureDefn. */
 class SpecClosureDefn extends SpecReq {
 
+  /** The original ClosureDefn. */
   private ClosureDefn korig;
 
+  /** A specialized version of the ClosureDefn. */
   private ClosureDefn kspec;
 
   /** Default constructor. */

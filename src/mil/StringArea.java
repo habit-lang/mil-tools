@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,8 +22,10 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/** Represents an area containing a character string. */
 public class StringArea extends Area {
 
+  /** The string in this area. */
   private String str;
 
   /** Default constructor. */
@@ -38,7 +40,8 @@ public class StringArea extends Area {
 
   private Type expected = refString;
 
-  public StringArea(Position pos, String str) { // Used for anonymous string literals
+  /** Construct a string area for an anonymous string literal. */
+  public StringArea(Position pos, String str) {
     this(pos, "str" + count++, str);
     declared = StringArea.refString;
   }
@@ -49,12 +52,13 @@ public class StringArea extends Area {
   }
 
   /** Display a printable representation of this definition on the specified PrintWriter. */
-  void dump(PrintWriter out, boolean isEntrypoint) {
-    super.dump(out, isEntrypoint);
+  void dump(PrintWriter out) {
+    dumpHeader(out, isEntrypoint);
     out.print(id + " <- \"");
     for (int i = 0; i < str.length(); i++) {
       char c = str.charAt(i);
-      // TODO: This code deals with details of concrete syntax that seem out of place here ...
+      // TODO: This code deals with details of concrete syntax that
+      // seem out of place here ...
       switch (c) {
         case '"':
           out.print("\\\"");
@@ -96,7 +100,7 @@ public class StringArea extends Area {
 
   /**
    * Calculate a generalized type for this binding, adding universal quantifiers for any unbound
-   * type variable in the inferred type. (There are no "fixed" type variables here because all mil
+   * type variable in the inferred type. (There are no "fixed" type variables here because all MIL
    * definitions are at the top level.)
    */
   void generalizeType(Handler handler) throws Failure {
@@ -122,8 +126,9 @@ public class StringArea extends Area {
     }
   }
 
-  Atom specializeArea(MILSpec spec, Type inst) {
-    return new TopArea(inst, this);
+  /** Update all declared types with canonical versions. */
+  void canonDeclared(MILSpec spec) {
+    declared = declared.canonScheme(spec);
   }
 
   /**
@@ -135,9 +140,15 @@ public class StringArea extends Area {
     return this;
   }
 
-  /** Update all declared types with canonical versions. */
-  void canonDeclared(MILSpec spec) {
-    declared = declared.canonScheme(spec);
+  /**
+   * Return an Atom corresponding to a specialized version of this memory area under the given
+   * substitution. (We do not currently allow memory areas with polymorphic types, so the
+   * substitution will have no effect here. But we keep the plumbing, just in case it might be
+   * needed in future, for example, in connection with type expressions that are used to specify
+   * size and alignment.
+   */
+  Atom specializeArea(MILSpec spec, Type inst) {
+    return new TopArea(inst, this);
   }
 
   void topLevelRepTransform(Handler handler, RepTypeSet set) {
@@ -146,7 +157,8 @@ public class StringArea extends Area {
 
   /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {
-    declared = expected = expected.canonType(set); // TODO: likely unnecessary; always Word
+    // TODO: likely unnecessary; always Word
+    declared = expected = expected.canonType(set);
   }
 
   void inScopeOf(Handler handler, MILEnv milenv, AtomExp init) throws Failure {
@@ -156,17 +168,7 @@ public class StringArea extends Area {
   /** Calculate a staticValue (which could be null) for each top level definition. */
   void calcStaticValues(LLVMMap lm, llvm.Program prog) {
     llvm.StringInitializer si = new llvm.StringInitializer(str);
-    String strName = prog.freshName("str");
-    prog.add(new llvm.Constant(llvm.Mods.PRIVATE | llvm.Mods.UNNAMED_ADDR, strName, si));
-    prog.add(
-        new llvm.Alias(
-            llvm.Mods.entry(isEntrypoint),
-            id,
-            new llvm.Getelementptr(
-                llvm.Type.i8.ptr(),
-                new llvm.Global(si.getType().ptr(), strName),
-                llvm.Word.ZERO,
-                llvm.Index.ZERO)));
+    prog.add(new llvm.Constant(llvm.Mods.entry(isEntrypoint), id, si));
     staticValue = calcStaticValue(id);
   }
 }

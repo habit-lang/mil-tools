@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -44,7 +44,7 @@ abstract class LCDefn {
    * Annotate bindings in the given list using information (such as a type signature or fixity) that
    * is provided by this definition.
    */
-  void annotateBindings(Handler handler, TyconEnv tenv, Bindings bs) {
+  void annotateBindings(Handler handler, TyconEnv env, Bindings bs) {
     /* do nothing */
   }
 

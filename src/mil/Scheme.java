@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -30,26 +30,24 @@ public abstract class Scheme {
   /** Test to see if this type scheme is monomorphic. */
   public abstract Type isMonomorphic();
 
-  /** Test to determine whether two type schemes are alpha equivalent. */
+  /** Test whether two type schemes are alpha equivalent. */
   public abstract boolean alphaEquiv(Scheme right);
 
-  /**
-   * Test to determine whether this type scheme is alpha equivalent to the given Forall type scheme.
-   */
+  /** Test whether this type scheme is alpha equivalent to the given Forall type scheme. */
   boolean alphaForall(Forall left, TGenCorresp corresp) {
     return false;
   }
 
   /**
-   * Test to determine whether this type is alpha equivalent to another type, by checking to see if
-   * the two type skeletons are equal, possibly with some correspondence between the TGen objects in
-   * the two types. We use the names left and right to keep track of which types were on the left
-   * and the right in the original alphaEquiv() call so that we can build the TGenCorresp in a
-   * consistent manner.
+   * Test whether this type is alpha equivalent to another type, by checking to see if the two type
+   * skeletons are equal, possibly with some correspondence between the TGen objects in the two
+   * types. We use the names left and right to keep track of which types were on the left and the
+   * right in the original alphaEquiv() call so that we can build the TGenCorresp in a consistent
+   * manner.
    */
   abstract boolean alphaType(Type left, TGenCorresp corresp);
 
-  /** Construct a printable representation of a type scheme. */
+  /** Construct a printable string for a type scheme. */
   public String toString() {
     Prefix prefix = getPrefix();
     Type type = getType();
@@ -60,8 +58,10 @@ public abstract class Scheme {
     return tw.toString();
   }
 
+  /** Output a printable representation of this type scheme on the specified TypeWriter. */
   public abstract String toString(int prec, StringTypeWriter tw);
 
+  /** Generate a printable string for this type scheme. */
   public String toString(int prec) {
     return toString(prec, new StringTypeWriter(getPrefix()));
   }
@@ -87,12 +87,6 @@ public abstract class Scheme {
    */
   public abstract TVars tvars(TVars tvs);
 
-  public Scheme generalize() {
-    return generalize(TVar.generics(tvars(), null));
-  }
-
-  public abstract Scheme generalize(TVar[] generics);
-
   /**
    * Find the canonical version of a type with respect to the given TypeSet; this should only be
    * used with monomorphic types that do not contain any TGen values.
@@ -102,11 +96,12 @@ public abstract class Scheme {
   /** Calculate a new version of this type scheme with canonical components. */
   abstract Scheme canonScheme(TypeSet set);
 
+  /** Apply the given substitution to this type skeleton. */
   abstract Type apply(TVarSubst s);
 
   /**
-   * Extend a substitution by matching this (potentially polymorphic) Scheme against a monomorphic
-   * instance.
+   * Construct a substitution by matching this (potentially polymorphic) Scheme against a
+   * monomorphic instance.
    */
   abstract TVarSubst specializingSubst(TVar[] generics, Type inst);
 

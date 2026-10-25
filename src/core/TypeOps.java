@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -84,7 +84,7 @@ class TypeOps {
     return (typeOps == null) ? t.position() : typeOps.position();
   }
 
-  /** Visit each subexpression in this list and attach fixity information to each operator. */
+  /** Visit the subexpressions in this list and attach fixity information to each operator. */
   void tidyInfix(TyconEnv env) throws Failure {
     for (TypeOps ts = this; ts != null; ts = ts.typeOps) {
       ts.t = ts.t.tidyInfix(env);

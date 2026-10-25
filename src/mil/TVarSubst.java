@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,6 +21,7 @@ package mil;
 import compiler.*;
 import core.*;
 
+/** Represents a substitution of types for (generic) type variables. */
 class TVarSubst {
 
   private TVar[] tvs;
@@ -59,9 +60,14 @@ class TVarSubst {
     return buf.toString();
   }
 
+  /**
+   * Construct a TVarSubst from a list of type variables and a corresponding list of types, removing
+   * the initial TVar that will have been created when the prefix of the polymorphic type was
+   * instantiated.
+   */
   static TVarSubst make(TVar[] generics, Type[] tenv) {
     for (int i = 0; i < tenv.length; i++) {
-      tenv[i] = tenv[i].removeTVar(); // TODO: This is a big hack ... :-)
+      tenv[i] = tenv[i].removeTVar();
     }
     return new TVarSubst(generics, tenv);
   }

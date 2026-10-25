@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -33,14 +33,7 @@ public class SynonymDefn extends TyconDefn {
 
   private Synonym sn;
 
-  /**
-   * Return the Tycon associated with this definition, if any. TODO: this method is only used in one
-   * place, and it's awkward ... look for opportunities to rewrite
-   */
-  public Tycon getTycon() {
-    return sn;
-  }
-
+  /** Add environment entries for the type constructors introduced in this definition. */
   public void introduceTycons(Handler handler, TyconEnv env) {
     // TODO: sad to have to initialize the expansion to null here ...
     env.add(sn = new Synonym(pos, id, new KVar(), null));
@@ -50,10 +43,9 @@ public class SynonymDefn extends TyconDefn {
    * Determine the list of type definitions (a sublist of defns) that this particular definition
    * depends on.
    */
-  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) throws Failure {
+  public void scopeDefn(Handler handler, TyconDeps tdeps, TyconEnv env) throws Failure {
     try {
-      rhs = rhs.tidyInfix(env);
-      this.calls(rhs.scopeTyconsType(handler, null, env, defns, null));
+      rhs = rhs.scopeType(null, tdeps, env);
     } catch (Failure f) {
       handler.report(f);
     }
@@ -68,8 +60,9 @@ public class SynonymDefn extends TyconDefn {
     }
   }
 
-  public void fixKinds() {
-    sn.fixKinds();
+  /** Default kind variables to STAR, unless they have already been bound. */
+  public void defaultKinds() {
+    sn.defaultKinds();
   }
 
   /** Calculate types for each of the values that are introduced by this definition. */
@@ -84,8 +77,8 @@ public class SynonymDefn extends TyconDefn {
   }
 
   /**
-   * Extend the specified MIL environment with entries for any functions/values introduced in this
-   * definition.
+   * Extend the specified MIL environment with entries for any functions or values introduced in
+   * this definition.
    */
   public void addToMILEnv(Handler handler, CoreProgram prog, MILEnv milenv) {
     /* Nothing to do here! */

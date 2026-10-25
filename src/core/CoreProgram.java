@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -24,8 +24,10 @@ import mil.*;
 
 public class CoreProgram {
 
+  /** Points to the first item in the list (null if the list is empty). */
   private CoreDefns coreDefns = null;
 
+  /** Points to the last item in the list (null if the list is empty). */
   private CoreDefns coreDefnsLast = null;
 
   /** Add an element to the end of the list in this class. */
@@ -34,10 +36,23 @@ public class CoreProgram {
     coreDefnsLast = (coreDefnsLast == null) ? (coreDefns = ns) : (coreDefnsLast.next = ns);
   }
 
+  /** Points to the first item in the list (null if the list is empty). */
+  private FixityDecls fixityDecls = null;
+
+  /** Points to the last item in the list (null if the list is empty). */
+  private FixityDecls fixityDeclsLast = null;
+
+  /** Add an element to the end of the list in this class. */
+  public void add(FixityDecl elem) {
+    FixityDecls ns = new FixityDecls(elem, null);
+    fixityDeclsLast = (fixityDeclsLast == null) ? (fixityDecls = ns) : (fixityDeclsLast.next = ns);
+  }
+
   public TyconEnv typeEnv(Handler handler, TyconEnv enclosing) throws Failure {
     TyconEnv tenv = new TyconEnv(enclosing);
 
-    // Step 1: Add type entries for each definition that introduces one or more tycon names.
+    // Step 1: Add type entries for each definition that introduces one
+    // or more tycon names.
     for (CoreDefns ds = coreDefns; ds != null; ds = ds.next) {
       ds.head.introduceTycons(handler, tenv);
     }
@@ -47,16 +62,27 @@ public class CoreProgram {
     tenv.checkForMultipleTycons(handler);
     handler.abortOnFailures();
 
-    // Step 3: Run scope analysis and compute dependencies for tycon names.
+    // Step 3: Attach declared fixities to type constructors
+    for (FixityDecls fds = fixityDecls; fds != null; fds = fds.next) {
+      fds.head.processFixityDecl(handler, tenv);
+    }
+
+    // Step 4: Run scope analysis and compute dependencies for tycon names.
     for (CoreDefns ds = coreDefns; ds != null; ds = ds.next) {
-      ds.head.scopeTycons(handler, coreDefns, tenv);
+      try {
+        TyconDeps tdeps = new TyconDeps(coreDefns);
+        ds.head.scopeDefn(handler, tdeps, tenv);
+        ds.head.calls(tdeps.getDependencies());
+      } catch (Failure f) {
+        handler.report(f);
+      }
     }
     handler.abortOnFailures();
 
-    // Step 4: Compute SCCs.
+    // Step 5: Compute SCCs.
     CoreDefnSCCs sccs = CoreDefns.scc(coreDefns);
 
-    // Step 5: Perform kind inference.
+    // Step 6: Perform kind inference.
     for (CoreDefnSCCs ss = sccs; ss != null; ss = ss.next) {
       CoreDefns defns = ss.head.getBindings();
       // Check for a recursive binding group:
@@ -71,18 +97,18 @@ public class CoreProgram {
       }
       // Eliminate any remaining variables in inferred kinds:
       for (CoreDefns ds = defns; ds != null; ds = ds.next) {
-        ds.head.fixKinds();
+        ds.head.defaultKinds();
       }
     }
     handler.abortOnFailures();
 
-    // Step 6: Calculate size and layout information ...
+    // Step 7: Calculate size and layout information ...
     for (CoreDefnSCCs ss = sccs; ss != null; ss = ss.next) {
       ss.head.calcSizes(handler);
     }
     handler.abortOnFailures();
 
-    // Step 7: Calculate types for constructor functions, etc...
+    // Step 8: Calculate types for constructor functions, etc...
     for (CoreDefnSCCs ss = sccs; ss != null; ss = ss.next) {
       for (CoreDefns ds = ss.head.getBindings(); ds != null; ds = ds.next) {
         ds.head.calcCfuns(handler);
@@ -137,7 +163,8 @@ public class CoreProgram {
       if (t == null) {
         handler.report(new Failure(fixups.impPos, "Cannot find top-level implementation " + id));
       } else {
-        // TODO: should we also check that t is not a TopExt?  (to prevent cyclic definitions)
+        // TODO: should we also check that t is not a TopExt?  (to prevent
+        // cyclic definitions)
         fixups.ext.setImp(new AtomImp(t));
       }
     }

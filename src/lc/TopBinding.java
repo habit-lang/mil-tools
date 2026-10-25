@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -74,8 +74,9 @@ class TopBinding {
   }
 
   void bindExtras(DefVar[] xvs) {
-    // Abstract over extra arguments.  If there are any, add a lambda expression to the right hand
-    // side of the binding and adjust the type to match:
+    // Abstract over extra arguments.  If there are any, add a
+    // lambda expression to the right hand side of the binding
+    // and adjust the type to match:
     if (xvs.length > 0) {
       // Calculate type of lambda expression with extra arguments:
       for (int i = xvs.length; i > 0; i--) {

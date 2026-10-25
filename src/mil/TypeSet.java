@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -26,18 +26,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeSet;
 
+/** Represents a set of MIL types, storing a "canonical" representative for each type in the set. */
 public class TypeSet {
 
   /** A mapping from Tycons to lists of uses (i.e., types with that Tycon in head position). */
-  private HashMap<Tycon, Types> tyconInstances = new HashMap();
+  private HashMap<Tycon, Types> tyconInstances = (new HashMap<Tycon, Types>());
 
   /** A mapping from other (singleton) type forms to lists of uses. */
-  private HashMap<Type, Types> otherInstances = new HashMap();
+  private HashMap<Type, Types> otherInstances = (new HashMap<Type, Types>());
 
   /**
    * A mapping from constant values (BigIntegers and Strings) to corresponding (canonical) TLits.
    */
-  private HashMap<Object, TLit> litsToTypes = new HashMap();
+  private HashMap<Object, TLit> litsToTypes = (new HashMap<Object, TLit>());
 
   /** Write a description of this TypeSet to a PrintWriter. */
   public void dump(PrintWriter out) {
@@ -142,18 +143,19 @@ public class TypeSet {
 
   /**
    * Find a canonical type expression for a type that has Tycon h at its head and arguments given by
-   * the top n types on the stack.
+   * the args types on the top of the stack.
    */
   protected Type canon(Tycon h, int args) {
     Types ts = tyconInstances.get(h); // Find previous uses of this item
     Type t = findMatch(args, ts); // And search for a match
     if (t == null) {
-      t =
-          rebuild(
-              h.canonTycon(this).asType(), args); // If none found, build a canonical representative
-      tyconInstances.put(h, new Types(t, ts)); // Add it to the list
+      // If none found, build a canonical representative ...
+      t = rebuild(h.canonTycon(this).asType(), args);
+      // ... and add it to the list
+      tyconInstances.put(h, new Types(t, ts));
     }
-    return t; // Return the (old or new) canonical representative
+    // Return the (old or new) canonical representative
+    return t;
   }
 
   /**
@@ -186,7 +188,7 @@ public class TypeSet {
    * Find a canonical type expression for a type that has a TVar or a TGen at its head and arguments
    * given by the top n types on the stack. (Any singleton type objects could be used as indices.)
    * We do not expect to encounter cases like this in monomorphic programs produced as a result of
-   * specialization, by including support for them here allows us to use TypeSet values with
+   * specialization, but including support for them here allows us to use TypeSet values with
    * programs that make use of polymorphic types, and also allows the use of TypeSets for rewriting
    * types within type schemes.
    */
@@ -194,11 +196,15 @@ public class TypeSet {
     if (args == 0) { // If there are no arguments, then head is already
       return head; // a canonical representative
     } else {
-      Types ts = otherInstances.get(head); // Find previous uses of this item
-      Type t = findMatch(args, ts); // And search for a match
+      // Find previous uses of this item
+      Types ts = otherInstances.get(head);
+      // And search for a match
+      Type t = findMatch(args, ts);
       if (t == null) {
-        t = rebuild(head, args); // If none found, build a canonical representative
-        otherInstances.put(head, new Types(t, ts)); // Add it to the list
+        // If none found, build a canonical representative
+        t = rebuild(head, args);
+        // Add it to the list
+        otherInstances.put(head, new Types(t, ts));
       }
       return t; // Return the (old or new) canonical representative
     }
@@ -213,11 +219,14 @@ public class TypeSet {
     if (args != 0) {
       debug.Internal.error("kind error: TLits should not have arguments");
     }
-    TLit m = litsToTypes.get(val); // Look for a previous use of a TLit with this value
-    if (m != null) { // And return it if found
+    // Look for a previous use of a TLit with this value
+    TLit m = litsToTypes.get(val);
+    // And return it if found
+    if (m != null) {
       return m;
     }
-    litsToTypes.put(val, n); // Or make it canonical if it's the first occurrence
+    // Or make it canonical if it's the first occurrence
+    litsToTypes.put(val, n);
     return n;
   }
 
@@ -237,10 +246,10 @@ public class TypeSet {
    * Holds a mapping from Tycons in the input program to corresponding canonical versions in the
    * output.
    */
-  private HashMap<Tycon, Tycon> tyconMap = new HashMap();
+  private HashMap<Tycon, Tycon> tyconMap = (new HashMap<Tycon, Tycon>());
 
   /** Records the set of Tycons that are used in the output program. */
-  private HashSet<Tycon> tycons = new HashSet();
+  private HashSet<Tycon> tycons = (new HashSet<Tycon>());
 
   /**
    * Add an entry to the tyconMap, associating a given Tycon with its canonical version in this
@@ -279,10 +288,11 @@ public class TypeSet {
     TreeSet<Tycon> sorted =
         new TreeSet<Tycon>(
             new Comparator<Tycon>() {
-              // TODO: This comparator returns 0 if the two inputs are equal, but otherwise
-              // returns a code obtained by comparing the Tycon ids.  In the event that the
-              // ids are equal, it arbitrarily returns 1.  As such, this is not really a
-              // valid comparator, but it should be enough to ensure we get a sorted output
+              // TODO: This comparator returns 0 if the two inputs are equal,
+              // but otherwise returns a code obtained by comparing the Tycon
+              // ids.  In the event that the ids are equal, it arbitrarily
+              // returns 1.  As such, this is not really a valid comparator,
+              // but it should be enough to ensure we get a sorted output
               // without dropping any elements ...
               public int compare(Tycon l, Tycon r) {
                 if (l.equals(r)) {
@@ -303,46 +313,11 @@ public class TypeSet {
     }
   }
 
+  /** Write LaTeX (tikz) diagrams for relevant types defined in this TypeSet to a PrintWriter. */
   public void dumpTypeDiagrams(PrintWriter out) {
     out.println("\\documentclass{article}");
     out.println("\\usepackage{fullpage}");
-    out.println("\\usepackage{tikz}");
-    out.println("\\usepackage{fancyvrb,newverbs}");
-    out.println();
-    out.println("% General formatting for bitdata diagrams:");
-    out.println("\\definecolor{bitdatacolor}{HTML}{E0F0E0}");
-    out.println("\\newenvironment{bitdatapicture}%");
-    out.println(
-        "  {\\begin{center}\\begin{tikzpicture}[scale=0.1,>=stealth,rectangle,minimum"
-            + " size=0.5cm]}%");
-    out.println("  {\\end{tikzpicture}\\end{center}}");
-    out.println();
-    out.println("% Select where type labels appear:");
-    out.println("\\def\\typelabelAbove#1#2{#1}");
-    out.println("\\def\\typelabelBeside#1#2{#2}");
-    out.println("\\def\\typelabelNone#1#2{}");
-    out.println("\\let\\typelabel\\typelabelAbove % default position of type labels");
-    out.println(
-        "\\let\\shorttypelabel\\typelabelBeside % default position of label for short types");
-    out.println();
-    out.println("% Select where field labels appear:");
-    out.println("\\def\\fieldlabelUnder#1#2#3{#1}");
-    out.println("\\def\\fieldlabelInside#1#2#3{#2}");
-    out.println("\\def\\fieldlabelOver#1#2#3{#3}");
-    out.println("\\def\\fieldlabelNone#1#2#3{}");
-    out.println("\\let\\fieldlabel\\fieldlabelUnder % default position of field labels");
-    out.println(
-        "\\let\\shortfieldlabel\\fieldlabelOver % default position of label for short fields");
-    out.println();
-    out.println("% Formatting of width annotations:");
-    out.println("\\def\\widthSlash#1{\\Verb\"/#1\"}");
-    out.println("\\def\\widthParen#1{\\Verb\"\\,(#1)\"}");
-    out.println(
-        "\\def\\typewidth#1{\\ifnum#1>6\\r"
-            + "elax{\\widthSlash{#1}}\\fi}% #1=typewidth, modify to show fieldwidths");
-    out.println(
-        "\\def\\fieldwidth#1{\\ifnum#1>4\\r"
-            + "elax{\\widthSlash{#1}}\\fi}% #1=fieldwidth, modify to show fieldwidths");
+    BitdataType.dumpDiagramPreamble(out);
     out.println();
     out.println("\\begin{document}");
     for (Tycon tycon : sortedTycons()) {
@@ -352,7 +327,7 @@ public class TypeSet {
   }
 
   /** Cache a mapping of primitives to their canonical versions in this TypeSet. */
-  private HashMap<Prim, Prim> primMap = new HashMap();
+  private HashMap<Prim, Prim> primMap = (new HashMap<Prim, Prim>());
 
   Prim getPrim(Prim p) {
     return primMap.get(p);
@@ -379,10 +354,17 @@ public class TypeSet {
     return cands;
   }
 
+  /**
+   * Calculate a MergeMap that captures the opportunities for merging datatype datatype definitions
+   * in the program used to create this TypeSet.
+   */
   MergeMap mergeMap() {
-    // First, identify candidates for merging (nullary datatypes with at least one constructor):
-    DataTypes[] cands = new DataTypes[4]; // Sort the types by number of constructors
+    // First, identify candidates for merging (nullary datatypes with at
+    // least one constructor):
+    DataTypes[] cands = new DataTypes[4]; // candidates for each # of cfuns
     int numCands = 0;
+
+    // Sort the types by number of constructors
     for (Tycon tycon : tycons) {
       DataType dt = tycon.mergeCandidate();
       if (dt != null && dt != Tycon.unit) { // TODO: why the special case for Unit?
@@ -401,13 +383,15 @@ public class TypeSet {
       }
     }
 
-    // If no candidates were found, then return a null map:
+    // If no candidates found, then return a null map:
     if (numCands == 0) {
       return null;
     }
 
-    // Otherwise compare types more closely to search for equivalent definitions:
+    // Otherwise compare types more closely to search for equivalent
+    // definitions:
     MergeMap mmap = new MergeMap();
+    boolean found = false; // Set to true if possible merges are found
     for (int i = 0; i < cands.length; i++) {
       for (DataTypes dts = cands[i]; dts != null; dts = dts.next) {
         DataType dt = dts.head;
@@ -415,12 +399,15 @@ public class TypeSet {
           mmap.clearAssumed();
           if (dt.sameDataTypeMod(rest.head, mmap)) {
             mmap.confirmAssumed();
+            found = true;
             break;
           }
         }
       }
     }
     mmap.clearAssumed();
-    return mmap;
+    // If we didn't find any merge opportunities among the candidates, then
+    // return null here to avoid an unnecessary program rewrite.
+    return found ? mmap : null;
   }
 }

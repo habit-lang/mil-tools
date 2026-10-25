@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,8 +22,13 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/**
+ * Represents a Call of the form b[as] that calls a MIL block b with the given argument. This
+ * corresponds to a tail call when it appears at the end of a code sequence.
+ */
 public class BlockCall extends Call {
 
+  /** The block for the call. */
   private final Block b;
 
   /** Default constructor. */
@@ -32,22 +37,15 @@ public class BlockCall extends Call {
     b.calledFrom(this);
   }
 
-  /**
-   * Specify block and arguments in a single constructor call (for situations where use of
-   * withArgs() would loose type information).
-   */
+  /** Constructor for calls where arguments are already known. */
   public BlockCall(Block b, Atom[] args) {
     this(b);
     this.args = args;
   }
 
-  /** Test if two Tail expressions are the same. */
-  boolean sameTail(Tail that) {
-    return that.sameBlockCall(this);
-  }
-
-  boolean sameBlockCall(BlockCall that) {
-    return this.b == that.b && this.sameArgs(that);
+  /** Constructor for calls with one argument that is already known. */
+  public BlockCall(Block b, Atom a) {
+    this(b, new Atom[] {a});
   }
 
   /** Find the dependencies of this AST fragment. */
@@ -55,9 +53,19 @@ public class BlockCall extends Call {
     return b.dependencies(super.dependencies(ds));
   }
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
   void dump(PrintWriter out, Temps ts) {
     dump(out, b.toString(), "[", args, "]", ts);
+  }
+
+  /** Test if two Tail expressions are the same. */
+  boolean sameTail(Tail that) {
+    return that.sameBlockCall(this);
+  }
+
+  /** Test whether this Tail is the same as the given BlockCall. */
+  boolean sameBlockCall(BlockCall that) {
+    return this.b == that.b && this.sameArgs(that);
   }
 
   /** Construct a new Call value that is based on the receiver, without copying the arguments. */
@@ -74,21 +82,23 @@ public class BlockCall extends Call {
     return new BlockCall(b, TempSubst.apply(args, s));
   }
 
-  private BlockType type;
+  /** The BlockType instance for this call. */
+  private BlockType btype;
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   TVars tvars(TVars tvs) {
-    return type.tvars(tvs);
+    return btype.tvars(tvs);
   }
 
   /** Return the type tuple describing the result that is produced by executing this Tail. */
   Type resultType() {
-    return type.rngType();
+    return btype.rngType();
   }
 
+  /** Infer a type for this Call expression. */
   Type inferCallType(Position pos, Type[] inputs) throws Failure {
-    type = b.instantiate();
-    return type.apply(pos, inputs);
+    btype = b.instantiate();
+    return btype.apply(pos, inputs);
   }
 
   void invokeCall(MachineBuilder builder, int o) {
@@ -106,7 +116,7 @@ public class BlockCall extends Call {
     builder.jump(b);
   }
 
-  /** Test to determine if this Tail is a BlockCall. */
+  /** Test whether this Tail is an BlockCall. */
   public BlockCall isBlockCall() {
     return this;
   }
@@ -204,8 +214,8 @@ public class BlockCall extends Call {
     return b.doesntReturn();
   }
 
-  boolean detectLoops(
-      Block src, Blocks visited) { // Keep searching while we're still in the same SCC
+  boolean detectLoops(Block src, Blocks visited) {
+    // Keep searching while we're still in the same SCC
     return (src.getScc() == b.getScc()) && b.detectLoops(new Blocks(src, visited));
   }
 
@@ -282,11 +292,12 @@ public class BlockCall extends Call {
   }
 
   /**
-   * A simple test for MIL code fragments that return a known Flag, returning either the constant or
-   * null.
+   * A simple test for MIL code fragments that return a known Flag; this is a helper for the method
+   * without an argument that adds a counter that is decreased for every BlockCall encountered to
+   * avoid triggering an unbounded loop in pathological corner cases.
    */
-  Flag returnsFlag() {
-    return args.length == 0 ? b.returnsFlag() : null;
+  Flag returnsFlag(int n) {
+    return (args.length == 0 && n >= 0) ? b.returnsFlag(n - 1) : null;
   }
 
   public Code rewrite(Defn d, Facts facts) {
@@ -299,15 +310,17 @@ public class BlockCall extends Call {
   }
 
   BlockCall rewriteBlockCall(Defn d, Facts facts, boolean allowWord) {
-    // Look for an opportunity to short out a Case if this block branches to a Case for a variable
-    // that has a known DataAlloc value in the current set of facts.
+    // Look for an opportunity to short out a Case if this block
+    // branches to a Case for a variable that has a known DataAlloc
+    // value in the current set of facts.
     BlockCall bc = this.shortCase(facts);
     bc = (bc == null) ? this : bc.inlineBlockCall();
 
     // Look for an opportunity to specialize on known constructors:
-    // TODO: When we find, b16[t109, id, t110]{-, k35{}, -}, it isn't necessarily a good idea to
-    // create a specialized block if the id <- k35{} line appears in this block (i.e., if id is
-    // local, not a top level value) and id is used elsewhere in the block.
+    // TODO: When we find, b16[t109, id, t110]{-, k35{}, -}, it isn't
+    // necessarily a good idea to create a specialized block if the
+    // id <- k35{} line appears in this block (i.e., if id is local,
+    // not a top level value) and id is used elsewhere in the block.
     Call[] calls = bc.b.collectCalls(bc.args, facts, allowWord);
     if (calls != null) {
       BlockCall bc1 = bc.deriveWithKnownCons(d, calls);
@@ -318,7 +331,8 @@ public class BlockCall extends Call {
       }
     }
 
-    // Look for an opportunity to simplify a BlockCall with duplicate arguments.
+    // Look for an opportunity to simplify a BlockCall with
+    // duplicate arguments.
     int[] dups = bc.hasDuplicateArgs();
     if (dups != null) {
       BlockCall bc1 = bc.deriveWithDuplicateArgs(dups);
@@ -349,7 +363,8 @@ public class BlockCall extends Call {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return summary(b.summary()) * 33;
@@ -376,15 +391,15 @@ public class BlockCall extends Call {
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
-    if (type != null) {
-      type = type.canonBlockType(set);
+    if (btype != null) {
+      btype = btype.canonBlockType(set);
     }
     Atom.collect(args, set);
   }
 
   /** Generate a specialized version of this Call. */
   Call specializeCall(MILSpec spec, TVarSubst s, SpecEnv env) {
-    return new BlockCall(spec.specializedBlock(b, type.apply(s)));
+    return new BlockCall(spec.specializedBlock(b, btype.apply(s)));
   }
 
   /**
@@ -393,7 +408,7 @@ public class BlockCall extends Call {
    */
   BlockCall specializeBlockCall(MILSpec spec, TVarSubst s, SpecEnv env) {
     return new BlockCall(
-        spec.specializedBlock(b, type.apply(s)), Atom.specialize(spec, s, env, args));
+        spec.specializedBlock(b, btype.apply(s)), Atom.specialize(spec, s, env, args));
   }
 
   BlockCall repTransformBlockCall(RepTypeSet set, RepEnv env) {
@@ -420,13 +435,12 @@ public class BlockCall extends Call {
    * the code for a current function to the list bs.
    */
   Blocks identifyBlocks(Defn src, Blocks bs) {
-    // Don't add to the list if this block is already included, or if the block that is called here
-    // is in
-    // a different scc and is the target of a (non tail) call elsewhere in the program.
-    if (Blocks.isIn(b, bs) // Don't add if this block is already included
-        || (b.getScc() != src.getScc() //  or if it is in a different SCC
-                && b.getNumberCalls() != 0) //        that is called elsewhere as a regular function
-            && !b.isSmall()) { //        and that is not small (i.e., it does nontrivial work)
+    // Don't add if this block is already included
+    //  or if it is in a different SCC
+    //        that is called elsewhere as a regular function
+    //        and that is not small (i.e., it does nontrivial work)
+    if (Blocks.isIn(b, bs)
+        || (b.getScc() != src.getScc() && b.getNumberCalls() != 0) && !b.isSmall()) {
       return bs;
     }
     return b.identifyBlocks(new Blocks(b, bs));

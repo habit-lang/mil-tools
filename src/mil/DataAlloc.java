@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,8 +22,13 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/**
+ * Represents a Call of the form cf(as) that builds a data value with constructor function cf and
+ * arguments as.
+ */
 public class DataAlloc extends Allocator {
 
+  /** The constructor for the call. */
   private Cfun cf;
 
   /** Default constructor. */
@@ -31,33 +36,46 @@ public class DataAlloc extends Allocator {
     this.cf = cf;
   }
 
+  /** Constructor for calls where arguments are already known. */
+  public DataAlloc(Cfun cf, Atom[] args) {
+    this(cf);
+    this.args = args;
+  }
+
+  /** Constructor for calls with one argument that is already known. */
+  public DataAlloc(Cfun cf, Atom a) {
+    this(cf, new Atom[] {a});
+  }
+
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
+  void dump(PrintWriter out, Temps ts) {
+    dump(out, cf.toString(), "(", args, ")", ts);
+  }
+
   /** Test if two Tail expressions are the same. */
   boolean sameTail(Tail that) {
     return that.sameDataAlloc(this);
   }
 
+  /** Test whether this Tail is the same as the given DataAlloc. */
   boolean sameDataAlloc(DataAlloc that) {
     return this.cf == that.cf && this.sameArgs(that);
   }
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  void dump(PrintWriter out, Temps ts) {
-    dump(out, cf.toString(), "(", args, ")", ts);
-  }
-
   /** Construct a new Call value that is based on the receiver, without copying the arguments. */
   Call callDup(Atom[] args) {
-    return cf.withArgs(args);
+    return new DataAlloc(cf, args);
   }
 
-  private AllocType type;
+  /** The AllocType instance for this call. */
+  private AllocType ltype;
 
-  /** The type tuple that describes the outputs of this Tail. */
+  /** Records the type tuple that describes the outputs of this Tail. */
   private Type outputs;
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   TVars tvars(TVars tvs) {
-    return type.tvars(tvs);
+    return ltype.tvars(tvs);
   }
 
   /** Return the type tuple describing the result that is produced by executing this Tail. */
@@ -65,9 +83,10 @@ public class DataAlloc extends Allocator {
     return outputs;
   }
 
+  /** Infer a type for this Call expression. */
   Type inferCallType(Position pos, Type[] inputs) throws Failure {
-    type = cf.instantiate();
-    return outputs = Type.tuple(type.alloc(pos, inputs));
+    ltype = cf.instantiate();
+    return outputs = Type.tuple(ltype.alloc(pos, inputs));
   }
 
   void invokeCall(MachineBuilder builder, int o) {
@@ -119,8 +138,8 @@ public class DataAlloc extends Allocator {
   }
 
   /**
-   * Test to determine whether this Tail value corresponds to a data allocator, returning either a
-   * DataAlloc value, or else a null result.
+   * Test whether this Tail value corresponds to a data allocator, returning either a DataAlloc
+   * value, or else a null result.
    */
   DataAlloc lookForDataAlloc() {
     return this;
@@ -136,7 +155,8 @@ public class DataAlloc extends Allocator {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return summary(cf.summary()) * 33 + 2;
@@ -154,8 +174,8 @@ public class DataAlloc extends Allocator {
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
-    if (type != null) {
-      type = type.canonAllocType(set);
+    if (ltype != null) {
+      ltype = ltype.canonAllocType(set);
     }
     if (outputs != null) {
       outputs = outputs.canonType(set);
@@ -169,12 +189,15 @@ public class DataAlloc extends Allocator {
    * that simply returns the original argument of the constructor or selector.
    */
   Tail removeNewtypeCfun() {
-    if (cf.isNewtype()) { // Look for use of a newtype constructor
+    if (cf.isNewtype()) {
+      // Look for use of a newtype constructor
       if (args == null || args.length != 1) {
         debug.Internal.error("newtype constructor with arity!=1");
       }
-      return new Return(args[0]); // and generate a Return instead
-    } else if (cf.isSingleton() && cf != Cfun.Unit) { // Look for a use of a singleton constructor
+      // and generate a Return instead
+      return new Return(args[0]);
+    } else if (cf.isSingleton() && cf != Cfun.Unit) {
+      // Look for a use of a singleton constructor
       return new DataAlloc(Cfun.Unit).withArgs();
     }
     return this;
@@ -182,23 +205,31 @@ public class DataAlloc extends Allocator {
 
   /** Generate a specialized version of this Call. */
   Call specializeCall(MILSpec spec, TVarSubst s, SpecEnv env) {
-    return new DataAlloc(cf.specializeCfun(spec, type, s));
+    return new DataAlloc(cf.specializeCfun(spec, ltype, s));
   }
 
+  /** Rewrite this tail to use the bitdata representations provided by BitdataMap. */
   Tail bitdataRewrite(BitdataMap m) {
-    BitdataRep r = cf.findRep(m); // Look for a possible change of representation
-    if (r == null) { // No new representation for this type
+    // Look for a possible change of representation
+    BitdataRep r = cf.findRep(m);
+    if (r == null) {
+      // No new representation for this type
       return this;
-    } else if (cf.getArity()
-        == 0) { // Representation change, but nullary so there is no layout constructor
-      return new DataAlloc(cf.bitdataRewrite(r)).withArgs(args);
-    } else { // Representation change, requires layout constructor
-      return new BlockCall(cf.bitdataConsBlock(r)).withArgs(args);
+    } else if (cf.getArity() == 0) {
+      // Representation change, but nullary so there is no layout constructor
+      return new DataAlloc(cf.bitdataRewrite(r), args);
+    } else {
+      // Representation change, requires layout constructor
+      return new BlockCall(cf.bitdataConsBlock(r), args);
     }
   }
 
+  /**
+   * Generate a new version of this Tail to update references to constructor functions consistent
+   * with the datatype equalities in the given MergeMap.
+   */
   Tail mergeRewrite(MergeMap mmap) {
-    return new DataAlloc(cf.lookup(mmap)).withArgs(args);
+    return new DataAlloc(cf.lookup(mmap), args);
   }
 
   Tail repTransform(RepTypeSet set, RepEnv env) {
@@ -211,7 +242,7 @@ public class DataAlloc extends Allocator {
    */
   llvm.Value staticAlloc(LLVMMap lm, llvm.Program prog, llvm.Value[] vals) {
     vals[0] = new llvm.Word(cf.getNum()); // add tag at front of object
-    return staticAlloc(prog, vals, lm.cfunLayoutType(cf), cf.dataPtrType(lm));
+    return staticAlloc(prog, vals, lm.cfunLayoutType(cf));
   }
 
   /**
@@ -232,15 +263,7 @@ public class DataAlloc extends Allocator {
    */
   llvm.Code toLLVMBindCont(
       LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Local lhs, llvm.Code c) {
-    llvm.Type objt = lm.cfunLayoutType(cf).ptr(); // type of a pointer to a cf object
-    llvm.Local obj = vm.reg(objt); // a register to point to the new object
-    return alloc(
-        lm,
-        vm,
-        s,
-        objt,
-        obj,
-        new llvm.Word(cf.getNum()),
-        new llvm.Op(lhs, new llvm.Bitcast(obj, cf.retType(lm)), c));
+    llvm.Type objt = lm.cfunLayoutType(cf); // type of a cf object
+    return alloc(lm, vm, s, objt, lhs, new llvm.Word(cf.getNum()), c);
   }
 }

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -41,12 +41,13 @@ class AreaVar extends Name {
     if (milenv.findTop(id) != null) {
       handler.report(
           new Failure(
-              pos, "area definition conflicts with previous definition for \"" + id + "\""));
+              pos, "area definition conflicts " + "with previous definition for \"" + id + "\""));
     } else {
       // Create new area with an initializer to be filled in later ...
       area = new MemArea(pos, id, alignment, areaType, size);
-      area.setDeclared(handler, pos, refType);
-      milenv.addTop(id, new TopArea(refType, area)); // ... and add it to the MIL environment
+      area.setDeclared(pos, refType);
+      // ... and add it to the MIL environment
+      milenv.addTop(id, new TopArea(refType, area));
     }
   }
 

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -30,25 +30,27 @@ abstract class CodeExp {
     this.pos = pos;
   }
 
-  Tail toTail(Handler handler, MILEnv milenv, String[] ids, Temp[] ps, String[] args, Temp[] as) {
+  Tail toTail(Handler handler, MILEnv milenv, String[] ids, Temp[] ps, String[] args, Temp[] as)
+      throws Failure {
     Temp[] bps = Temp.makeTemps(ids.length);
     Temp[] bas = Temp.makeTemps(args.length);
     Code c = this.inScopeOf(handler, milenv, new TempEnv(args, bas, new TempEnv(ids, bps, null)));
     Block b = new Block(pos, Temp.append(bps, bas), c);
-    return new BlockCall(b).withArgs(Temp.append(ps, as));
+    return new BlockCall(b, Temp.append(ps, as));
   }
 
   Tail toTail(Handler handler, MILEnv milenv, String[] args) throws Failure {
     int n = args.length;
     Temp[] ps = Temp.makeTemps(n);
     Block b = new Block(pos, ps, this.inScopeOf(handler, milenv, new TempEnv(args, ps, null)));
-    return new BlockCall(b).maker(pos, n); // NOTE: types for generated code will be inferred
+    // NOTE: types for generated code will be inferred
+    return new BlockCall(b).maker(pos, n);
   }
 
   /**
    * Perform scope analysis on the AST for a sequence of code, checking that all of the referenced
    * identifiers are in scope, introducing new temporaries for each identifier that is bound in a
-   * BindExp, and returning the corresponding mil Code sequence.
+   * BindExp, and returning the corresponding MIL Code sequence.
    */
-  abstract Code inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv);
+  abstract Code inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) throws Failure;
 }

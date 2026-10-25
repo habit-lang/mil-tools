@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,7 +22,8 @@ import compiler.*;
 import mil.*;
 
 /**
- * A null-terminated linked list of items that can be accessed using (public) head and next fields.
+ * A null-terminated linked list of CoreDefn objects that can be accessed using (public) head and
+ * next fields.
  */
 public class CoreDefns {
 
@@ -98,8 +99,8 @@ public class CoreDefns {
   }
 
   /**
-   * Calculate the strongly connected components of a list of Xs that have been augmented with
-   * dependency information.
+   * Calculate the strongly connected components of a list of CoreDefns that have been augmented
+   * with dependency information.
    */
   public static CoreDefnSCCs scc(CoreDefns xs) {
     // Run the two depth-first searches of the main algorithm.

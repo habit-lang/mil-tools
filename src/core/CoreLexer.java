@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -31,34 +31,64 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
   public CoreLexer(Handler handler, Source source) {
     super(handler, source);
     reserved = new HashMap<String, Integer>();
+
     reserved.put("=", Integer.valueOf(EQ));
+
     reserved.put("::", Integer.valueOf(COCO));
+
     reserved.put("|", Integer.valueOf(BAR));
+
     reserved.put(".", Integer.valueOf(DOT));
+
     reserved.put("_", Integer.valueOf(UNDER));
+
     reserved.put("<-", Integer.valueOf(FROM));
+
     reserved.put("->", Integer.valueOf(TO));
+
     reserved.put("require", Integer.valueOf(REQUIRE));
+
     reserved.put("export", Integer.valueOf(EXPORT));
+
     reserved.put("entrypoint", Integer.valueOf(ENTRYPOINT));
+
     reserved.put("external", Integer.valueOf(EXTERNAL));
+
     reserved.put("infix", Integer.valueOf(INFIX));
+
     reserved.put("infixl", Integer.valueOf(INFIXL));
+
     reserved.put("infixr", Integer.valueOf(INFIXR));
+
     reserved.put("data", Integer.valueOf(DATA));
+
     reserved.put("type", Integer.valueOf(TYPE));
+
     reserved.put("area", Integer.valueOf(AREA));
+
     reserved.put("struct", Integer.valueOf(STRUCT));
+
     reserved.put("bitdata", Integer.valueOf(BITDATA));
+
     reserved.put("aligned", Integer.valueOf(ALIGNED));
+
     reserved.put("#", Integer.valueOf(PROXY));
+
     reserved.put("case", Integer.valueOf(CASE));
+
     reserved.put("of", Integer.valueOf(OF));
+
     reserved.put("if", Integer.valueOf(IF));
+
     reserved.put("then", Integer.valueOf(THEN));
+
     reserved.put("else", Integer.valueOf(ELSE));
+
     reserved.put("let", Integer.valueOf(LET));
+
     reserved.put("in", Integer.valueOf(IN));
+
+    reserved.put("where", Integer.valueOf(WHERE));
   }
 
   /** Return a printable representation of the current token. */
@@ -157,6 +187,8 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
         return "\"let\" keyword";
       case IN:
         return "\"in\" keyword";
+      case WHERE:
+        return "\"where\" keyword";
     }
     return (lexeme == null) ? "lexeme" : ("lexeme, \"" + lexeme + "\"");
   }
@@ -229,12 +261,12 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
             int start = col;
             nextChar();
             if (c == '-') {
-              /* Haskell is, IMHO, broken in its attempt to apply maximal munch to one
-               * line comments.  But, in the interests of avoiding unnecessary
-               * differences, we follow its lead here.  A better approach would be to
-               * replace this block with: nextLine(); break;
-               * TODO: revisit this decision!
-               */
+              /* Haskell is, IMHO, broken in its attempt to apply
+               * maximal munch to one line comments.  But, in the
+               * interests of avoiding unnecessary differences,
+               * we follow its lead here.  A better approach would
+               * be to replace this block with: nextLine(); break;
+               * TODO: revisit this decision! */
               do {
                 nextChar();
               } while (c == '-');
@@ -247,8 +279,8 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
             return symbol(start);
           }
 
-        default:
-          if (Character.digit((char) c, 10) >= 0) { // check digits first (also matches isIdsym)
+        default: // check digits first (also matches isIdsym)
+          if (Character.digit((char) c, 10) >= 0) {
             return number();
           } else if (isIdsym((char) c)) {
             return identifier(col);
@@ -482,7 +514,8 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
     nat = BigInteger.valueOf(val);
   }
 
-  private int escapeChar() throws Failure { // Assumes initial '\\' has been skipped already
+  private int escapeChar() throws Failure {
+    // Assumes initial '\\' has been skipped already
     switch (c) {
       case 'o':
         nextChar();
@@ -511,7 +544,8 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
         }
         for (int i = 0; i < escCodes.length; i++) {
           String str = escCodes[i];
-          int len = str.length() - 2; // subtract one for init char, one for space
+          // subtract one for init char, one for space
+          int len = str.length() - 2;
           if (str.regionMatches(2, line, col, len)) {
             nextChar(len);
             return str.charAt(0);
@@ -634,9 +668,8 @@ public class CoreLexer extends SourceLexer implements CoreTokens {
   }
 
   /**
-   * Test to determine whether a given identifier represents a bit vector literal. If the result is
-   * true, then the width (total number of bits) is placed in numBits and the value is placed in
-   * nat.
+   * Test whether a given identifier represents a bit vector literal. If the result is true, then
+   * the width (total number of bits) is placed in numBits and the value is placed in nat.
    */
   private boolean isBitLiteral(String s) {
     int width;

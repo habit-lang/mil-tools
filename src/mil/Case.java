@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -41,17 +41,12 @@ public class Case extends Code {
     this.alts = alts;
   }
 
-  /** Test for a free occurrence of a particular variable. */
-  boolean contains(Temp w) {
-    return a == w || alts.contains(w);
-  }
-
   /** Find the dependencies of this AST fragment. */
   Defns dependencies(Defns ds) {
     return a.dependencies(alts.dependencies(ds));
   }
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
   void dump(PrintWriter out, Temps ts) {
     indentln(out, "case " + a.toString(ts) + " of");
     alts.dump(out, ts);
@@ -66,6 +61,7 @@ public class Case extends Code {
     return new Case(a.apply(s), alts.apply(s));
   }
 
+  /** The type of the discriminant (the domain of the alternatives) of this Case construct. */
   private Type dom;
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
@@ -73,6 +69,10 @@ public class Case extends Code {
     return alts.tvars(tvs);
   }
 
+  /**
+   * Infer a type for this code sequence. TODO: use more fine-grained position information instead
+   * of passing around the position of the enclosing Defn.
+   */
   Type inferType(Position pos) throws Failure { // case a of alts [; _ -> def]
     dom = a.instantiate();
     Type rng = new TVar(Tyvar.tuple);
@@ -87,6 +87,11 @@ public class Case extends Code {
   void generateCode(MachineBuilder builder, int o) {
     a.load(builder);
     alts.generateCode(builder, o);
+  }
+
+  /** Test for a free occurrence of a particular variable. */
+  boolean contains(Temp w) {
+    return a == w || alts.contains(w);
   }
 
   /**
@@ -140,7 +145,8 @@ public class Case extends Code {
    */
   Code cleanup(Block src) {
     BlockCall bc = alts.sameBlockCalls();
-    if (bc != null) { // Rewrite a case in which all of the targets are the same
+    if (bc != null) {
+      // Rewrite a case in which all of the targets are the same
       MILProgram.report("eliminated a case with the same block in each branch in " + src);
       return new Done(bc);
     }
@@ -216,10 +222,10 @@ public class Case extends Code {
   }
 
   /**
-   * Test to see if this code is a Case that can be shorted out. Even if we find a Case, we still
-   * need to check for a relevant item in the set of Facts (after applying a substitution that
-   * captures the result of entering the block that starts with the Case). Again, if it turns out
-   * that the optimization cannot be used, then we return null.
+   * Test whether this code is a Case that can be shorted out. Even if we find a Case, we still need
+   * to check for a relevant item in the set of Facts (after applying a substitution that captures
+   * the result of entering the block that starts with the Case). Again, if it turns out that the
+   * optimization cannot be used, then we return null.
    */
   BlockCall shortCase(Temp[] params, Atom[] args, Facts facts) {
     TempSubst s = TempSubst.extend(params, args, null);
@@ -241,7 +247,8 @@ public class Case extends Code {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return alts.summary();
@@ -289,9 +296,8 @@ public class Case extends Code {
       else notused = i; // record index of an unused constructor
     }
 
-    // If all constructor numbers have been listed, then we can eliminate the default case and look
-    // for a
-    // possible newtype match:
+    // If all constructor numbers have been listed, then we can eliminate
+    // the default case and look for a possible newtype match:
     if (count == used.length) {
       if (count == 1) { // Look for a single constructor type:
         MILProgram.report("eliminating case on single constructor type");
@@ -299,8 +305,8 @@ public class Case extends Code {
       }
       alts = alts.elimDefAlt(); // Eliminate the default case
     } else if (count == used.length - 1) {
-      // For better flow results, promote a default to a regular alternative with the unused
-      // constructor:
+      // For better flow results, promote a default to a regular alternative
+      // with the unused constructor:
       alts = alts.promoteDefault(used[(notused == 0) ? 1 : 0].getCfuns()[notused]);
     }
     return this;
@@ -311,10 +317,15 @@ public class Case extends Code {
     return new Case(a.specializeAtom(spec, s, env), alts.specializeAlts(spec, s, env));
   }
 
+  /** Rewrite this code sequence to use the bitdata representations provided by BitdataMap. */
   Code bitdataRewrite(BitdataMap m) {
     return new Case(a, alts.bitdataRewrite(m));
   }
 
+  /**
+   * Generate a new version of this code sequence to update references to constructor functions
+   * consistent with the datatype equalities in the given MergeMap.
+   */
   Code mergeRewrite(MergeMap mmap) {
     return new Case(a, alts.mergeRewrite(mmap));
   }
@@ -364,25 +375,32 @@ public class Case extends Code {
     if (n == 0) {
       debug.Internal.error("zero outdegree match");
     }
-    String def = succs[--n].label(); // Use the last alternative as a default
-    if (n == 0) { // Make a direct jump if there are no other alternatives
+    // Use the last alternative as a default
+    String def = succs[--n].label();
+    if (n == 0) {
+      // Make a direct jump if there are no other alternatives
       return new llvm.Goto(def);
     } else {
       llvm.Value[] nums = new llvm.Value[n];
       String[] labs = new String[n];
       alts.collectAlts(nums, labs, succs, n - 1);
-      llvm.Type dt = LLVMMap.tagType(); // the type of the tag
-      llvm.Local tag = vm.reg(dt); // a register to hold the tag
-      llvm.Type at = dt.ptr(); // the type of pointers to the tag
-      llvm.Local addr = vm.reg(at); // a register that points to the tag
+      // the type of the tag
+      llvm.Type dt = LLVMMap.tagType();
+      // a register to hold the tag
+      llvm.Local tag = vm.reg(dt);
+      // a register that points to the tag
+      llvm.Local addr = vm.reg(llvm.Type.ptr);
+      // the type we're pattern matching on
+      llvm.Type objt = lm.dataLayout();
       return new llvm.CodeComment(
           "read the tag for a data object",
           new llvm.Op(
               addr,
-              new llvm.Getelementptr(at, a.toLLVMAtom(lm, vm, s), llvm.Word.ZERO, llvm.Index.ZERO),
+              new llvm.Getelementptr(
+                  objt, a.toLLVMAtom(lm, vm, s), llvm.Word.ZERO, llvm.Index.ZERO),
               new llvm.Op(
                   tag,
-                  new llvm.Load(addr),
+                  new llvm.Load(dt, addr),
                   new llvm.CodeComment(
                       "branch based on the tag value", new llvm.Switch(tag, nums, labs, def)))));
     }

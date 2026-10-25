@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** Represents a fatbar expression, l | r. */
 class EFatbar extends PosExpr {
 
   private Expr l;
@@ -121,7 +122,7 @@ class EFatbar extends PosExpr {
       final Block abort,
       final Type kty,
       final TailCont kt) { //  l | r  ::  Proc argt
-    final Type rty = type.argOf(null); // type of final result for this expression
+    final Type rty = type.argOf(null); // type of final result
     final Temp rv = new Temp(rty);
     final Block join = new LCBlock(pos, kty, kt.with(new Return(rv)));
     TailCont kt1 =

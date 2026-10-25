@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,7 +22,8 @@ import compiler.*;
 import core.*;
 
 /**
- * A null-terminated linked list of items that can be accessed using (public) head and next fields.
+ * A null-terminated linked list of LinearEqn objects that can be accessed using (public) head and
+ * next fields.
  */
 public class LinearEqns {
 
@@ -36,23 +37,25 @@ public class LinearEqns {
     this.next = next;
   }
 
-  public static void display(LinearEqns eqns) {
-    for (; eqns != null; eqns = eqns.next) {
-      System.out.println("   " + eqns.head);
-    }
-  }
-
+  /**
+   * Solve a set of linear equations, or throw an exception if there are multiple (or no) solutions.
+   */
   public static void solve(LinearEqns eqns) throws Failure {
-    LinearEqns deferred = null; // The list of equations that we were not able to solve immediately
+    // The list of equations that we were not able to solve immediately
+    LinearEqns deferred = null;
     while (eqns != null) {
       LinearEqn eqn = eqns.head;
-      if (eqn.solved()) { // If we can solve this equation immediately, then skip it
+      if (eqn.solved()) {
+        // If we can solve this equation immediately, then skip it
         eqns = eqns.next;
         for (LinearEqns es = eqns; es != null; es = es.next) {
-          es.head.solved(); // Ensure invariant on es.head still holds following solve of eqn
+          // Ensure invariant on es.head still holds following solve of eqn
+          es.head.solved();
         }
-      } else { // Otherwise, defer this equation after eliminating its first variable
-        LinearEqns es = eqns.next; // from all of the remaining equations
+      } else {
+        // Otherwise, defer this equation after eliminating its first
+        // variable from all of the remaining equations
+        LinearEqns es = eqns.next;
         eqns.next = deferred;
         deferred = eqns;
         for (eqns = es; es != null; es = es.next) {
@@ -61,7 +64,8 @@ public class LinearEqns {
       }
     }
     for (; deferred != null; deferred = deferred.next) {
-      if (!deferred.head.solved()) { // Still not solved?  Then we have multiple solutions:
+      if (!deferred.head.solved()) {
+        // Still not solved?  Then we have multiple solutions:
         throw new MultipleSolutionsFailure(deferred.head);
       }
     }

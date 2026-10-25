@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -118,18 +118,26 @@ public class BitdataLayout extends DataName {
     return cfuns[0];
   }
 
+  /** Return the width (in bits) of this layout. */
   public int getWidth() {
     return pat.getWidth();
   }
 
+  /** Determine whether this is a nullary/constant layout (no fields). */
   public boolean isNullary() {
     return fields.length == 0;
   }
 
+  /**
+   * Return the type of the constructor function for this layout. If the associated bitdata type is
+   * T, then the constructor type for this layout is T.C -> T, except in the nullary case when we
+   * can use just T as the type.
+   */
   public AllocType cfunType() {
     return new AllocType((isNullary() ? Type.noTypes : new Type[] {this.asType()}), bt.asType());
   }
 
+  /** Output information about this type for debugging purposes. */
   public void debugDump() {
     debug.Log.println(
         "Constructor "
@@ -179,7 +187,8 @@ public class BitdataLayout extends DataName {
     for (int i = 0; i < fields.length; i++) {
       offset = fields[i].fieldDiagram(out, tagbits, offset, bitSize);
     }
-    BitdataField.tagbitsDiagram(out, offset, 0, tagbits, bitSize); // Draw any trailing tag bits
+    // Draw any trailing tag bits
+    BitdataField.tagbitsDiagram(out, offset, 0, tagbits, bitSize);
     out.println("\\end{bitdatapicture}");
   }
 
@@ -189,20 +198,23 @@ public class BitdataLayout extends DataName {
    * (subclasses of) DataName.
    */
   Tycon makeCanonTycon(TypeSet set) {
-    bt.canonTycon(set); // force the calculation of the associated canonical BitdataType ...
-    return set.mapsTyconTo(
-        this); // ... to ensure that the associated layout has been added to the set
+    // force the calculation of the associated canonical BitdataType ...
+    bt.canonTycon(set);
+    // ... to ensure that the associated layout has been added to the set
     // (even if it hasn't been fully initialized yet).
+    return set.mapsTyconTo(this);
   }
 
   /** Make a new version of this bitdata layout using types that are canonical wrt the given set. */
   BitdataLayout makeCanonBitdataLayout(TypeSet set, BitdataType newBt) {
-    BitdataLayout nlayout =
-        new BitdataLayout(pos, id, newBt, tagbits, fields, pat); // use old fields to begin ...
+    // Use old fields to begin ...
+    BitdataLayout nlayout = new BitdataLayout(pos, id, newBt, tagbits, fields, pat);
     nlayout.maskTest = maskTest;
     nlayout.maskTestBlock = maskTestBlock;
     nlayout.constructorBlock = constructorBlock;
-    set.mapTycon(this, nlayout); // Add mapping from old layout to canonical version
+
+    // Add mapping from old layout to canonical version
+    set.mapTycon(this, nlayout);
     return nlayout;
   }
 
@@ -221,6 +233,10 @@ public class BitdataLayout extends DataName {
     addCfun(); // and then calculate the new Cfun
   }
 
+  /**
+   * Construct a set of bitdata constructor functions, with one constructor for each of the given
+   * bitdata layouts.
+   */
   static Cfun[] calcCfuns(BitdataLayout[] layouts) {
     Cfun[] cfuns = new Cfun[layouts.length];
     for (int i = 0; i < layouts.length; i++) {
@@ -309,9 +325,11 @@ public class BitdataLayout extends DataName {
       Temp[][] args = new Temp[fields.length][]; // args for each input
       Temp[] ws = Temp.makeTemps(n);
       code = new Done(new Return(Temp.clone(ws)));
-      // (Clone ws so that we are free to change its elements without modifying the code in c.)
+      // (Clone ws so that we are free to change its elements without
+      // modifying the code in c.)
 
-      // Add code to set each field (assuming that each field is already zero-ed out):
+      // Add code to set each field (assuming that each field is already
+      // zero-ed out):
       for (int k = 0; k < fields.length; k++) {
         int w = fields[k].getWidth();
         if (w > 0) { // add arguments for this field, and code to insert into result
@@ -403,18 +421,18 @@ public class BitdataLayout extends DataName {
         Atom[] as = new Atom[] {vs[0], mask[n - i], bits[n - i]};
         Code c;
         if (i == 1) {
-          // This branch is used when we are testing the last word of the input, so the final result
-          // will be
-          // determined exclusively by the result of this comparison.
+          // This branch is used when we are testing the last word of the
+          // input, so the final result will be determined exclusively by
+          // the result of this comparison.
           c = new Done(new BlockCall(eq ? bmaskneq : bmaskeq, as));
         } else {
-          // This branch is used when there are still other words to compare.  Each of these tests
-          // uses a call to
-          // bmaskeq.  If the result is false, then we can return immediately.  If the result is
-          // true, then we will
-          // need to consider subsequent words anyway (either to confirm that all bits or equal, or
-          // because we are
-          // still looking for a place where the input differs from what is required).
+          // This branch is used when there are still other words to compare.
+          // Each of these tests uses a call to bmaskeq.  If the result is
+          // false, then we can return immediately.  If the result is true,
+          // then we will need to consider subsequent words anyway (either
+          // to confirm that all bits or equal, or because we are still
+          // looking for a place where the input differs from what is
+          // required).
           Temp t = new Temp();
           c =
               new Bind(

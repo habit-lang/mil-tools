@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -23,7 +23,13 @@ import mil.*;
 
 public class KindMismatchFailure extends Failure {
 
-  public KindMismatchFailure(TypeExp t, Kind kind1, Kind kind2) {
-    super(t.position(), "Cannot unify kinds \"" + kind1 + "\" and \"" + kind2 + "\"");
+  public KindMismatchFailure(TypeExp t, Kind kexpected, Kind kinferred) {
+    super(
+        t.position(),
+        "Cannot unify expected kind \""
+            + kexpected
+            + "\" with inferred kind \""
+            + kinferred
+            + "\"");
   }
 }

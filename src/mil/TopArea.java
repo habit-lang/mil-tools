@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,6 +21,7 @@ package mil;
 import compiler.*;
 import core.*;
 
+/** Represents the area address introduced by an area definition. */
 public class TopArea extends Top {
 
   private Area area;
@@ -35,12 +36,19 @@ public class TopArea extends Top {
     this(null, area);
   }
 
-  public Top clone() {
-    return new TopArea(type, area);
+  /** Return the definition associated with this Top object. */
+  public Defn getDefn() {
+    return area;
   }
 
+  /** Return the identifer referenced by this Top. */
   public String getId() {
     return area.getId();
+  }
+
+  /** Create a clone of this Top object. */
+  public Top clone() {
+    return new TopArea(type, area);
   }
 
   /**
@@ -49,29 +57,15 @@ public class TopArea extends Top {
    * values.
    */
   boolean sameAtom(Atom that) {
-    return that.sameTopArea(area);
+    return that.sameTopArea(this);
   }
 
-  /** Test to determine whether this Atom refers to the specified Area. */
-  boolean sameTopArea(Area area) {
-    return this.area == area;
+  /** Test whether this Atom is the same as the given TopArea. */
+  boolean sameTopArea(TopArea that) {
+    return this.area == that.area;
   }
 
-  /** Return the definition associated with this Top object. */
-  public Defn getDefn() {
-    return area;
-  }
-
-  /** Find the dependencies of this AST fragment. */
-  Defns dependencies(Defns ds) {
-    return area.dependencies(ds);
-  }
-
-  /** Return a type for an instantiated version of this item when used as Atom (input operand). */
-  public Type instantiate() {
-    return type = area.instantiate();
-  }
-
+  /** Return the declared type for this Top. */
   public Scheme getDeclared() {
     return area.getDeclared();
   }
@@ -90,8 +84,13 @@ public class TopArea extends Top {
     return null;
   }
 
+  /**
+   * Determine the specialized version of an Atom in a context described by a given @TVarSubst@
+   * and @SpecEnv@.
+   */
   Atom specializeAtom(MILSpec spec, TVarSubst s, SpecEnv env) {
-    // (Substitution is not expected to have an effect on monomorphic area type)
+    // (Substitution s is not expected to have an effect on a monomorphic
+    // area type, but we apply it anyway, just to be sure.)
     return area.specializeArea(spec, type.apply(s));
   }
 
@@ -99,8 +98,8 @@ public class TopArea extends Top {
     return new Atom[] {new TopArea(null, area)};
   }
 
-  public void setDeclared(Handler handler, Position pos, Scheme scheme) {
-    area.setDeclared(handler, pos, scheme);
+  public void setDeclared(Position pos, Scheme scheme) throws Failure {
+    area.setDeclared(pos, scheme);
   }
 
   public llvm.Value staticValue() {

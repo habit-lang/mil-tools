@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -27,13 +27,15 @@ import java.util.TreeSet;
 import obdd.Pat;
 
 /**
- * Requests the generation of an implementation for an external using a given tag and list of type
- * parameters.
+ * Represents an implementation strategy that requires the generation of an implementation for an
+ * external using a given tag and list of type parameters.
  */
 public class GenImp extends ExtImp {
 
+  /** The generator name for this external. */
   private String ref;
 
+  /** Type parameters for this generator. */
   private Type[] ts;
 
   /** Default constructor. */
@@ -42,6 +44,10 @@ public class GenImp extends ExtImp {
     this.ts = ts;
   }
 
+  /**
+   * Output a description of this implementation strategy, using the provided TypeWriter to format
+   * any embedded types.
+   */
   void dump(PrintWriter out, StringTypeWriter tw) {
     out.print(" {" + ref);
     for (int i = 0; i < ts.length; i++) {
@@ -59,6 +65,13 @@ public class GenImp extends ExtImp {
     }
   }
 
+  /** Update all declared types with canonical versions. */
+  void canonDeclared(MILSpec spec) {
+    for (int i = 0; i < ts.length; i++) {
+      ts[i] = ts[i].canonType(spec);
+    }
+  }
+
   /** Generate a specialized version of this external implementation strategy. */
   ExtImp specialize(MILSpec spec, Type[] tenv) {
     Type[] nts = new Type[ts.length];
@@ -68,13 +81,6 @@ public class GenImp extends ExtImp {
     GenImp newImp = new GenImp(ref, nts);
     newImp.gen = gen;
     return newImp;
-  }
-
-  /** Update all declared types with canonical versions. */
-  void canonDeclared(MILSpec spec) {
-    for (int i = 0; i < ts.length; i++) {
-      ts[i] = ts[i].canonType(spec);
-    }
   }
 
   abstract static class Generator {
@@ -98,9 +104,10 @@ public class GenImp extends ExtImp {
         throw new Failure(
             pos, "Generator " + ref + " requires " + n + " argument" + ((n == 1) ? "" : "s"));
       }
+      // Check that the arguments have the expected kinds
       Type[] declEnv = declared.getPrefix().instantiate();
       Type[] instEnv = new Type[n];
-      for (int i = 0; i < n; i++) { // Check that the arguments have the expected kinds
+      for (int i = 0; i < n; i++) {
         Kind ekind = prefix.getGen(i).getKind(); // expected kind
         Kind tkind = ts[i].calcKind(declEnv); // actual kind of parameter
         if (tkind == null || !ekind.same(tkind)) {
@@ -116,11 +123,12 @@ public class GenImp extends ExtImp {
         }
         instEnv[i] = ts[i].with(declEnv);
       }
-      //    TODO: uncomment this and replace with more appropriate diagnostic when ready to check
-      // declared types
+      //    TODO: uncomment this and replace with more appropriate diagnostic when
+      //    ready to check declared types
       //    if (!declared.getType().same(declEnv, type, instEnv)) {
-      //      System.out.println("Declared type (" + declared.getType().skeleton(declEnv) +
-      //                         ") does not match inst type (" + type.skeleton(instEnv) + ")");
+      //      System.out.println(
+      //         "Declared type (" + declared.getType().skeleton(declEnv) +
+      //         ") does not match inst type (" + type.skeleton(instEnv) + ")");
       //    }
     }
 
@@ -142,7 +150,7 @@ public class GenImp extends ExtImp {
   /**
    * Stores a mapping from String references to generators for external function implementations.
    */
-  static HashMap<String, Generator> generators = new HashMap();
+  static HashMap<String, Generator> generators = (new HashMap<String, Generator>());
 
   /** Stores a pointer to the generator for this GenImp, if there is one. */
   private Generator gen;
@@ -152,8 +160,8 @@ public class GenImp extends ExtImp {
    * definition.
    */
   public External validate(Position pos, String id, Scheme declared) throws Failure {
-    // Called when the this GenImp is created to check for a valid call and initialize the
-    // associated Generator:
+    // Called when the this GenImp is created to check for a valid call and
+    // initialize the associated Generator:
     gen = generators.get(ref); // look for a generator ...
     if (gen != null) { // If found ...
       gen.checkArguments(pos, ref, ts, declared); // ... then check arguments
@@ -191,7 +199,8 @@ public class GenImp extends ExtImp {
     Position pos = ext.getPos();
     if (gen != null) {
       try {
-        // Use generator to make a new top level definition as replacement for ext
+        // Use generator to make a new top level definition as replacement
+        // for ext
         return repImplement(pos, ext, reps, gen.generate(pos, ts, set));
       } catch (GeneratorException e) {
         throw new Failure(pos, "No generated implementation: " + e.getReason());
@@ -240,7 +249,7 @@ public class GenImp extends ExtImp {
     }
   }
 
-  /** Check that bitdata bt is not restricted (not restricted, abstract or contains junk) */
+  /** Check that bitdata bt is not restricted (not restricted, abstract or contains junk). */
   static void checkBitdataNotRestricted(BitdataType bt) throws GeneratorException {
     Pat pat = bt.getPat();
     if (pat.isRestricted()) {
@@ -353,7 +362,7 @@ public class GenImp extends ExtImp {
           }
         });
 
-    // primBitdataToBit :: bitdataType -> Bit n  where n==width of the bitdata type
+    // primBitdataToBit :: bitdataType -> Bit n  where n==width of bitdata type
     generators.put(
         "primBitdataToBit",
         new Generator(Prefix.star_nat, fun(gA, bitB)) {
@@ -364,7 +373,7 @@ public class GenImp extends ExtImp {
           }
         });
 
-    // primBitToBitdata :: Bit n -> bitdataType   where n==width of the bitdata type
+    // primBitToBitdata :: Bit n -> bitdataType   where n==width of bitdata type
     generators.put(
         "primBitToBitdata",
         new Generator(Prefix.nat_star, fun(bitA, gB)) {
@@ -584,7 +593,7 @@ public class GenImp extends ExtImp {
                 as[0] = u;
                 Block b =
                     new Block(pos, ws, new Bind(u, Prim.flagToWord.withArgs(ws[0]), new Done(t)));
-                t = new BlockCall(b).withArgs(vs[0]);
+                t = new BlockCall(b, vs[0]);
               } else { // :: Word -> Bit w ... insert arg as lsw, any other words zero
                 as[0] = vs[0];
               }
@@ -1053,13 +1062,15 @@ public class GenImp extends ExtImp {
 
             // The intended semantics for genLtInc is given by the following:
             //   genLtInc nothing just n i j = let k = i + n
-            //                                 in if (i<=k) && (k<=j) then just k else nothing
-            // with the assumption that the calculation of (i + n) does not produce any overflow.
-            // The validIndex() test will ensure that m is in the range [1..maxSigned], and hence
-            // that 0 <= n, i, j < maxSigned.  As a result, so long as we used an UNSIGNED
-            // comparison,
-            // we can be sure that (i + n) will not produce an overflow and that i <= k will be
-            // trivially satisfied.  For that reason, the generated code only tests that k <= j.
+            //                                 in if (i<=k) && (k<=j)
+            //                                     then just k else nothing
+            // with the assumption that the calculation of (i + n) does not
+            // produce any overflow. The validIndex() test will ensure that
+            // m is in the range [1..maxSigned], and hence that
+            // 0 <= n, i, j < maxSigned.  As a result, so long as we used an
+            // UNSIGNED comparison, we can be sure that (i + n) will not
+            // produce an overflow and that i <= k will be trivially satisfied.
+            // For that reason, the generated code only tests that k <= j.
 
             // Parameters for a block:   b[nothing,..., just, n, i, j] = ...
             Temp[] ns = Temp.makeTemps(nl); // arguments for nothing parameter
@@ -1149,13 +1160,16 @@ public class GenImp extends ExtImp {
             long m = ts[1].validIndex().longValue(); // Index modulus, will be > 0
 
             // The intended semantics for genLtDec is given by the following:
-            //   genLtDec nothing just n i j = let k = j - n
-            //                                 in if (i<=k) && (k<=j) then just k else nothing
-            // with the assumption that the calculation of (j - n) does not produce any underflow.
-            // The validIndex() test will ensure that m is in the range [1..maxSigned], and hence
-            // that 0 <= n, i, j < maxSigned.  As a result, so long as we used an SIGNED comparison,
-            // we can be sure that (j - n) will not produce an underflow and that k <= j will be
-            // trivially satisfied.  For that reason, the generated code only tests that i <= k.
+            //   genLtDec nothing just n i j
+            //     = let k = j - n
+            //       in if (i<=k) && (k<=j) then just k else nothing
+            // with the assumption that the calculation of (j - n) does not
+            // produce any underflow.  The validIndex() test will ensure
+            // that m is in the range [1..maxSigned], and hence
+            // that 0 <= n, i, j < maxSigned.  As a result, so long as we
+            // used an SIGNED comparison, we can be sure that (j - n) will
+            // not produce an underflow and that k <= j will be trivially
+            // satisfied.  For that reason, the generated code only tests that i <= k.
 
             // Parameters for a block:   b[nothing,..., just, n, i, j] = ...
             Temp[] ns = Temp.makeTemps(nl); // arguments for nothing parameter
@@ -1345,8 +1359,8 @@ public class GenImp extends ExtImp {
         });
 
     // primDecIx m :: Ix m -> Maybe (Ix m)
-    // Special case: requires bitdataRepresentations, (m+1) is a power of 2, and m is a valid index
-    // limit
+    // Special case: requires bitdataRepresentations, (m+1) is a power of 2,
+    // and m is a valid index limit
     generators.put(
         "primDecIx",
         new Generator(Prefix.nat, fun(ixA, maybeIx)) {
@@ -1373,8 +1387,8 @@ public class GenImp extends ExtImp {
                 != 0) { // check for modulus with a successor that is a power of two
               throw new GeneratorException(m + " is not a power of two minus 1");
             } else {
-              // In this special case, we can avoid a branching implementation by combining a
-              // decrement with a mask:
+              // In this special case, we can avoid a branching implementation
+              // by combining a decrement with a mask:
               Temp w = new Temp();
               code = new Bind(w, Prim.sub.withArgs(vs[0], 1), new Done(Prim.and.withArgs(w, m)));
             }
@@ -2417,15 +2431,14 @@ public class GenImp extends ExtImp {
                 (width == 1)
                     ? Cfun.Unit.withArgs()
                     : (width == 2) ? new Return(Flag.True) : new Return(new Word(width - 1));
-            // TODO: The Temp.makeTemps(n) call in the following creates the proxy argument of type
-            // Bit w that is
-            // required as an input for this function (to avoid ambiguity).  Because it is not
-            // actually used,
-            // however, it will result in a polymorphic definition in post-specialization code,
-            // which may break
-            // subsequent attempts to generate code from monomorphic MIL code ... unless this
-            // definition is
-            // optimized away (which, it should be ... assuming that the optimizer is invoked ...)
+            // TODO: The Temp.makeTemps(n) call in the following creates the
+            // proxy argument of type Bit w that is required as an input for
+            // this function (to avoid ambiguity).  Because it is not actually
+            // used, however, it will result in a polymorphic definition in
+            // post-specialization code, which may break subsequent attempts to
+            // generate code from monomorphic MIL code ... unless this definition
+            // is optimized away (which, it should be ... assuming that the
+            // optimizer is invoked ...)
             ClosureDefn k =
                 new ClosureDefn(pos, Temp.noTemps, Temp.makeTemps(Type.repBits(width)), t);
             return new ClosAlloc(k).withArgs();
@@ -2534,9 +2547,9 @@ public class GenImp extends ExtImp {
             }
 
             // Add code to mask most significant word, if necessary:
-            // TODO: The implementation of this method is somewhat contorted by the need to have
-            // initialized the ts
-            // and as arrays by the time we get to this point; is there a cleaner way to do this?
+            // TODO: The implementation of this method is somewhat contorted
+            // by the need to have initialized the ts and as arrays by the
+            // time we get to this point; is there a cleaner way to do this?
             int rem = width % Word.size();
             if (rem != 0) {
               Temp t = new Temp();
@@ -2558,7 +2571,8 @@ public class GenImp extends ExtImp {
                           new Bind(ts[i - lo], Prim.or.withArgs(p, q), code)));
             }
 
-            // Construct block, including code to calculate offs, comp, and lsw of output:
+            // Construct block, including code to calculate offs, comp, and
+            // lsw of output:
             return new Block(
                 pos,
                 vs,

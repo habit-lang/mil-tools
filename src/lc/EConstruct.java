@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** Represents a bitdata constr/area initializer, CONID [ fields ] */
 class EConstruct extends PosExpr {
 
   private String id;
@@ -45,18 +46,23 @@ class EConstruct extends PosExpr {
     EField.indent(out, n + 1, fields);
   }
 
+  /** Indicates if this is a bitdata construction (value non null). */
   private Cfun cf;
 
   private BitdataType bt;
 
   private BitdataLayout layout;
 
+  /** Arguments for constructor call. */
   private Atom[] as;
 
+  /** Inverse mapping from field # in AST to layout #. */
   private int[] invmap;
 
+  /** Indicates if this is a structure initializer (value non null). */
   private StructType st;
 
+  /** Structure initializers sorted by struct field #. */
   private EField[] inits;
 
   /**
@@ -65,7 +71,8 @@ class EConstruct extends PosExpr {
    * of free variables in the term.
    */
   DefVars inScopeOf(Handler handler, MILEnv milenv, Env env) { // id [ fields ]
-    if ((cf = milenv.findCfun(id)) != null) { // is this a bitdata constructor?
+    // Is this a bitdata constructor?
+    if ((cf = milenv.findCfun(id)) != null) {
       if ((bt = cf.bitdataType()) == null) {
         handler.report(new BitdataRequiredFailure(pos, cf));
       } else {
@@ -107,7 +114,8 @@ class EConstruct extends PosExpr {
 
   Type inferTypeBitdata(TVarsInScope tis) throws Failure { // id [ fields ]
     BitdataField[] lfields = layout.getFields();
-    // A mapping from field numbers in layout to field numbers in this expression:
+    // A mapping from field numbers in layout to field numbers in this
+    // expression:
     int[] map = new int[lfields.length];
 
     // Check that individual fields have the expected type:
@@ -122,8 +130,10 @@ class EConstruct extends PosExpr {
     }
 
     // Check that all fields are defined:
-    invmap = new int[fields.length]; // inverse mapping from field # in AST to layout #
-    as = new Atom[lfields.length]; // capture default values where needed
+    // Inverse mapping from field # in AST to layout #:
+    invmap = new int[fields.length];
+    // Capture default values where needed
+    as = new Atom[lfields.length];
     for (int p = 0; p < lfields.length; p++) {
       if (map[p] != 0) {
         invmap[map[p] - 1] = p;
@@ -150,7 +160,8 @@ class EConstruct extends PosExpr {
   Type inferTypeStructInit(TVarsInScope tis) throws Failure {
     StructField[] sfields = st.getFields();
 
-    // A mapping from field numbers in the structure to the Efields in this expression:
+    // A mapping from field numbers in the structure to the Efields in
+    // this expression:
     inits = new EField[sfields.length];
 
     // Check that individual fields have the expected type:
@@ -201,8 +212,8 @@ class EConstruct extends PosExpr {
         //     comp[fexp1] $ \a1 ->
         //     ...
         //     comp[fexpN] $ \aN ->
-        //     l <- LCF(a1,...,aN)    -- build layout (modulo invmap permutation)
-        //     kt(C(l))               -- embed in bitdata type
+        //     l <- LCF(a1,...,aN) -- build layout (modulo invmap permutation)
+        //     kt(C(l))            -- embed in bitdata type
         Temp l = new Temp(layout.asType());
         Code code = new Bind(l, layout.getCfuns()[0].withArgs(as), kt.with(cf.withArgs(l)));
         for (int i = fields.length; --i >= 0; ) {
@@ -229,11 +240,8 @@ class EConstruct extends PosExpr {
    * continuation kt maps tails (that produce values of type T) to code sequences (that return a
    * value of the type specified by kty).
    */
-  Code compTailM(
-      final CGEnv env,
-      final Block abort,
-      final Type kty,
-      final TailCont kt) { // id [ fields ], e [ fields ],  e . lab
+  Code compTailM(final CGEnv env, final Block abort, final Type kty, final TailCont kt) {
+    // id [ fields ], e [ fields ],  e . lab
     debug.Internal.error("Constructs of this form do not produce values of monadic type");
     return null;
   }

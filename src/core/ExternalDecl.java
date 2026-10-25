@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -34,14 +34,7 @@ public class ExternalDecl extends CoreDefn {
     this.texp = texp;
   }
 
-  /**
-   * Return the Tycon associated with this definition, if any. TODO: this method is only used in one
-   * place, and it's awkward ... look for opportunities to rewrite
-   */
-  public Tycon getTycon() {
-    return null;
-  }
-
+  /** Add environment entries for the type constructors introduced in this definition. */
   public void introduceTycons(Handler handler, TyconEnv env) {
     /* No tycons introduced here ... */
   }
@@ -50,12 +43,17 @@ public class ExternalDecl extends CoreDefn {
    * Determine the list of type definitions (a sublist of defns) that this particular definition
    * depends on.
    */
-  public void scopeTycons(Handler handler, CoreDefns defns, TyconEnv env) throws Failure {
+  public void scopeDefn(Handler handler, TyconDeps tdeps, TyconEnv env) throws Failure {
     /* Nothing to do in this case */
   }
 
   public void kindInfer(Handler handler) {
     /* no kind inference required here */
+  }
+
+  /** Default kind variables to STAR, unless they have already been bound. */
+  public void defaultKinds() {
+    /* do nothing */
   }
 
   /** Calculate types for each of the values that are introduced by this definition. */
@@ -64,19 +62,34 @@ public class ExternalDecl extends CoreDefn {
   }
 
   /**
-   * Extend the specified MIL environment with entries for any functions/values introduced in this
-   * definition.
+   * Extend the specified MIL environment with entries for any functions or values introduced in
+   * this definition.
    */
   public void addToMILEnv(Handler handler, CoreProgram prog, MILEnv milenv) {
     try {
-      TyvarEnv params = new TyvarEnv(); // Environment for implicitly quantified tyvars
-      TyconEnv env = milenv.getTyconEnv(); // Environment for tycons
-      texp = texp.scopeType(true, params, env, 0); // Validate type component of declaration
+      // Environment for implicitly quantified tyvars
+      TyvarEnv params = new TyvarEnv();
+
+      // Environment for tycons
+      TyconEnv env = milenv.getTyconEnv();
+
+      // Validate type component of declaration
+      texp = texp.scopeType(params, env);
+
+      // Record number of type variables found
+      int len = params.getLen();
+
       texp.checkKind(KAtom.STAR);
-      for (int i = 0; i < extids.length; i++) { // Validate any generator arguments
+      // Validate any generator arguments
+      for (int i = 0; i < extids.length; i++) {
         extids[i].scopeExtImpId(params, env);
       }
-      Prefix prefix = params.toPrefix(); // Calculate the prefix for this declaration
+
+      // Report new type variables found as not in scope
+      NotInScopeTyvarFailure.beyond(handler, params, len);
+
+      // Calculate the prefix for this declaration
+      Prefix prefix = params.toPrefix();
       Scheme scheme = prefix.forall(texp.toType(prefix));
       for (int i = 0; i < extids.length; i++) {
         Top ext = new TopExt(extids[i].toExternal(prefix, prog, scheme));

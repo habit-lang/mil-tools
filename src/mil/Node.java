@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -24,8 +24,10 @@ import java.io.PrintWriter;
 
 abstract class Node {
 
+  /** Every node is assigned a unique id. */
   protected int num = count++;
 
+  /** Node ids are allocated from a global counter. */
   protected static int count = 0;
 
   /**

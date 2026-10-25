@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -16,19 +16,24 @@
     You should have received a copy of the GNU General Public License
     along with mil-tools.  If not, see <https://www.gnu.org/licenses/>.
 */
-package llvm;
+package core;
 
+import compiler.*;
+import mil.*;
 
-/** Bitcast operators. */
-public class Bitcast extends Cast {
+/**
+ * A null-terminated linked list of FixityDecl objects that can be accessed using (public) head and
+ * next fields.
+ */
+public class FixityDecls {
+
+  public FixityDecl head;
+
+  public FixityDecls next;
 
   /** Default constructor. */
-  public Bitcast(Value v, Type ty) {
-    super(v, ty);
-  }
-
-  /** Return the LLVM opcode for this cast operation. */
-  String castString() {
-    return "bitcast";
+  public FixityDecls(FixityDecl head, FixityDecls next) {
+    this.head = head;
+    this.next = next;
   }
 }

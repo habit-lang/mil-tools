@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -33,17 +33,12 @@ public class Done extends Code {
     this.t = t;
   }
 
-  /** Test for a free occurrence of a particular variable. */
-  boolean contains(Temp w) {
-    return t.contains(w);
-  }
-
   /** Find the dependencies of this AST fragment. */
   Defns dependencies(Defns ds) {
     return t.dependencies(ds);
   }
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
   void dump(PrintWriter out, Temps ts) {
     indent(out);
     t.displayln(out, ts);
@@ -58,19 +53,15 @@ public class Done extends Code {
     return new Done(t.apply(s));
   }
 
-  /**
-   * Return true if this code enters a non-productive black hole (i.e., immediately calls halt or
-   * loop).
-   */
-  boolean blackholes() {
-    return t.blackholes();
-  }
-
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   TVars tvars(TVars tvs) {
     return t.tvars(tvs);
   }
 
+  /**
+   * Infer a type for this code sequence. TODO: use more fine-grained position information instead
+   * of passing around the position of the enclosing Defn.
+   */
   Type inferType(Position pos) throws Failure { // t
     return t.inferType(pos);
   }
@@ -81,6 +72,11 @@ public class Done extends Code {
    */
   void generateCode(MachineBuilder builder, int o) {
     t.generateTailCode(builder, o);
+  }
+
+  /** Test for a free occurrence of a particular variable. */
+  boolean contains(Temp w) {
+    return t.contains(w);
   }
 
   /**
@@ -128,6 +124,14 @@ public class Done extends Code {
     return t.isReturn(vs);
   }
 
+  /**
+   * Return true if this code enters a non-productive black hole (i.e., if it immediately calls halt
+   * or loop).
+   */
+  boolean blackholes() {
+    return t.blackholes();
+  }
+
   boolean detectLoops(Block src, Blocks visited) { // look for src[x] = b[x]
     return t.detectLoops(src, visited);
   }
@@ -150,6 +154,10 @@ public class Done extends Code {
     return this;
   }
 
+  /**
+   * Prepend a copy of this code sequence, whose final result will be captured in the temporaries
+   * us, onto the code sequence d.
+   */
   Code prefixInline(TempSubst s, Temp[] us, Code d) {
     Tail nt = t.apply(s);
     return nt.blackholes() ? new Done(nt) : new Bind(us, nt, d);
@@ -186,7 +194,7 @@ public class Done extends Code {
     return t;
   }
 
-  /** Test to determine whether this Code is a Done. */
+  /** Test whether this Code is a Done. */
   public Tail isDone() {
     return t;
   }
@@ -195,12 +203,14 @@ public class Done extends Code {
     return t.isGoto(numParams);
   }
 
-  void liftAllocators() {
-    t = t.liftStaticAllocator();
+  /** Lift allocators in this code sequence. */
+  void liftAllocators(Position pos) {
+    t = t.liftStaticAllocator(pos);
   }
 
-  boolean liftAllocators(Bind parent) {
-    t = t.liftStaticAllocator();
+  /** Lift allocators in this code sequence in the context of the given parent. */
+  boolean liftAllocators(Position pos, Bind parent) {
+    t = t.liftStaticAllocator(pos);
     return false;
   }
 
@@ -220,11 +230,12 @@ public class Done extends Code {
   }
 
   /**
-   * A simple test for MIL code fragments that return a known Flag, returning either the constant or
-   * null.
+   * A simple test for MIL code fragments that return a known Flag; this is a helper for the method
+   * without an argument that adds a counter that is decreased for every BlockCall encountered to
+   * avoid triggering an unbounded loop in pathological corner cases.
    */
-  Flag returnsFlag() {
-    return t.returnsFlag();
+  Flag returnsFlag(int n) {
+    return t.returnsFlag(n);
   }
 
   public Code andThen(Temp[] vs, Code rest) {
@@ -240,8 +251,8 @@ public class Done extends Code {
   }
 
   /**
-   * Test to determine whether this Code/Tail value corresponds to a closure allocator, returning
-   * either a ClosAlloc value, or else a null result.
+   * Test if this Code/Tail value corresponds to a closure allocator, returning either a ClosAlloc
+   * value, or else a null result.
    */
   ClosAlloc lookForClosAlloc() {
     return t.lookForClosAlloc();
@@ -261,7 +272,8 @@ public class Done extends Code {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return t.summary() * 17 + 3;
@@ -297,10 +309,15 @@ public class Done extends Code {
     return new Done(t.specializeTail(spec, s, env));
   }
 
+  /** Rewrite this code sequence to use the bitdata representations provided by BitdataMap. */
   Code bitdataRewrite(BitdataMap m) {
     return new Done(t.bitdataRewrite(m));
   }
 
+  /**
+   * Generate a new version of this code sequence to update references to constructor functions
+   * consistent with the datatype equalities in the given MergeMap.
+   */
   Code mergeRewrite(MergeMap mmap) {
     return new Done(t.mergeRewrite(mmap));
   }

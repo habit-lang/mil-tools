@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -26,16 +26,22 @@ import java.util.HashMap;
 public class MILSpec extends TypeSet {
 
   /** A mapping from (canonical) versions of DataType values to TypeSpecs mappings. */
-  private HashMap<DataType, TypeSpecs> dataTypeSpecs = new HashMap();
+  private HashMap<DataType, TypeSpecs> dataTypeSpecs = (new HashMap<DataType, TypeSpecs>());
 
+  /** Create a mapping from datatype dt to the given list of TypeSpecs. */
   void putTypeSpecs(DataType dt, TypeSpecs ts) {
     dataTypeSpecs.put(dt, ts);
   }
 
+  /** Return the current list of TypeSpecs for the datatype dt. */
   TypeSpecs getTypeSpecs(DataType dt) {
     return dataTypeSpecs.get(dt);
   }
 
+  /**
+   * Display a summary of the mapping from datatypes to specialized instances (likely for debugging
+   * or other analysis).
+   */
   public void dump(PrintWriter out) {
     out.println("Specialized Primitives: -----------------");
     for (Prim p : primSpecMap.keySet()) {
@@ -81,7 +87,7 @@ public class MILSpec extends TypeSet {
    * A mapping from definitions in the original program to the list of all specialized versions of
    * that definition in the specialized program.
    */
-  private HashMap<Defn, Defns> specialized = new HashMap();
+  private HashMap<Defn, Defns> specialized = (new HashMap<Defn, Defns>());
 
   /** A list of requested specializations. */
   private SpecReqs requested = null;
@@ -89,6 +95,31 @@ public class MILSpec extends TypeSet {
   /** Request a new specialization. */
   void request(SpecReq req) {
     requested = new SpecReqs(req, requested);
+  }
+
+  /** Stores a specialized version of a MIL program, constructed using this MILSpec object. */
+  private MILProgram prog = new MILProgram();
+
+  /** Return the specialized version of the MIL program. */
+  public MILProgram getProg() {
+    return prog;
+  }
+
+  /**
+   * Generate specialized versions of all the definitions that have been requested, allowing for the
+   * fact that new requests might be added in the process.
+   */
+  void generate() {
+    while (requested != null) {
+      // Process the queue of specialization requests
+      SpecReq req = requested.head;
+      requested = requested.next;
+      req.specialize(this);
+    }
+    // Calculate SCCs for the resulting specialized program
+    prog.shake();
+    // Update declared types to use the specialized datatypes
+    prog.canonDeclared(this);
   }
 
   /** Request a version of a definition that is specialized to a given monomorphic type. */
@@ -107,12 +138,12 @@ public class MILSpec extends TypeSet {
       num++;
     }
 
-    // Create a new item, insert in specialized table, and add a request to complete the definition
-    // later:
+    // Create a new item, save the associated instance type, insert
+    // in the specialized table, and add a specialization request:
     Block newDefn = new Block(d, num);
     newDefn.setDeclared(inst);
     specialized.put(d, new Defns(newDefn, specs));
-    requested = new SpecReqs(new SpecBlock(d, newDefn), requested);
+    request(new SpecBlock(d, newDefn));
     return newDefn;
   }
 
@@ -132,12 +163,12 @@ public class MILSpec extends TypeSet {
       num++;
     }
 
-    // Create a new item, insert in specialized table, and add a request to complete the definition
-    // later:
+    // Create a new item, save the associated instance type, insert
+    // in the specialized table, and add a specialization request:
     ClosureDefn newDefn = new ClosureDefn(d, num);
     newDefn.setDeclared(inst);
     specialized.put(d, new Defns(newDefn, specs));
-    requested = new SpecReqs(new SpecClosureDefn(d, newDefn), requested);
+    request(new SpecClosureDefn(d, newDefn));
     return newDefn;
   }
 
@@ -157,12 +188,12 @@ public class MILSpec extends TypeSet {
       num++;
     }
 
-    // Create a new item, insert in specialized table, and add a request to complete the definition
-    // later:
+    // Create a new item, save the associated instance type, insert
+    // in the specialized table, and add a specialization request:
     TopLevel newDefn = new TopLevel(d, num);
     newDefn.setDeclared(inst);
     specialized.put(d, new Defns(newDefn, specs));
-    requested = new SpecReqs(new SpecTopLevel(d, newDefn), requested);
+    request(new SpecTopLevel(d, newDefn));
     return newDefn;
   }
 
@@ -182,12 +213,12 @@ public class MILSpec extends TypeSet {
       num++;
     }
 
-    // Create a new item, insert in specialized table, and add a request to complete the definition
-    // later:
+    // Create a new item, save the associated instance type, insert
+    // in the specialized table, and add a specialization request:
     External newDefn = new External(d, num);
     newDefn.setDeclared(inst);
     specialized.put(d, new Defns(newDefn, specs));
-    requested = new SpecReqs(new SpecExternal(d, newDefn), requested);
+    request(new SpecExternal(d, newDefn));
     return newDefn;
   }
 
@@ -207,29 +238,13 @@ public class MILSpec extends TypeSet {
       num++;
     }
 
-    // Create a new item, insert in specialized table, and add a request to complete the definition
-    // later:
+    // Create a new item, save the associated instance type, insert
+    // in the specialized table, and add a specialization request:
     MemArea newDefn = new MemArea(d, num);
     newDefn.setDeclared(inst);
     specialized.put(d, new Defns(newDefn, specs));
-    requested = new SpecReqs(new SpecMemArea(d, newDefn), requested);
+    request(new SpecMemArea(d, newDefn));
     return newDefn;
-  }
-
-  private HashMap<Prim, Prims> primSpecMap = new HashMap();
-
-  Prims getPrims(Prim p) {
-    return primSpecMap.get(p);
-  }
-
-  void putPrims(Prim p, Prims ps) {
-    primSpecMap.put(p, ps);
-  }
-
-  private MILProgram prog = new MILProgram();
-
-  public MILProgram getProg() {
-    return prog;
   }
 
   /** Request a specialized version of a given definition as an entry point to the new program. */
@@ -255,16 +270,18 @@ public class MILSpec extends TypeSet {
   }
 
   /**
-   * Generate specialized versions of all the definitions that have been requested, allowing for the
-   * fact that new requests might be added in the process.
+   * A mapping from primitives in the original program to lists of specialized versions in the
+   * specialized program.
    */
-  void generate() {
-    while (requested != null) { // Process the queue of specialization requests
-      SpecReq req = requested.head;
-      requested = requested.next;
-      req.specialize(this);
-    }
-    prog.shake(); // Calculate SCCs for the resulting specialized program
-    prog.canonDeclared(this); // Update declared types to use the specialized datatypes
+  private HashMap<Prim, Prims> primSpecMap = (new HashMap<Prim, Prims>());
+
+  /** Get the list of specialized versions of a given primitive. */
+  Prims getPrims(Prim p) {
+    return primSpecMap.get(p);
+  }
+
+  /** Update the list of specialized versions of a given primitive. */
+  void putPrims(Prim p, Prims ps) {
+    primSpecMap.put(p, ps);
   }
 }

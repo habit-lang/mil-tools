@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -29,7 +29,9 @@ public class NewtypeTypeSet extends TypeSet {
    * newtype constructor and, in those cases, replace the type with its expansion instead.
    */
   protected Type canon(Tycon h, int args) {
-    Type t = h.translate(this, args); // Look for a translation of this type
-    return (t == null) ? super.canon(h, args) : t; // Or fall back to the canonical representation
+    // Look for a translation of this type
+    Type t = h.translate(this, args);
+    // Or fall back to the canonical representation
+    return (t == null) ? super.canon(h, args) : t;
   }
 }

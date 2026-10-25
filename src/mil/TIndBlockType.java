@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -35,6 +35,7 @@ class TIndBlockType extends BlockType {
     this.tenv = tenv;
   }
 
+  /** Unify the domain of this BlockType with the given type. */
   void domUnifiesWith(Position pos, Type type) throws Failure {
     dom.unify(pos, tenv, type, null);
   }
@@ -59,6 +60,10 @@ class TIndBlockType extends BlockType {
     return rng.tupleArity(tenv, 0);
   }
 
+  /**
+   * Find the list of all unbound TVars in this BlockType, adding to the given list (but not
+   * duplicating any entries it contains).
+   */
   TVars tvars(TVars tvs) {
     return rng.tvars(tenv, dom.tvars(tenv, tvs));
   }
@@ -76,6 +81,7 @@ class TIndBlockType extends BlockType {
     return new BlockType(dom.canonType(tenv, set), rng.canonType(tenv, set));
   }
 
+  /** Apply the given substitution to this BlockType. */
   BlockType apply(TVarSubst s) {
     return apply(tenv, s);
   }

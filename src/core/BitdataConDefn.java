@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -37,13 +37,10 @@ class BitdataConDefn extends Name {
    * Perform scope analysis on portions of a type constructor definition, returning a list with the
    * elements from defns that it references.
    */
-  CoreDefns scopeTycons(
-      Handler handler, TyvarEnv params, TyconEnv env, CoreDefns defns, CoreDefns depends)
-      throws Failure {
+  void scopeDefn(Handler handler, TyvarEnv params, TyconDeps tdeps, TyconEnv env) {
     for (int i = 0; i < regexps.length; i++) {
-      depends = regexps[i].scopeTycons(handler, params, env, defns, depends);
+      regexps[i].scopeDefn(handler, params, tdeps, env);
     }
-    return depends;
   }
 
   public void kindInfer(Handler handler) {
@@ -55,8 +52,8 @@ class BitdataConDefn extends Name {
   LinearEqn initEqn(Type size) throws Failure {
     String label = "Width of " + id; // Label for equation
     LinearEqn eqn = new LinearEqn(pos, label); // Create an empty equation
-    eqn.addRhsTerm(size, label); // Add the size on the right hand side
-    for (int i = 0; i < regexps.length; i++) { // Add terms for the other regions
+    eqn.addRhsTerm(size, label); // Add the size on the rhs
+    for (int i = 0; i < regexps.length; i++) { // Add terms for other regions
       regexps[i].addTermTo(eqn);
     }
     return eqn;
@@ -65,8 +62,9 @@ class BitdataConDefn extends Name {
   private BitdataLayout layout;
 
   obdd.Pat calcLayout(BitdataType bt) throws Failure {
-    // TODO: it is ugly to use four separate loops and transient width and offset fields
-    // in each BitdataRegionExp; but is there a cleaner way to do this?
+    // TODO: it is ugly to use four separate loops and transient width and
+    // offset fields in each BitdataRegionExp ... is there a cleaner way
+    // to do this?
 
     // Calculate offsets, widths, and bit pattern for this constructor:
     obdd.Pat pat = obdd.Pat.all(0);
@@ -108,7 +106,7 @@ class BitdataConDefn extends Name {
    */
   static void calcMaskTest(BitdataConDefn[] constrs, int i, int w) throws Failure {
     obdd.Pat cpat = constrs[i].layout.getPat(); // the associated bit pattern
-    obdd.Pat other = obdd.Pat.empty(w); // patterns from other constructors
+    obdd.Pat other = obdd.Pat.empty(w); // patterns from other constrs
     for (int j = 0; j < constrs.length; j++) {
       if (i != j) {
         obdd.Pat dpat = constrs[j].layout.getPat();
@@ -118,19 +116,33 @@ class BitdataConDefn extends Name {
         other = other.or(dpat);
       }
     }
+
     // We want a mask test predicate that will include cpat or exclude other:
-    obdd.MaskTestPat eq = cpat.masktest(false); // a candidate mask-test predicate using ==
-    int ceq = (-1); // constructor # that conflicts with eq, if any
-    obdd.MaskTestPat neq = other.not().masktest(true); // a candidate mask-test predicate using /=
-    int cneq = (-1); // constructor # that conflicts with neq, if any
+
+    // a candidate mask-test predicate using ==:
+    obdd.MaskTestPat eq = cpat.masktest(false);
+
+    // constructor # that conflicts with eq, if any:
+    int ceq = (-1);
+
+    // a candidate mask-test predicate using /=
+    obdd.MaskTestPat neq = other.not().masktest(true);
+
+    // constructor # that conflicts with neq, if any
+    int cneq = (-1);
+
     for (int j = 0; j < constrs.length; j++) {
       if (i != j) {
         obdd.Pat dpat = constrs[j].layout.getPat();
-        if (ceq < 0 && !eq.disjoint(dpat)) { // Does eq reject all of dpat?
-          ceq = j; // If not, then eq is not usable because it conflicts with constr[j]
+        // Does eq reject all of dpat?
+        if (ceq < 0 && !eq.disjoint(dpat)) {
+          // If not, then eq is not usable because it conflicts with constr[j]
+          ceq = j;
         }
-        if (cneq < 0 && !neq.disjoint(dpat)) { // Does neq reject all of dpat?
-          cneq = j; // If not, then neq is not usable because it conflicts with constr[j]
+        // Does neq reject all of dpat?
+        if (cneq < 0 && !neq.disjoint(dpat)) {
+          // If not, then neq is not usable because it conflicts with constr[j]
+          cneq = j;
         }
       }
     }

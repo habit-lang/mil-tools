@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -23,11 +23,12 @@ import core.*;
 import java.io.PrintWriter;
 
 /**
- * Requests that the implementation of this external, post representation analysis, be provided by a
- * specified atom.
+ * Represents an implementation strategy that requires the implementation of this external, post
+ * representation analysis, to be provided by a specified atom.
  */
 public class AtomImp extends ExtImp {
 
+  /** The atom (Const or Top) to use as the implementation of an External. */
   private Atom a;
 
   /** Default constructor. */
@@ -40,10 +41,15 @@ public class AtomImp extends ExtImp {
     return a.dependencies(null);
   }
 
+  /**
+   * Output a description of this implementation strategy, using the provided TypeWriter to format
+   * any embedded types.
+   */
   void dump(PrintWriter out, StringTypeWriter tw) {
     out.print(" = " + a);
   }
 
+  /** Type check the implementation for an external. */
   void checkImp(Handler handler, Position pos) {
     a.checkImp(handler, pos);
   }

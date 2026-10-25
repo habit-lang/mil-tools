@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -23,8 +23,10 @@ import java.io.PrintWriter;
 /** Represents an LLVM program comprising a sequence of definitions. */
 public class Program {
 
+  /** Points to the first item in the list (null if the list is empty). */
   private Defns defns = null;
 
+  /** Points to the last item in the list (null if the list is empty). */
   private Defns defnsLast = null;
 
   /** Add an element to the end of the list in this class. */
@@ -52,7 +54,8 @@ public class Program {
   public static String targetTriple = null;
 
   static void printComment(PrintWriter out, String indent, String comment) {
-    // Attempt to print a comment over multiple lines if necessary by interpreting embedded newlines
+    // Attempt to print a comment over multiple lines if necessary by
+    // interpreting embedded newlines
     boolean indented = false;
     int len = comment.length();
     for (int i = 0; i < len; i++) {

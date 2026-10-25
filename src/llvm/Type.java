@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -51,6 +51,9 @@ public abstract class Type {
   /** Represents the void type. TODO: eliminate this! */
   public static final Type vd = new Basic("void", Word.ONES);
 
+  /** Represents the LLVM opaque 'ptr' type. */
+  public static final Type ptr = new Basic("ptr", Null.NULL);
+
   /** Represents the type of Boolean values. */
   public static final Type i1 = new Basic("i1", Bool.FALSE);
 
@@ -94,54 +97,6 @@ public abstract class Type {
     return null;
   }
 
-  /** Represents a pointer type. */
-  private static class PtrType extends Type {
-
-    /** The type of value that is pointed to. */
-    private Type ty;
-
-    /** Default constructor. */
-    private PtrType(Type ty) {
-      this.ty = ty;
-    }
-
-    /** Get the type of value that this (assumed) pointer type points to. */
-    public Type ptsTo() {
-      return ty;
-    }
-
-    /** Append the name of this type to the specified buffer. */
-    public void append(StringBuilder buf) {
-      ty.append(buf);
-      buf.append('*');
-    }
-
-    /** Calculate a default value of this type, suitable for use as an initial value. */
-    public Value defaultValue() {
-      return new Null(this);
-    }
-  }
-
-  /** Get the type of value that this (assumed) pointer type points to. */
-  public Type ptsTo() {
-    debug.Internal.error("invalid ptsTo() on a type: " + this);
-    return null;
-  }
-
-  /**
-   * Identifies the type of pointers to this type, or null if there has not been any previous
-   * reference to this pointer type.
-   */
-  private Type ptrType = null;
-
-  /**
-   * Return the type of pointers to values of this type. Initializes the ptrType field if necessary
-   * to cache the pointer type for future uses.
-   */
-  public Type ptr() {
-    return (ptrType == null) ? ptrType = new PtrType(this) : ptrType;
-  }
-
   /** Get the type of the ith component in this (assumed) structure type. */
   public Type definition() {
     debug.Internal.error("invalid definition() on type: " + this);
@@ -172,8 +127,4 @@ public abstract class Type {
 
   /** Calculate a default value of this type, suitable for use as an initial value. */
   public abstract Value defaultValue();
-
-  public Type codePtrType() {
-    return ptsTo().definition().at(0);
-  }
 }

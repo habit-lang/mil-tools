@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -58,7 +58,8 @@ public class LinearEqn {
     // Display positive terms on the left hand side:
     boolean anylhs = false; // set to true when we produce lhs output
     for (Terms ts = lhs; ts != null; ts = ts.next) {
-      if (ts.coeff.signum() > 0) { // print positive terms on the rhs
+      // print positive terms on the rhs
+      if (ts.coeff.signum() > 0) {
         if (anylhs) {
           buf.append(" + ");
         } else {
@@ -67,7 +68,8 @@ public class LinearEqn {
         ts.appendTo(buf);
       }
     }
-    if (rhs.signum() < 0) { // if rhs is negative, print it on the lhs
+    // if rhs is negative, print it on the lhs
+    if (rhs.signum() < 0) {
       if (anylhs) {
         buf.append(" + ");
       } else {
@@ -75,16 +77,18 @@ public class LinearEqn {
       }
       buf.append(rhs.negate().toString());
     }
+    // put a zero on the lhs if no other terms
     if (!anylhs) {
       buf.append("0");
-    } // put a zero on the lhs if no other terms
+    }
 
     // Insert an equal sign:
     buf.append(" = ");
 
     // Display negative terms on the right hand side:
     boolean anyrhs = false; // set to true when we produce rhs output
-    for (Terms ts = lhs; ts != null; ts = ts.next) { // print negative terms on the rhs
+    for (Terms ts = lhs; ts != null; ts = ts.next) {
+      // print negative terms on the rhs
       if (ts.coeff.signum() < 0) {
         if (anyrhs) {
           buf.append(" + ");
@@ -94,7 +98,8 @@ public class LinearEqn {
         ts.appendTo(buf);
       }
     }
-    if (rhs.signum() > 0) { // if rhs is positive, print it on the rhs
+    // if rhs is positive, print it on the rhs
+    if (rhs.signum() > 0) {
       if (anyrhs) {
         buf.append(" + ");
       } else {
@@ -102,9 +107,10 @@ public class LinearEqn {
       }
       buf.append(rhs.toString());
     }
+    // put a zero on the rhs if no other terms
     if (!anyrhs) {
       buf.append("0");
-    } // put a zero on the rhs if no other terms
+    }
   }
 
   /**
@@ -137,11 +143,11 @@ public class LinearEqn {
       for (Terms ts = lhs; ts != null; ts = ts.next) {
         if (t == ts.t) { // Found prior use of variable
           m = m.add(ts.coeff); // Calculate new coefficient
-          if (m.signum() != 0) { // Update coefficient in list if it is nonzero
+          if (m.signum() != 0) { // Update coefficient in list if nonzero
             ts.coeff = m;
           } else if (prev == null) { // We are removing first term from list
             lhs = ts.next;
-          } else { // We are removing a later term from the list
+          } else { // We are removing a later term
             prev.next = ts.next;
           }
           return;
@@ -176,19 +182,23 @@ public class LinearEqn {
    * call on those equations.
    */
   boolean solved() throws Failure {
-    // Run through the left hand side terms, updating the equation for any terms that have been
-    // bound to numeric values:
+    // Run through the left hand side terms, updating the equation for any
+    // terms that have been bound to numeric values:
     Terms prev = null;
     Terms ts = lhs;
     while (ts != null) {
       ts.t = ts.t.simplifyNatType(null);
       BigInteger n = ts.t.getNat();
-      if (n == null) { // This type is a variable
+      if (n == null) {
+        // This type is a variable
         prev = ts;
         ts = ts.next;
-      } else { // This type is a number:
-        addConst(n.multiply(ts.coeff)); // - add the corresponding constant term
-        ts = ts.next; // - and remove this term from the list
+      } else {
+        // This type is a number:
+        // - add the corresponding constant term
+        // - and remove this term from the list
+        addConst(n.multiply(ts.coeff));
+        ts = ts.next;
         if (prev == null) {
           lhs = ts;
         } else {
@@ -198,12 +208,14 @@ public class LinearEqn {
     }
 
     // Look for equations with one or less terms on the left hand side:
-    if (lhs == null) { // If lhs is empty, then the right hand side should be zero.
+    if (lhs == null) {
+      // If lhs is empty, then the right hand side should be zero.
       if (rhs.signum() != 0) {
         throw new WidthsDifferFailure(pos, rhs, label);
       }
       return true;
-    } else if (lhs.next == null) { // If lhs has exactly one variable, find its value:
+    } else if (lhs.next == null) {
+      // If lhs has exactly one variable, find its value:
       if (lhs.coeff.signum() < 0) {
         rhs = rhs.negate();
         lhs.coeff = lhs.coeff.negate();
@@ -228,18 +240,19 @@ public class LinearEqn {
    * this equation to begin with, then no action is required.)
    */
   void elimVar(LinearEqn eqn) {
-    BigInteger c = eqn.lhs.coeff; // coefficient of first variable in eqn
-    BigInteger d = this.coeffOf(eqn.lhs.t); // coefficient of same variable in this
+    BigInteger c = eqn.lhs.coeff; // coeff of first var in eqn
+    BigInteger d = this.coeffOf(eqn.lhs.t); // coeff of same var in this
     if (d != null) {
       BigInteger g = c.gcd(d); // calculate the gcd, ...
-      c = c.divide(g); // ... scale the two coefficients,
+      c = c.divide(g); // ... scale the two coeffs,
       d = d.divide(g); // ... and negate the second
 
       rhs = rhs.multiply(c); // scale this equation by c
       for (Terms ts = lhs; ts != null; ts = ts.next) {
         ts.coeff = ts.coeff.multiply(c);
       }
-      addConst(eqn.rhs.multiply(d)); // subtract a version of eqn scaled by d
+      // subtract a version of eqn scaled by d
+      addConst(eqn.rhs.multiply(d));
       d = d.negate();
       for (Terms ts = eqn.lhs; ts != null; ts = ts.next) {
         addTerm(ts.coeff.multiply(d), ts.t, ts.hint);

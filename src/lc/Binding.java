@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -111,8 +111,8 @@ class Binding extends DefVar {
    */
   void reverseVisit(BindingSCC scc) {
     if (this.scc == null) {
-      // If we arrive at a binding that hasn't been allocated to any SCC,
-      // then we should put it in this SCC.
+      // If we arrive at a binding that hasn't been allocated to any
+      // SCC, then we should put it in this SCC.
       this.scc = scc;
       scc.add(this);
       for (Bindings callers = this.callers; callers != null; callers = callers.next) {
@@ -137,9 +137,9 @@ class Binding extends DefVar {
    * declarations.
    */
   void attachDeclaredType(Handler handler, Position pos, Scheme declared) {
-    // TODO: could allow multiple type annotations if the type schemes are equal/equivalent
-    // (although
-    // determining the latter could be difficult).
+    // TODO: could allow multiple type annotations if the type schemes
+    // are equal/equivalent (although determining the latter could be
+    // difficult).
     if (this.declared != null) {
       handler.report(new MultipleSignaturesFailure(pos, id));
     } else {
@@ -195,10 +195,14 @@ class Binding extends DefVar {
    * in an enclosing scope.
    */
   DefVars inScopeOf(Handler handler, MILEnv milenv, Bindings bindings, Env env) {
-    DefVars fvs = e.inScopeOf(handler, milenv, env); // Find the free variables in the expression
-    DefVars xvs = null; // List of vars required in body
-    Bindings cs = null; // Find the callees that are listed in bindings
-    DefVars prev = null; // Previous entry
+    // Find the free variables in the expression
+    DefVars fvs = e.inScopeOf(handler, milenv, env);
+    // List of vars required in body:
+    DefVars xvs = null;
+    // Find the callees that are listed in bindings:
+    Bindings cs = null;
+    // Previous entry:
+    DefVars prev = null;
     for (DefVars us = fvs; us != null; us = us.next) {
       Binding b = us.head.find(bindings);
       if (b == null) { // Variable not defined in bindings
@@ -223,7 +227,7 @@ class Binding extends DefVar {
     return DefVars.add(xvs, fvs);
   }
 
-  /** Test to determine whether this binding can be used in a recursive binding group. */
+  /** Test whether this binding can be used in a recursive binding group. */
   void checkSafeToRecurse(Handler handler) {
     if (!e.isSafeToRecurse()) {
       handler.report(new InvalidRecursiveDefinition(pos, id));
@@ -254,7 +258,8 @@ class Binding extends DefVar {
 
   /** Set the initial type for this binding. */
   void setInitialType() {
-    // use an instance of declared type, if provided, otherwise, use a fresh type variable
+    // use an instance of declared type, if provided, otherwise,
+    // use a fresh type variable
     type = (declared != null) ? declared.instantiate() : new TVar(Tyvar.star);
   }
 
@@ -264,13 +269,14 @@ class Binding extends DefVar {
    */
   void checkType(Handler handler, TVarsInScope tis) throws Failure {
     try {
-      // Ensure that the type of the right hand expression matches the initial type assumption
-      // for this variable.
+      // Ensure that the type of the right hand expression matches
+      // the initial type assumption for this variable.
       e.checkType(tis, type);
     } catch (Failure f) {
-      // If there is a declared type and a non null handler, then we can recover from a type error
-      // that is detected while checking this binding by using the declared type scheme (and
-      // reporting the error to the handler).  But otherwise, we throw a failure.
+      // If there is a declared type and a non null handler, then we
+      // can recover from a type error that is detected while checking
+      // this binding by using the declared type scheme (and reporting
+      // the error to the handler).  But otherwise, we throw a failure.
       if (declared != null && handler != null) {
         handler.report(f);
         type = null; // set to null to signal that a type error occurred
@@ -286,10 +292,10 @@ class Binding extends DefVar {
    * generic) type variables.
    */
   void generalizeType(TVars fixed) throws Failure {
-    // If an error was detected while checking this binding, then the type of this binding was set
-    // to
-    // null and there is nothing more to do.  But otherwise, proceed to calculate the most general
-    // type.
+    // If an error was detected while checking this binding, then
+    // the type of this binding was set to null and there is nothing
+    // more to do.  But otherwise, proceed to calculate the most
+    // general type.
     if (type != null) {
       // Calculate the generic variables for this binding:
       TVars gens = type.tvars(fixed);
@@ -328,12 +334,14 @@ class Binding extends DefVar {
   }
 
   TopBinding liftToTop(DefVar[] xvs, LiftEnv lenv) {
-    // Create a new top-level MIL definition for this binding; the tail will be filled in by code
-    // generation.
-    TopLevel topLevel = new TopLevel(pos, id, null); // Create new top-level definition
+    // Create a new top-level MIL definition for this binding; the tail will
+    // be filled in by code generation.
+    // Create new top-level definition:
+    TopLevel topLevel = new TopLevel(pos, id, null);
     topLevel.setDeclared(0, declared);
 
-    // Add an entry for this binding to the lifting environment and return a new top binding.
+    // Add an entry for this binding to the lifting environment and return
+    // a new top binding.
     lenv.addLifting(this, topLevel, xvs); // Add lifting v -> topLevel xvs
     return new TopBinding(topLevel, e, type); // Create new top level binding
   }
@@ -352,6 +360,7 @@ class Binding extends DefVar {
     return false;
   }
 
+  /** Used to generate distinct names for top-level vars. */
   private static int count = 0;
 
   /** Pick new names for each of the bindings in this list (for debugging purposes only). */

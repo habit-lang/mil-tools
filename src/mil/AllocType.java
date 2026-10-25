@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -86,7 +86,7 @@ public class AllocType {
   }
 
   /**
-   * Calculate an lc type scheme for a curried constructor function corresponding to this AllocType.
+   * Calculate a type scheme for a curried constructor function corresponding to this AllocType.
    * This method is only intended to be used on AllocTypes resulting from explicit declarations or
    * generalization (i.e., no TIndAllocType objects).
    */
@@ -94,6 +94,9 @@ public class AllocType {
     return toType();
   }
 
+  /**
+   * Calculate a type skeleton for a curried constructor function corresponding to this AllocType.
+   */
   protected Type toType() {
     Type type = result;
     for (int i = stored.length; --i >= 0; ) {
@@ -187,18 +190,18 @@ public class AllocType {
   }
 
   /**
-   * Test to determine whether two allocator types are alpha equivalent. We assume that this method
-   * will only be used with AllocType and PolyAllocType objects (i.e., not TIndAllocType) because
-   * these are the only forms of AllocTypes that can be obtained as the result of generalization or
-   * an explicity declared type.
+   * Test whether two allocator types are alpha equivalent. We assume that this method will only be
+   * used with AllocType and PolyAllocType objects (i.e., not TIndAllocType) because these are the
+   * only forms of AllocTypes that can be obtained as the result of generalization or an explicity
+   * declared type.
    */
   public boolean alphaEquiv(AllocType at) {
     return at.alphaAllocType(this, null);
   }
 
   /**
-   * Test to determine whether this AllocType is alpha equivalent to the AllocType passed in as an
-   * argument (considering only the stored and result components of that argument).
+   * Test whether this AllocType is alpha equivalent to the AllocType passed in as an argument
+   * (considering only the stored and result components of that argument).
    */
   boolean alphaAllocType(AllocType left, TGenCorresp corresp) {
     if (this.stored.length != left.stored.length) {
@@ -251,8 +254,8 @@ public class AllocType {
    * the type once the appropriate stored components have been removed.
    */
   AllocType removeStored(int numUsedArgs, boolean[] usedArgs) {
-    // TODO: could likely use a different version of generalize() and avoid constructing
-    // intermediate at.
+    // TODO: could likely use a different version of generalize()
+    // and avoid constructing intermediate at.
     AllocType at = freshInstantiate();
     Type[] nstored = new Type[numUsedArgs];
     int j = 0;
@@ -275,10 +278,15 @@ public class AllocType {
     return new AllocType(set.canonTypes(stored, null), result.canonType(set));
   }
 
+  /** Apply the given substitution to this AllocType. */
   AllocType apply(TVarSubst s) {
     return apply(null, s);
   }
 
+  /**
+   * Apply the given substitution to this AllocType, using the specified type environment to
+   * interpret TGens.
+   */
   AllocType apply(Type[] tenv, TVarSubst s) {
     Type[] nsts = new Type[stored.length];
     for (int i = 0; i < stored.length; i++) {
@@ -288,7 +296,7 @@ public class AllocType {
   }
 
   /**
-   * Extend a substitution by matching this (potentially polymorphic) AllocType against a
+   * Construct a substitution by matching this (potentially polymorphic) AllocType against a
    * monomorphic instance.
    */
   TVarSubst specializingSubst(TVar[] generics, AllocType inst) {
@@ -298,6 +306,7 @@ public class AllocType {
     return null;
   }
 
+  /** Check that the result of this AllocType matches the given instance. */
   boolean resultMatches(Type inst) {
     return result.match(null, inst, null);
   }
@@ -327,10 +336,10 @@ public class AllocType {
   static AllocType validate(TyconEnv env, TypeExp[] storedexp, TypeExp texp) throws Failure {
     TyvarEnv params = new TyvarEnv();
     for (int i = 0; i < storedexp.length; i++) {
-      storedexp[i] = storedexp[i].scopeType(true, params, env, 0);
+      storedexp[i] = storedexp[i].scopeType(params, env);
       storedexp[i].checkKind(KAtom.STAR);
     }
-    texp = texp.scopeType(true, params, env, 0);
+    texp = texp.scopeType(params, env);
     texp.checkKind(KAtom.STAR);
 
     Prefix prefix = params.toPrefix();
@@ -368,6 +377,6 @@ public class AllocType {
    * Calculate the type of a structure describing the layout of a closure for a specific definition.
    */
   llvm.Type closureLayoutTypeCalc(LLVMMap lm) {
-    return structLayoutCalc(lm, lm.codePtrType(result));
+    return structLayoutCalc(lm, llvm.Type.ptr);
   }
 }

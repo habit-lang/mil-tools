@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,6 +21,9 @@ package llvm;
 
 /** Base class for values (i.e., operands) in LLVM instructions. */
 public abstract class Value {
+
+  /** The null constant. */
+  public static final Null NULL = new Null();
 
   /** Return the LLVM type of this value. */
   public abstract Type getType();

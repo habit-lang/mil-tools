@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -16,30 +16,16 @@
     You should have received a copy of the GNU General Public License
     along with mil-tools.  If not, see <https://www.gnu.org/licenses/>.
 */
-package core;
+package mil;
 
 import compiler.*;
-import mil.*;
+import core.*;
 
-public class KindTest {
+class RepeatedFixityWarning extends Warning {
 
-  public static void main(String[] args) {
-    Handler handler = new SimpleHandler();
-    Source source = new StdinSource(handler);
-    CoreLexer lexer = new CoreLexer(handler, source);
-    CoreParser parser = new CoreParser(handler, lexer);
-    lexer.nextToken(); // read a token to prime the lexer
-    KindExp ke = parser.sneakKindExp();
-    parser.checkForEnd();
-    System.out.println("parsing complete");
-
-    try {
-      Kind k = ke.toKind();
-      System.out.println("Kind: " + k);
-    } catch (Failure f) {
-      handler.report(f);
-    }
-
-    System.out.println("done!");
+  public RepeatedFixityWarning(Position pos, Fixity declared, String id) {
+    super(
+        pos,
+        "Repeated fixity declaration for " + id + ", previously declared fixity was " + declared);
   }
 }

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -24,13 +24,11 @@ import mil.*;
 
 interface LCTokens extends CoreTokens {
 
-  int DO = 54;
+  int DO = 55;
 
-  int LAMBDA = 55;
+  int LAMBDA = 56;
 
-  int AMPAMP = 56;
+  int AMPAMP = 57;
 
-  int BARBAR = 57;
-
-  int WHERE = 58;
+  int BARBAR = 58;
 }

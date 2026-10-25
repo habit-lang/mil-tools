@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -44,12 +44,14 @@ class AreaDefn extends TopDefn {
    * Validate this top level definition and add corresponding entries to the environment, if
    * necessary.
    */
-  void validateTopDefn(Handler handler, MILEnv milenv) throws Failure {
+  void validateTopDefn(Handler handler, MILEnv milenv) {
     try {
       // Validate the area type:
-      typeExp = typeExp.scopeType(false, null, milenv.getTyconEnv(), 0);
+      typeExp = typeExp.scopeType(null, milenv.getTyconEnv());
       typeExp.checkKind(KAtom.STAR);
-      Type refType = typeExp.toType(null); // The type of area reference, as declared
+
+      // The type of area reference, as declared
+      Type refType = typeExp.toType(null);
       Type areaType = new TVar(Tyvar.area);
       if (!Type.ref(areaType).match(null, refType, null)) {
         throw new Failure(typeExp.position(), "area definition requires a reference type");
@@ -61,7 +63,8 @@ class AreaDefn extends TopDefn {
       long alignment = areaType.calcAreaAlignment(pos, milenv, alignExp);
       debug.Log.println("area type is " + areaType + ", alignment=" + alignment);
 
-      initType = Type.init(areaType); // Calculate and save type for initializers
+      // Calculate and save type for initializers
+      initType = Type.init(areaType);
       for (int i = 0; i < areaVars.length; i++) {
         areaVars[i].addToEnv(handler, milenv, alignment, areaType, size, refType);
       }

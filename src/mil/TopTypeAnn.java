@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -46,10 +46,8 @@ class TopTypeAnn extends TypeAnn {
    */
   void inScopeOf(Handler handler, MILEnv milenv) throws Failure {
     for (int i = 0; i < ids.length; i++) {
-      Top t = milenv.mustFindTop(handler, pos, ids[i]);
-      if (t != null) {
-        t.setDeclared(handler, pos, scheme);
-      }
+      Top t = milenv.mustFindTop(pos, ids[i]);
+      t.setDeclared(pos, scheme);
     }
   }
 }

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,7 +21,7 @@ package mil;
 import compiler.*;
 import core.*;
 
-/** KVar is used to represent kind variables. */
+/** Represent kind variables that can be bound to other kinds. */
 public class KVar extends Kind {
 
   /** Records the value of this variable (initially null, indicating an unbound variable). */
@@ -38,12 +38,12 @@ public class KVar extends Kind {
 
   /** Bind this kind variable to a specific kind, performing an occurs check to ensure validity. */
   boolean bindTo(Kind k) {
-    if (this == k) { // Trivially unify a variable with itself
-      return true;
-    } else if (k.contains(this)) { // Run occurs check
-      return false;
+    if (this != k) { // Variable trivially unifies with itself
+      if (k.contains(this)) { // Run occurs check
+        return false;
+      }
+      bound = k;
     }
-    bound = k;
     return true;
   }
 
@@ -53,8 +53,8 @@ public class KVar extends Kind {
   }
 
   /** Copy a kind, replacing any unbound kind variables with star. */
-  Kind fixKind() {
-    return bound == null ? KAtom.STAR : bound.fixKind();
+  Kind defaultKind() {
+    return bound == null ? KAtom.STAR : bound.defaultKind();
   }
 
   /**

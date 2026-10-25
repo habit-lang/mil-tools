@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -82,10 +82,13 @@ public class Machine {
 
   private static final int SEL = 16;
 
+  /** The program array. */
   private int[] prog;
 
+  /** Address for loading new code. */
   private int nextAddr = 0;
 
+  /** Return the next address for loading new code. */
   int getNextAddr() {
     return nextAddr;
   }
@@ -376,7 +379,7 @@ public class Machine {
     if (++callDepth > maxCallDepth) {
       maxCallDepth = callDepth;
     }
-    if (cached != null) { // Use a cached context if one is available
+    if (cached != null) { // Use cached context if one is available
       cached.fp = fp;
       cached.pc = pc;
       Context ncached = cached.enclosing;
@@ -408,12 +411,13 @@ public class Machine {
           case STOP: // STOP:  Terminate execution.
             return;
 
-          case JUMP: // JUMP addr:  Continue execution at the specified address.
+          case JUMP: // JUMP addr:  Continue execution at the specified
+            // address.
             pc = prog[pc + 1];
             continue;
 
-          case JFALSE: // JFALSE addr:  Conditional jump if the content of the value register is
-                       // false.
+          case JFALSE: // JFALSE addr:  Conditional jump if the content
+            // of the value register is false.
             if (val.getBool()) {
               pc += 2; // skip address
             } else {
@@ -421,8 +425,8 @@ public class Machine {
             }
             continue;
 
-          case JNTAG: // JNTAG t addr:  Conditional jump if the content of the value register is not
-                      // tagged with t.
+          case JNTAG: // JNTAG t addr:  Conditional jump if the content
+            // of the value register is not tagged with t.
             if (val.getTag() == prog[pc + 1]) {
               pc += 3; // skip address
             } else {
@@ -430,13 +434,12 @@ public class Machine {
             }
             continue;
 
-          case CALL: // CALL o, addr:  Jump to the specified address, incrementing fp by o (which is
-                     // typically
-            // where any parameters for the call are stored).  The value of the program counter
-            // (after
-            // this instruction) and the current frame offset are stored so that they can be
-            // restored
-            // by a subsequent RETURN instruction.
+          case CALL: // CALL o, addr:  Jump to the specified address,
+            // incrementing fp by o (which is typically where any
+            // parameters for the call are stored).  The value of
+            // the program counter (after this instruction) and
+            // the current frame offset are stored so that they
+            // can be restored by a subsequent RETURN instruction.
             saveContext(fp, pc + 3);
             fp += prog[pc + 1];
             pc = prog[pc + 2];
@@ -446,20 +449,20 @@ public class Machine {
             pc = val.getTag();
             continue;
 
-          case CCALL: // CCALL o:  Call closure in the value register, starting a new frame at the
-                      // specified
+          case CCALL: // CCALL o:  Call closure in the value register,
+            // starting a new frame at the specified
             // offset in the current frame.
             saveContext(fp, pc + 2);
             fp += prog[pc + 1];
             pc = val.getTag();
             continue;
 
-          case RETURN: // RETURN:  Return to calling procedure, restoring fp and pc from saved
-                       // context.  We cache a
-            // small number of Context structures so that they can be reused on subsequent calls
-            // without
-            // additional allocation; this may prove to be an unnecessary/premature "optimization"
-            // ...
+          case RETURN: // RETURN:  Return to calling procedure, restoring
+            // fp and pc from saved context.  We cache a small
+            // number of Context structures so that they can be
+            // reused on subsequent calls without additional
+            // allocation; this may prove to be an unnecessary
+            // or premature "optimization" ...
             {
               Context restore = saved;
               saved = saved.enclosing;
@@ -478,48 +481,54 @@ public class Machine {
             callDepth--;
             continue;
 
-          case LOAD: // LOAD src:  Load from specified frame slot into the value register.
+          case LOAD: // LOAD src:  Load from specified frame slot into
+            // the value register.
             val = stack[fp + prog[pc + 1]];
             pc += 2;
             continue;
 
-          case GLOAD: // GLOAD i:  Load global item i into the value register.
+          case GLOAD: // GLOAD i:  Load global item i into the value
+            // register.
             val = globals[prog[pc + 1]];
             pc += 2;
             continue;
 
-          case STORE: // STORE dst:  Store the contents of the value register in the specified frame
-                      // slot.
+          case STORE: // STORE dst:  Store the contents of the value
+            // register in the specified frame slot.
             stack[fp + prog[pc + 1]] = val;
             pc += 2;
             continue;
 
-          case COPY: // COPY src dst:  Copy a value from a source slot into a destination slot.  We
-                     // could produce
-            // a similar effect by using a sequence: LOAD src; STORE dst.  The COPY instruction,
-            // however,
-            // provides a more compact encoding, and allows us to hold another temporary in the
-            // value
-            // register.  For example, we can swap the values in a pair of locations using the code
+          case COPY: // COPY src dst:  Copy a value from a source slot
+            // into a destination slot.  We could produce
+            // a similar effect by using a sequence:
+            // LOAD src; STORE dst.  The COPY instruction,
+            // however, provides a more compact encoding, and
+            // allows us to hold another temporary in the value
+            // register.  For example, we can swap the values
+            // in a pair of locations using the code
             // sequence:  LOAD v; COPY w v; STORE w
             stack[fp + prog[pc + 2]] = stack[fp + prog[pc + 1]];
             pc += 3;
             continue;
 
-          case GCOPY: // GCOPY i dst:  Copy global item i into the specified frame slot.
+          case GCOPY: // GCOPY i dst:  Copy global item i into the
+            // specified frame slot.
             stack[fp + prog[pc + 2]] = globals[prog[pc + 1]];
             pc += 3;
             continue;
 
-          case GSAVE: // GSAVE src i:  Save value in the source frame location as global item i.
+          case GSAVE: // GSAVE src i:  Save value in the source frame
+            // location as global item i.
             globals[prog[pc + 2]] = stack[fp + prog[pc + 1]];
             debug.Log.println("Saved global: " + prog[pc + 2] + " [" + globals[prog[pc + 2]] + "]");
             pc += 3;
             continue;
 
-          case ALLOC: // ALLOC tag n o:  Allocate a new data value with the specified tag and n
-                      // fields, starting at
-            // offset o in the current frame.  The result is saved in the value register.
+          case ALLOC: // ALLOC tag n o:  Allocate a new data value with
+            // the specified tag and n fields, starting at
+            // offset o in the current frame.  The result is
+            // saved in the value register.
             {
               int n = prog[pc + 2];
               int base = fp + prog[pc + 3];
@@ -532,15 +541,15 @@ public class Machine {
             }
             continue;
 
-          case SEL: // SEL i dst:  Extract the ith component of the data object in the value
-                    // register and store
+          case SEL: // SEL i dst:  Extract the ith component of the
+            // data object in the value register and store
             // the result in frame slot dst.
             stack[fp + prog[pc + 2]] = val.getComponent(prog[pc + 1]);
             pc += 3;
             continue;
 
-          case PRIM: // PRIM o p:  Execute primitive number p using parameters at offset o in the
-                     // current frame.
+          case PRIM: // PRIM o p:  Execute primitive number p using
+            // parameters at offset o in the current frame.
             Prim.exec(out, prog[pc + 2], fp + prog[pc + 1], stack);
             pc += 3;
             continue;

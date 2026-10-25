@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -111,26 +111,17 @@ public class Prefix {
   public static final Prefix area_lab_area =
       new Prefix(new Tyvar[] {Tyvar.area, Tyvar.lab, Tyvar.area});
 
+  /** Construct a prefix from a list of type variables. */
+  public Prefix(TVar[] vs) {
+    this(TVar.toSig(vs));
+  }
+
   public Type[] instantiate() {
     Type[] tenv = new Type[numGenerics];
     for (int i = 0; i < numGenerics; i++) {
       tenv[i] = new TVar(vars[i]);
     }
     return tenv;
-  }
-
-  /**
-   * Construct a prefix from a list of type variables. The resulting prefix will contain a total of
-   * n generic variables taken, in reverse order, from the start of the list gens (which should have
-   * >= n entries).
-   */
-  public Prefix(TVar[] generics) {
-    numGenerics = generics.length;
-    vars = new Tyvar[numGenerics];
-    for (int i = 0; i < numGenerics; i++) {
-      vars[i] = generics[i].getTyvar();
-    }
-    // TODO: maybe we don't need both Tyvar[] and TVar[]?
   }
 
   /**

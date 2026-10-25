@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -37,10 +37,7 @@ class LCParser extends CoreParser implements LCTokens {
     for (; ; ) {
       if (!lexer.match(SEMI)) {
         try {
-          CoreDefn defn = maybeCoreDefn();
-          if (defn != null) {
-            prog.add(defn);
-          } else if (!handleTopDefn(prog)) {
+          if (!handleCoreDefn(prog) && !handleTopDefn(prog)) {
             LCDefn d = maybeLCDefn();
             if (d != null) {
               prog.add(d);
@@ -373,7 +370,8 @@ class LCParser extends CoreParser implements LCTokens {
     }
   }
 
-  private Expr parseExprStmts(Expr e) throws Failure { // stmts -> exp _ [ ; stmts ]
+  private Expr parseExprStmts(Expr e) throws Failure {
+    // stmts -> exp _ [ ; stmts ]
     lexer.itemEnd("expression");
     if (lexer.match(SEMI)) {
       Expr s = maybeStmts();
@@ -534,12 +532,13 @@ class LCParser extends CoreParser implements LCTokens {
    * parameter e.
    */
   private Expr parseInfixExpr(Expr e) throws Failure {
-    // Parse an applicative expression (a sequence of juxtaposed aexprs) with the first aexpr
-    // already in e
+    // Parse an applicative expression (a sequence of juxtaposed
+    // aexprs) with the first aexpr already in e
     for (Expr arg; (arg = maybeAExpr()) != null; ) {
       e = new EAp(e, arg);
     }
-    // Parse an infix operator followed by another infix expression, if present:
+    // Parse an infix operator followed by another infix expression,
+    // if present:
     switch (lexer.getToken()) {
       case VARSYM:
       case CONSYM:

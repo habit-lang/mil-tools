@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -37,22 +37,29 @@ class TGenCorresp {
    * object if this particular call establishes a new correspondence.
    */
   boolean maps(int an, TGen b) {
-    for (int i = 0; i < gens.length; i++) { // Is b already in the range of the current mapping?
-      if (gens[i] == b) { // If so, then this maps call can only succeed if an
-        return (i == an); // is already mapped to b.
+    // Is b already in the range of the current mapping?
+    for (int i = 0; i < gens.length; i++) {
+      // If so, then this maps call can only succeed if an is
+      // already mapped to b.
+      if (gens[i] == b) {
+        return (i == an);
       }
     }
 
-    if (an >= gens.length) { // Expand mapping if necessary to include an
+    // Expand mapping if necessary to include an
+    if (an >= gens.length) {
+      // (clearly an is not already mapped in this case)
       TGen[] ngens = new TGen[Math.max(an + 1, 2 * gens.length)];
-      for (int i = 0; i < gens.length; i++) { // (clearly an is not already mapped in this case)
+      for (int i = 0; i < gens.length; i++) {
         ngens[i] = gens[i];
       }
       gens = ngens;
-    } else if (gens[an] != null) { // An existing mapping for an cannot be to b because we
-      return false; // know that b is not in the current range
+    } else if (gens[an] != null) {
+      // An existing mapping for an cannot be to b because we
+      // know that b is not in the current range
+      return false;
     }
-    gens[an] = b; // Add mapping { a |-> b }
+    gens[an] = b; // Add mapping { an |-> b }
     return true;
   }
 }

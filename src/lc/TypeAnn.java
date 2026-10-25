@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -39,10 +39,10 @@ class TypeAnn extends LCDefn {
    * Annotate bindings in the given list using information (such as a type signature or fixity) that
    * is provided by this definition.
    */
-  void annotateBindings(Handler handler, TyconEnv tenv, Bindings bs) {
+  void annotateBindings(Handler handler, TyconEnv env, Bindings bs) {
     try {
       // Validate declared type scheme:
-      Scheme declared = type.toScheme(tenv);
+      Scheme declared = type.toScheme(env);
 
       // Add declared type to internal bindings:
       for (int i = 0; i < ids.length; i++) {

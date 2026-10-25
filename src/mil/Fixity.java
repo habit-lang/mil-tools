@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -75,7 +75,10 @@ public class Fixity {
     this.prec = Math.max(LOW_PREC, Math.min(HIGH_PREC, prec));
   }
 
-  /** Default fixity for things used as operators where no fixity has been provided. */
+  /**
+   * Default fixity for things used as operators where no fixity has been provided. Following
+   * Haskell, "Any operator lacking a fixity declaration is assumed to be infixl 9".
+   */
   public static final Fixity unspecified = new Fixity(NONASS, HIGH_PREC);
 
   /**
@@ -107,23 +110,17 @@ public class Fixity {
     }
   }
 
-  /** Test to see whether fixity objects are the same. */
-  public boolean sameAs(Fixity that) {
-    return (this.assoc == that.assoc) && (this.prec == that.prec);
+  /**
+   * Return a printable description of the associativity for this fixity. (If it is not LEFT or
+   * RIGHT, then it is functionally equivalent to NONASS).
+   */
+  public String assocToString() {
+    return (assoc == LEFT) ? "infixl" : (assoc == RIGHT) ? "infixr" : "infix";
   }
 
   /** Construct a printable representation of this fixity value. */
   public String toString() {
-    switch (assoc) {
-      case LEFT:
-        return "infixl " + prec;
-      case NONASS:
-        return "infix " + prec;
-      case RIGHT:
-        return "infixr " + prec;
-      default:
-        return "invalid fixity";
-    }
+    return assocToString() + " " + prec;
   }
 
   /** Precedence value to indicate that parens are not required. */

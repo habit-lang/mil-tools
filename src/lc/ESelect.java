@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** Represents a selector expression, e . lab. */
 class ESelect extends PosExpr {
 
   Expr e;
@@ -45,12 +46,16 @@ class ESelect extends PosExpr {
     e.indent(out, n + 1);
   }
 
+  /** Outer constructor for bitdata type, if there is one. */
   private Cfun cf;
 
+  /** Layout constructor function. */
   private Cfun lcf;
 
+  /** Index to selected field within layout. */
   private int index;
 
+  /** Field reference for selecting a structure field. */
   private StructField sf;
 
   /**
@@ -84,7 +89,8 @@ class ESelect extends PosExpr {
    * type variables that appear in an assumption.
    */
   Type inferType(TVarsInScope tis) throws Failure { // e . lab
-    Type et = e.inferType(tis).skeleton(); // take skeleton to shortcut TInds, etc.
+    // take skeleton to shortcut TInds, etc.
+    Type et = e.inferType(tis).skeleton();
     BitdataType bt = et.bitdataType();
     BitdataLayout layout;
     if (bt == null) {
@@ -105,14 +111,15 @@ class ESelect extends PosExpr {
         throw new Failure(
             pos, "Invalid selector for field \"" + lab + "\" from value of type " + et);
       }
-      cf = null; // et is a layout type, so no outer constructor is involved
+      // et is a layout type, so no outer constructor is involved
+      cf = null;
     } else {
       BitdataLayout[] layouts = bt.getLayouts();
       if (layouts.length != 1) {
         throw new Failure(pos, "Invalid selector: " + et + " has multiple constructors");
       }
       layout = layouts[0];
-      cf = bt.getCfuns()[0]; // record outer constructor
+      cf = bt.getCfuns()[0]; // Record outer constructor
     }
     BitdataField[] lfields = layout.getFields();
     index = Name.index(lab, lfields);
@@ -155,11 +162,8 @@ class ESelect extends PosExpr {
    * continuation kt maps tails (that produce values of type T) to code sequences (that return a
    * value of the type specified by kty).
    */
-  Code compTailM(
-      final CGEnv env,
-      final Block abort,
-      final Type kty,
-      final TailCont kt) { // id [ fields ], e [ fields ],  e . lab
+  Code compTailM(final CGEnv env, final Block abort, final Type kty, final TailCont kt) {
+    // id [ fields ], e [ fields ],  e . lab
     debug.Internal.error("Constructs of this form do not produce values of monadic type");
     return null;
   }

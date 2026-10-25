@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -45,7 +45,7 @@ class LLVMMap extends TypeSet {
     prog.add(new llvm.FuncDecl(name, ftype));
   }
 
-  private HashMap<Type, llvm.Type> typeMap = new HashMap();
+  private HashMap<Type, llvm.Type> typeMap = (new HashMap<Type, llvm.Type>());
 
   llvm.Type toLLVM(Type t) {
     Type c = t.canonType(this);
@@ -64,13 +64,18 @@ class LLVMMap extends TypeSet {
     return llvm.Type.word();
   }
 
-  llvm.Type dataPtrTypeCalc(Type c) {
-    llvm.DefinedType dt = new llvm.DefinedType(new llvm.StructType(new llvm.Type[] {tagType()}));
-    typedef("data layout for values of type " + c, dt);
-    return dt.ptr();
+  /** The layout of a data value with unknown constructor. */
+  public llvm.DefinedType dataTypeLayout = null;
+
+  public llvm.DefinedType dataLayout() {
+    if (dataTypeLayout == null) {
+      dataTypeLayout = new llvm.DefinedType(new llvm.StructType(new llvm.Type[] {tagType()}));
+      typedef("layout for data types", dataTypeLayout);
+    }
+    return dataTypeLayout;
   }
 
-  private HashMap<Cfun, llvm.Type> cfunLayoutTypeCache = new HashMap();
+  private HashMap<Cfun, llvm.Type> cfunLayoutTypeCache = (new HashMap<Cfun, llvm.Type>());
 
   llvm.Type cfunLayoutType(Cfun key) {
     llvm.Type t = cfunLayoutTypeCache.get(key);
@@ -83,28 +88,20 @@ class LLVMMap extends TypeSet {
     return t;
   }
 
-  /**
-   * Calculate the LLVM type for a closure corresponding to the MIL function type c, which is
-   * assumed to be in canonical form.
-   */
-  llvm.Type closurePtrTypeCalc(Type c) {
-    llvm.DefinedType fun = new llvm.DefinedType(); // %fun = type %rng (%clo*, %dom...)*
-    llvm.DefinedType clo = new llvm.DefinedType(); // %clo = type { %fun }
-    llvm.Type ptr = clo.ptr(); // %ptr = type %clo*
-    llvm.Type[] dom = stackArg(1).closureArgs(this, ptr, 0, 0);
-    llvm.Type rng = toLLVM(stackArg(2));
-    fun.define(new llvm.FunctionType(rng, dom).ptr());
-    clo.define(new llvm.StructType(new llvm.Type[] {fun}));
-    typedef("closure types for " + c, fun);
-    typedef(clo);
-    return ptr;
+  /** The layout of a closure with an unknown layout type. */
+  public llvm.DefinedType closureTypeLayout = null;
+
+  public llvm.DefinedType closureLayout() {
+    if (closureTypeLayout == null) {
+      closureTypeLayout =
+          new llvm.DefinedType(new llvm.StructType(new llvm.Type[] {llvm.Type.ptr}));
+      typedef("layout for closure types", closureTypeLayout);
+    }
+    return closureTypeLayout;
   }
 
-  llvm.Type codePtrType(Type ftype) {
-    return toLLVM(ftype).codePtrType();
-  }
-
-  private HashMap<ClosureDefn, llvm.Type> closureLayoutTypeCache = new HashMap();
+  private HashMap<ClosureDefn, llvm.Type> closureLayoutTypeCache =
+      (new HashMap<ClosureDefn, llvm.Type>());
 
   llvm.Type closureLayoutType(ClosureDefn key) {
     llvm.Type t = closureLayoutTypeCache.get(key);
@@ -117,7 +114,7 @@ class LLVMMap extends TypeSet {
     return t;
   }
 
-  private HashMap<Block, llvm.Global> blockGlobalMap = new HashMap();
+  private HashMap<Block, llvm.Global> blockGlobalMap = (new HashMap<Block, llvm.Global>());
 
   /**
    * Look for a global reference for the given definition in this LLVMMap, adding a new entry if
@@ -131,7 +128,8 @@ class LLVMMap extends TypeSet {
     return g;
   }
 
-  private HashMap<ClosureDefn, llvm.Global> closureGlobalMap = new HashMap();
+  private HashMap<ClosureDefn, llvm.Global> closureGlobalMap =
+      (new HashMap<ClosureDefn, llvm.Global>());
 
   /**
    * Look for a global reference for the given definition in this LLVMMap, adding a new entry if
@@ -145,7 +143,7 @@ class LLVMMap extends TypeSet {
     return g;
   }
 
-  private HashMap<Prim, llvm.Global> primGlobalMap = new HashMap();
+  private HashMap<Prim, llvm.Global> primGlobalMap = (new HashMap<Prim, llvm.Global>());
 
   /**
    * Look for a global reference for the given definition in this LLVMMap, adding a new entry if
@@ -165,9 +163,6 @@ class LLVMMap extends TypeSet {
    */
   private llvm.Global allocFuncGlobal = null;
 
-  /** The type of value that is returned by a call to the alloc function. */
-  public static final llvm.Type allocRetType = llvm.Type.i8.ptr();
-
   /**
    * Return a Global reference to the alloc function, generating an appropriate LLVM declaration for
    * the first use.
@@ -176,7 +171,7 @@ class LLVMMap extends TypeSet {
     if (allocFuncGlobal == null) {
       String id = "alloc";
       llvm.FunctionType ft =
-          new llvm.FunctionType(allocRetType, new llvm.Type[] {llvm.Type.word()});
+          new llvm.FunctionType(llvm.Type.ptr, new llvm.Type[] {llvm.Type.word()});
       allocFuncGlobal = new llvm.Global(ft, id);
       declare(id, ft);
     }

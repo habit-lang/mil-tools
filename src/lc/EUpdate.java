@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** Represents an update expression, e [ fields ]. */
 class EUpdate extends PosExpr {
 
   private Expr e;
@@ -46,10 +47,13 @@ class EUpdate extends PosExpr {
     EField.indent(out, n + 1, fields);
   }
 
+  /** Outer constructor for bitdata type, if there is one. */
   private Cfun cf;
 
+  /** Bitdata fields for update, in order. */
   private BitdataField[] bfields;
 
+  /** Layout for full bitdata value. */
   private BitdataLayout layout;
 
   /**
@@ -92,7 +96,8 @@ class EUpdate extends PosExpr {
       if (layout == null) {
         throw new Failure(pos, "Invalid update: no layout for " + et);
       }
-      cf = null; // et is a layout type, so no outer constructor is involved
+      // et is a layout type, so no outer constructor is involved
+      cf = null;
     } else {
       BitdataLayout[] layouts = bt.getLayouts();
       if (layouts.length != 1) {
@@ -101,11 +106,14 @@ class EUpdate extends PosExpr {
       layout = layouts[0];
       cf = bt.getCfuns()[0]; // record outer constructor
     }
-    BitdataField[] lfields = layout.getFields(); // Fields from layout
-    bfields = new BitdataField[fields.length]; // Fields to update
+    // Fields from layout:
+    BitdataField[] lfields = layout.getFields();
+    // Fields to update:
+    bfields = new BitdataField[fields.length];
     for (int i = 0; i < fields.length; i++) {
       bfields[i] = fields[i].checkTypeUpdate(tis, et, lfields);
-      for (int j = 0; j < i; j++) { // check that this field has only been updated once
+      for (int j = 0; j < i; j++) {
+        // check that this field has only been updated once
         if (bfields[i] == bfields[j]) {
           throw new Failure(pos, "Multiple updates to field \"" + fields[i] + "\"");
         }
@@ -140,18 +148,21 @@ class EUpdate extends PosExpr {
     if (cf == null) {
       return e.compTail(env, MILProgram.abort, kty, new UpdateCont(env, 0, kty, kt));
     } else {
+      // continuation to restore outer cfun at the end
       final TailCont kn =
           new UpdateCont(
               env,
               0,
-              kty, // continuation to restore outer cfun at the end
+              kty,
               new TailCont() {
                 Code with(final Tail t) {
                   Temp a = new Temp(layout.asType());
-                  return new Bind(a, t, kt.with(new DataAlloc(cf).withArgs(a)));
+                  return new Bind(a, t, kt.with(new DataAlloc(cf, a)));
                 }
               });
-      final TailCont ks = new TailCont() { // continuation to strip outer cfun at start
+      // continuation to strip outer cfun at start
+      final TailCont ks =
+          new TailCont() {
             Code with(final Tail t) {
               Temp a = new Temp(layout.getBitdataType().asType());
               return new Bind(a, t, kn.with(new Sel(cf, 0, a)));
@@ -183,7 +194,8 @@ class EUpdate extends PosExpr {
       if (i >= fields.length) {
         return kt.with(t);
       } else {
-        final Temp a = new Temp(layout.asType()); // a holds value to be updated
+        // a holds value to be updated
+        final Temp a = new Temp(layout.asType());
         final TailCont ku = new UpdateCont(env, i + 1, kty, kt);
         return new Bind(
             a,
@@ -205,11 +217,8 @@ class EUpdate extends PosExpr {
    * continuation kt maps tails (that produce values of type T) to code sequences (that return a
    * value of the type specified by kty).
    */
-  Code compTailM(
-      final CGEnv env,
-      final Block abort,
-      final Type kty,
-      final TailCont kt) { // id [ fields ], e [ fields ],  e . lab
+  Code compTailM(final CGEnv env, final Block abort, final Type kty, final TailCont kt) {
+    // id [ fields ], e [ fields ],  e . lab
     debug.Internal.error("Constructs of this form do not produce values of monadic type");
     return null;
   }

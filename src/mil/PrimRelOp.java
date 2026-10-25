@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -26,11 +26,12 @@ import java.io.PrintWriter;
 public abstract class PrimRelOp extends PrimSing {
 
   /** Default constructor. */
-  public PrimRelOp(String id, int purity, BlockType blockType) {
-    super(id, purity, blockType);
+  public PrimRelOp(String id, BlockType blockType, int purity) {
+    super(id, blockType, purity);
   }
 
-  abstract boolean op(long n, long m);
+  /** Primitive semantics: comparisons of Word values. */
+  public abstract boolean op(long n, long m);
 
   void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
     stack[fp] = BoolValue.make(op(stack[fp].getInt(), stack[fp + 1].getInt()));

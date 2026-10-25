@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -38,9 +38,9 @@ abstract class CallExp extends TailExp {
 
   /**
    * Perform scope analysis on this TailExp, checking that all of the referenced identifiers are in
-   * scope and returning a corresponding mil Tail.
+   * scope and returning a corresponding MIL Tail.
    */
-  Tail inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) {
+  Tail inScopeOf(Handler handler, MILEnv milenv, TempEnv tenv) throws Failure {
     return calleeInScopeOf(handler, milenv).withArgs(AtomExp.inScopeOf(handler, milenv, tenv, as));
   }
 
@@ -49,5 +49,5 @@ abstract class CallExp extends TailExp {
    * defined elsewhere in the program. The resulting Call object can then be extended with the
    * appropriate list of arguments in the implementation of inScopeOf() for CallExp objects.
    */
-  abstract Call calleeInScopeOf(Handler handler, MILEnv milenv);
+  abstract Call calleeInScopeOf(Handler handler, MILEnv milenv) throws Failure;
 }

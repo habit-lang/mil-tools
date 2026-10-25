@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -45,20 +45,20 @@ public abstract class Lexer extends Phase {
    * from the same grammar, then we might set up a start symbol with the following productions:
    *
    * <pre>
-   *    start : PARSE_EXPR expr
-   *          | PARSE_STMT stmt
-   *          | PARSE_FILE file
-   *          ;
-   *  </pre>
+   *   start : PARSE_EXPR expr
+   *         | PARSE_STMT stmt
+   *         | PARSE_FILE file
+   *         ;
+   * </pre>
    *
    * To parse an expression, statement, or file, we just make sure that our lexer is constructed
    * using the appropriate firstToken:
    *
    * <pre>
-   *    new Lexer(handler, PARSE_EXPR);
-   *    new Lexer(handler, PARSE_STMT);
-   *    new Lexer(handler, PARSE_FILE);
-   *  </pre>
+   *   new Lexer(handler, PARSE_EXPR);
+   *   new Lexer(handler, PARSE_STMT);
+   *   new Lexer(handler, PARSE_FILE);
+   * </pre>
    *
    * We do not specify either a text or a position for this first token, so a program using a Lexer
    * should not attempt to read or use those attributes of the first token.
@@ -66,8 +66,8 @@ public abstract class Lexer extends Phase {
    * <p>In an application where this feature is not required, the program should just use:
    *
    * <pre>
-   *    new Lexer(handler);
-   *  </pre>
+   *   new Lexer(handler);
+   * </pre>
    *
    * and then invoke <code>nextToken()</code> to read the first input token.
    */

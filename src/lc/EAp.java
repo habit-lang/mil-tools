@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** Represents a function application, f x. */
 class EAp extends Expr {
 
   private Expr f;
@@ -136,9 +137,10 @@ class EAp extends Expr {
         new AtomCont() {
           Code with(final Atom fv) {
             final Temp ft = new Temp(tft);
+            // TODO: do we need an assert too?
             return new Bind(
                 ft,
-                new Sel(Cfun.Func, 0, fv), // TODO: do we need an assert too?
+                new Sel(Cfun.Func, 0, fv),
                 x.compAtom(
                     env,
                     kty,
@@ -163,11 +165,9 @@ class EAp extends Expr {
         kty,
         new AtomCont() {
           Code with(final Atom v) {
+            // TODO: combine with EVar code above?
             Temp t = new Temp(tft);
-            return new Bind(
-                t,
-                new Sel(Cfun.Proc, 0, v), // TODO: combine with EVar code above?
-                kt.with(new Enter(t, Atom.noAtoms)));
+            return new Bind(t, new Sel(Cfun.Proc, 0, v), kt.with(new Enter(t, Atom.noAtoms)));
           }
         });
   }

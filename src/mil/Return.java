@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,23 +22,29 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/**
+ * Represents a Call of the form return as that has no effect other than to return the specified set
+ * of argument values.
+ */
 public class Return extends Call {
 
-  public Return() {
-    // for creating Returns whose args will be filled in later ...
-  }
+  /** Create a Return whose arguments will be filled in later. */
+  public Return() {}
 
+  /** Create a Return with a single result. */
   public Return(Atom a) {
     this.args = new Atom[] {a};
   }
 
-  public Return(Atom[] as) {
-    this.args = as;
+  /** Create a Return with an array of results. */
+  public Return(Atom[] args) {
+    this.args = args;
   }
 
-  /** Test to determine whether a given tail expression has no externally visible side effect. */
-  boolean hasNoEffect() {
-    return true;
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
+  void dump(PrintWriter out, Temps ts) {
+    out.print("return ");
+    Atom.displayTuple(out, args, ts);
   }
 
   /** Test if two Tail expressions are the same. */
@@ -46,14 +52,9 @@ public class Return extends Call {
     return that.sameReturn(this);
   }
 
+  /** Test whether this Tail is the same as the given Return. */
   boolean sameReturn(Return that) {
     return Atom.sameAtoms(this.args, that.args);
-  }
-
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
-  void dump(PrintWriter out, Temps ts) {
-    out.print("return ");
-    Atom.displayTuple(out, args, ts);
   }
 
   /** Construct a new Call value that is based on the receiver, without copying the arguments. */
@@ -61,7 +62,7 @@ public class Return extends Call {
     return new Return(args);
   }
 
-  /** The type tuple that describes the outputs of this Tail. */
+  /** Records the type tuple that describes the outputs of this Tail. */
   private Type outputs;
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
@@ -74,6 +75,7 @@ public class Return extends Call {
     return outputs;
   }
 
+  /** Infer a type for this Call expression. */
   Type inferCallType(Position pos, Type[] inputs) throws Failure {
     return outputs = Type.tuple(inputs);
   }
@@ -106,28 +108,39 @@ public class Return extends Call {
   }
 
   /**
-   * Test to determine whether a given tail expression may be repeatable (i.e., whether the results
-   * of a previous use of the same tail can be reused instead of repeating the tail). TODO: is there
-   * a better name for this?
+   * Determine if a given tail expression has no externally visible side effects. This is true for
+   * returns, allocators, and selections, and for calls to primitives that are not impure.
+   */
+  boolean hasNoEffect() {
+    return true;
+  }
+
+  /**
+   * Test whether a given tail expression may be repeatable (i.e., whether the results of a previous
+   * use of the same tail can be reused instead of repeating the tail). TODO: is there a better name
+   * for this?
    */
   public boolean isRepeatable() {
+    // This is an example of Tail that is repeatable.
     return true;
   }
 
   /**
-   * Test to determine whether a given tail expression is pure (no externally visible side effects
-   * and no dependence on other effects).
+   * Test whether a given tail expression is pure (no externally visible side effects and no
+   * dependence on other effects).
    */
   public boolean isPure() {
+    // This is an example of a Tail that is pure.
     return true;
   }
 
   /**
-   * A simple test for MIL code fragments that return a known Flag, returning either the constant or
-   * null.
+   * A simple test for MIL code fragments that return a known Flag; this is a helper for the method
+   * without an argument that adds a counter that is decreased for every BlockCall encountered to
+   * avoid triggering an unbounded loop in pathological corner cases.
    */
-  Flag returnsFlag() {
-    return args.length == 1 ? args[0].returnsFlag() : null;
+  Flag returnsFlag(int n) {
+    return args.length == 1 ? args[0].returnsFlag(n) : null;
   }
 
   Atom[] returnsAtom() {
@@ -148,7 +161,8 @@ public class Return extends Call {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return summary(1);
@@ -198,7 +212,8 @@ public class Return extends Call {
     for (int i = 0; i < args.length; i++) {
       llvm.Value v = args[i].calcStaticValue();
       if (v != null) {
-        if (vals == null) { // lazily allocate array, knowing now that it is needed
+        if (vals == null) {
+          // lazily allocate array, knowing now that it is needed
           vals = new llvm.Value[args.length];
         }
         vals[i] = v;
@@ -247,7 +262,9 @@ public class Return extends Call {
    */
   llvm.Code toLLVMBindVoid(LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Code c) {
     debug.Internal.error("A void Return should have been eliminated");
-    return c; // Although this return value is actually correct for [] <- return []; c ...
+    // Although this return value is actually correct for
+    // [] <- return []; c ...
+    return c;
   }
 
   /**
@@ -266,11 +283,10 @@ public class Return extends Call {
    * expression, for the given TopLevel, should be executed during program initialization.
    */
   llvm.Code revInitTail(LLVMMap lm, InitVarMap ivm, TopLevel tl, TopLhs[] lhs, llvm.Code edoc) {
-    // This is a special case for TopLevels that have a return expression for their tail
-    // (essentially copying another
-    // value that is defined at the top-level); we cannot use toLLVMBindVoid(), toLLVMBindCont(), or
-    // toLLVMBindTail()
-    // in this case.
+    // This is a special case for TopLevels that have a return expression
+    // for their tail (essentially copying another value that is defined
+    // at the top-level); we cannot use toLLVMBindVoid(), toLLVMBindCont(),
+    // or toLLVMBindTail() in this case.
     return tl.initLLVMTopLhs(lm, ivm, args, edoc);
   }
 }

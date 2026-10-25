@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,6 +21,7 @@ package obdd;
 import java.io.PrintWriter;
 import java.math.BigInteger;
 
+/** Represents a set of bit vectors of a given width using an OBDD. */
 /** A main program for @Pat@, for the purposes of testing and illustration. */
 public class Pat {
 
@@ -42,7 +43,7 @@ public class Pat {
     return width;
   }
 
-  /** Test to see if two patterns define the same set of bit vectors. */
+  /** Test if two patterns define the same set of bit vectors. */
   public boolean same(Pat that) {
     return this.width == that.width && this.bdd.same(that.bdd);
   }
@@ -74,7 +75,7 @@ public class Pat {
     return new Pat(width, OBDD.TRUE, false);
   }
 
-  /** Test to see if this pattern represents a set of all bit patterns of some given width. */
+  /** Test if this pattern represents a set of all bit patterns of some given width. */
   public boolean isAll() {
     return bdd.isConst(true);
   }
@@ -84,9 +85,7 @@ public class Pat {
     return new Pat(width, OBDD.FALSE, false);
   }
 
-  /**
-   * Test to see if this pattern represents the empty set of all bit patterns of some given width.
-   */
+  /** Test if this pattern represents the empty set of all bit patterns of some given width. */
   public boolean isEmpty() {
     return bdd.isConst(false);
   }
@@ -305,9 +304,11 @@ public class Pat {
 
   Pat masktest(String id, Pat butnot) {
     this.toDot(id + "-orig.dot");
-    MaskTestPat test = new MaskTestPat(this, false); // look for a masktest predicate using ==
+    // look for a masktest predicate using ==
+    MaskTestPat test = new MaskTestPat(this, false);
     if (!test.disjoint(butnot)) {
-      test = new MaskTestPat(this, true); // look for a masktest predicate using /=
+      // look for a masktest predicate using /=
+      test = new MaskTestPat(this, true);
       if (!test.disjoint(butnot)) {
         System.out.println("no masktest predicate for " + id);
         return null; // none found :-(
@@ -447,5 +448,9 @@ public class Pat {
       t = t.or(Pat.intmod(8, i));
       //    try { java.lang.Thread.sleep(200); } catch (Exception ex) { }
     }
+  }
+
+  public static Pat range(int width, long lo, long hi) {
+    return greaterEq(width, lo).and(lessEq(width, hi));
   }
 }

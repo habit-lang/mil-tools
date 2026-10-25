@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -25,8 +25,8 @@ import core.*;
 public abstract class PrimUCmpOp extends PrimCmpOp {
 
   /** Default constructor. */
-  public PrimUCmpOp(String id, int purity, BlockType blockType) {
-    super(id, purity, blockType);
+  public PrimUCmpOp(String id, BlockType blockType, int purity) {
+    super(id, blockType, purity);
   }
 
   /** Return the upper (or lower) bound for this comparison type. */

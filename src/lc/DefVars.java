@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -23,7 +23,8 @@ import core.*;
 import mil.*;
 
 /**
- * A null-terminated linked list of items that can be accessed using (public) head and next fields.
+ * A null-terminated linked list of DefVar objects that can be accessed using (public) head and next
+ * fields.
  */
 public class DefVars {
 
@@ -110,6 +111,7 @@ public class DefVars {
     return vs;
   }
 
+  /** Construct an array of DefVar values from the elements of the list vs. */
   public static DefVar[] toArray(DefVars vs) {
     DefVar[] va = new DefVar[DefVars.length(vs)];
     for (int i = 0; vs != null; vs = vs.next) {

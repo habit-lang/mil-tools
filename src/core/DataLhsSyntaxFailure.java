@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,23 +21,11 @@ package core;
 import compiler.*;
 import mil.*;
 
-public class TypeTest {
+class DataLhsSyntaxFailure extends Failure {
 
-  public static void main(String[] args) {
-    Handler handler = new SimpleHandler();
-    Source source = new StdinSource(handler);
-    CoreLexer lexer = new CoreLexer(handler, source);
-    CoreParser parser = new CoreParser(handler, lexer);
-    lexer.nextToken(); // read a token to prime the lexer
-    TypeExp te = parser.sneakTypeExp();
-    parser.checkForEnd();
-    System.out.println("parsing complete");
-    try {
-      Scheme s = te.toScheme(TyconEnv.builtin);
-      System.out.println("Type scheme is: " + s);
-    } catch (Failure f) {
-      handler.report(f);
-    }
-    System.out.println("done!");
+  public DataLhsSyntaxFailure(TypeExp t) {
+    super(
+        t.position(),
+        "Syntax error in left hand side of data definition; " + "a constructor id is required");
   }
 }

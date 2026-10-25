@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -26,16 +26,18 @@ import java.io.PrintWriter;
 public abstract class PrimUnOp extends PrimSing {
 
   /** Default constructor. */
-  public PrimUnOp(String id, int purity, BlockType blockType) {
-    super(id, purity, blockType);
+  public PrimUnOp(String id, BlockType blockType, int purity) {
+    super(id, blockType, purity);
   }
 
-  abstract long op(long n);
+  /** Primitive semantics: unary operators on Word values. */
+  public abstract long op(long n);
 
   void exec(PrintWriter out, int fp, Value[] stack) throws Failure {
     stack[fp] = new WordValue(op(stack[fp].getInt()));
   }
 
+  /** Perform constant folding for a long-valued unary primitive. */
   Code fold(long n) {
     MILProgram.report("constant folding for " + getId());
     return PrimCall.done(op(n));

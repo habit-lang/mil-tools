@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -23,7 +23,7 @@ import java.io.PrintWriter;
 /** Branch to the start of another basic block, ending the current block. */
 public class Goto extends Code {
 
-  /** The the label of the block that we should branch to. */
+  /** The label of the block that we should branch to. */
   private String b;
 
   /** Default constructor. */

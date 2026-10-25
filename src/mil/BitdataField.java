@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -55,6 +55,7 @@ public class BitdataField extends Name {
     return width;
   }
 
+  /** Output information about this type for debugging purposes. */
   public void debugDump() {
     debug.Log.println(id + " :: " + type + " -- offset=" + offset + ", width=" + width);
   }
@@ -106,13 +107,14 @@ public class BitdataField extends Name {
     out.println(
         "    {\\draw("
             + mid
-            + ",6) -- ++(0,2) -- ++ (0,-2) node[anchor=south west, rotate=45] "
+            + ",6) -- ++(0,2) -- ++ (0,-2) "
+            + "node[anchor=south west, rotate=45] "
             + label
             + ";}");
     // out.println("    {\\draw (" + left  + ",6) -- +(4,4);");
     // out.println("     \\draw (" + right + ",6) -- +(4,4);");
-    // out.println("     \\node[anchor=west, rotate=45, yshift=1mm] at (" + mid + ",7) {\\Verb\"" +
-    // name + "\"};}");
+    // out.println("     \\node[anchor=west, rotate=45, yshift=1mm] at ("
+    //                     + mid + ",7) {\\Verb\"" + name + "\"};}");
     fieldSeparatorDiagram(out, offset, bitSize);
     return offset;
   }
@@ -348,7 +350,7 @@ public class BitdataField extends Name {
     }
     Type lt = layout.asType();
     BlockType bt = new BlockType(Type.tuple(lt, getType()), Type.tuple(lt));
-    updatePrim = new Prim.blockImpl("update_" + id, Prim.PURE, bt, impl);
+    updatePrim = new Prim.BlockImpl("update_" + id, bt, Prim.PURE, impl);
   }
 
   /**

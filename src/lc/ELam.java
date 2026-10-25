@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** Represents a lambda abstraction, \vs -> e. */
 class ELam extends PosExpr {
 
   private DefVar[] vs;
@@ -56,8 +57,8 @@ class ELam extends PosExpr {
   }
 
   /**
-   * Test to determine whether this expression can be used on the right hand side of a binding in a
-   * recursive binding group.
+   * Test whether this expression can be used on the right hand side of a binding in a recursive
+   * binding group.
    */
   boolean isSafeToRecurse() {
     return vs.length > 0 || e.isSafeToRecurse();

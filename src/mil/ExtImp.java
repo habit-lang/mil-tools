@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -34,10 +34,15 @@ public class ExtImp {
     return null;
   }
 
+  /**
+   * Output a description of this implementation strategy, using the provided TypeWriter to format
+   * any embedded types.
+   */
   void dump(PrintWriter out, StringTypeWriter tw) {
     /* nothing to do */
   }
 
+  /** Type check the implementation for an external. */
   void checkImp(Handler handler, Position pos) {
     /* nothing to do */
   }
@@ -47,14 +52,14 @@ public class ExtImp {
     /* nothing to do */
   }
 
-  /** Generate a specialized version of this external implementation strategy. */
-  ExtImp specialize(MILSpec spec, Type[] tenv) {
-    return this;
-  }
-
   /** Update all declared types with canonical versions. */
   void canonDeclared(MILSpec spec) {
     /* nothing to do */
+  }
+
+  /** Generate a specialized version of this external implementation strategy. */
+  ExtImp specialize(MILSpec spec, Type[] tenv) {
+    return this;
   }
 
   /**
@@ -70,20 +75,20 @@ public class ExtImp {
    * tail.
    */
   protected static TopDefn repImplement(Position pos, External ext, Type[] reps, Tail t) {
-    TopLhs[] lhs; // Generate a suitable left hand side
+    TopLhs[] lhs; // Generate a suitable lhs
     String id = ext.getId();
     if (reps == null) { // No change in representation
       lhs = new TopLhs[] {new TopLhs(id)}; // ==> single left hand side
       lhs[0].setDeclared(ext.getDeclared());
     } else { // Change in representation
-      lhs = new TopLhs[reps.length]; // ==> may require multiple left hand sides
+      lhs = new TopLhs[reps.length]; // ==> may require multiple lhss
       for (int i = 0; i < reps.length; i++) {
         lhs[i] = new TopLhs(Defn.mkid(id, i));
         lhs[i].setDeclared(reps[i]);
       }
     }
-    TopDefn impl =
-        new TopLevel(pos, lhs, t); // Make new top level to use as the replacement for ext
+    // Make new top level to use as the replacement for ext
+    TopDefn impl = new TopLevel(pos, lhs, t);
     impl.setIsEntrypoint(ext.isEntrypoint());
     debug.Log.println("Generated new top level definition for " + impl);
     return impl;

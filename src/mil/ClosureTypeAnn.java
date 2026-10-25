@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -49,14 +49,12 @@ class ClosureTypeAnn extends TypeAnn {
    */
   void inScopeOf(Handler handler, MILEnv milenv) throws Failure {
     for (int i = 0; i < ids.length; i++) {
-      ClosureDefn k = milenv.mustFindClosureDefn(handler, pos, ids[i]);
-      if (k != null) {
-        if (k.getDeclared() != null) {
-          handler.report(
-              new Failure(pos, "Multiple type annotations for closure \"" + k.getId() + "\""));
-        } else {
-          k.setDeclared(allocType);
-        }
+      ClosureDefn k = milenv.mustFindClosureDefn(pos, ids[i]);
+      if (k.getDeclared() != null) {
+        handler.report(
+            new Failure(pos, "Multiple type annotations for closure \"" + k.getId() + "\""));
+      } else {
+        k.setDeclared(allocType);
       }
     }
   }

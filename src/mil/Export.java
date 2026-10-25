@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -44,14 +44,14 @@ class Export extends Annotation {
   void inScopeOf(Handler handler, MILEnv milenv) throws Failure {
     defns = new Defn[ids.length];
     for (int i = 0; i < ids.length; i++) {
-      // For each identifier, look first for a top-level, then a closure definition, and then a
-      // block.
+      // For each identifier, look first for a top-level, then a closure
+      // definition, and then a block.
       Top t = milenv.findTop(ids[i]);
       if (t != null) {
         defns[i] = t.getDefn();
       } else if ((defns[i] = milenv.findClosureDefn(ids[i])) == null
           && (defns[i] = milenv.findBlock(ids[i])) == null) {
-        handler.report(MILEnv.notFound(pos, ids[i]));
+        throw MILEnv.notFound(pos, ids[i]);
       }
     }
   }

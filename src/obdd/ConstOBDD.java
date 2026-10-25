@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -64,13 +64,13 @@ class ConstOBDD extends OBDD {
 
   /**
    * Test for a specific bit pattern in the set represented by an OBDD (assumes that the argument
-   * bit pattern is in the correct range for the width of the OBDD.
+   * bit pattern is in the correct range for the width of the OBDD).
    */
   boolean includes(long i) {
     return val;
   }
 
-  /** Test to determine whether two OBDD structures are the same. */
+  /** Test whether two OBDD structures are the same. */
   public boolean same(OBDD that) {
     return that.isConst(val);
   }
@@ -97,7 +97,7 @@ class ConstOBDD extends OBDD {
   /**
    * A worker function to output a textual description of this BDD into the given array of lines,
    * starting at the line specified by next and returning the first unused line number (if there is
-   * one) as a result.
+   * one) as the result.
    */
   int showBits(int width, String[] lines, int next) {
     if (val) {

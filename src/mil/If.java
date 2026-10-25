@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -44,17 +44,12 @@ public class If extends Code {
     this.ifFalse = ifFalse;
   }
 
-  /** Test for a free occurrence of a particular variable. */
-  boolean contains(Temp w) {
-    return a == w || ifTrue.contains(w) || ifFalse.contains(w);
-  }
-
   /** Find the dependencies of this AST fragment. */
   Defns dependencies(Defns ds) {
     return a.dependencies(ifFalse.dependencies(ifTrue.dependencies(ds)));
   }
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
   void dump(PrintWriter out, Temps ts) {
     indentln(out, "if " + a.toString(ts));
     indent(out);
@@ -79,6 +74,10 @@ public class If extends Code {
     return ifFalse.tvars(ifTrue.tvars(tvs));
   }
 
+  /**
+   * Infer a type for this code sequence. TODO: use more fine-grained position information instead
+   * of passing around the position of the enclosing Defn.
+   */
   Type inferType(Position pos) throws Failure { // if a then ifTrue else ifFalse
     a.instantiate().unify(pos, Tycon.flag.asType());
     Type t = ifTrue.inferType(pos);
@@ -96,6 +95,11 @@ public class If extends Code {
     ifTrue.generateTailCode(builder, o);
     builder.patchToHere(iaddr);
     ifFalse.generateTailCode(builder, o);
+  }
+
+  /** Test for a free occurrence of a particular variable. */
+  boolean contains(Temp w) {
+    return a == w || ifTrue.contains(w) || ifFalse.contains(w);
   }
 
   /**
@@ -148,7 +152,8 @@ public class If extends Code {
    * that are enabled.
    */
   Code cleanup(Block src) {
-    if (ifTrue.sameBlockCall(ifFalse)) { // Rewrite (if a then bc else bc) ==> bc
+    if (ifTrue.sameBlockCall(ifFalse)) {
+      // Rewrite (if a then bc else bc) ==> bc
       MILProgram.report("eliminated an if with the same block in each branch in " + src);
       return new Done(ifTrue);
     }
@@ -203,7 +208,8 @@ public class If extends Code {
       Tail t = a.lookupFact(facts); // Look for a fact about a
       if (t != null) {
         // If a = bnot((n)), then an (if a then t else f) can be rewritten as
-        // (if n then f else t), flipping the order of the true and false branches.
+        // (if n then f else t), flipping the order of the true and false
+        // branches.
         Atom n = t.isBnot();
         if (n != null) {
           a = n; // change test to use n
@@ -262,7 +268,8 @@ public class If extends Code {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return ifTrue.summary() * 3 + ifFalse.summary() * 23;
@@ -305,10 +312,15 @@ public class If extends Code {
         ifFalse.specializeBlockCall(spec, s, env));
   }
 
+  /** Rewrite this code sequence to use the bitdata representations provided by BitdataMap. */
   Code bitdataRewrite(BitdataMap m) {
     return this;
   }
 
+  /**
+   * Generate a new version of this code sequence to update references to constructor functions
+   * consistent with the datatype equalities in the given MergeMap.
+   */
   Code mergeRewrite(MergeMap mmap) {
     return this;
   }

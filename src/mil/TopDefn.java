@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,6 +21,7 @@ package mil;
 import compiler.*;
 import core.*;
 
+/** Represents top-level definitions. */
 public abstract class TopDefn extends Defn {
 
   /** Default constructor. */
@@ -28,22 +29,22 @@ public abstract class TopDefn extends Defn {
     super(pos);
   }
 
-  /**
-   * Return references to all components of this top level definition in an array of
-   * atoms/arguments.
-   */
-  abstract Atom[] tops();
-
   /** Second pass code generation: produce code for block and closure definitions. */
   void generateFunctions(MachineBuilder builder) {
     /* Ignore these on the second pass */
   }
 
   /**
-   * Traverse the abstract syntax tree to calculate initial values for the sources of the parameters
-   * of each Block and Closure definition.
+   * Traverse the abstract syntax tree to calculate initial values for the the sources of the
+   * parameters of each Block and Closure definition.
    */
   void calcSources() {
     /* nothing to do */
   }
+
+  /**
+   * Return references to all components of this top level definition in an array of
+   * atoms/arguments.
+   */
+  abstract Atom[] tops();
 }

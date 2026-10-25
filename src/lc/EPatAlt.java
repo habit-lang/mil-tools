@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,6 +22,7 @@ import compiler.*;
 import core.*;
 import mil.*;
 
+/** Represents a pattern alternative, Id vs -> e. */
 class EPatAlt extends EAlt {
 
   private String id;
@@ -46,6 +47,7 @@ class EPatAlt extends EAlt {
     e.indent(out, n + 2);
   }
 
+  /** The constructor function for this alternative. */
   private Cfun cf;
 
   /**
@@ -68,8 +70,8 @@ class EPatAlt extends EAlt {
    * value that is matched can be unified with the specified domtype.
    */
   Type inferAltType(TVarsInScope tis, Type domtype) throws Failure { // alternative, cf vs -> e
-    lambdaType(domtype) // bind types of vs by unifying with
-        .unify(pos, cf.getDeclared().instantiate()); // a fresh instance of cf's type
+    // bind types of vs by unifying with a fresh instance of cf's type
+    lambdaType(domtype).unify(pos, cf.getDeclared().instantiate());
     return e.inferType(new TVISVars(tis, vs));
   }
 
@@ -90,8 +92,8 @@ class EPatAlt extends EAlt {
    */
   void checkAltType(TVarsInScope tis, Type domtype, Type resulttype)
       throws Failure { // alternative, cf vs -> e
-    lambdaType(domtype) // bind types of vs by unifying with
-        .unify(pos, cf.getDeclared().instantiate()); // a fresh instance of cf's type
+    // Bind types of vs by unifying with a fresh instance of cf's type:
+    lambdaType(domtype).unify(pos, cf.getDeclared().instantiate());
     e.checkType(new TVISVars(tis, vs), resulttype);
   }
 

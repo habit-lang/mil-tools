@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -53,21 +53,32 @@ class PolyBlockType extends BlockType {
   }
 
   /**
+   * Find the list of all unbound TVars in this BlockType, adding to the given list (but not
+   * duplicating any entries it contains).
+   */
+  TVars tvars(TVars tvs) {
+    // TODO: could omit this case; covered by BlockType branch.
+    // Should not be called with a PolyBlockType ...
+    debug.Internal.error("tvars on PolyBlockType");
+    return null;
+  }
+
+  /**
    * Generalize this monomorphic BlockType to a polymorphic type using the specified list of generic
    * variables.
    */
   public BlockType generalize(TVar[] generics) {
-    // TODO: could omit this case; covered by BlockType branch.  Should not be called with a
-    // PolyBlockType ...
+    // TODO: could omit this case; covered by BlockType branch.
+    // Should not be called with a PolyBlockType ...
     debug.Internal.error("generalize on PolyBlockType");
     return null;
   }
 
   /**
-   * Test to determine whether two block types are alpha equivalent. We assume that this method will
-   * only be used with BlockType and PolyBlockType objects (i.e., not TIndBlockType) because these
-   * are the only forms of BlockTypes that can be obtained as the result of generalization or an
-   * explicitly declared type.
+   * Test whether two block types are alpha equivalent. We assume that this method will only be used
+   * with BlockType and PolyBlockType objects (i.e., not TIndBlockType) because these are the only
+   * forms of BlockTypes that can be obtained as the result of generalization or an explicitly
+   * declared type.
    */
   public boolean alphaEquiv(BlockType bt) {
     return bt.alphaBlockType(this, prefix.isEmpty() ? null : new TGenCorresp());
@@ -91,13 +102,14 @@ class PolyBlockType extends BlockType {
     return instantiate().canonBlockType(set).generalize();
   }
 
+  /** Apply the given substitution to this BlockType. */
   BlockType apply(TVarSubst s) {
     debug.Internal.error("Unable to specialize polymorphic block type");
     return null;
   }
 
   /**
-   * Extend a substitution by matching this (potentially polymorphic) BlockType against a
+   * Construct a substitution by matching this (potentially polymorphic) BlockType against a
    * monomorphic instance.
    */
   TVarSubst specializingSubst(TVar[] generics, BlockType inst) {

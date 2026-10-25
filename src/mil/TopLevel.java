@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,10 +22,13 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/** Represents top-level variable definition of the form ids <- tail. */
 public class TopLevel extends TopDefn {
 
+  /** Variables on the left hand side. */
   private TopLhs[] lhs;
 
+  /** The right hand tail of the definition. */
   protected Tail tail;
 
   /** Default constructor. */
@@ -35,10 +38,12 @@ public class TopLevel extends TopDefn {
     this.tail = tail;
   }
 
+  /** Construct a TopLevel that has a single variable for its LHS. */
   public TopLevel(Position pos, TopLhs l, Tail tail) {
     this(pos, new TopLhs[] {l}, tail);
   }
 
+  /** Construct a TopLevel that has a variable id for its LHS. */
   public TopLevel(Position pos, String id, Tail tail) {
     this(pos, new TopLhs(id), tail);
   }
@@ -51,21 +56,16 @@ public class TopLevel extends TopDefn {
     this.tail = tail;
   }
 
+  /** The type of the defining occurrence of this variable definition. */
   private Type defining;
 
-  private Scheme declared;
-
   /**
-   * Return references to all components of this top level definition in an array of
-   * atoms/arguments.
+   * The declared or inferred type for this top-level definition. Our current surface syntax does
+   * not actually provide a way to decare the type of (the right hand side of) a TopLevel.
+   * Nonetheless, we use the name again here for consistency with the other definition forms to
+   * record the type for particular, specialized instances of a TopLevel.
    */
-  Atom[] tops() {
-    TopDef[] as = new TopDef[lhs.length];
-    for (int i = 0; i < lhs.length; i++) {
-      as[i] = new TopDef(this, i);
-    }
-    return as;
-  }
+  private Scheme declared;
 
   /** Get the declared type, or null if no type has been set. */
   public Scheme getDeclared() {
@@ -77,10 +77,12 @@ public class TopLevel extends TopDefn {
     this.declared = declared;
   }
 
+  /** Return the declared type for the ith component of this top-level definition. */
   public Scheme getDeclared(int i) {
     return lhs[i].getDeclared();
   }
 
+  /** Set the declared type for the ith component of this top-level definition. */
   public void setDeclared(int i, Scheme scheme) {
     lhs[i].setDeclared(scheme);
   }
@@ -112,21 +114,24 @@ public class TopLevel extends TopDefn {
   }
 
   /** Display a printable representation of this definition on the specified PrintWriter. */
-  void dump(PrintWriter out, boolean isEntrypoint) {
-    for (int i = 0; i < lhs.length; i++) {
-      lhs[i].dump(out, isEntrypoint);
-    }
+  void dump(PrintWriter out) {
+    dumpHeader(out, isEntrypoint);
     out.print(toString());
-    annotateHeader(out);
     out.print(" <-");
     out.println();
     Code.indent(out);
     tail.displayln(out, null);
   }
 
-  Type instantiate(int i) {
-    return lhs[i].instantiate();
+  /** Display a header for this definition. */
+  void dumpHeader(PrintWriter out, boolean isEntrypoint) {
+    for (int i = 0; i < lhs.length; i++) {
+      lhs[i].dumpHeader(out, isEntrypoint);
+    }
   }
+
+  /** The generic type variables for this definition. */
+  protected TVar[] generics = TVar.noTVars;
 
   /**
    * Set the initial type for this definition by instantiating the declared type, if present, or
@@ -148,11 +153,14 @@ public class TopLevel extends TopDefn {
     try {
       checkBody(pos);
     } catch (Failure f) {
-      // We can recover from a type error in this definition (at least for long enough to type
-      // check other definitions) if the types are all declared (and there is a handler).
+      // We can recover from a type error in this definition (at least for
+      // long enough to type check other definitions) if the types are all
+      // declared (and there is a handler).
       if (allTypesDeclared() && handler != null) {
-        handler.report(f); // Of course, we still need to report the failure
-        defining = null; // Mark this definition as having failed to check
+        // Of course, we still need to report the failure ...
+        handler.report(f);
+        // ... and mark this definition as having failed to check
+        defining = null;
       } else {
         throw f;
       }
@@ -174,23 +182,22 @@ public class TopLevel extends TopDefn {
     return true;
   }
 
-  /** Lists the generic type variables for this definition. */
-  protected TVar[] generics = TVar.noTVars;
-
   /**
    * Calculate a generalized type for this binding, adding universal quantifiers for any unbound
-   * type variable in the inferred type. (There are no "fixed" type variables here because all mil
+   * type variable in the inferred type. (There are no "fixed" type variables here because all MIL
    * definitions are at the top level.)
    */
   void generalizeType(Handler handler) throws Failure {
-    if (defining != null) { // defining will be null if previous stage of type checker failed
+    // defining will be null if previous stage of type checker failed
+    if (defining != null) {
       TVars gens = defining.tvars();
       generics = TVar.generics(gens, null);
       debug.Log.println(
           "generics for " + this + ": " + TVar.show(generics) + " in type " + defining.skeleton());
       declared = defining.generalize(generics);
       debug.Log.println("TopLevel group inferred " + toString() + " :: " + declared);
-      findAmbigTVars(handler, gens); // search for ambiguous type variables ...
+      // search for ambiguous type variables ...
+      findAmbigTVars(handler, gens);
       for (int i = 0; i < lhs.length; i++) {
         lhs[i].generalizeLhsType(pos, handler, gens, generics);
       }
@@ -207,7 +214,8 @@ public class TopLevel extends TopDefn {
 
   /** First pass code generation: produce code for top-level definitions. */
   void generateMain(Handler handler, MachineBuilder builder) {
-    tail.generateCallCode(builder, 0); // Code to evaluate tail, starting frame at address 0
+    // Code to evaluate tail, starting frame at address 0
+    tail.generateCallCode(builder, 0);
     int n = lhs.length;
     if (n > 0) {
       builder.setAddr(this, builder.saveGlobal(0));
@@ -236,8 +244,9 @@ public class TopLevel extends TopDefn {
 
   /** Perform flow analysis on this definition. */
   void flow() {
-    // The main purpose of this code is to run liveness analysis on the tail expression, which will
-    // have the effect of shorting out top level atom references where possible.
+    // The main purpose of this code is to run liveness analysis on
+    // the tail expression, which will have the effect of shorting out
+    // top level atom references where possible.
     tail = tail.rewriteTail(this, null /* facts */, MILProgram.wordspec);
     if (tail.liveness(null) != null) {
       debug.Internal.error("Tail expression in TopLevel has live variables");
@@ -249,8 +258,8 @@ public class TopLevel extends TopDefn {
   }
 
   /**
-   * Test to determine whether this Code/Tail value corresponds to a closure allocator, returning
-   * either a ClosAlloc value, or else a null result.
+   * Test if this Code/Tail value corresponds to a closure allocator, returning either a ClosAlloc
+   * value, or else a null result.
    */
   ClosAlloc lookForClosAlloc() {
     return tail.lookForClosAlloc();
@@ -276,16 +285,16 @@ public class TopLevel extends TopDefn {
   }
 
   /**
-   * Test to determine whether this Tail value corresponds to a data allocator, returning either a
-   * DataAlloc value, or else a null result.
+   * Test whether this Tail value corresponds to a data allocator, returning either a DataAlloc
+   * value, or else a null result.
    */
   DataAlloc lookForDataAlloc() {
     return tail.lookForDataAlloc();
   }
 
   /**
-   * Traverse the abstract syntax tree to calculate initial values for the sources of the parameters
-   * of each Block and Closure definition.
+   * Traverse the abstract syntax tree to calculate initial values for the the sources of the
+   * parameters of each Block and Closure definition.
    */
   void calcSources() {
     tail.calcSources(this, Temp.noTemps, null);
@@ -319,6 +328,18 @@ public class TopLevel extends TopDefn {
   }
 
   /**
+   * Return references to all components of this top level definition in an array of
+   * atoms/arguments.
+   */
+  Atom[] tops() {
+    TopDef[] as = new TopDef[lhs.length];
+    for (int i = 0; i < lhs.length; i++) {
+      as[i] = new TopDef(this, i);
+    }
+    return as;
+  }
+
+  /**
    * Compute a summary for this definition (if it is a block, top-level, or closure) and then look
    * for a previously encountered item with the same code in the given table. Return true if a
    * duplicate was found.
@@ -345,9 +366,17 @@ public class TopLevel extends TopDefn {
     tail = tail.removeNewtypeCfun();
   }
 
+  /** Worker function for MILSpec.dump(): Print a signature line for this definition. */
   void printlnSig(PrintWriter out) {
     for (int i = 0; i < lhs.length; i++) {
       lhs[i].printlnSig(out);
+    }
+  }
+
+  /** Update all declared types with canonical versions. */
+  void canonDeclared(MILSpec spec) {
+    for (int i = 0; i < lhs.length; i++) {
+      lhs[i].canonDeclared(spec);
     }
   }
 
@@ -356,8 +385,32 @@ public class TopLevel extends TopDefn {
     return declared.alphaEquiv(inst) ? this : null;
   }
 
+  /** Construct a stub to be filled in during specialization. */
   TopLevel(TopLevel t, int num) {
     this(t.pos, TopLhs.makeLhs(t.lhs, num), null);
+  }
+
+  /**
+   * Generate a specialized version of an entry point. This requires a monomorphic definition (to
+   * ensure that the required specialization is uniquely determined, and to allow the specialized
+   * version to share the same name as the original).
+   */
+  Defn specializeEntry(MILSpec spec) throws Failure {
+    Type t = declared.isMonomorphic();
+    if (t != null) {
+      TopLevel tl = spec.specializedTopLevel(this, t);
+      TopLhs.copyIds(tl.lhs, this.lhs); // use same names as original program
+      return tl;
+    }
+    throw new PolymorphicEntrypointFailure("top-level", this);
+  }
+
+  /**
+   * Return a specialized version of this TopLevel in which the ith component of the lhs has the
+   * given type.
+   */
+  TopLevel specializedTopLevel(MILSpec spec, Type inst, int i) {
+    return spec.specializedTopLevel(this, defining.apply(lhs[i].specializingSubst(generics, inst)));
   }
 
   /** Fill in the body of this TopLevel as a specialized version of the given TopLevel. */
@@ -383,40 +436,15 @@ public class TopLevel extends TopDefn {
     this.tail = torig.tail.specializeTail(spec, s, null);
   }
 
-  /**
-   * Return a specialized version of this TopLevel in which the ith component of the lhs has the
-   * given type.
-   */
-  TopLevel specializedTopLevel(MILSpec spec, Type inst, int i) {
-    return spec.specializedTopLevel(this, defining.apply(lhs[i].specializingSubst(generics, inst)));
-  }
-
-  /**
-   * Generate a specialized version of an entry point. This requires a monomorphic definition (to
-   * ensure that the required specialization is uniquely determined, and to allow the specialized
-   * version to share the same name as the original).
-   */
-  Defn specializeEntry(MILSpec spec) throws Failure {
-    Type t = declared.isMonomorphic();
-    if (t != null) {
-      TopLevel tl = spec.specializedTopLevel(this, t);
-      TopLhs.copyIds(tl.lhs, this.lhs); // use the same names as in the original program
-      return tl;
-    }
-    throw new PolymorphicEntrypointFailure("top-level", this);
-  }
-
-  /** Update all declared types with canonical versions. */
-  void canonDeclared(MILSpec spec) {
-    for (int i = 0; i < lhs.length; i++) {
-      lhs[i].canonDeclared(spec);
-    }
-  }
-
+  /** Rewrite a program to use the bitdata representations provided by BitdataMap. */
   void bitdataRewrite(BitdataMap m) {
     tail = tail.bitdataRewrite(m);
   }
 
+  /**
+   * Rewrite this definition to update references to constructor functions consistent with the
+   * datatype equalities in the given MergeMap.
+   */
   void mergeRewrite(MergeMap mmap) {
     tail = tail.mergeRewrite(mmap);
   }
@@ -475,8 +503,8 @@ public class TopLevel extends TopDefn {
     return (lhs.length == 1) ? new Return(new TopDef(this, 0)) : super.makeTail();
   }
 
-  public void setDeclared(Handler handler, Position pos, int i, Scheme scheme) {
-    lhs[i].setDeclared(handler, pos, scheme);
+  public void setDeclared(Position pos, int i, Scheme scheme) throws Failure {
+    lhs[i].setDeclared(pos, scheme);
   }
 
   /** Perform scope analysis on the definition for this top level value. */
@@ -497,8 +525,8 @@ public class TopLevel extends TopDefn {
    * each subsequent call.
    */
   public Temp[] addArgs() throws Failure {
-    // Note: these definitions will be visited only once from the top-level
-    // pass through the list of definitions in the program.
+    // Note: these definitions will be visited only once from the
+    // top-level  pass through the list of definitions in the program.
     Temps ts = tail.addArgs(null);
     if (ts != null) {
       debug.Internal.error(
@@ -527,7 +555,8 @@ public class TopLevel extends TopDefn {
   void calcStaticValues(LLVMMap lm, llvm.Program prog) {
     if (TopLhs.hasNonUnits(lhs)) {
       staticValue = tail.calcStaticValue(lm, prog);
-      // Add global variable definitions for any (non unit) lhs components without a static value:
+      // Add global variable definitions for any (non unit) lhs components
+      // without a static value:
       for (int i = 0; i < lhs.length; i++) {
         if (lhs[i].nonUnit()) {
           if (staticValue == null || staticValue[i] == null) {
@@ -556,14 +585,17 @@ public class TopLevel extends TopDefn {
    */
   llvm.Code addRevInitCode(LLVMMap lm, InitVarMap ivm, llvm.Code edoc) {
     if (staticValue == null) {
-      return tail.revInitTail(lm, ivm, this, lhs, edoc); // no static values
+      // No static values:
+      return tail.revInitTail(lm, ivm, this, lhs, edoc);
     } else {
+      // Some static values:
       for (int i = 0; i < staticValue.length; i++) {
         if (staticValue[i] == null) {
-          return tail.revInitTail(lm, ivm, this, lhs, edoc); // some static values
+          return tail.revInitTail(lm, ivm, this, lhs, edoc);
         }
       }
-      return edoc; // all components have static values, no new code required
+      // All components have static values, no new code required:
+      return edoc;
     }
   }
 
@@ -576,7 +608,7 @@ public class TopLevel extends TopDefn {
       if (lhs[i].nonUnit() && staticValue(i) == null) {
         llvm.Value val = as[i].toLLVMAtom(lm, ivm);
         ivm.mapGlobal(new TopDef(this, i), val);
-        edoc = new llvm.Store(val, new llvm.Global(val.getType().ptr(), getId(i)), edoc);
+        edoc = new llvm.Store(val, new llvm.Global(llvm.Type.ptr, getId(i)), edoc);
       }
     }
     return edoc;

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -47,8 +47,16 @@ public abstract class Type extends Scheme {
     return this;
   }
 
+  /**
+   * Caches values of TGen for natural number arg values, automatically expanding the array as
+   * necessary to accommodate larger arguments.
+   */
   private static TGen[] genCache;
 
+  /**
+   * Return the TGen value for a given natural number argument, either returning a previously cached
+   * value from genCache where possible or else calculating (and caching) a new value.
+   */
   public static TGen gen(int n) {
     if (genCache == null) {
       genCache = new TGen[10];
@@ -65,32 +73,32 @@ public abstract class Type extends Scheme {
     return genCache[n] = new TGen(n);
   }
 
-  /** Test to determine whether two type schemes are alpha equivalent. */
+  /** Test whether two type schemes are alpha equivalent. */
   public boolean alphaEquiv(Scheme right) {
     return right.alphaType(this, null);
   }
 
-  /** Test to determine whether this type is equal to a given TGen. */
+  /** Test whether this type is equal to a given TGen. */
   boolean alphaTGen(TGen right, TGenCorresp corresp) {
     return false;
   }
 
-  /** Test to determine whether this type is equal to a given type application. */
+  /** Test whether this type is equal to a given type application. */
   boolean alphaTAp(TAp right, TGenCorresp corresp) {
     return false;
   }
 
-  /** Test to determine whether this type is equal to a given Tycon. */
+  /** Test whether this type is equal to a given Tycon. */
   boolean alphaTycon(Tycon right) {
     return false;
   }
 
-  /** Test to determine whether this type is equal to a given TNat. */
+  /** Test whether this type is equal to a given TNat. */
   boolean alphaTNat(TNat right) {
     return false;
   }
 
-  /** Test to determine whether this type is equal to a given TLab. */
+  /** Test whether this type is equal to a given TLab. */
   boolean alphaTLab(TLab right) {
     return false;
   }
@@ -121,6 +129,7 @@ public abstract class Type extends Scheme {
     tw.close(prec >= Fixity.ALWAYS);
   }
 
+  /** Output a printable representation of this type scheme on the specified TypeWriter. */
   public String toString(int prec, StringTypeWriter tw) {
     write(tw, prec, 0);
     return tw.toString();
@@ -168,14 +177,23 @@ public abstract class Type extends Scheme {
    */
   abstract TVars tvars(Type[] thisenv, TVars tvs);
 
+  /** Calculate an array of the generic (i.e., not fixed) TVars in this type. */
   public TVar[] generics(TVars fixed) {
-    return TVar.generics(tvars(fixed), fixed);
+    return TVar.generics(this.tvars(fixed), fixed);
   }
 
+  /**
+   * Calculate the skeleton of a Type that has no generics and that does not contain any TGen nodes
+   * (hence the null environment).
+   */
   public Type skeleton() {
     return this.skeleton(null);
   }
 
+  /**
+   * Calculate the skeleton of a Type that has no generics. The result should not include any TGen,
+   * TInd, or bound TVar nodes.
+   */
   Type skeleton(Type[] thisenv) {
     return this.skeleton(thisenv, TVar.noTVars);
   }
@@ -187,6 +205,12 @@ public abstract class Type extends Scheme {
    */
   abstract Type skeleton(Type[] thisenv, TVar[] generics);
 
+  /** Generalize a type over all the TVars that it contains. */
+  public Scheme generalize() {
+    return generalize(TVar.generics(tvars(), null));
+  }
+
+  /** Generalize a type over the given collection of TVars. */
   public Scheme generalize(TVar[] generics) {
     // Find a skeleton for the inferred type:
     Type type = this.skeleton(null, generics);
@@ -195,29 +219,25 @@ public abstract class Type extends Scheme {
     return (generics.length > 0) ? new Forall(new Prefix(generics), type) : type;
   }
 
-  /**
-   * Test to determine whether two types are equal.
-   *
-   * <p>same :: Type -> Env -> Type -> Env -> Bool
-   */
+  /** Test whether two types are equal. same :: Type -> Env -> Type -> Env -> Bool. */
   public abstract boolean same(Type[] thisenv, Type t, Type[] tenv);
 
-  /** Test to determine whether this type is equal to a specified type application. */
+  /** Test whether this type is equal to a specified type application. */
   boolean sameTAp(Type[] thisenv, TAp tap, Type[] tapenv) {
     return false;
   }
 
-  /** Test to determine whether this type is equal to a specified type constant. */
+  /** Test whether this type is equal to a specified type constant. */
   abstract boolean sameTTycon(Type[] thisenv, TTycon that);
 
-  /** Test to determine whether this type is equal to a specified type literal. */
+  /** Test whether this type is equal to a specified type literal. */
   boolean sameTLit(Type[] thisenv, TLit t) {
     return false;
   }
 
   /**
-   * Test to determine whether this type is equal to a specified type variable. NOTE: we assume here
-   * that the specified TVar is unbound!
+   * Test whether this type is equal to a specified type variable. NOTE: we assume here that the
+   * specified TVar is unbound!
    */
   boolean sameTVar(Type[] thisenv, TVar v) {
     return false;
@@ -232,7 +252,7 @@ public abstract class Type extends Scheme {
   abstract Kind calcKind(Type[] thisenv);
 
   /**
-   * Matching of types: test to see if the type on the right can be obtained by instantiating type
+   * Matching of types: test whether the type on the right can be obtained by instantiating type
    * variables in the type on the left. (The "receiver", or "this", in the following code.)
    *
    * <p>match :: Type -> Env -> Type -> Env -> IO ()
@@ -243,17 +263,17 @@ public abstract class Type extends Scheme {
   public abstract boolean match(Type[] thisenv, Type t, Type[] tenv);
 
   /**
-   * Test to determine whether the specified type application will match this type. For this method,
-   * we should only instantiate type variables that appear in the type application, tap.
+   * Test whether the specified type application will match this type. For this method, we should
+   * only instantiate type variables that appear in the type application, tap.
    */
   boolean matchTAp(Type[] thisenv, TAp tap, Type[] tapenv) {
     return false;
   }
 
   /**
-   * Test to determine whether the specified variable can be matched to this type. The only type
-   * variable that can be instantiated during this process is the variable v passed in as the second
-   * argument. The variable v must be unbound.
+   * Test whether the specified variable can be matched to this type. The only type variable that
+   * can be instantiated during this process is the variable v passed in as the second argument. The
+   * variable v must be unbound.
    */
   boolean matchTVar(Type[] thisenv, TVar v) {
     return v.matchBind(this, thisenv);
@@ -278,11 +298,7 @@ public abstract class Type extends Scheme {
     }
   }
 
-  /**
-   * Unification of types.
-   *
-   * <p>unify :: Type -> Env -> Type -> Env -> IO ()
-   */
+  /** Unification of types. unify :: Type -> Env -> Type -> Env -> IO () */
   public abstract void unify(Type[] thisenv, Type t, Type[] tenv) throws UnifyException;
 
   void unifyTAp(Type[] thisenv, TAp tap, Type[] tapenv) throws UnifyException {
@@ -308,7 +324,7 @@ public abstract class Type extends Scheme {
    * either an unbound TVar, or else a TNat literal. TODO: This could be used more generally as a
    * way to eliminate all TGen, TInd, bound TVar, or Synonym nodes at the root of any type, not just
    * natural number types ... Suggest rewriting description and renaming method to reflect that ...
-   * (and testing too ...)
+   * (and testing too ...).
    */
   public Type simplifyNatType(Type[] tenv) {
     debug.Internal.error("simplifyNatType applied to invalid type: " + skeleton(tenv));
@@ -330,31 +346,35 @@ public abstract class Type extends Scheme {
     return new TAp(tap(t1), t2);
   }
 
-  /** Convenience method for constructing types of the form dom -> rng: */
+  /** Convenience method for constructing types dom -> rng. */
   public static Type fun(Type dom, Type rng) {
     return Tycon.arrow.asType().tap(dom, rng);
   }
 
-  /** Convenience method for constructing types of the form dom ->> rng: */
+  /** Convenience method for constructing types dom ->> rng. */
   public static Type milfun(Type dom, Type rng) {
     return Tycon.milArrow.asType().tap(dom, rng);
   }
 
-  /** Convenience method for constructing types of the form [dom] ->> [rng]: */
+  /** Convenience method for constructing types [dom] ->> [rng]. */
   public static Type milfunTuple(Type dom, Type rng) {
     return milfun(Type.tuple(dom), Type.tuple(rng));
   }
 
+  /** Represents the empty/zero-length TupleCon as a type. */
   public static final TTycon empty = TupleCon.tuple(0).asType();
 
+  /** Construct a type tuple with just one component. */
   public static Type tuple(Type t1) {
     return TupleCon.tuple(1).asType().tap(t1);
   }
 
+  /** Construct a type tuple with precisely two components. */
   public static Type tuple(Type t1, Type t2) {
     return TupleCon.tuple(2).asType().tap(t1, t2);
   }
 
+  /** Construct a type tuple from an array of types. */
   public static Type tuple(Type[] types) {
     Type t = TupleCon.tuple(types.length).asType();
     for (int i = 0; i < types.length; i++) {
@@ -372,10 +392,12 @@ public abstract class Type extends Scheme {
     return (-1);
   }
 
+  /** Construct a type of the form Proc res. */
   public static Type proc(Type res) {
     return new TAp(Tycon.proc.asType(), res);
   }
 
+  /** The largest allowed width for a bitdata or bit vector type. */
   public static final int MAX_BIT_WIDTH = 1000;
 
   public static final BigInteger BIG_MAX_BIT_WIDTH = BigInteger.valueOf(MAX_BIT_WIDTH);
@@ -519,15 +541,20 @@ public abstract class Type extends Scheme {
     return this.canonType(set);
   }
 
+  /** Apply the given substitution to this type skeleton. */
   Type apply(TVarSubst s) {
     return apply(null, s);
   }
 
+  /**
+   * Apply the given substitution to this type skeleton, using the specified type environment to
+   * interpret TGens.
+   */
   abstract Type apply(Type[] thisenv, TVarSubst s);
 
   /**
-   * Extend a substitution by matching this (potentially polymorphic) Scheme against a monomorphic
-   * instance.
+   * Construct a substitution by matching this (potentially polymorphic) Scheme against a
+   * monomorphic instance.
    */
   TVarSubst specializingSubst(TVar[] generics, Type inst) {
     if (generics.length != 0 || !this.alphaEquiv(inst)) {
@@ -536,27 +563,49 @@ public abstract class Type extends Scheme {
     return null;
   }
 
+  /**
+   * Access the type that is pointed to by a type variable that was created by instantiating a
+   * polymorphic type and then bound by a subsequent use of matching.
+   */
   Type removeTVar() {
     debug.Internal.error("removeTVar: not a type variable");
     return this;
   }
 
-  boolean instMatches(Type right) {
+  /**
+   * Determine whether this instance of a datatype matches that instance. Note that we cannot be
+   * sure that the TAp nodes on the spine of the new instance are canonical because of the way it
+   * will have been constructed (by rebuild()). We can, however, assume that the head and argument
+   * types are canonical.
+   */
+  boolean instMatches(Type that) {
     return false;
   }
 
-  boolean instMatchesTycon(Tycon left) {
+  /**
+   * Worker function for instMatches: Determine whether this instance matches that type constructor.
+   */
+  boolean instMatchesTycon(Tycon that) {
     return false;
   }
 
-  boolean instMatchesTAp(TAp left) {
+  /**
+   * Worker function for instMatches: Determine whether this instance matches that type application.
+   */
+  boolean instMatchesTAp(TAp that) {
     return false;
   }
 
+  /**
+   * Build a canonical version of this type, using the given TypeSet and tracking the total number
+   * of arguments that have found so far. In the process, we do the usual dance to elide TGen and
+   * TInd nodes, as well as synonyms and bound TVars.
+   */
   Type canonArgs(Type[] tenv, TypeSet set, int args) {
     return set.rebuild(this, args);
   }
 
+  /** Find the DataType for this object, if any, or else return null. */
   DataType dataType() {
     return null;
   }
@@ -564,18 +613,30 @@ public abstract class Type extends Scheme {
   /** Determine whether two types are equivalent modulo a given MergeMap. */
   abstract boolean sameMod(Type[] thisenv, Type t, Type[] tenv, MergeMap mmap);
 
+  /** Determine whether this Type is equivalent to a specified TAp, modulo the given MergeMap. */
   boolean sameApMod(Type[] tenv, TAp l, Type[] lenv, MergeMap mmap) {
     return false;
   }
 
+  /**
+   * Determine whether this Type is equivalent to a particular unbound TVar, modulo the given
+   * MergeMap.
+   */
   boolean sameTVarMod(Type[] tenv, TVar l, MergeMap mmap) {
     return false;
   }
 
+  /**
+   * Determine whether this Type is equivalent to the specified type constructor, modulo the given
+   * MergeMap.
+   */
   boolean sameTyconMod(Type[] tenv, Tycon l, MergeMap mmap) {
     return false;
   }
 
+  /**
+   * Determine whether this Type is equivalent to the specified DataType, modulo the given MergeMap.
+   */
   boolean sameDataTypeMod(Type[] tenv, DataType l, MergeMap mmap) {
     return false;
   }
@@ -654,7 +715,8 @@ public abstract class Type extends Scheme {
    * ds.
    */
   Call generatePrim(Position pos, String id, Type[] ds) {
-    Type[] rs = tupleComponents(0); // Look for tuple components from this range type
+    // Look for tuple components from this range type
+    Type[] rs = tupleComponents(0);
     if (rs == null) { // Fail if this is not a tuple type
       return null;
     } else if (rs.length == 1) { // Possible recursion ,,,
@@ -664,7 +726,7 @@ public abstract class Type extends Scheme {
       }
     }
     BlockType bt = new BlockType(Type.tuple(ds), Type.tuple(rs));
-    return new PrimCall(new Prim(id, Prim.IMPURE, bt));
+    return new PrimCall(new Prim(id, bt, Prim.IMPURE));
   }
 
   /**
@@ -731,8 +793,8 @@ public abstract class Type extends Scheme {
         return c;
       }
     }
-    // At this point, we know that range does not match [[d1...] ->> r], so we have found all of the
-    // required parameters:
+    // At this point, we know that range does not match [[d1...] ->> r], so
+    // we have found all of the required parameters:
     b.setParams(Temp.append(us, vs));
     return new Done(new Enter(f, vs));
   }
@@ -777,7 +839,7 @@ public abstract class Type extends Scheme {
 
   /**
    * Calculate the width in bits that is needed to represent a reference or pointer to a value of
-   * this type using BitSize (Ref a) = WordSize - p if Align a = 2^p.
+   * this type using BitSize (Ref a) = WordSize - p, if Align a = 2^p.
    */
   int refWidth(Type[] tenv) {
     long alignment = this.alignment(tenv);
@@ -785,7 +847,8 @@ public abstract class Type extends Scheme {
       return (-1);
     } else { // Alignment is known ...
       int width = Word.size();
-      if (alignment > 0 && ((alignment & (alignment - 1)) == 0)) { // power of two alignment
+      if (alignment > 0 && ((alignment & (alignment - 1)) == 0)) {
+        // power of two alignment
         while ((alignment >>= 1) != 0) {
           width--;
         }
@@ -876,7 +939,7 @@ public abstract class Type extends Scheme {
     if (referenceType(tenv)) { // Check cases for Ref and Ptr types first
       return Word.size();
     }
-    Type bits = bitSize(tenv); // Otherwise check bit representation of this type
+    Type bits = bitSize(tenv); // Otherwise check bit rep of this type
     if (bits != null) {
       BigInteger m = bits.simplifyNatType(null).getNat();
       if (m != null && m.compareTo(Type.BIG_MAX_BIT_WIDTH) <= 0 && m.signum() >= 0) {
@@ -1058,7 +1121,7 @@ public abstract class Type extends Scheme {
     } else if (alignExp == null) {
       return minAlignment;
     } else {
-      alignExp = alignExp.scopeType(false, null, milenv.getTyconEnv(), 0);
+      alignExp = alignExp.scopeType(null, milenv.getTyconEnv());
       alignExp.checkKind(KAtom.NAT);
       long alignment = alignExp.calcAlignment();
       alignExp.checkAlignment(alignment, minAlignment);

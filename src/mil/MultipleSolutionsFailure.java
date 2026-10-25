@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,6 +21,10 @@ package mil;
 import compiler.*;
 import core.*;
 
+/**
+ * Used to report when the linear equation solver detects an equation that does not have a unique
+ * solution.
+ */
 class MultipleSolutionsFailure extends Failure {
 
   public MultipleSolutionsFailure(LinearEqn eqn) {

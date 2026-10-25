@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -39,8 +39,16 @@ public abstract class Kind {
     return that == this;
   }
 
+  /**
+   * Caches values of Kind for natural number arg values, automatically expanding the array as
+   * necessary to accommodate larger arguments.
+   */
   private static Kind[] simpleCache;
 
+  /**
+   * Return the Kind value for a given natural number argument, either returning a previously cached
+   * value from simpleCache where possible or else calculating (and caching) a new value.
+   */
   public static Kind simple(int n) {
     if (simpleCache == null) {
       simpleCache = new Kind[10];
@@ -58,8 +66,16 @@ public abstract class Kind {
     return fillCache(simpleCache, n, KAtom.STAR);
   }
 
+  /**
+   * Caches values of Kind for natural number arg values, automatically expanding the array as
+   * necessary to accommodate larger arguments.
+   */
   private static Kind[] tupleCache;
 
+  /**
+   * Return the Kind value for a given natural number argument, either returning a previously cached
+   * value from tupleCache where possible or else calculating (and caching) a new value.
+   */
   public static Kind tuple(int n) {
     if (tupleCache == null) {
       tupleCache = new Kind[10];
@@ -95,7 +111,7 @@ public abstract class Kind {
   abstract boolean contains(KVar v);
 
   /** Copy a kind, replacing any unbound kind variables with star. */
-  abstract Kind fixKind();
+  abstract Kind defaultKind();
 
   /**
    * Attempt to unify two kinds, returning a boolean to indicate if the operation was successful.
@@ -119,6 +135,7 @@ public abstract class Kind {
     return null;
   }
 
+  /** Output a representation for the head of a datatype definition. */
   Type makeHead(Position pos, PrintWriter out, int i, Type h) {
     return h;
   }

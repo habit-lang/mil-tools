@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -25,13 +25,10 @@ import java.io.PrintWriter;
 /** Represents a list of alternatives in a Case. */
 public abstract class Alts {
 
-  /** Test for a free occurrence of a particular variable. */
-  abstract boolean contains(Temp w);
-
   /** Find the dependencies of this AST fragment. */
   abstract Defns dependencies(Defns ds);
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
   abstract void dump(PrintWriter out, Temps ts);
 
   /** Force the application of a TempSubst to this list of alternatives. */
@@ -51,9 +48,13 @@ public abstract class Alts {
    * sequence generated here.
    */
   void generateCode(MachineBuilder builder, int o, int patchAddr) {
-    builder.patchToHere(patchAddr); // fix previous test to branch to this case
+    // fix previous test to branch to this case
+    builder.patchToHere(patchAddr);
     generateCode(builder, o);
   }
+
+  /** Test for a free occurrence of a particular variable. */
+  abstract boolean contains(Temp w);
 
   /**
    * Generate a new version of this list of alternatives that branches to derived blocks with a
@@ -107,7 +108,8 @@ public abstract class Alts {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   abstract int summary();
 
@@ -148,6 +150,10 @@ public abstract class Alts {
     return null;
   }
 
+  /**
+   * Update the given array of Cfuns with entries for any constructor functions that are used in
+   * these alternatives.
+   */
   Alts cfunsUsed(Cfun[] used) {
     return this;
   }
@@ -164,15 +170,27 @@ public abstract class Alts {
    */
   abstract Alts elimDefAlt();
 
+  /**
+   * Rewrite a set of alternatives that includes a CfunAlt for all but one of the associated
+   * constructors. In this situation, we can eliminate a default branch with a match against the
+   * only missing constructor. While this might appear to create more work (forcing a match where it
+   * was already implied), it will actually mean that we have more accurate type information when
+   * analyzing the block call for what was previously the default branch.
+   */
   abstract Alts promoteDefault(Cfun cf);
 
-  /** Generate a specialized version of this Alt. */
+  /** Generate a specialized version of this Alts structure. */
   abstract Alts specializeAlts(MILSpec spec, TVarSubst s, SpecEnv env);
 
+  /** Rewrite these case alternatives to use the bitdata representations provided by BitdataMap. */
   Alts bitdataRewrite(BitdataMap m) {
     return this;
   }
 
+  /**
+   * Generate a new version of these case alternatives to update references to constructor functions
+   * consistent with the datatype equalities in the given MergeMap.
+   */
   Alts mergeRewrite(MergeMap mmap) {
     return this;
   }

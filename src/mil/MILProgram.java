@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -28,6 +28,7 @@ public class MILProgram {
   /** The main definition for this program, if specified. */
   private Defn main = null;
 
+  /** Set the main entry point for this program, if any. */
   public void setMain(Defn main) {
     this.main = main;
   }
@@ -43,13 +44,10 @@ public class MILProgram {
     }
   }
 
-  /** Report whether this program is empty or not (i.e., whether it has any entrypoints). */
+  /** Report whether this program is empty (i.e., whether it has any entrypoints). */
   public boolean isEmpty() {
     return (main == null) && (entries == null);
   }
-
-  /** Record the list of strongly connected components in this program. */
-  private DefnSCCs sccs;
 
   /** Compute the list of definitions for the reachable portion of the input graph. */
   Defns reachable() {
@@ -64,24 +62,34 @@ public class MILProgram {
     return defns;
   }
 
+  /** Record the list of strongly connected components in this program. */
+  private DefnSCCs sccs;
+
   /**
-   * Perform tree shaking on this program, computing strongly-connected components for the reachable
-   * portion of the input graph.
+   * Perform tree shaking on this program, by computing strongly-connected components for the
+   * reachable portion of the input graph.
    */
   public void shake() {
-    sccs = Defns.searchReverse(reachable()); // Compute the strongly-connected components
+    sccs = Defns.searchReverse(reachable());
   }
 
   /** Generate a dot description of this program's call graph on the specified PrintWriter. */
   public void toDot(PrintWriter out) {
     out.println("digraph MIL {");
+    // For every definition that is reachable:
     for (Defns ds = reachable(); ds != null; ds = ds.next) {
+      // Decide whether to include outgoing edges from this node:
       if (ds.head.dotInclude()) {
+        // If so, then output a description for the associated node:
         String dlab = ds.head.toString();
         out.println("  \"" + dlab + "\"[" + ds.head.dotShape() + ds.head.dotAttrs() + "];");
+        // And then loop over the dependents of ds.head ...
         for (Defns cs = ds.head.getCallers(); cs != null; cs = cs.next) {
-          String clab = cs.head.toString();
-          out.println("  \"" + clab + "\" -> \"" + dlab + "\";");
+          // ... adding a graph edge for each node that is to be included
+          if (cs.head.dotInclude()) {
+            String clab = cs.head.toString();
+            out.println("  \"" + clab + "\" -> \"" + dlab + "\";");
+          }
         }
       }
     }
@@ -108,10 +116,6 @@ public class MILProgram {
     out.println();
   }
 
-  /** Add a special block for aborting the program. */
-  public static final Block abort =
-      new Block(BuiltinPosition.pos, Temp.noTemps, new Done(Prim.halt.withArgs()));
-
   public void typeChecking(Handler handler) throws Failure {
     shake();
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
@@ -123,10 +127,10 @@ public class MILProgram {
   public MachineBuilder generateMachineBuilder(Handler handler) {
     MachineBuilder builder = new MachineBuilder();
 
-    // In the first pass over the MIL program, we generate code for the main function, starting at
-    // address 0,
-    // which will execute the tails associated with top level definitions and store the results as
-    // globals.
+    // In the first pass over the MIL program, we generate code for
+    // the main function, starting at address 0, which will execute
+    // the tails associated with top level definitions and store the
+    // results as globals.
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       dsccs.head.generateMain(handler, builder);
     }
@@ -135,8 +139,8 @@ public class MILProgram {
     }
     builder.stop();
 
-    // In the second pass over the MIL program, we generate code for the block
-    // and closure definitions that are required for the program.
+    // In the second pass over the MIL program, we generate code for
+    // the block and closure definitions that are required for the program.
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       dsccs.head.generateFunctions(builder);
     }
@@ -161,6 +165,7 @@ public class MILProgram {
   /** Run the optimizer on this program. */
   public void optimize() {
     int totalCount = 0;
+    clearDerived();
     count = 1;
     for (int i = 0; i < MAX_OPTIMIZE_PASSES && count > 0; i++) {
       debug.Log.println("-------------------------");
@@ -168,7 +173,7 @@ public class MILProgram {
       inlining();
       debug.Log.println("Inlining pass finished, running shake.");
       shake();
-      liftAllocators(); // TODO: Is this the right position for liftAllocators?
+      liftAllocators(); // TODO: Is this the right pos for liftAllocators?
       eliminateUnusedArgs();
       shake();
       flow();
@@ -178,7 +183,7 @@ public class MILProgram {
       totalCount += count;
     }
 
-    // Final cleanup: look for opportunities to collapse duplicated definitions:
+    // Final cleanup: look for opportunities to collapse duplicated defns:
     count = 1;
     for (int i = 0; i < MAX_OPTIMIZE_PASSES && count > 0; i++) {
       debug.Log.println("-------------------------");
@@ -196,6 +201,13 @@ public class MILProgram {
     debug.Log.println("TOTAL steps performed = " + totalCount);
   }
 
+  /** Clear derived blocks and closure definitions. */
+  void clearDerived() {
+    for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
+      dsccs.head.clearDerived();
+    }
+  }
+
   /**
    * Run an inlining pass over this program, assuming a preceding call to shake() to compute call
    * graph information. Starts by performing a "return analysis" (to detect blocks that are
@@ -207,12 +219,19 @@ public class MILProgram {
   void inlining() {
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       DefnSCC scc = dsccs.head;
-      scc.returnAnalysis(); // Identify blocks that are guaranteed not to return
-      scc.cleanup(); // Use results of return analysis to clean up code
-      scc
-          .detectLoops(); // Rewrite block definitions that could send the inliner into an infinite
-                          // loop
-      scc.inlining(); // Perform inlining on the definitions inside this scc
+
+      // Identify blocks that are guaranteed not to return
+      scc.returnAnalysis();
+
+      // Use results of return analysis to clean up code
+      scc.cleanup();
+
+      // Rewrite block definitions that could send the inliner into
+      // an infinite loop
+      scc.detectLoops();
+
+      // Perform inlining on the definitions inside this scc
+      scc.inlining();
     }
   }
 
@@ -230,18 +249,21 @@ public class MILProgram {
 
   /** Analyze and rewrite this program to remove unused Block and ClosureDefn arguments. */
   void eliminateUnusedArgs() {
-    int totalUnused = 0;
+    int totalUnused = 0; // track total number of unused arguments found
 
-    // Phase 1: Calculate unused argument information for every Block and ClosureDefn:
+    // Phase 1: Calculate unused argument information for every
+    // Block and ClosureDefn:
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       // Initialize used argument information for each definition
       for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
         ds.head.clearUsedArgsInfo();
       }
 
-      // Calculate the number of unused arguments for the definitions in this strongly-connected
-      // component, iterating until either there are no unused arguments, or else until we reach
-      // a fixed point (i.e., we get the same number of unused args on two successive passes).
+      // Calculate the number of unused arguments for the definitions
+      // in this strongly-connected component, iterating until either
+      // there are no unused arguments, or else until we reach a fixed
+      // point (i.e., we get the same number of unused args on two
+      // successive passes).
       int lastUnused = 0;
       int unused = 0;
       do {
@@ -295,7 +317,8 @@ public class MILProgram {
 
     // Visit each definition to compute summaries and populate the tables:
 
-    // Start with entrypoints so that they are available to use as replacements for non-entrypoints.
+    // Start with entrypoints so that they are available to use as
+    // replacements for non-entrypoints.
     for (Defns ds = entries; ds != null; ds = ds.next) {
       found |= ds.head.summarizeDefns(blocks, topLevels, closures);
     }
@@ -343,11 +366,11 @@ public class MILProgram {
 
   /** Generate a new, monomorphically typed version of this program using type specialization. */
   public MILSpec specialize(Handler handler) throws Failure {
-    MILSpec spec =
-        new MILSpec(); // Used to record information about generated/requested specializations
+    // Use spec to record information about generated/requested specializations
+    MILSpec spec = new MILSpec();
 
-    // Step 1: Generate specialized versions of each entry point, and a specialized main if
-    // necessary:
+    // Step 1: Generate specialized versions of each entry point, and a
+    // specialized main if necessary:
     for (Defns es = entries; es != null; es = es.next) {
       spec.addEntry(handler, es.head);
     }
@@ -369,19 +392,28 @@ public class MILProgram {
     }
   }
 
+  /**
+   * Rewrite this program to use bitdata representations for algebraic datatype, where possible. Of
+   * course we skip the rewrite if there are no suitable datatypes.
+   */
   public void bitdataRewrite() {
-    TypeSet set = new TypeSet();
+    TypeSet set = new TypeSet(); // Find types in this program
     collect(set);
-    DataTypes cands = set.bitdataCandidates();
-    if (cands != null) {
+    DataTypes cands = set.bitdataCandidates(); // Identify candidates for
+    if (cands != null) { // bitdata representation
       BitdataMap m = new BitdataMap();
-      if (m.addMappings(cands) > 0) { // If any mappings were found, then rewrite the program
-        for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
-          for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
-            ds.head.bitdataRewrite(m);
-          }
-        }
-        collect(m); // Update types and any constructors/datatypes/etc. that were not rewritten
+      if (m.addMappings(cands) > 0) { // Find new representations
+        bitdataRewrite(m); // Rewrite definitions
+        collect(m); // Update types, etc.
+      }
+    }
+  }
+
+  /** Rewrite a program to use the bitdata representations provided by BitdataMap. */
+  void bitdataRewrite(BitdataMap m) {
+    for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
+      for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
+        ds.head.bitdataRewrite(m);
       }
     }
   }
@@ -397,7 +429,9 @@ public class MILProgram {
           ds.head.mergeRewrite(mmap);
         }
       }
-      collect(mmap); // Update types and any constructors/datatypes/etc. that were not rewritten
+      // Update types and any constructors/datatypes/etc. that were not
+      // rewritten
+      collect(mmap);
     }
   }
 
@@ -407,12 +441,13 @@ public class MILProgram {
    * uncurried block.
    */
   void makeEntryBlocks() {
-    for (Defns es = entries;
-        es != null;
-        es = es.next) { // Make entry blocks for entrypoints, where possible
+    // Make entry blocks for entrypoints, where possible
+    for (Defns es = entries; es != null; es = es.next) {
       es.head = es.head.makeEntryBlock();
     }
-    Defns prev = null; // Filter entrypoints that are no longer marked as such
+
+    // Filter entrypoints that are no longer marked as such
+    Defns prev = null;
     for (Defns es = entries; es != null; ) {
       if (es.head.isEntrypoint) {
         prev = es;
@@ -448,6 +483,10 @@ public class MILProgram {
     return set;
   }
 
+  /** Add a special block for aborting the program. */
+  public static final Block abort =
+      new Block(BuiltinPosition.pos, Temp.noTemps, new Done(Prim.halt.withArgs()));
+
   public void addArgs() throws Failure {
     for (Defns ds = reachable(); ds != null; ds = ds.next) {
       ds.head.addArgs();
@@ -459,7 +498,8 @@ public class MILProgram {
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       // First reset all static values in this SCC to null
       // TODO: Is this necessary? Why would they contain non-null values?
-      // TODO: Is this sufficient to produce the correct results for mutually recursive definitions?
+      // TODO: Is this sufficient to produce the correct results for
+      // mutually recursive definitions?
       for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
         ds.head.resetStaticValues();
       }
@@ -515,7 +555,8 @@ public class MILProgram {
 
     for (DefnSCCs dsccs = sccs; dsccs != null; dsccs = dsccs.next) {
       for (Defns ds = dsccs.head.getBindings(); ds != null; ds = ds.next) {
-        // Generate code to initialize TopLevels that do not have static values.
+        // Generate code to initialize TopLevels that do not have
+        // static values.
         edoc = ds.head.addRevInitCode(lm, ivm, edoc);
         // Generate CFGs as required for each Block and ClosureDefn
         CFG cfg = ds.head.makeCFG();
@@ -536,7 +577,7 @@ public class MILProgram {
       cfgs = new CFGs(cfg, cfgs);
     } else if (edoc != null) {
       throw new Failure(
-          "LLVM program requires initialization function (set using --llvm-main=NAME)");
+          "LLVM program requires initialization function " + "(set using --llvm-main=NAME)");
     }
     return prog;
   }

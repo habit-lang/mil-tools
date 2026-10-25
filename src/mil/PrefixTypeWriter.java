@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -36,9 +36,8 @@ public abstract class PrefixTypeWriter extends TypeWriter {
   public void chooseNames() {
     ids = new String[prefix.numGenerics()];
     for (int i = 0; i < ids.length; i++) {
-      // try to generate sensible names for generic variables based on hints provided by their
-      // original
-      // names, ignoring any numeric suffix.
+      // try to generate sensible names for generic variables based on hints
+      // provided by their original names, ignoring any numeric suffix.
       ids[i] = chooseName(dropDigitSuffix(prefix.getGen(i).getId()));
     }
   }
@@ -60,9 +59,11 @@ public abstract class PrefixTypeWriter extends TypeWriter {
    * use.
    */
   private String chooseName(String ideal) {
-    if (ideal == null || ideal.length() == 0) { // Given an empty ideal, try to generate
-      for (int suffix = -1; ; suffix++) { // a name with a single letter followed
-        for (char c = 'a'; c <= 'z'; c++) { // by a numeric suffix
+    if (ideal == null || ideal.length() == 0) {
+      // Given an empty ideal, try to generate a name with a single
+      // letter followed by a numeric suffix
+      for (int suffix = -1; ; suffix++) {
+        for (char c = 'a'; c <= 'z'; c++) {
           String s = Character.toString(c);
           if (suffix >= 0) {
             s += suffix;

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -141,7 +141,8 @@ public abstract class MILEnv {
    */
   public void addCfunAndTop(Cfun cf) throws Failure {
     if (findCfun(cf.getId()) != null || addCfun(cf) != null) {
-      // TODO: it would be good to give position information for the other definition too
+      // TODO: it would be good to give position information for the
+      // other definition too
       multipleDefns(cf.getPos(), "constructor", cf.getId());
     }
     cf.addTopLevel();
@@ -155,48 +156,49 @@ public abstract class MILEnv {
     throw new Failure(pos, "Multiple definitions for " + what + " \"" + id + "\"");
   }
 
-  Prim mustFindPrim(Handler handler, Position pos, String id) {
+  Prim mustFindPrim(Position pos, String id) throws Failure {
     Prim x = findPrim(id);
     if (x == null) {
-      handler.report(notFound(pos, id));
+      throw notFound(pos, id);
     }
     return x;
   }
 
-  Block mustFindBlock(Handler handler, Position pos, String id) {
+  Block mustFindBlock(Position pos, String id) throws Failure {
     Block x = findBlock(id);
     if (x == null) {
-      handler.report(notFound(pos, id));
+      throw notFound(pos, id);
     }
     return x;
   }
 
-  ClosureDefn mustFindClosureDefn(Handler handler, Position pos, String id) {
+  ClosureDefn mustFindClosureDefn(Position pos, String id) throws Failure {
     ClosureDefn x = findClosureDefn(id);
     if (x == null) {
-      handler.report(notFound(pos, id));
+      throw notFound(pos, id);
     }
     return x;
   }
 
-  Top mustFindTop(Handler handler, Position pos, String id) {
+  Top mustFindTop(Position pos, String id) throws Failure {
     Top x = findTop(id);
     if (x == null) {
-      handler.report(notFound(pos, id));
+      throw notFound(pos, id);
     }
     return x;
   }
 
-  Cfun mustFindCfun(Handler handler, Position pos, String id, String subid) {
+  Cfun mustFindCfun(Position pos, String id, String subid) throws Failure {
     Cfun cf = findCfun((subid != null) ? subid : id);
     if (cf == null) {
-      handler.report(notFound(pos, id));
-    } else if (subid != null) { // Layout constructor name of the form T.C
+      throw notFound(pos, id);
+    } else if (subid != null) {
+      // Layout constructor name of the form T.C
       BitdataType bt = cf.bitdataType();
       if (bt == null) {
-        handler.report(new Failure(pos, "\"" + cf + "\" is not a bitdata constructor"));
+        throw new Failure(pos, "\"" + cf + "\" is not a bitdata constructor");
       } else if (!bt.answersTo(id)) {
-        handler.report(new Failure(pos, "\"" + cf + "\" is not a constructor for " + bt));
+        throw new Failure(pos, "\"" + cf + "\" is not a constructor for " + bt);
       } else {
         return bt.getLayouts()[cf.getNum()].getCfun();
       }

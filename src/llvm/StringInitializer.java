@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -28,6 +28,7 @@ public class StringInitializer extends Value {
   /** Default constructor. */
   public StringInitializer(String str) {
     this.str = str;
+
     this.arrayType = new ArrayType(1 + str.length(), Type.i8);
   }
 

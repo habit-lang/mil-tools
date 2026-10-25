@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -22,8 +22,13 @@ import compiler.*;
 import core.*;
 import java.io.PrintWriter;
 
+/**
+ * Represents a Call of the form k{as} that constructs a closure object with code k and stored data
+ * as.
+ */
 public class ClosAlloc extends Allocator {
 
+  /** The closure definition for the call. */
   private final ClosureDefn k;
 
   /** Default constructor. */
@@ -32,13 +37,15 @@ public class ClosAlloc extends Allocator {
     k.calledFrom(this);
   }
 
-  /** Test if two Tail expressions are the same. */
-  boolean sameTail(Tail that) {
-    return that.sameClosAlloc(this);
+  /** Constructor for calls where arguments are already known. */
+  public ClosAlloc(ClosureDefn k, Atom[] args) {
+    this(k);
+    this.args = args;
   }
 
-  boolean sameClosAlloc(ClosAlloc that) {
-    return this.k == that.k && this.sameArgs(that);
+  /** Constructor for calls with one argument that is already known. */
+  public ClosAlloc(ClosureDefn k, Atom a) {
+    this(k, new Atom[] {a});
   }
 
   /** Find the dependencies of this AST fragment. */
@@ -46,24 +53,35 @@ public class ClosAlloc extends Allocator {
     return k.dependencies(super.dependencies(ds));
   }
 
-  /** Display a printable representation of this MIL construct on the specified PrintWriter. */
+  /** Display a printable representation of this code sequence on the specified PrintWriter. */
   void dump(PrintWriter out, Temps ts) {
     dump(out, k.toString(), "{", args, "}", ts);
   }
 
-  /** Construct a new Call value that is based on the receiver, without copying the arguments. */
-  Call callDup(Atom[] args) {
-    return new ClosAlloc(k).withArgs(args);
+  /** Test if two Tail expressions are the same. */
+  boolean sameTail(Tail that) {
+    return that.sameClosAlloc(this);
   }
 
-  private AllocType type;
+  /** Test whether this Tail is the same as the given ClosAlloc. */
+  boolean sameClosAlloc(ClosAlloc that) {
+    return this.k == that.k && this.sameArgs(that);
+  }
 
-  /** The type tuple that describes the outputs of this Tail. */
+  /** Construct a new Call value that is based on the receiver, without copying the arguments. */
+  Call callDup(Atom[] args) {
+    return new ClosAlloc(k, args);
+  }
+
+  /** The AllocType instance for this call. */
+  private AllocType ltype;
+
+  /** Records the type tuple that describes the outputs of this Tail. */
   private Type outputs;
 
   /** Calculate the list of unbound type variables that are referenced in this MIL code fragment. */
   TVars tvars(TVars tvs) {
-    return type.tvars(tvs);
+    return ltype.tvars(tvs);
   }
 
   /** Return the type tuple describing the result that is produced by executing this Tail. */
@@ -71,9 +89,10 @@ public class ClosAlloc extends Allocator {
     return outputs;
   }
 
+  /** Infer a type for this Call expression. */
   Type inferCallType(Position pos, Type[] inputs) throws Failure {
-    type = k.instantiate();
-    return outputs = Type.tuple(type.alloc(pos, inputs));
+    ltype = k.instantiate();
+    return outputs = Type.tuple(ltype.alloc(pos, inputs));
   }
 
   void invokeCall(MachineBuilder builder, int o) {
@@ -105,8 +124,7 @@ public class ClosAlloc extends Allocator {
     if (nk == null) {
       return null;
     } else {
-      ClosAlloc ca = new ClosAlloc(nk);
-      ca.withArgs(specializedArgs(calls));
+      ClosAlloc ca = new ClosAlloc(nk, specializedArgs(calls));
       return ca;
     }
   }
@@ -139,8 +157,8 @@ public class ClosAlloc extends Allocator {
   }
 
   /**
-   * Test to determine whether this Code/Tail value corresponds to a closure allocator, returning
-   * either a ClosAlloc value, or else a null result.
+   * Test if this Code/Tail value corresponds to a closure allocator, returning either a ClosAlloc
+   * value, or else a null result.
    */
   ClosAlloc lookForClosAlloc() {
     return this;
@@ -168,7 +186,8 @@ public class ClosAlloc extends Allocator {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return summary(k.summary()) * 33 + 3;
@@ -186,13 +205,13 @@ public class ClosAlloc extends Allocator {
 
   Tail eliminateDuplicates() {
     ClosureDefn k1 = k.getReplaceWith();
-    return (k1 == null) ? this : new ClosAlloc(k1).withArgs(args);
+    return (k1 == null) ? this : new ClosAlloc(k1, args);
   }
 
   /** Collect the set of types in this AST fragment and replace them with canonical versions. */
   void collect(TypeSet set) {
-    if (type != null) {
-      type = type.canonAllocType(set);
+    if (ltype != null) {
+      ltype = ltype.canonAllocType(set);
     }
     if (outputs != null) {
       outputs = outputs.canonType(set);
@@ -202,7 +221,7 @@ public class ClosAlloc extends Allocator {
 
   /** Generate a specialized version of this Call. */
   Call specializeCall(MILSpec spec, TVarSubst s, SpecEnv env) {
-    return new ClosAlloc(spec.specializedClosureDefn(k, type.apply(s)));
+    return new ClosAlloc(spec.specializedClosureDefn(k, ltype.apply(s)));
   }
 
   /**
@@ -221,7 +240,7 @@ public class ClosAlloc extends Allocator {
    */
   llvm.Value staticAlloc(LLVMMap lm, llvm.Program prog, llvm.Value[] vals) {
     vals[0] = lm.globalFor(k); // add code pointer to start of object
-    return staticAlloc(prog, vals, lm.closureLayoutType(k), k.closurePtrType(lm));
+    return staticAlloc(prog, vals, lm.closureLayoutType(k));
   }
 
   /**
@@ -240,15 +259,7 @@ public class ClosAlloc extends Allocator {
    */
   llvm.Code toLLVMBindCont(
       LLVMMap lm, VarMap vm, TempSubst s, boolean isTail, llvm.Local lhs, llvm.Code c) {
-    llvm.Type objt = lm.closureLayoutType(k).ptr(); // type of a pointer to a k object
-    llvm.Local obj = vm.reg(objt); // a register to point to the new object
-    return alloc(
-        lm,
-        vm,
-        s,
-        objt,
-        obj,
-        lm.globalFor(k),
-        new llvm.Op(lhs, new llvm.Bitcast(obj, k.closurePtrType(lm)), c));
+    llvm.Type objt = lm.closureLayoutType(k); // type of a k object
+    return alloc(lm, vm, s, objt, lhs, lm.globalFor(k), c);
   }
 }

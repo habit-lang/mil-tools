@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -23,23 +23,21 @@ import core.*;
 
 class BitdataMap extends TypeSet {
 
-  BitdataRep findRep(DataType dt) {
-    Tycon tycon = mapsTyconTo(dt);
-    return (tycon == null) ? null : tycon.isBitdataRep();
-  }
-
   /**
-   * Rewrite this program to use bitdata types in place of any of the algebraic types, passed in as
-   * candidates, that can be given a suitable bitdata representation.
+   * Analyze the given list of candidates to find datatypes that can be given a bitdata
+   * representation. The return result indicates the total number of new bitdata representations
+   * that were generated. In particular, there will not be any benefit in rewriting a program to use
+   * synthesized bitdata definitions unless the result is nonzero.
    */
   int addMappings(DataTypes cands) {
-    int total = 0; // Track the total number of mappings created during this call
-    if (cands != null) { // If there are no candidates, then there is no need for a rewrite
+    int total = 0; // Track total number of mappings created
+    if (cands != null) { // Mo candidates => No need for rewrite
       int added;
-      do { // Invariant: we only start this loop if cands!=null
-        DataTypes nextpass = null; // The list of candidates retained for the next pass
-        int retained = 0;
-        added = 0;
+      do {
+        // Invariant: we only start this loop if cands!=null
+        DataTypes nextpass = null; // candidates retained for the next pass
+        int retained = 0; // count candidates retained this pass
+        added = 0; // count mappings added this pass
         do {
           DataTypes next = cands.next;
           int act = cands.head.bitdataEncoding(this, next, nextpass);
@@ -53,14 +51,14 @@ class BitdataMap extends TypeSet {
           }
           cands = next;
         } while (cands != null);
-        cands = nextpass; // Set the candidates for the next pass (if there is one)
+        // Set the candidates for the next pass (if there is one)
+        cands = nextpass;
         total += added;
         debug.Log.println(
             "added " + added + " mappings on this pass, " + retained + " candidates retained");
-      } while (added > 0
-          && cands
-              != null); // Keep going if the map grew on the last past and there are still
-                        // candidates
+        // Keep going if the map grew on the last pass and there are
+        // still candidates
+      } while (added > 0 && cands != null);
       debug.Log.println("synthesized " + total + " data to bitdata type rewrites");
     }
     return total;
@@ -74,11 +72,11 @@ class BitdataMap extends TypeSet {
    */
   protected Type canon(Tycon h, int args) {
     if (args == 0) { // Only nullary types are considered
-      BitdataRep r = h.findRep(this); // Is a change of data representation required?
+      BitdataRep r = h.findRep(this); // Is a change of data rep required?
       if (r != null) {
         return r.asType(); // Use the BitdataRep as the new type
       }
     }
-    return super.canon(h, args); // Or fall back to the canonical representation
+    return super.canon(h, args); // Otherwise use canonical repr.
   }
 }

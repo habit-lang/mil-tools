@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -52,10 +52,12 @@ public class Synonym extends Tycon {
 
   /** Return the arity of this type constructor. */
   public int getArity() {
-    // TODO: The arity values returned by this method are used only to provide (hopefully)
-    // friendlier error messages when a tycon is applied to the wrong number of arguments ...
-    // For a synonym, we choose a large value to avoid imposing a limit.  Perhaps we can
-    // find a better abstraction than getArity() that better matches the actual use.
+    // TODO: The arity values returned by this method are used only to
+    // provide (hopefully) friendlier error messages when a tycon is
+    // applied to the wrong number of arguments ... For a synonym, we
+    // choose a large value to avoid imposing a limit.  Perhaps we can
+    // find a better abstraction than getArity() that better matches
+    // the actual use.
     return Integer.MAX_VALUE;
   }
 
@@ -63,37 +65,38 @@ public class Synonym extends Tycon {
     return this;
   }
 
-  public void fixKinds() {
-    kind = kind.fixKind();
+  /** Apply defaults to the kind of this type constructor to eliminate any remaining KVars. */
+  public void defaultKinds() {
+    kind = kind.defaultKind();
   }
 
   /**
-   * Test to determine whether this type is alpha equivalent to another type, by checking to see if
-   * the two type skeletons are equal, possibly with some correspondence between the TGen objects in
-   * the two types. We use the names left and right to keep track of which types were on the left
-   * and the right in the original alphaEquiv() call so that we can build the TGenCorresp in a
-   * consistent manner.
+   * Test whether this type is alpha equivalent to another type, by checking to see if the two type
+   * skeletons are equal, possibly with some correspondence between the TGen objects in the two
+   * types. We use the names left and right to keep track of which types were on the left and the
+   * right in the original alphaEquiv() call so that we can build the TGenCorresp in a consistent
+   * manner.
    */
   boolean alphaType(Type left, TGenCorresp corresp) {
     return expansion.alphaType(left, corresp);
   }
 
-  /** Test to determine whether this type is equal to a given type application. */
+  /** Test whether this type is equal to a given type application. */
   boolean alphaTAp(TAp right, TGenCorresp corresp) {
     return expansion.alphaTAp(right, corresp);
   }
 
-  /** Test to determine whether this type is equal to a given Tycon. */
+  /** Test whether this type is equal to a given Tycon. */
   boolean alphaTycon(Tycon right) {
     return expansion.alphaTycon(right);
   }
 
-  /** Test to determine whether this type is equal to a given TNat. */
+  /** Test whether this type is equal to a given TNat. */
   boolean alphaTNat(TNat right) {
     return expansion.alphaTNat(right);
   }
 
-  /** Test to determine whether this type is equal to a given TLab. */
+  /** Test whether this type is equal to a given TLab. */
   boolean alphaTLab(TLab right) {
     return expansion.alphaTLab(right);
   }
@@ -114,6 +117,7 @@ public class Synonym extends Tycon {
     return level;
   }
 
+  /** Test whether this type constructor is equal to a given type literal. */
   boolean sameTLit(TLit t) {
     return expansion.sameTLit(null, t);
   }
@@ -123,7 +127,7 @@ public class Synonym extends Tycon {
    * either an unbound TVar, or else a TNat literal. TODO: This could be used more generally as a
    * way to eliminate all TGen, TInd, bound TVar, or Synonym nodes at the root of any type, not just
    * natural number types ... Suggest rewriting description and renaming method to reflect that ...
-   * (and testing too ...)
+   * (and testing too ...).
    */
   public Type simplifyNatType(Type[] tenv) {
     return expansion.simplifyNatType(null);
@@ -144,11 +148,9 @@ public class Synonym extends Tycon {
     return expansion.tupleArity(null, n);
   }
 
-  /**
-   * Print a definition for this type constructor using source level syntax. TODO: Find a more
-   * appropriate place for this code ...
-   */
+  /** Print a definition for this type constructor using source level syntax. */
   void dumpTypeDefinition(PrintWriter out) {
+    this.dumpFixity(out);
     out.print("type ");
     out.print(id);
     out.print(" = ");
@@ -170,20 +172,30 @@ public class Synonym extends Tycon {
     return this;
   }
 
+  /**
+   * Build a canonical version of this type, using the given TypeSet and tracking the total number
+   * of arguments that have found so far. In the process, we do the usual dance to elide TGen and
+   * TInd nodes, as well as synonyms and bound TVars.
+   */
   Type canonArgs(Type[] tenv, TypeSet set, int args) {
     return expansion.canonArgs(null, set, args);
   }
 
-  boolean sameMod(Type t, Type[] tenv, MergeMap mmap) {
+  /** Determine whether this Tycon is equivalent to a specified type, modulo the given MergeMap. */
+  boolean sameTTyconMod(Type t, Type[] tenv, MergeMap mmap) {
     return expansion.sameMod(null, t, tenv, mmap);
   }
 
+  /**
+   * Determine whether this Tycon is equivalent to the specified type constructor, modulo the given
+   * MergeMap.
+   */
   boolean sameTyconMod(Tycon l, MergeMap mmap) {
     return expansion.sameTyconMod(null, l, mmap);
   }
 
   /**
-   * Determine whether this Tycon is equivalent to a specified DataType, modulo a given MergeMap.
+   * Determine whether this Tycon is equivalent to the specified DataType, modulo a given MergeMap.
    */
   boolean sameDataTypeMod(DataType l, MergeMap mmap) {
     return expansion.sameDataTypeMod(null, l, mmap);

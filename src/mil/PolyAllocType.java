@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -45,7 +45,7 @@ class PolyAllocType extends AllocType {
   }
 
   /**
-   * Calculate an lc type scheme for a curried constructor function corresponding to this AllocType.
+   * Calculate a type scheme for a curried constructor function corresponding to this AllocType.
    * This method is only intended to be used on AllocTypes resulting from explicit declarations or
    * generalization (i.e., no TIndAllocType objects).
    */
@@ -73,10 +73,10 @@ class PolyAllocType extends AllocType {
   }
 
   /**
-   * Test to determine whether two allocator types are alpha equivalent. We assume that this method
-   * will only be used with AllocType and PolyAllocType objects (i.e., not TIndAllocType) because
-   * these are the only forms of AllocTypes that can be obtained as the result of generalization or
-   * an explicity declared type.
+   * Test whether two allocator types are alpha equivalent. We assume that this method will only be
+   * used with AllocType and PolyAllocType objects (i.e., not TIndAllocType) because these are the
+   * only forms of AllocTypes that can be obtained as the result of generalization or an explicity
+   * declared type.
    */
   public boolean alphaEquiv(AllocType at) {
     return at.alphaAllocType(this, prefix.isEmpty() ? null : new TGenCorresp());
@@ -97,13 +97,14 @@ class PolyAllocType extends AllocType {
     return instantiate().canonAllocType(set).generalize();
   }
 
+  /** Apply the given substitution to this AllocType. */
   AllocType apply(TVarSubst s) {
     debug.Internal.error("Unable to specialize polymorphic allocator type");
     return null;
   }
 
   /**
-   * Extend a substitution by matching this (potentially polymorphic) AllocType against a
+   * Construct a substitution by matching this (potentially polymorphic) AllocType against a
    * monomorphic instance.
    */
   TVarSubst specializingSubst(TVar[] generics, AllocType inst) {

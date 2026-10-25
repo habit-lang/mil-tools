@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -25,8 +25,10 @@ import java.math.BigInteger;
 /** Represents a Bit vector constant. */
 public class Bits extends Const {
 
+  /** The numeric value of this bit vector. */
   private BigInteger val;
 
+  /** The width, in bits, of this bit vector. */
   private int width;
 
   /** Default constructor. */
@@ -42,13 +44,13 @@ public class Bits extends Const {
 
   /** Generate a printable representation of a bit vector constant. */
   static String toString(BigInteger nat, int width) {
-    // TODO: does this produce correct results if width=0?
     StringBuilder buf = new StringBuilder();
     if (width > 0 && (width % 4) == 0) { // Use hexadecimal notation if we can
       buf.append('X');
       while (width > 0) {
-        int d = nat.shiftRight(width -= 4).intValue() & 0xf; // TODO: clunky?
-        buf.append((char) ((d < 10 ? ('0' + d) : ('a' + (d - 10))))); // TODO: builtin?
+        // TODO: This is clunky; can it be done using standard methods?
+        int d = nat.shiftRight(width -= 4).intValue() & 0xf;
+        buf.append((char) ((d < 10 ? ('0' + d) : ('a' + (d - 10)))));
         if (width > 0 && ((width % 16) == 0)) {
           buf.append("_");
         }
@@ -74,18 +76,21 @@ public class Bits extends Const {
     return that.sameBits(this);
   }
 
-  /** Test to determine whether this Atom refers to the specified bit vector constant. */
-  boolean sameBits(Bits c) {
-    return this.width == c.width && this.val.equals(c.val);
+  /** Test whether this Atom is the same as the given Bits. */
+  boolean sameBits(Bits that) {
+    return this.width == that.width && this.val.equals(that.val);
   }
 
-  /** Return a type for an instantiated version of this item when used as Atom (input operand). */
+  /**
+   * Return a type for an instantiated version of this item when used as an Atom (input operand).
+   */
   public Type instantiate() {
     return Type.bit(width);
   }
 
   /** Find the Value for a given mil constant. */
   Value constValue() {
+    // TODO: value may be truncated ...
     return new WordValue(val.longValue());
   }
 
@@ -95,7 +100,8 @@ public class Bits extends Const {
 
   /**
    * Compute an integer summary for a fragment of MIL code with the key property that alpha
-   * equivalent program fragments have the same summary value.
+   * equivalent program fragments have the same summary value. TODO: should we calculate long
+   * summary values instead of using int?
    */
   int summary() {
     return val.intValue();
@@ -112,6 +118,7 @@ public class Bits extends Const {
 
   /** Calculate an LLVM Value corresponding to a given MIL argument. */
   llvm.Value toLLVMAtom(LLVMMap lm, VarMap vm) {
+    // TODO: value may be truncated
     return new llvm.Word(val.longValue());
   }
 }

@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -38,8 +38,9 @@ abstract class Label extends Node {
    * this Node.
    */
   boolean needsGoto(Node src) {
-    // TODO: we can return false immediately if the block for this node has an empty parameter list
-    // (because no phi function will be needed in that case)
+    // TODO: we can return false immediately if the block for this node
+    // has an empty parameter list (because no phi function will be needed
+    // in that case)
     for (PredNodes ps = preds; ps != null; ps = ps.next) {
       if (ps.head == src) {
         return true;

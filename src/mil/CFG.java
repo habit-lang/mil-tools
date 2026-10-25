@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -24,8 +24,10 @@ import java.io.PrintWriter;
 
 abstract class CFG extends Node {
 
+  /** Points to the first item in the list (null if the list is empty). */
   private Labels labels = null;
 
+  /** Points to the last item in the list (null if the list is empty). */
   private Labels labelsLast = null;
 
   /** Add an element to the end of the list in this class. */
@@ -79,8 +81,8 @@ abstract class CFG extends Node {
    * unit) arguments.
    */
   Label edge(Node src, Block b, Atom[] args) {
-    // If the target for this edge is a block that is not included in this CFG, then we need
-    // to make a regular (i.e., non-tail) call to it:
+    // If the target for this edge is a block that is not included in this
+    // CFG, then we need to make a regular (i.e., non-tail) call to it:
     if (!Blocks.isIn(b, includedBlocks)) {
       Label lab = new CallLabel(b);
       add(lab);
@@ -88,7 +90,8 @@ abstract class CFG extends Node {
       return lab;
     }
 
-    // Have we already created a CodeLabel for the specified block in this CFG?
+    // Have we already created a CodeLabel for the specified block in
+    // this CFG?
     for (Labels ls = labels; ls != null; ls = ls.next) {
       if (ls.head.hasCodeFor(b)) {
         Label lab = ls.head;
@@ -105,7 +108,8 @@ abstract class CFG extends Node {
       }
     }
 
-    // This is the first time we have requested a label for the specified block:
+    // This is the first time we have requested a label for the
+    // specified block:
     Label dst = new CodeLabel(b);
     add(dst);
     dst.calledFrom(src, args);

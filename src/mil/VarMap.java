@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -36,7 +36,7 @@ abstract class VarMap {
    * temporaries used here have already been translated, if necessary, by the parameter elimination
    * substitution that identifies distinct Block parameters that use the same temporary.
    */
-  private HashMap<Temp, llvm.Local> tempMap = new HashMap();
+  private HashMap<Temp, llvm.Local> tempMap = (new HashMap<Temp, llvm.Local>());
 
   /**
    * Find the LLVM Local corresponding to the given Temp in this CFG, creating a new entry in the

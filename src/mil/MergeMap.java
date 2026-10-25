@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -31,14 +31,19 @@ class MergeMap extends TypeSet {
    * these mappings, we will only use DataType values as keys (and values). As a result, any lookup
    * for a Key that is not a DataType will automatically return null.
    */
-  private HashMap<Tycon, DataType> confirmed = new HashMap();
+  private HashMap<Tycon, DataType> confirmed = (new HashMap<Tycon, DataType>());
 
   /** Records mappings that are assumed. */
-  private HashMap<Tycon, DataType> assumed = new HashMap();
+  private HashMap<Tycon, DataType> assumed = (new HashMap<Tycon, DataType>());
 
   /** Clear the current set of assumptions. */
   void clearAssumed() {
     assumed.clear();
+  }
+
+  /** Add a mapping to the current set of assumptions. */
+  void assume(DataType dt, DataType ndt) {
+    assumed.put(dt, ndt);
   }
 
   /** Move all assumptions to the set of confirmed mappings. */
@@ -63,11 +68,6 @@ class MergeMap extends TypeSet {
     super.dump(out);
   }
 
-  /** Add a mapping to the current set of assumptions. */
-  void assume(DataType dt, DataType ndt) {
-    assumed.put(dt, ndt);
-  }
-
   /** Find the current representative for a given Datatype under this mapping. */
   DataType lookup(DataType dt) {
     DataType next;
@@ -79,11 +79,12 @@ class MergeMap extends TypeSet {
 
   /**
    * Test to see if the given DataName should be replaced with another type under this mapping,
-   * returning either the new DataType or else null, indicating that the DataName is no remapped.
+   * returning either the new DataType or else null, indicating that the DataName should not be
+   * remapped.
    */
   DataType mappingFor(Tycon tc) {
-    DataType dt;
-    return ((dt = confirmed.get(tc)) != null || (dt = assumed.get(tc)) != null) ? lookup(dt) : null;
+    DataType dt = confirmed.get(tc);
+    return (dt != null || (dt = assumed.get(tc)) != null) ? lookup(dt) : null;
   }
 
   /**
@@ -94,11 +95,14 @@ class MergeMap extends TypeSet {
    */
   protected Type canon(Tycon h, int args) {
     if (args == 0) { // Only nullary types are considered
-      DataType dt = mappingFor(h); // Is h to be merged with some given DataType dt?
+      // Is h to be merged with some given DataType dt?
+      DataType dt = mappingFor(h);
       if (dt != null) {
-        h = dt; // Use the new DataType (but still require its canonical version)Cf
+        // Use the new DataType (but still require its canonical version)
+        h = dt;
       }
     }
-    return super.canon(h, args); // Or fall back to the canonical representation
+    // Or fall back to the canonical representation
+    return super.canon(h, args);
   }
 }

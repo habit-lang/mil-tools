@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,6 +21,7 @@ package mil;
 import compiler.*;
 import core.*;
 
+/** Represents the pointer type constructor. */
 public class Ptr extends DataType {
 
   /** Default constructor. */
@@ -57,6 +58,10 @@ public class Ptr extends DataType {
     return null;
   }
 
+  /**
+   * Create a specialized version of this type constructor, if necessary, and if the appropriate
+   * specialized version has not already been created.
+   */
   Tycon specializeDataName(MILSpec spec, Type inst) {
     return this;
   }

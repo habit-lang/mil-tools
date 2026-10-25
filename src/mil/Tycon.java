@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -50,7 +50,8 @@ public abstract class Tycon extends Name {
     return null;
   }
 
-  public void fixKinds() {
+  /** Apply defaults to the kind of this type constructor to eliminate any remaining KVars. */
+  public void defaultKinds() {
     /* Nothing to do here */
   }
 
@@ -61,32 +62,32 @@ public abstract class Tycon extends Name {
   }
 
   /**
-   * Test to determine whether this type is alpha equivalent to another type, by checking to see if
-   * the two type skeletons are equal, possibly with some correspondence between the TGen objects in
-   * the two types. We use the names left and right to keep track of which types were on the left
-   * and the right in the original alphaEquiv() call so that we can build the TGenCorresp in a
-   * consistent manner.
+   * Test whether this type is alpha equivalent to another type, by checking to see if the two type
+   * skeletons are equal, possibly with some correspondence between the TGen objects in the two
+   * types. We use the names left and right to keep track of which types were on the left and the
+   * right in the original alphaEquiv() call so that we can build the TGenCorresp in a consistent
+   * manner.
    */
   boolean alphaType(Type left, TGenCorresp corresp) {
     return left.alphaTycon(this);
   }
 
-  /** Test to determine whether this type is equal to a given type application. */
+  /** Test whether this type is equal to a given type application. */
   boolean alphaTAp(TAp right, TGenCorresp corresp) {
     return false;
   }
 
-  /** Test to determine whether this type is equal to a given Tycon. */
+  /** Test whether this type is equal to a given Tycon. */
   boolean alphaTycon(Tycon right) {
     return this == right;
   }
 
-  /** Test to determine whether this type is equal to a given TNat. */
+  /** Test whether this type is equal to a given TNat. */
   boolean alphaTNat(TNat right) {
     return false;
   }
 
-  /** Test to determine whether this type is equal to a given TLab. */
+  /** Test whether this type is equal to a given TLab. */
   boolean alphaTLab(TLab right) {
     return false;
   }
@@ -164,6 +165,7 @@ public abstract class Tycon extends Name {
     return 0;
   }
 
+  /** Test whether this type constructor is equal to a given type literal. */
   boolean sameTLit(TLit t) {
     return false;
   }
@@ -173,20 +175,24 @@ public abstract class Tycon extends Name {
    * either an unbound TVar, or else a TNat literal. TODO: This could be used more generally as a
    * way to eliminate all TGen, TInd, bound TVar, or Synonym nodes at the root of any type, not just
    * natural number types ... Suggest rewriting description and renaming method to reflect that ...
-   * (and testing too ...)
+   * (and testing too ...).
    */
   public Type simplifyNatType(Type[] tenv) {
     return null;
   }
 
+  /** Defines written representation for the MIL function arrow. */
   public static final String milArrowId = "->>";
 
+  /** Represents the fixity of function space arrows. */
   private static final Fixity arrowFixity = new Fixity(Fixity.RIGHT, 5);
 
+  /** Represents the MIL function space constructor. */
   public static final Tycon milArrow =
       new PrimTycon(
           milArrowId, new KFun(KAtom.TUPLE, new KFun(KAtom.TUPLE, KAtom.STAR)), 2, arrowFixity);
 
+  /** Represents the LC function space constructor. */
   public static final DataType arrow = new DataType("->", Kind.simple(2), 2, arrowFixity);
 
   /**
@@ -198,61 +204,89 @@ public abstract class Tycon extends Name {
     return (-1);
   }
 
+  /** Represents the type constructor: Proc :: * -> *. */
   public static final DataType proc = new DataType("Proc", Kind.simple(1), 1);
 
+  /** Represents Unit :: *. */
   public static final DataType unit = new DataType("Unit", KAtom.STAR, 0);
 
+  /** Represents nat -> *. */
   public static final Kind natToStar = new KFun(KAtom.NAT, KAtom.STAR);
 
+  /** Represents lab -> *. */
   public static final Kind labToStar = new KFun(KAtom.LAB, KAtom.STAR);
 
+  /** Represents area -> *. */
   public static final Kind areaToStar = new KFun(KAtom.AREA, KAtom.STAR);
 
+  /** Represents * -> area. */
   public static final Kind starToArea = new KFun(KAtom.STAR, KAtom.AREA);
 
+  /** Represents nat -> area -> *. */
   public static final Kind natToAreaToStar = new KFun(KAtom.NAT, areaToStar);
 
+  /** Represents area -> area. */
   public static final Kind areaToArea = new KFun(KAtom.AREA, KAtom.AREA);
 
+  /** Represents nat -> area -> area. */
   public static final Kind natToAreaToArea = new KFun(KAtom.NAT, areaToArea);
 
+  /** Represents Addr :: *. */
   public static final Tycon addr = new PrimTycon("Addr", KAtom.STAR, 0);
 
+  /** Represents Bit :: nat -> *. */
   public static final Tycon bit = new PrimTycon("Bit", natToStar, 1);
 
+  /** Represents NZBit :: nat -> *. */
   public static final Tycon nzbit = new PrimTycon("NZBit", natToStar, 1);
 
+  /** Represents Ix :: nat -> *. */
   public static final Tycon ix = new PrimTycon("Ix", natToStar, 1);
 
+  /** Represents Inx :: nat -> *. */
   public static final Tycon inx = new PrimTycon("Inx", natToStar, 1);
 
+  /** Represents Nat :: nat -> *. */
   public static final Tycon nat = new PrimTycon("ProxyNat", natToStar, 1);
 
+  /** Represents Lab :: lab -> *. */
   public static final Tycon lab = new PrimTycon("ProxyLab", labToStar, 1);
 
+  /** Represents Pad :: nat -> area -> area. */
   public static final Tycon pad = new PrimTycon("Pad", natToAreaToArea, 2);
 
+  /** Represents Array :: nat -> area -> area. */
   public static final Tycon array = new PrimTycon("Array", natToAreaToArea, 2);
 
+  /** Represents Ref :: area -> *. */
   public static final Tycon ref = new PrimTycon("Ref", areaToStar, 1);
 
+  /** Represents Init :: area -> *. */
   public static final Tycon init = new PrimTycon("Init", areaToStar, 1);
 
+  /** Represents Stored :: * -> area. */
   public static final Tycon stored = new PrimTycon("Stored", starToArea, 1);
 
+  /** Represents String :: area. */
   public static final Tycon string = new PrimTycon("String", KAtom.AREA, 0);
 
+  /** Represents WordBits :: nat, synonym filled in elsewhere. */
   public static final Synonym wordBits = new Synonym("WordBits", KAtom.NAT, null);
 
+  /** Represents Word :: *, a synonym for Bit WordBits. */
   public static final Synonym word = new Synonym("Word", KAtom.STAR, Type.bit(wordBits.asType()));
 
+  /** Represents NZWord :: *, asynonym for NZBit WordBits. */
   public static final Synonym nzword =
       new Synonym("NZWord", KAtom.STAR, Type.nzbit(wordBits.asType()));
 
+  /** Represents Flag :: *, a synonym for Bit 1. */
   public static final Synonym flag = new Synonym("Flag", KAtom.STAR, Type.bit(1));
 
+  /** Represents Ptr :: area -> *. */
   public static final DataType ptr = new Ptr("Ptr", areaToStar, 1);
 
+  /** Represents Phys :: area -> *. */
   public static final DataType phys = new Ptr("Phys", areaToStar, 1);
 
   /** Find the name of the associated bitdata type, if any. */
@@ -270,11 +304,22 @@ public abstract class Tycon extends Name {
     return null;
   }
 
-  /**
-   * Print a definition for this type constructor using source level syntax. TODO: Find a more
-   * appropriate place for this code ...
-   */
+  /** Print a definition for this type constructor using source level syntax. */
   abstract void dumpTypeDefinition(PrintWriter out);
+
+  /**
+   * Output a fixity declaration for this type constructor on the given PrintWriter if something
+   * other than the default fixity has been specified.
+   */
+  void dumpFixity(PrintWriter out) {
+    if (this.fixity != Fixity.unspecified) {
+      out.print(this.fixity.assocToString());
+      out.print(" type ");
+      out.print(this.fixity.getPrec());
+      out.print(" ");
+      out.println(id);
+    }
+  }
 
   /**
    * Generate a diagram for this type constructor using tikz syntax. TODO: Find a more appropriate
@@ -300,7 +345,8 @@ public abstract class Tycon extends Name {
    * Attempt to translate a type with this type constructor at its head and some number of arguments
    * on the stack to eliminate newtypes. This will only succeed if the head is a newtype constructor
    * and there are enough arguments; otherwise the call will return null to indicate that no
-   * translation was possible.
+   * translation was possible. TODO: Will this work correctly on source programs that use partially
+   * applied newtypes?
    */
   Type translate(NewtypeTypeSet set, int args) {
     return null;
@@ -322,16 +368,25 @@ public abstract class Tycon extends Name {
     return null;
   }
 
+  /**
+   * Build a canonical version of this type, using the given TypeSet and tracking the total number
+   * of arguments that have found so far. In the process, we do the usual dance to elide TGen and
+   * TInd nodes, as well as synonyms and bound TVars.
+   */
   Type canonArgs(Type[] tenv, TypeSet set, int args) {
     return set.rebuild(this.asType(), args);
   }
 
-  /** Find the bitdata representation for this object, or null if there is none. */
+  /**
+   * Find the synthesized bitdata representation for this object in the given BitdataMap, or else
+   * return null if there is none.
+   */
   BitdataRep findRep(BitdataMap m) {
     return null;
   }
 
-  BitdataRep isBitdataRep() {
+  /** Test whether this Tycon is an BitdataRep. */
+  public BitdataRep isBitdataRep() {
     return null;
   }
 
@@ -340,6 +395,7 @@ public abstract class Tycon extends Name {
     return null;
   }
 
+  /** Find the DataType for this object, if any, or else return null. */
   DataType dataType() {
     return null;
   }
@@ -349,16 +405,21 @@ public abstract class Tycon extends Name {
     return null;
   }
 
-  boolean sameMod(Type t, Type[] tenv, MergeMap mmap) {
+  /** Determine whether this Tycon is equivalent to a specified type, modulo the given MergeMap. */
+  boolean sameTTyconMod(Type t, Type[] tenv, MergeMap mmap) {
     return t.sameTyconMod(tenv, this, mmap);
   }
 
+  /**
+   * Determine whether this Tycon is equivalent to the specified type constructor, modulo the given
+   * MergeMap.
+   */
   boolean sameTyconMod(Tycon l, MergeMap mmap) {
     return this == l;
   }
 
   /**
-   * Determine whether this Tycon is equivalent to a specified DataType, modulo a given MergeMap.
+   * Determine whether this Tycon is equivalent to the specified DataType, modulo a given MergeMap.
    */
   boolean sameDataTypeMod(DataType l, MergeMap mmap) {
     return false;
@@ -480,14 +541,18 @@ public abstract class Tycon extends Name {
    * to the argument a). The specified type environment, tenv, is used for both this and a.
    */
   Type bitSize(Type[] tenv, Type a) {
-    if (this == ref || this == ptr || this == phys) { // BitSize (Ref a) ==>  (calculation follows)
+    if (this == ref || this == ptr || this == phys) {
+      // BitSize (Ref a) ==>  (calculation follows)
       int w = a.refWidth(tenv);
       return (w > 0) ? new TNat(w) : null;
-    } else if (this == bit || this == nzbit) { // BitSize(Bit n) ==>  n,  same for (NZBit n)
+    } else if (this == bit || this == nzbit) {
+      // BitSize(Bit n) ==>  n,  same for (NZBit n)
       return a.simplifyNatType(tenv);
-    } else if (this == ix) { // BitSize(Ix n)  ==>  (see below, upper bound n-1)
+    } else if (this == ix) {
+      // BitSize(Ix n)  ==>  (see below, upper bound n-1)
       return rangeBitSize(a.ixUpper(tenv).subtract(BigInteger.ONE));
-    } else if (this == inx) { // BitSize(Inx n)  ==>  (see below, upper bound n)
+    } else if (this == inx) {
+      // BitSize(Inx n)  ==>  (see below, upper bound n)
       return rangeBitSize(a.ixUpper(tenv));
     }
     return null;
@@ -576,8 +641,8 @@ public abstract class Tycon extends Name {
         if (s != null) {
           BigInteger m = s.simplifyNatType(null).getNat();
           if (m != null) {
-            if (this
-                == array) { // For array, check that element size is a multiple of the alignment
+            if (this == array) {
+              // For array, check that element size is a multiple of alignment
               long align = b.alignment(tenv);
               if (align < 1 || (m.longValue() % align) != 0) {
                 return null;
@@ -631,13 +696,25 @@ public abstract class Tycon extends Name {
             : 0;
   }
 
+  /**
+   * Return a core type expression appropriate to this type constructor when it appears at the head
+   * of a chain of the specified arity number of type applications in a type expression.
+   */
   public TypeExp scopeTycon(Position pos, int arity) throws Failure {
-    // The following test is technically unnecessary given the subsequent use
-    // of kind inference but may result in friendlier error diagnostics.
+    // The following test is technically unnecessary given the subsequent
+    // use of kind inference but may result in friendlier error diagnostics.
     if (arity > getArity()) {
       throw new TooManyTyconArgsFailure(pos, this, arity);
     }
     return new TyconTypeExp(pos, this);
+  }
+
+  public void declareFixity(Handler handler, Position pos, Fixity fixity) {
+    if (this.fixity == Fixity.unspecified) {
+      this.fixity = fixity;
+    } else {
+      handler.report(new RepeatedFixityWarning(pos, this.fixity, id));
+    }
   }
 
   /** Return the argument of this type (assuming that this is a type application). */
@@ -663,7 +740,8 @@ public abstract class Tycon extends Name {
       if (args != 2) {
         debug.Internal.error("MILArrow toLLVM arity mismatch");
       }
-      return lm.closurePtrTypeCalc(c);
+      // return lm.closurePtrTypeCalc(c);
+      return llvm.Type.ptr;
     } else if (this == bit) {
       if (args != 1) {
         debug.Internal.error("Bit toLLVM arity mismatch");

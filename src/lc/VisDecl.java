@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -41,10 +41,10 @@ abstract class VisDecl extends TopDefn {
     vars = new DefVar[ids.length];
     tops = new Top[ids.length];
     for (int i = 0; i < ids.length; i++) {
-      if ((vars[i] = Env.find(ids[i], env)) == null
-          && // look for a top level binding
-          (tops[i] = milenv.findTop(ids[i])) == null) { // look for a Top in the current milenv
-        Cfun cf = milenv.findCfun(ids[i]); // and then look for a reference to a constructor
+      // Look for a top level binding, and a Top in the current milenv:
+      if ((vars[i] = Env.find(ids[i], env)) == null && (tops[i] = milenv.findTop(ids[i])) == null) {
+        // And then look for a reference to a constructor
+        Cfun cf = milenv.findCfun(ids[i]);
         if (cf != null) {
           tops[i] = cf.getTop();
         } else {

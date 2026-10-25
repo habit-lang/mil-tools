@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -62,7 +62,7 @@ class PrimDefnExp extends DefnExp {
    */
   void addTo(MILEnv milenv) throws Failure {
     BlockType bt = BlockType.validate(milenv.getTyconEnv(), domtuple, rngtuple);
-    prim = new Prim(id, purity, bt);
+    prim = new Prim(id, bt, purity);
     debug.Log.println("primitive " + id + " :: " + bt);
     if (milenv.addPrim(prim) != null) {
       MILEnv.multipleDefns(pos, "primitive", id);

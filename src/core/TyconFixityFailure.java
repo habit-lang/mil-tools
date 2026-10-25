@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,21 +21,9 @@ package core;
 import compiler.*;
 import mil.*;
 
-public class SyntaxAnalysis extends Phase {
+class TyconFixityFailure extends Failure {
 
-  /** Default constructor. */
-  public SyntaxAnalysis(Handler handler) {
-    super(handler);
-  }
-
-  /** Run syntax analysis on the specified source, returning the resulting program. */
-  public CoreProgram analyze(Source source) throws Failure {
-    CoreLexer lexer = new LayoutLexer(handler, true, source);
-    CoreParser parser = new CoreParser(handler, lexer);
-    lexer.nextToken(); // read a token to prime the lexer
-    CoreProgram program = parser.coreProgram();
-    parser.checkForEnd();
-    handler.abortOnFailures();
-    return program;
+  public TyconFixityFailure(Position pos, String id) {
+    super(pos, "Cannot find type constructor for \"" + id + "\" in fixity declaration");
   }
 }

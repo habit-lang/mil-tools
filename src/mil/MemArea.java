@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -25,10 +25,13 @@ import java.math.BigInteger;
 
 public class MemArea extends Area {
 
+  /** The alignment for the area. */
   private long alignment;
 
+  /** The type of the area. */
   private Type areaType;
 
+  /** The type of the area's size. */
   private Type size;
 
   /** Default constructor. */
@@ -39,8 +42,10 @@ public class MemArea extends Area {
     this.size = size;
   }
 
+  /** Stores an optional initializer for the area. */
   private Atom init;
 
+  /** Return the area initializer. */
   public void setInit(Atom init) {
     this.init = init;
   }
@@ -51,8 +56,8 @@ public class MemArea extends Area {
   }
 
   /** Display a printable representation of this definition on the specified PrintWriter. */
-  void dump(PrintWriter out, boolean isEntrypoint) {
-    super.dump(out, isEntrypoint);
+  void dump(PrintWriter out) {
+    dumpHeader(out, isEntrypoint);
     out.print(id + " <- area " + areaType.toString(Fixity.ALWAYS));
     if (init != null) {
       out.print(" " + init);
@@ -72,7 +77,7 @@ public class MemArea extends Area {
 
   /**
    * Calculate a generalized type for this binding, adding universal quantifiers for any unbound
-   * type variable in the inferred type. (There are no "fixed" type variables here because all mil
+   * type variable in the inferred type. (There are no "fixed" type variables here because all MIL
    * definitions are at the top level.)
    */
   void generalizeType(Handler handler) throws Failure {
@@ -103,36 +108,20 @@ public class MemArea extends Area {
     }
   }
 
+  /** Update all declared types with canonical versions. */
+  void canonDeclared(MILSpec spec) {
+    declared = declared.canonScheme(spec);
+    areaType = areaType.canonType(spec);
+  }
+
   /** Test to determine if this is an appropriate definition to match the given type. */
   MemArea isMemAreaOfType(Scheme inst) {
     return declared.alphaEquiv(inst) ? this : null;
   }
 
+  /** Construct a stub to be filled in during specialization. */
   MemArea(MemArea a, int num) {
     this(a.pos, mkid(a.id, num), a.alignment, a.areaType, a.size);
-  }
-
-  /**
-   * Fill in the initializer for this area with a specialized version of the original's initializer.
-   */
-  void specialize(MILSpec spec, MemArea aorig) {
-    // Although the area itself will have a monomorphic type, we still need to ensure that
-    // specialization is applied to the initializer.
-    debug.Log.println(
-        "MemArea specialize: "
-            + aorig
-            + " :: "
-            + aorig.declared
-            + "  ~~>  "
-            + this
-            + " :: "
-            + this.declared);
-    // Initializer may be null if this area has already been specialized
-    this.init = (aorig.init == null) ? null : aorig.init.specializeAtom(spec, null, null);
-  }
-
-  Atom specializeArea(MILSpec spec, Type inst) {
-    return new TopArea(inst, spec.specializedMemArea(this, inst));
   }
 
   /**
@@ -150,10 +139,34 @@ public class MemArea extends Area {
     throw new PolymorphicEntrypointFailure("area", this);
   }
 
-  /** Update all declared types with canonical versions. */
-  void canonDeclared(MILSpec spec) {
-    declared = declared.canonScheme(spec);
-    areaType = areaType.canonType(spec);
+  /**
+   * Return an Atom corresponding to a specialized version of this memory area under the given
+   * substitution. (We do not currently allow memory areas with polymorphic types, so the
+   * substitution will have no effect here. But we keep the plumbing, just in case it might be
+   * needed in future, for example, in connection with type expressions that are used to specify
+   * size and alignment.
+   */
+  Atom specializeArea(MILSpec spec, Type inst) {
+    return new TopArea(inst, spec.specializedMemArea(this, inst));
+  }
+
+  /**
+   * Fill in the initializer for this area with a specialized version of the original's initializer.
+   */
+  void specialize(MILSpec spec, MemArea aorig) {
+    // Although the area itself will have a monomorphic type, we still need
+    // to ensure that specialization is applied to the initializer.
+    debug.Log.println(
+        "MemArea specialize: "
+            + aorig
+            + " :: "
+            + aorig.declared
+            + "  ~~>  "
+            + this
+            + " :: "
+            + this.declared);
+    // Initializer may be null if this area has already been specialized
+    this.init = (aorig.init == null) ? null : aorig.init.specializeAtom(spec, null, null);
   }
 
   void topLevelRepTransform(Handler handler, RepTypeSet set) {
@@ -163,7 +176,8 @@ public class MemArea extends Area {
   /** Rewrite the components of this definition to account for changes in representation. */
   void repTransform(Handler handler, RepTypeSet set) {
     areaType = areaType.canonType(set);
-    declared = declared.canonScheme(set); // TODO: likely unnecessary; always Word
+    // TODO: following is likely unnecessary; always Word
+    declared = declared.canonScheme(set);
     if (init != null) {
       set.addInitializer(new Enter(init.repArg(set, null)[0], new TopArea(this)));
       init = null; // Clear away initializer
@@ -182,13 +196,8 @@ public class MemArea extends Area {
       debug.Internal.error("Unable to determine size of area " + id);
     }
     llvm.Type at = new llvm.ArrayType(bigsize.longValue(), llvm.Type.i8);
-    String rawName = prog.freshName("raw");
-    prog.add(new llvm.GlobalVarDefn(llvm.Mods.INTERNAL, rawName, at.defaultValue(), alignment));
     prog.add(
-        new llvm.Alias(
-            llvm.Mods.entry(isEntrypoint),
-            id,
-            new llvm.Bitcast(new llvm.Global(at.ptr(), rawName), llvm.Type.i8.ptr())));
+        new llvm.GlobalVarDefn(llvm.Mods.entry(isEntrypoint), id, at.defaultValue(), alignment));
     staticValue = calcStaticValue(id);
   }
 }

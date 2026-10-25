@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -21,6 +21,7 @@ package mil;
 import compiler.*;
 import core.*;
 
+/** Represents the value introduced by an external definition. */
 public class TopExt extends Top {
 
   private External external;
@@ -35,12 +36,19 @@ public class TopExt extends Top {
     this(null, external);
   }
 
-  public Top clone() {
-    return new TopExt(type, external);
+  /** Return the definition associated with this Top object. */
+  public Defn getDefn() {
+    return external;
   }
 
+  /** Return the identifer referenced by this Top. */
   public String getId() {
     return external.getId();
+  }
+
+  /** Create a clone of this Top object. */
+  public Top clone() {
+    return new TopExt(type, external);
   }
 
   /**
@@ -49,29 +57,15 @@ public class TopExt extends Top {
    * values.
    */
   boolean sameAtom(Atom that) {
-    return that.sameTopExt(external);
+    return that.sameTopExt(this);
   }
 
-  /** Test to determine whether this Atom refers to the specified External. */
-  boolean sameTopExt(External external) {
-    return this.external == external;
+  /** Test whether this Atom is the same as the given TopExt. */
+  boolean sameTopExt(TopExt that) {
+    return this.external == that.external;
   }
 
-  /** Return the definition associated with this Top object. */
-  public Defn getDefn() {
-    return external;
-  }
-
-  /** Find the dependencies of this AST fragment. */
-  Defns dependencies(Defns ds) {
-    return external.dependencies(ds);
-  }
-
-  /** Return a type for an instantiated version of this item when used as Atom (input operand). */
-  public Type instantiate() {
-    return type = external.instantiate();
-  }
-
+  /** Return the declared type for this Top. */
   public Scheme getDeclared() {
     return external.getDeclared();
   }
@@ -86,6 +80,10 @@ public class TopExt extends Top {
     builder.gload(external);
   }
 
+  /**
+   * Determine the specialized version of an Atom in a context described by a given @TVarSubst@
+   * and @SpecEnv@.
+   */
   Atom specializeAtom(MILSpec spec, TVarSubst s, SpecEnv env) {
     Type inst = type.apply(s);
     return new TopExt(inst, spec.specializedExternal(external, inst));

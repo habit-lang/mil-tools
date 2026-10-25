@@ -1,5 +1,5 @@
 /*
-    Copyright 2018-25 Mark P Jones, Portland State University
+    Copyright 2018-26 Mark P Jones, Portland State University
 
     This file is part of mil-tools.
 
@@ -52,13 +52,15 @@ class CallLabel extends Label {
     if (preds == null || preds.next != null) {
       debug.Internal.error("CallLabel should have a unique predecessor");
     }
-    llvm.Value[] vals =
-        Atom.toLLVMValues(lm, vm, s, preds.args); // TODO: repeated nonUnits test on preds.args :-(
+    // TODO: repeated nonUnits test on preds.args :-(
+    llvm.Value[] vals = Atom.toLLVMValues(lm, vm, s, preds.args);
     llvm.Type rt = b.retType(lm);
-    if (rt == llvm.Type.vd) { // use CallVoid if block does not produce a value
+    if (rt == llvm.Type.vd) {
+      // Use CallVoid if block does not produce a value:
       return new llvm.CallVoid(true, lm.globalFor(b), vals, new llvm.RetVoid());
-    } else { // otherwise use Call
-      llvm.Local v = vm.reg(rt); // and allocate a register to hold the result
+    } else {
+      // Otherwise use Call and allocate a register to hold the result:
+      llvm.Local v = vm.reg(rt);
       return new llvm.Op(
           v, new llvm.Call(true, v.getType(), lm.globalFor(b), vals), new llvm.Ret(v));
     }
